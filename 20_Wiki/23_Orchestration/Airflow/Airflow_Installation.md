@@ -10,7 +10,7 @@ tags:
   - Docker
   - 환경설정
 related:
-  - "[[00_Airflow_Hompage]]"
+  - "[[00_Airflow_HomPage]]"
   - "[[Common_Airflow_Errors]]"
 ---
 ## 개념 한 줄 요약

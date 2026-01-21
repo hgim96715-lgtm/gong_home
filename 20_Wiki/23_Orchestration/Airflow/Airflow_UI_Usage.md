@@ -8,7 +8,7 @@ tags:
   - 매뉴얼
   - Airflow_UI
 related:
-  - "[[00_Airflow_Hompage]]"
+  - "[[00_Airflow_HomPage]]"
   - "[[Basic_DAG_Skeleton]]"
 ---
 ## 개념 한 줄 요약

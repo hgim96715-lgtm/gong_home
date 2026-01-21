@@ -7,7 +7,7 @@ tags:
   - 개념
   - 면접질문
 related:
-  - "[[00_Airflow_Hompage]]"
+  - "[[00_Airflow_HomPage]]"
   - "[[Airflow_Architecture(아키텍처)]]"
 ---
 ## 개념 한 줄 요약

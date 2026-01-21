@@ -9,7 +9,7 @@ tags:
   - Airflow
   - 면접질문
 related:
-  - "[[00_Airflow_Hompage]]"
+  - "[[00_Airflow_HomPage]]"
 ---
 ## 개념 한 줄 요약
 
