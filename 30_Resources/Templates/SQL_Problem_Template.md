@@ -1,16 +1,20 @@
 ---
 aliases: []
 tags:
-  - SQL
+  - SQL_TEST
 related: []
 source:
 difficulty:
 status:
+  - 🟥 실패
+  - 🟨 힌트참고
+  - 🟩 해결
 ---
 # {{date}}_{{title}}
 
 ---
-## 1. 해결 전략 (Code Before Think)
+##  해결 전략 (Code Before Think)
+
 > 코드를 작성하기 전, 어떻게 풀지 말로 정리해봅니다. (가장 중요!)
 
 1. **타겟 데이터:** (어떤 테이블에서 무엇을 뽑아야 하는가?)
@@ -20,14 +24,14 @@ status:
 3. **사용할 문법:**
    - 
 ---
-## 2. 정답 쿼리 (Solution)
+## 정답 쿼리 (Solution)
 
 ```sql
 -- 여기에 작성한 쿼리를 붙여넣으세요.
 ```
 
 ---
-## 3. 🚀 오답 노트 & 배운 점 (Retrospective)
+##  오답 노트 & 배운 점 (Retrospective)
 
 -  **내가 실수한 부분:**
     
