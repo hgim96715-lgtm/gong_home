@@ -6,7 +6,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Basic_SELECT_FROM]]"
+  - "[[SQL_SELECT_FROM]]"
 ---
 ## 개념 한 줄 요약
 

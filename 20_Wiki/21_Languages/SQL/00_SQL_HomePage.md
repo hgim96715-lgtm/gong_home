@@ -1,16 +1,18 @@
 ##  핵심 사고력 (Data Engineer's Brain)
 
+- [[SQL_Execution_Order]] : 작성 순서 vs 실행 순서 완벽 정리 (치트시트)
+- [[SQL_Main_Table_Strategy]] : 쿼리의 주인공(FROM)을 정하는 절대 원칙
 - [[SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
--  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 (작성 예정)
+-  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 
 
 ## 1. 기초 문법 (Basics)
 
 > 데이터 조회와 필터링의 기본기
 
-- [[Basic_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
+- [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
 - [[Basic_Structure_and_Alias]] : 컬럼/로우 용어 정리와 별칭(AS) 짓기
--  [[Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE)
--  [[Sorting_ORDER_BY]] : 데이터 줄 세우기
+-  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE, IS NULL)
+-  [[SQL_ORDER_BY]] : 데이터 줄 세우기
 -  [[Data_Types]] : 문자, 숫자, 날짜 타입의 이해
 
 ## 2. 데이터 가공과 집계 (Aggregation)
@@ -36,6 +38,7 @@
 - [[Window_Functions]] : 순위, 누적합, 이동평균 (RANK, LEAD, LAG) 
 - [[SubQuery_CTE]] : 복잡한 쿼리를 레고 블록처럼 관리하기 (WITH 절) 
 - [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 바꾸기
+- [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (CASE WHEN)
 
 ##  실전 연습 (Projects)
 
