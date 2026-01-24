@@ -10,8 +10,8 @@ tags:
   - 자료구조
   - 면접질문
 related:
-  - "[[Basic_DAG_Skeleton]]"
-  - "[[DAG_Operators_Basic]]"
+  - "[[Airflow_DAG_Skeleton]]"
+  - "[[Airflow_DAG_Operators]]"
 ---
 ## 개념 한 줄 요약
 

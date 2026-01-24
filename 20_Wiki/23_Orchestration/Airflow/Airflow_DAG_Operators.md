@@ -12,7 +12,7 @@ tags:
   - Operator
 related:
   - "[[Airflow_Architecture(아키텍처)]]"
-  - "[[Basic_DAG_Skeleton]]"
+  - "[[Airflow_DAG_Skeleton]]"
 ---
 
 ## 개념 한 줄 요약
@@ -78,8 +78,8 @@ Operator는 미리 만들어진 도구 상자입니다.
 
 1.  **Task ID 유일성:** 모든 Operator는 `task_id`를 가져야 하며, DAG 안에서 절대 중복되면 안 됩니다.
 2.  **호출 방식:**
-    * Bash는 `bash_command="명령어"` 형태로 문자열을 넘깁니다.
-    * Python은 `python_callable=함수이름` 형태로 **함수 자체(객체)** 를 넘깁니다. (함수 뒤에 `()`를 붙이면 안 됨!)
+    * Bash는 `{python}bash_command="명령어"` 형태로 문자열을 넘깁니다.
+    * Python은 `{python}python_callable=함수이름` 형태로 **함수 자체(객체)** 를 넘깁니다. (함수 뒤에 `()`를 붙이면 안 됨!)
 
 ---
 ## 상세 분석 (Line-by-Line)

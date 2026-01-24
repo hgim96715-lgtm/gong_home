@@ -9,8 +9,9 @@ tags:
   - Airflow
   - 면접질문
 related:
-  - "[[00_Airflow_HomPage]]"
+  - "[[00_Airflow_HomePage]]"
   - "[[Airflow_Best_Practices]]"
+  - "[[Linux_Scheduling_Crontab]]"
 ---
 ## 개념 한 줄 요약
 

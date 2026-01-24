@@ -7,8 +7,9 @@ tags:
   - 개념
   - 면접질문
 related:
-  - "[[00_Airflow_HomPage]]"
+  - "[[00_Airflow_HomePage]]"
   - "[[Airflow_Architecture(아키텍처)]]"
+  - "[[Airflow_TaskFlow_API]]"
 ---
 ## 개념 한 줄 요약
 
@@ -46,21 +47,39 @@ related:
 | **장점** | 민감 정보(개인정보)를 미리 지우고 넣을 수 있어 보안에 좋음. | 원본 데이터가 보존됨. 유연성이 매우 높음. |
 | **단점** | 로직 수정 시 처음부터 다시 해야 함. 파이프라인 구축이 오래 걸림. | 불필요한 데이터까지 다 저장해서 저장 비용이 조금 더 듦. |
 
+---
+## Why ELT now? (왜 대세가 됐나?)
+
+**Cloud Power:**
+- BigQuery, Snowflake가 너무 빨라짐.
+- 파이썬으로 처리하는 것보다 DB 안에서 쿼리 돌리는 게 훨씬 빠름.
+
+**Raw Data 보존:**
+- 나중에 분석가가 "저 원본 데이터 좀 다시 볼 수 있어요?"라고 했을 때, ETL은 이미 가공돼서 원본이 없지만 ELT는 다 남아있음.
+
+**dbt의 등장:**
+- SQL만으로 복잡한 변환 과정을 관리해주는 **dbt**라는 도구가 나오면서 ELT가 날개를 달았음.
+---
 ## 코드 핵심 포인트 (Airflow에서의 차이)
 
 ### 1. ETL 방식 (PythonOperator 사용)
 
+- Airflow 서버가 직접 데이터를 메모리에 올려서 판다스(Pandas)로 가공함.
+
 ```python
 # Airflow가 직접 데이터를 씹고 뜯고 맛보고 즐김 (무거움)
+# Airflow Worker가 땀 흘리며 일함
 def process_data():
     df = pd.read_csv("data.csv")
-    df = df[df['price'] > 1000]  # 변형
+    df = df[df['price'] > 1000]  # 변형 , 파이썬 메모리 사용
     df.to_sql("target_table")    # 적재
 
 task = PythonOperator(task_id='etl_task', python_callable=process_data)
 ```
 
 ### 2. ELT 방식 (BigQueryOperator 사용)
+
+- Airflow는 **"야, 너네 안에서 알아서 변환해"** 라고 명령(Query)만 날림.
 
 ```python
 # Airflow는 명령만 내림. 실제 힘든 일은 BigQuery가 함 (가벼움)

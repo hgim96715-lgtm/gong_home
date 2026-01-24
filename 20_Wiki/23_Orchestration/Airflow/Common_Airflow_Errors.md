@@ -10,7 +10,7 @@ tags:
   - Docker
   - Troubleshooting
 related:
-  - "[[00_Airflow_HomPage]]"
+  - "[[00_Airflow_HomePage]]"
 ---
 #  Common Airflow Errors (오답노트)
 
