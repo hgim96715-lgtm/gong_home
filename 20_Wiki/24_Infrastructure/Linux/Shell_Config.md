@@ -9,6 +9,8 @@ tags:
 related:
   - "[[Environment_Variables(환경 변수)]]"
   - "[[Path_Variable]]"
+  - "[[Terminal_Editors]]"
+  - "[[Apply_Changes_Source]]"
 ---
 ## 핵심 개념 요약
 

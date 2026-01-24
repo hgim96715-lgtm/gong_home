@@ -6,10 +6,9 @@ aliases:
 tags:
   - Linux
   - Airflow
+  - crontab
 related:
-  - "[[Shell_Scripting]]"
-  - "[[Process_Management]]"
-  - "[[Scheduling_Cron]]"
+  - "[[Airflow_Scheduling]]"
 ---
 ## 핵심 개념 요약
 

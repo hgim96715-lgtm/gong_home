@@ -6,6 +6,7 @@
 - [[Shell_Interface]] : 쉘(Shell)이란 무엇인가? (GUI vs CLI)
 - [[File_Navigation]] : 길 잃지 않고 이동하기 (`pwd`, `ls`, `cd`)
 - [[File_Management]] : 파일 생성과 삭제, 복사 (`mkdir`, `touch`, `cp`, `mv`, `rm`,`echo`)
+- [[Terminal_Editors]] : 파일 내용 수정하기 (`vi`, `nano`)
 - [[Help_Commands]] : 모르는 명령어 검색하기 (`man`, `--help`)
 
 ## Level 2. 환경 설정과 변수 (Environment)
@@ -15,6 +16,7 @@
 - [[Environment_Variables(환경 변수)]] : 환경 변수의 개념과 설정 (`env`, `export`)
 - [[Path_Variable]] : 마법의 변수 PATH 이해하기 (`$PATH`)
 - [[Shell_Config]] : 설정을 영구 저장하는 법 (`.zshrc`, `.bash_profile`)
+- [[Apply_Changes_Source]] : 설정 즉시 적용하기 (`source`)
 
 ## Level 3. 권한과 보안 (Permissions)
 
@@ -46,5 +48,5 @@
 > "반복 작업은 컴퓨터에게 시키고 퇴근해요."
 
 - [[Shell_Scripting]] : 쉘 스크립트 기초 (`.sh` 파일 만들기)
-- [[Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`)
+- [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`)
 

@@ -4,6 +4,8 @@ aliases:
   - Environment Variables
 tags:
   - Linux
+related:
+  - "[[00_Linux_HomePage]]"
 ---
 ## 개념 한 줄 요약
 
