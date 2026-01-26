@@ -20,7 +20,7 @@ TABLE
   split(file.name, "_")[0] as "푼 날짜",  
   split(file.name, "_")[1] as "주제"
 FROM "10_Projects/11_Daily_SQL_Challenge"
-WHERE file.name != "SQL_Challenge_DashBoard" 
+WHERE file.name != "00_SQL_Challenge_DashBoard" 
 SORT file.name ASC
 LIMIT 5
 ```
@@ -33,7 +33,7 @@ TABLE
   split(file.name, "_")[0] as "푼 날짜",  
   split(file.name, "_")[1] as "주제"
 FROM "10_Projects/11_Daily_SQL_Challenge"
-WHERE file.name != "SQL_Challenge_DashBoard" 
+WHERE file.name != "00_SQL_Challenge_DashBoard" 
   AND !contains(status, "🟩 해결")
 SORT file.name ASC
 LIMIT 5

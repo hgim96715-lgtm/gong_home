@@ -42,6 +42,6 @@
 
 ##  실전 연습 (Projects)
 
-- [[10_Projects/11_Daily_SQL_Challenge/SQL_Challenge_DashBoard|🏆 매일 SQL 챌린지 대시보드]] 
+- [[00_SQL_Challenge_DashBoard|🏆 매일 SQL 챌린지 대시보드]] 
 - [[Error_Log]] : 자주 만나는 에러 해결책 모음 (오답노트)
 
