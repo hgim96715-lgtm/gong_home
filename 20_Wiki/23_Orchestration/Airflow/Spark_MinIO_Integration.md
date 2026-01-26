@@ -210,3 +210,36 @@ spark = SparkSession.builder.appName("MyJob").getOrCreate()
 
 > **결론:** `spark-defaults.conf`는 **"공통 설정을 미리 세팅해두는 곳"** 이야.
 >  덕분에 매번 `.config()`를 주렁주렁 달지 않아도 돼!
+
+---
+## Critical Reminder: 실행 전 필수 체크 (The "Two-Terminal" Rule) ⚠️
+
+우리는 지금 **"본부(Airflow+MinIO)"**와 **"작업장(Spark)"**을 분리해서 운영하고 있어.
+그래서 작업을 할 때는 반드시 **두 개의 터미널**에서 각각 도커를 켜줘야 해!
+
+### ❌ 흔한 실수 (One Side Only)
+
+* **Spark만 켜고 코드를 돌리면?** * 👉 `Connection refused` 에러 발생! (저장할 창고인 MinIO가 꺼져 있으니까)
+* **Airflow(MinIO)만 켜고 기다리면?** * 👉 아무 일도 안 일어남 (일할 사람인 Spark가 출근을 안 했으니까)
+
+### ✅ 올바른 실행 순서 (Both Sides Up)
+
+**Terminal 1 (본부 켜기):**
+
+```bash
+cd ~/gong_study_de/apache-airflow
+docker-compose up -d  # MinIO (창고) Open 🏠
+```
+
+**Terminal 2 (작업장 켜기):**
+
+```bash
+cd ~/gong_study_de/apache-airflow/spark
+docker-compose up -d  # Spark (요리사) 출근 ⚡️
+```
+
+>**한 줄 요약:** 
+>식당 문(MinIO)도 열고, 요리사(Spark)도 출근시켜야 요리가 나옵니다! 
+>둘 다 켜져 있는지 `docker ps`로 항상 확인하세요.
+
+

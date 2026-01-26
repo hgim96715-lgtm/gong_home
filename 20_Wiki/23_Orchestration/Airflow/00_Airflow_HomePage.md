@@ -23,7 +23,7 @@
 - [[Airflow_Architecture(아키텍처)]] : 웹서버, 스케줄러, 워커, 메타DB의 4박자 관계
 - [[DAG_Concept]] : DAG가 도대체 뭔가요? (방향성 비순환 그래프)
 - [[Airflow_Providers]] : 외부 서비스(AWS, DB, Slack)와 연동하기 위한 확장팩
-- [[Execution_Date_Confusion]] : 🚨 가장 헷갈리는 '실행 기준일' 개념 잡기 (오늘 돌지만 어제 날짜로 찍히는 이유)
+- [[Execution_Date_Confusion]] :  가장 헷갈리는 '실행 기준일' 개념 잡기 (오늘 돌지만 어제 날짜로 찍히는 이유)
 
 ## 1. DAG 작성하기 (Building Pipelines)
 
@@ -82,4 +82,6 @@
 
 - [[Apache_Spark_Concept]] : 하둡보다 100배 빠른 분산 처리 엔진 
 - [[Apache_Spark_Setup]] : Docker로 내 컴퓨터에 Spark 클러스터 구축하기 (설치)
-- [[Spark_MinIO_Integration]]
+- [[Spark_MinIO_Integration]] : Spark(연산)와 MinIO(저장)를 S3 프로토콜로 연결하기
+- [[Airflow_Spark_Integration]] : Airflow로 Spark 작업 자동화하기 (SparkSubmitOperator) 
+- [[Airflow_Spark_MinIO_Pipeline_Build]]: 이번에 겪은 에러 로그와 해결 과정을 담은 **"실전 문제 해결서"** (나중에 에러 나면 보는 곳)
