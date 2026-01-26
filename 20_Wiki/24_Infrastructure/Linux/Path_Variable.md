@@ -7,7 +7,7 @@ tags:
   - Linux
   - PATH
 related:
-  - "[[Environment_Variables(환경 변수)]]"
+  - "[[Environment_Variables]]"
   - "[[Shell_Config]]"
 ---
 ## 핵심 개념 요약

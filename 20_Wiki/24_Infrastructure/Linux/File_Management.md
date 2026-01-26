@@ -11,6 +11,7 @@ tags:
   - Linux
 related:
   - "[[File_Navigation]]"
+  - "[[00_Linux_HomePage]]"
 ---
 ## 핵심 개념 요약
 
@@ -51,10 +52,11 @@ related:
 touch data.csv
 
 # 2. 내용이 있는 파일 만들기 (가장 빠름!)
-# echo "내용" > 파일명 : 화면에 출력할 걸 파일로 저장해라
+# echo "내용" > 파일명 : 화면에 출력할 내용을 파일로 저장(덮어쓰기)
 echo "user_id, name" > headers.csv
 
 # 3. 폴더 만들기 (-p: 중간 폴더까지 한 번에 생성)
+# 2026 폴더가 없어도 에러 없이 2026 -> 01 -> data 순으로 다 만들어줌
 mkdir -p 2026/01/data
 ```
 
@@ -64,7 +66,8 @@ mkdir -p 2026/01/data
 # 1. 파일 복사 (cp 원본 복사본)
 cp data.csv data_backup.csv
 
-# 2. 폴더 복사 (-r: 폴더 내부 내용물까지 재귀적으로 복사)
+# 2. 폴더 복사 (-r: Recursive, 폴더 내부 내용물까지 재귀적으로 복사)
+# 폴더를 복사할 땐 -r 옵션이 없으면 에러가 남!
 cp -r 2026/01 2026/01_backup
 
 # 3. 파일 이동 (mv 원본 목적지)
