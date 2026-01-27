@@ -33,133 +33,128 @@ related: []
 
 ```mermaid
 flowchart TD
-    %% 시작점을 첫 번째 질문으로 바로 연결
     Start((🚀 쿼리 설계 시작)) --> Q_Complex
 
-    %% 0. 설계 단계
-    subgraph Step0_Architect ["Step 0: 큰 그림 그리기 (서브쿼리 판단)"]
+    %% 0. 설계 단계 (Architect)
+    subgraph Step0_Architect ["Step 0: 큰 그림 그리기"]
         direction TB
-        Q_Complex{"이미 계산된 결과(집계/순위)를<br>조건으로 걸거나<br>다시 조인해야 하는가?"}
+        Q_Complex{"이미 계산된 결과(집계/순위)를<br>재사용하거나<br>다시 조인해야 하는가?"}
+        Q_Complex -- Yes: 복잡함 --> Op_CTE["WITH 절(CTE)로<br>논리 블록 분리"]
+        Q_SetOp{"결과물을 위아래로<br>합쳐야 하는가?"}
+        Q_Complex -- No --> Q_SetOp
+        Op_CTE --> Q_SetOp
+        Q_SetOp -- Yes: 합치기 --> Op_Union["UNION / UNION ALL<br>(설계 후 마지막에 결합)"]
         
-        Q_Complex -- Yes: 먼저 계산 필요 --> Op_CTE["WITH 절(CTE) 또는<br>FROM 절 서브쿼리 먼저 작성<br>(Wrapper 구조)"]
-        
-        %% 여기서 화살표를 다음 단계의 '첫 노드'로 직접 연결
+        %% Step 0 -> Step 1 연결
+        Q_SetOp -- No: 단일 쿼리 --> Q_Sources
+        Op_Union --> Q_Sources
     end
 
-    %% 1. 데이터 준비
+    %% 1. 데이터 준비 (Data & Join)
     subgraph Step1_Data ["Step 1: 데이터 판 깔기 & 조인 전략"]
         direction TB
         Q_Sources{"데이터 소스가<br>여러 개인가?"}
-        
-        %% Step 0에서 Step 1의 시작점(Q_Sources)으로 연결
-        Q_Complex -- No: 바로 시작 가능 --> Q_Sources
-        Op_CTE --> Q_Sources
-
         Q_Sources -- No --> Op_From["FROM 테이블"]
-        Q_Sources -- Yes --> Q_Fanout{"1:N 조인으로<br>행 수가 의도치 않게<br>늘어날 위험이 있는가?"}
+        Q_Sources -- Yes --> Q_Fanout{"1:N 조인으로<br>행 뻥튀기 위험?"}
         
-        Q_Fanout -- No: 안전함 --> Op_Join["Standard JOIN"]
-        Q_Fanout -- Yes: 위험(데이터 뻥튀기) --> Op_PreAgg["먼저 집계(GROUP BY) 후<br>조인 수행 (Pre-Aggregation)"]
+        Q_Fanout -- Yes: 위험 --> Op_PreAgg["Pre-Aggregation<br>(먼저 GROUP BY 후 조인)"]
+        Q_Fanout -- No: 안전 --> Q_JoinType{"모든 행이<br>다 필요한가?"}
+        
+        Q_JoinType -- "교집합만 (필수)" --> Op_Inner["INNER JOIN"]
+        Q_JoinType -- "원본 유지 (옵션)" --> Op_Left["LEFT JOIN"]
         
         Op_From --> Q_Where
-        Op_Join --> Q_Where
+        Op_Inner --> Q_Where
+        Op_Left --> Q_Where
         Op_PreAgg --> Q_Where
     end
 
-    %% 2. 필터링
+    %% 2. 필터링 (Filter)
     subgraph Step2_Filter ["Step 2: 재료 손질 (WHERE)"]
         direction TB
-        Q_Where{"원본 데이터에서<br>미리 걸러낼 조건이 있나?<br>(날짜, 상태코드 등)"}
+        Q_Where{"미리 걸러낼 조건?<br>(날짜, 상태코드)"}
         Q_Where -- Yes --> Op_Where["WHERE 절 작성"]
         Q_Where -- No --> Q_Granularity
         Op_Where --> Q_Granularity
     end
 
-    %% 3. 핵심 분기
-    subgraph Step3_Core ["Step 3: 행(Row)의 운명 결정 (핵심 로직)"]
+	%% 3. 핵심 로직 (Core Logic)
+    subgraph Step3_Core ["Step 3: 행(Row)의 운명 결정"]
         direction TB
-        Q_Granularity{"🎯 결과 집합의<br>행 수를 줄일(압축할)<br>것인가?"}
+        Q_Granularity{"🎯 결과 집합의<br>행 수를 줄일 것인가?"}
 
-        %% === 왼쪽 트랙: GROUP BY ===
-        Q_Granularity -- Yes: 그룹별 1행 --> Op_Group["GROUP BY"]
-        Op_Group --> Q_AggType{"집계 목적은?"}
-        Q_AggType -- 건수 --> Op_Count["COUNT"]
-        Q_AggType -- 합계/평균 --> Op_SumAvg["SUM / AVG"]
-        Q_AggType -- 중복제거 --> Op_Distinct["COUNT DISTINCT"]
+        %% === 왼쪽: 집계 (Aggregation) ===
+        Q_Granularity -- Yes: 압축 --> Op_Group["GROUP BY"]
+        Op_Group --> Q_AggType{"집계 목적"}
+        Q_AggType -- 건수/합계 --> Op_BasicAgg["COUNT / SUM / AVG"]
+        Q_AggType -- 조건부 집계 --> Op_FilterAgg["COUNT() FILTER<br>(CASE WHEN 대용)"]
         
-        %% === 오른쪽 트랙: WINDOW ===
-        Q_Granularity -- No: 행 유지 --> Q_WindowNeed{"다른 행 참조 필요?<br>(순위, 누적합, 이동평균)"}
+        %% === 오른쪽: 윈도우 (Window) ===
+        Q_Granularity -- No: 유지 --> Q_WindowNeed{"이전/다음 행 참조?<br>(LAG, LEAD)"}
         
-        %% 바로 연결 (Step 5의 시작점 Q_Select로)
-        Q_WindowNeed -- No --> Q_Select
+        Q_WindowNeed -- Yes: 시계열 비교 --> Q_Partition{"누구끼리 경쟁/합산?"}
+        Q_WindowNeed -- No: 순위/번호 --> Q_RankFunc{"순위 매기기?<br>(RANK, ROW_NUMBER)"}
         
-        Q_WindowNeed -- Yes --> Q_Partition{"누구끼리 경쟁/합산?"}
+        Q_RankFunc --> Q_Partition
         
-        Q_Partition -- "그룹(부서)별로" --> Op_Win_Part["OVER (PARTITION BY ...)"]
-        Q_Partition -- "전체 통틀어서" --> Op_Win_All["OVER ( )"]
+        Q_Partition -- 그룹별 --> Op_Win_Part["OVER (PARTITION BY..)"]
+        Q_Partition -- 전체 --> Op_Win_All["OVER ()"]
         
-        Op_Win_Part --> Q_WinOrder{"순서 중요? (랭킹/누적)"}
+        Op_Win_Part --> Q_WinOrder{"순서 중요?"}
         Op_Win_All --> Q_WinOrder
-        Q_WinOrder -- Yes --> Op_Win_Ord["ORDER BY 추가"]
+        Q_WinOrder -- Yes: 필수 --> Op_Win_Ord["ORDER BY 추가"]
         
-        %% 윈도우 결과도 Step 5로 이동
-        Q_WinOrder -- No --> Q_Select
-        Op_Win_Ord --> Q_Select
+        %% 경로 합류
+        Q_AggType --> Q_Having
+        Op_BasicAgg --> Q_Having
+        Op_FilterAgg --> Q_Having
+        
+        Q_WindowNeed -- No --> Q_Logic
+        Q_WinOrder -- No --> Q_Logic
+        Op_Win_Ord --> Q_Logic
     end
 
-    %% 4. 후처리
-    subgraph Step4_PostFilter ["Step 4: 결과 솎아내기 (HAVING)"]
+    %% 4. 후처리 (Post-Filter)
+    subgraph Step4_PostFilter ["Step 4: 결과 솎아내기"]
         direction TB
-        Op_Count --> Q_Having
-        Op_SumAvg --> Q_Having
-        Op_Distinct --> Q_Having
-        
-        Q_Having{"집계된 결과값으로<br>필터링 해야 하나?<br>(예: 매출 100이상)"}
+        Q_Having{"집계 후 필터링?<br>(예: 매출 100이상)"}
         Q_Having -- Yes --> Op_Having["HAVING"]
-        
-        %% HAVING 결과도 Step 5로 이동
-        Q_Having -- No --> Q_Select
-        Op_Having --> Q_Select
+        Q_Having -- No --> Q_Logic
+        Op_Having --> Q_Logic
     end
 
-    %% 5. 마무리
+    %% 5. 최종 가공 (Final Polish)
     subgraph Step5_Final ["Step 5: 마무리 데코레이션"]
         direction TB
-        Q_Select{"NULL 처리 필요?"}
-        Q_Select -- Yes --> Op_Null["COALESCE / IFNULL"]
-        Q_Select -- No --> Op_SelCol["SELECT 컬럼 확정"]
-        Op_Null --> Op_SelCol
+        Q_Logic{"조건부 값/변환 필요?"}
+        Q_Logic -- Yes --> Op_CaseCast["CASE WHEN (조건문)<br>::Type (형변환)"]
+        Q_Logic -- No --> Op_SelCol["SELECT 컬럼 확정"]
+        Op_CaseCast --> Op_Null
         
-        Op_SelCol --> Q_Order{"최종 정렬 필요?"}
+        Op_SelCol --> Q_Null
+        Q_Null{"NULL 처리?"}
+        Q_Null -- Yes --> Op_Null["COALESCE"]
+        Q_Null -- No --> Q_Order
+        Op_Null --> Q_Order
+        
+        Q_Order{"최종 정렬?"}
         Q_Order -- Yes --> Op_FinalOrder["ORDER BY"]
-        Q_Order -- No --> Q_Limit
-        Op_FinalOrder --> Q_Limit
-        
-        Q_Limit{"출력 개수 제한?"}
-        Q_Limit -- Yes --> Op_Limit["LIMIT"]
-        Q_Limit -- No --> End((🏁 완성))
+        Q_Order -- No --> End((🏁 완성))
+        Op_FinalOrder --> End
     end
-    
-    Op_Limit --> End
 
     %% 스타일링
     linkStyle default stroke:#555,stroke-width:2px
-    
     classDef startend fill:#2c3e50,stroke:#34495e,color:white
     class Start,End startend
-
     classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    class Q_Complex,Q_Sources,Q_Fanout,Q_Where,Q_Granularity,Q_AggType,Q_WindowNeed,Q_Partition,Q_WinOrder,Q_Having,Q_Select,Q_Order,Q_Limit decision
-
+    class Q_Complex,Q_SetOp,Q_Sources,Q_Fanout,Q_JoinType,Q_Where,Q_Granularity,Q_AggType,Q_WindowNeed,Q_Partition,Q_WinOrder,Q_Having,Q_Logic,Q_Null,Q_Order decision
     classDef critical fill:#ffe0b2,stroke:#e65100,stroke-width:3px
     class Q_Complex,Q_Fanout,Q_Granularity critical
-
     classDef action fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px
-    class Op_CTE,Op_From,Op_Join,Op_PreAgg,Op_Where,Op_Group,Op_Count,Op_SumAvg,Op_Distinct,Op_Win_Part,Op_Win_All,Op_Win_Ord,Op_Having,Op_Null,Op_SelCol,Op_FinalOrder,Op_Limit action
-
-    classDef risk fill:#ffcdd2,stroke:#c62828,stroke-width:2px
-    class Op_PreAgg risk
+    class Op_CTE,Op_Union,Op_From,Op_PreAgg,Op_Inner,Op_Left,Op_Where,Op_Group,Op_BasicAgg,Op_FilterAgg,Op_Win_Part,Op_Win_All,Op_Win_Ord,Op_Having,Op_CaseCast,Op_SelCol,Op_Null,Op_FinalOrder action
 ```
+
 
 ---
 ## 초보자가 자주 착각하는 포인트
