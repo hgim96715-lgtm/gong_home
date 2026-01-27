@@ -4,15 +4,16 @@ aliases:
   - 리눅스 특징
   - 루트계정
   - 경로 이해
+  - whoami
+  - id
 tags:
   - Linux
-  - PATH
-  - Root
 related:
   - "[[Linux_Architecture]]"
   - "[[00_Linux_HomePage]]"
   - "[[Filesystem Hierarchy Standard]]"
   - "[[Linux_Docker_Setup]]"
+  - "[[01_Linux_Roadmap]]"
 ---
 ## 개념 한 줄 요약
 
@@ -123,25 +124,51 @@ related:
 
 우리가 구축한 Docker 환경에서 직접 확인해보자.
 
+### 컨테이너 내부로 입장
+
 ```bash
 # 1. 컨테이너 내부로 입장 (이미 ubuntu 유저로 설정됨)
 docker exec -it linux-server bash
+```
 
-# 2. 나의 정체 확인하기
+### 나의 정체 확인하기 `whoami`
+
+```bash
 whoami
 # 출력: ubuntu 
 # (해석: Dockerfile에서 설정한 대로 ubuntu 유저로 로그인되었음 성공!)
+```
 
-# 3. 내 소속 확인하기 (더 자세히)
+### 내 소속 확인하기 (더 자세히) - **`id`**
+
+단순히 이름(`whoami`)만 아는 게 아니라, 내가 가진 **권한의 범위(신분증 상세)** 를 확인합니다.
+
+```bash
 id
-# 출력: uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),27(sudo)
-# (해석: 나는 1000번 유저이고, 'sudo' 그룹에 속해 있어서 관리자 권한을 빌릴 수 있구나!)
+# 출력 예시: 
+# uid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),27(sudo)
+```
 
-# 4. 관리자 권한 테스트
+[결과 상세 해석: 리눅스 사원증 뜯어보기]
+
+|**항목**|**코드**|**의미**|**비유 (회사)**|
+|---|---|---|---|
+|**UID**|`uid=1000(ubuntu)`|**User ID** (사용자 고유 번호)|**사번.** (컴퓨터는 'ubuntu'라는 이름보다 숫자 '1000'으로 나를 기억함)|
+|**GID**|`gid=1000(ubuntu)`|**Group ID** (주 소속 그룹)|**소속 팀.** (나는 기본적으로 'ubuntu' 팀 소속임)|
+|**Groups**|`groups=...,27(sudo)`|**소속된 모든 그룹들**|**출입 권한.** (나는 'ubuntu' 팀원이지만, **'sudo'**라는 특별 위원회에도 속해 있음)|
+
+**핵심 포인트: `27(sudo)`**
+- 이 부분이 제일 중요합니다! `groups` 목록에 **`sudo`** (또는 `wheel`)가 적혀 있어야만 **"관리자 권한(root)을 빌려 쓸 수 있는 자격"** 이 있는 것입니다.
+- 만약 여기에 `sudo`가 없다면? 아무리 `sudo apt update`를 쳐도 "너 권한 없어!"라고 혼납니다.
+
+###  관리자 권한 테스트
+
+```bash
 sudo whoami
 # 출력: root
 # (해석: 'sudo'를 붙인 순간만큼은 내가 root로서 명령을 내린 것이다.)
 ```
+
 
 ---
 ## 커맨드 프롬프트 (Command Prompt)

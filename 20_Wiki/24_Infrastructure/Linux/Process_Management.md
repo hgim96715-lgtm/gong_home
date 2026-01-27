@@ -12,6 +12,7 @@ related:
   - "[[Linux_Signals]]"
   - "[[Background_Jobs]]"
   - "[[00_Linux_HomePage]]"
+  - "[[Time_Synchronization]]"
 ---
 ##  개념 한 줄 요약
 
@@ -201,6 +202,39 @@ kill 5678
 # 강제 종료!
 kill -9 5678
 ```
+
+---
+## 심화: 데몬 (Daemon) 이란? 
+
+### ① 개념
+
+* **정의:** 사용자가 직접 제어하지 않아도, 백그라운드에서 **24시간 조용히 돌면서 특정 요청을 기다리는 프로세스**입니다.
+* **이름의 특징:** 보통 이름 끝에 **`d`** 가 붙습니다.
+    * `sshd`: SSH 접속을 기다리는 데몬
+    * `httpd`: 웹 페이지 요청을 기다리는 데몬
+    * `chronyd`: 시간 동기화를 담당하는 데몬
+    * `dockerd`: 도커 컨테이너를 관리하는 데몬
+
+### ② 관리 방법 (systemctl)
+
+데몬을 켜고 끄는 건 `systemctl` 명령어로 합니다. (일반 프로세스처럼 `kill`로 잘 안 죽입니다.)
+
+```bash
+# 상태 확인 (살아있니?)
+sudo systemctl status sshd
+
+# 시작 / 중지 / 재시작
+sudo systemctl start sshd
+sudo systemctl stop sshd
+sudo systemctl restart sshd
+
+# 부팅 시 자동 실행 등록 (Enable) ⭐️
+# "서버 껐다 켜도 자동으로 실행돼야 해!"
+sudo systemctl enable sshd
+```
+
+> docker 을 쓸때 daemon 을 키는 방법은 조금 다름 [[Time_Synchronization#트러블슈팅 "506 Cannot talk to daemon"|daemon을 못찾을때]]
+
 
 ---
 ## 초보자가 자주 하는 실수 (Misconceptions)

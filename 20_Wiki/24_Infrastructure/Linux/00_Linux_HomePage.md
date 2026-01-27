@@ -1,4 +1,6 @@
-[[Roadmap]]
+[[01_Linux_Roadmap]] : 흐름도 
+> Linux 연습 [리눅스 연습 ](https://labex.io/ko/labs/linux-your-first-linux-lab-270253?course=quick-start-with-linux) 참고 
+> [[흐름도 설명]]
 
 ## Level 0. 리눅스의 세계관 (Architecture & History)
 
@@ -9,7 +11,7 @@
 - [[Linux_vs_Unix]]: "리눅스와 맥(Unix 기반)은 왜 비슷하면서도 다른가?" (족보 이해)
 - [[Linux_Architecture]]: "리눅스 내부의 심장(Kernel)과 입(Shell)은 어떻게 대화하는가?" (시스템 구조)
 - [[Linux_Distributions]]: "왜 서버마다 `apt`를 쓰기도 하고 `yum`을 쓰기도 하는가?" (가문별 명령어 차이)
-- [[Linux_Fundamental_Rules]]: "대소문자, 공백, 루트 권한... 리눅스에서 절대 어기면 안 되는 법도는 무엇인가?" (실전 매너)
+- [[Linux_Fundamental_Rules]]: "대소문자, 공백, 루트 권한... 리눅스에서 절대 어기면 안 되는 법도는 무엇인가?" (`whoami`,`id`)
 - [[Filesystem Hierarchy Standard]] : 리눅스 계층 구조, 디렉토리 구조 (지도 보기)
 - [[Linux_Docker_Setup]] : 실습 환경 구축 (Docker로 나만의 연습장 만들기)
 
@@ -25,7 +27,7 @@
 - [[Shell_Wildcards]] : 파일 찾기의 조커 카드 (`*`, `?`)
 - [[File_Compression]] : 파일 압축 및 해제 (`tar`, `gzip`)
 - [[File_Content_Viewing]] : 파일 내용 훑어보기 (`cat`, `head`, `tail`, `less`, + `seq`)
-- [[Redirection_Pipe]] : 명령어끼리 연결하기 (`|`, `>`, `>>`)    
+- [[Redirection_Pipe]] : 명령어끼리 연결하기 (`|`, `>`, `>>`,`&&`,`||`,`;`)    
 - [[Terminal_Editors]] : 파일 내용 깊게 수정하기 (`vi`, `nano`) 
 - [[Help_Commands]] : 모르는 명령어 검색하기 (`man`, `--help`)
 
@@ -49,14 +51,14 @@
 > "서버가 죽었는지 살았는지 확인해요."
 
 - [[SSH_Connection]] : 안전한 원격 접속과 파일 전송 (SSH, SCP)
-- [[Process_Management]] : 실행 중인 프로그램 관리 (`ps`, `aux`, `top`,`kill`)
-- [[System_Uptime]] : uptime
+- [[Process_Management]] : 실행 중인 프로그램 관리 (`ps`, `aux`, `top`,`kill`,`daemon`)
+- **[[System_Uptime]]** : 서버 부하량 확인 (`uptime`)
 - [[Disk_Management]] : 디스크 용량 확인 및 청소 (`df`, `du`)
 - [[Linux_Signals]] : 프로세스 종료와 신호 (`kill -9`, `SIGTERM`)
 - [[Background_Jobs]] : 백그라운드 실행 (`&`, `nohup`)
 - [[File_Transfer]] : 파일 다운로드 및 API 요청 (`curl`, `wget`)
 - [[Network_Troubleshooting]] : 연결 상태 및 경로 진단 (`ping`, `nslookup`, `traceroute`,`dig`)
-- [[Network_Status]] : 포트 및 연결 확인 (`netstat`, `lsof`)
+- [[Network_Status]] : 포트 및 연결 확인 (`netstat`, `lsof`,`ss`)
 - [[Time_Synchronization]] : 서버 시간 동기화 (`ntp`, `chronyd`)
 - [[Package_Management]] : 프로그램 설치와 관리 (`apt`)
 
@@ -75,7 +77,7 @@
 > "반복 작업은 컴퓨터에게 시키고 퇴근해요."
 
 - [[Shell_Scripting_Basics]] : 쉘 스크립트 기초 문법 (`if`, `for`, `var`)
-- [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`) 다시 
+- [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`) 
 
 
 

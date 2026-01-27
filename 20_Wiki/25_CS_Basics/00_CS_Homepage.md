@@ -12,6 +12,7 @@
 
 > 내 코드가 돌아가는 환경 이해하기
 
+- [[CPU_Architecture]] : 코어(Core)와 스레드, 그리고 부하(Load)의 관계
 - [[Process_vs_Thread]] : 프로그램(Process)과 일꾼(Thread)의 차이 
 - [[Concurrency_vs_Parallelism]] : 동시성(빠르게 번갈아 하기) vs 병렬성(진짜 동시에 하기) 
 - [[Blocking_vs_NonBlocking]] : "기다릴까(Blocking), 아니면 딴 거 하고 있을까(Non-Blocking)?"
