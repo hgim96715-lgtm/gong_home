@@ -12,6 +12,7 @@ related:
   - "[[Terminal_Editors]]"
   - "[[Apply_Changes_Source]]"
   - "[[Environment_Variables|Environment Variables]]"
+  - "[[00_Linux_HomePage]]"
 ---
 ##  개념 한 줄 요약
 
@@ -108,6 +109,37 @@ source ~/.zshrc
 - **`.bash_profile` (로그인용):** 컴퓨터 켜고 아이디/비번 치고 들어올 때 **딱 1번** 실행됨. (주로 전체 환경 변수)
 - **`.bashrc` (실행용):** 이미 로그인된 상태에서 **새 터미널 창을 열 때마다** 실행됨. (주로 별칭 alias, 프롬프트 꾸미기)
 - _실무 팁:_ 요즘은 귀찮아서 `.bashrc`에 다 몰아넣고, `.bash_profile`에서 `.bashrc`를 불러오게 만드는 추세다.
+
+---
+##  실무 꿀팁: 생산성을 2배 높이는 별명 짓기 (Alias) 
+
+매번 `cd ~/gong_study_de` 처럼 긴 경로를 타이핑하는 것은 비효율적이다.
+설정 파일(`.zshrc` 또는 `.bashrc`)에 **`alias`** 한 줄만 추가하면 마법처럼 짧아진다.
+
+### 설정 방법 (Syntax)
+
+파일 맨 아래에 다음과 같은 형식으로 적어준다.
+
+```bash
+# 문법: alias <내가_부를_이름>="<실제로_실행될_명령어>"
+
+# 1. 공부방 순간이동 (디렉토리 이동)
+alias gong="cd ~/gong_study_de"
+
+# 2. 자주 쓰는 옵션 고정 (파일 리스트 보기)
+alias ll="ls -al"
+
+# 3. 화면 청소 (너무 귀찮을 때)
+alias c="clear"
+```
+
+
+### 적용 및 사용
+
+1. 저장 후 `source` 명령어로 적용한다.   
+2. 터미널에 **`gong`** 이라고 치고 엔터를 누르면, 즉시 해당 폴더로 이동한다. > [[Path_Variable#내가 겪은 에러| 에러가 났을때 확인 ]] 참고 
+
+> **⚠️ 주의:** `ls`, `cd`, `vi` 처럼 **이미 있는 명령어 이름**으로 별명을 지으면 원래 기능이 덮어씌워져서 망가질 수 있다. (예: `alias ls="cd .."` -> 절대 금지!)
 
 ---
 ## 초보자가 자주 하는 실수 (Misconceptions)
