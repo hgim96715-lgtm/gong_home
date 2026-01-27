@@ -13,6 +13,7 @@
 > 내 코드가 돌아가는 환경 이해하기
 
 - [[CPU_Architecture]] : 코어(Core)와 스레드, 그리고 부하(Load)의 관계
+- [[RAM_Memory]] : 하드디스크는 '도서관', RAM은 '책상'. (속도와 용량의 차이)
 - [[Process_vs_Thread]] : 프로그램(Process)과 일꾼(Thread)의 차이 
 - [[Concurrency_vs_Parallelism]] : 동시성(빠르게 번갈아 하기) vs 병렬성(진짜 동시에 하기) 
 - [[Blocking_vs_NonBlocking]] : "기다릴까(Blocking), 아니면 딴 거 하고 있을까(Non-Blocking)?"
@@ -31,6 +32,7 @@
 
 - [[Transaction_ACID]] : "송금하다가 에러 나면 돈은 증발하나?" (트랜잭션의 4가지 성질)
 - [[Index_Concept]] : 책의 '색인'처럼 데이터 빨리 찾는 법
+- [[Node_vs_Partition]] : "피자 가게(Node)와 피자 조각(Partition)의 관계." (물리적 서버 vs 논리적 데이터)
 - [[CAP_Theorem]] : 분산 시스템의 딜레마 (일관성 vs 가용성)
 
 ##  자료구조 & 알고리즘 (Data Structure)

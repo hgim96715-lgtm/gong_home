@@ -3,8 +3,11 @@
 
 > "파이썬과 대화하는 법을 배워요."
 
-- [[Python_Variables_Types]] : 변수와 자료형 (String, Int, Bool)
-- [[Python_Control_Flow]] : 흐름 제어하기 (If, For, While)
+- [[Python_Variables_Types]] : 변수와 자료형 (`string`,`int`,`bool`)
+- [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
+- [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
+- [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `join`, `strip`, `replace`,`maxsplit`)
+- [[Python_Sorting_Logic]] : 딕셔너리 정렬과 람다(Lambda) 정복하기
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs` - Airflow 필수!)
 
 ## Level 2. 데이터 자료구조 (Data Structures)
@@ -21,7 +24,7 @@
 > "남이 짠 코드를 가져다 쓰고, 내 코드를 정리해요."
 
 - [[Python_Modules_Imports]] : `import`와 `from`의 차이, 패키지 구조
-- [[Python_Virtual_Env]] : 가상 환경 관리 (`venv`, `pip`, `requirements.txt`)
+- [[Python_Virtual_Env]] : 가상 환경 관리 (`venv`, `pip`, `requirements.txt`) - docker 실행시 필수 
 
 ## Level 4. 견고한 코드 만들기 (Robustness)
 
@@ -46,20 +49,7 @@
 > "Airflow 2.0의 마법 같은 기능을 써봐요."
 
 - [[Python_Decorators]] : 골뱅이(`@`)의 정체 (TaskFlow API 핵심)
-- [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리
+- [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리(`lambda`,`Map` ,`list` ,`filter` ,`reduce`)
 - [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`) - 스케줄링 필수!
-
+- [[Python_Random_Seed]] : 랜덤 시드 (`random`,`seed`,`randint`)
 ---
-
-## Practical Context (사용 가이드)
-
-1.  **Airflow와의 연계:**
-    * **Level 1 (`**kwargs`)**: Airflow의 `context` 변수를 받을 때 무조건 쓰입니다.
-    * **Level 5 (Class)**: 나만의 커스텀 오퍼레이터를 만들 때 필수입니다.
-    * **Level 6 (Decorator)**: 요즘 Airflow는 `with DAG...` 대신 `@dag`, `@task`를 많이 씁니다.
-2.  **학습 순서:** Level 1, 2를 빠르게 떼고, **Level 3(환경 설정)** 와 **Level 6(날짜 처리)** 를 먼저 보는 것도 전략입니다.
-
-## Common Beginner Misconceptions
-
-* **"들여쓰기(Indentation) 대충 해도 되나요?"**: 파이썬에서 들여쓰기는 문법 그 자체입니다. 탭(Tab)과 스페이스바를 섞어 쓰면 에러 지옥을 맛보게 됩니다. (스페이스 4칸 권장)
-* **"클래스(Class) 몰라도 되나요?"**: 스크립트 짤 때는 몰라도 되지만, **Airflow의 작동 원리**를 이해하려면 클래스와 상속 개념은 꼭 넘어야 할 산입니다.
