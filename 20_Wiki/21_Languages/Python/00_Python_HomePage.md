@@ -6,8 +6,8 @@
 - [[Python_Variables_Types]] : 변수와 자료형 (`string`,`int`,`bool`)
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
-- [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `join`, `strip`, `replace`,`maxsplit`)
-- [[Python_Sorting_Logic]] : 딕셔너리 정렬과 람다(Lambda) 정복하기
+- [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`)
+- [[Python_Sorting_Logic]] : 딕셔너리 정렬과 sorted vs sort 차이 (`sorted`,`sort`)
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs` - Airflow 필수!)
 
 ## Level 2. 데이터 자료구조 (Data Structures)
@@ -15,7 +15,8 @@
 > "데이터를 담는 그릇을 이해해요. (JSON 처리의 핵심)"
 
 - [[Python_Lists_Tuples]] : 순서가 있는 데이터 (`[]`, `()`)
-- [[Python_Dictionaries]] : 키-값 쌍 데이터 (`{}`) - **가장 중요!**
+- [[Python_List_Comprehension]] (리스트 컴프리헨션 심화)
+- [[Python_Dictionaries]] : 키-값 쌍 데이터 (`{}`, `.get()`,`.items()`,`.keys()`,`values()` ,`in`) 
 -  [[Python_JSON]] : 딕셔너리와 문자열 변환 (`json.loads`, `json.dumps`)
 - [[Python_Sets]] : 중복 제거하기 (`set`)
 

@@ -7,22 +7,21 @@ aliases:
   - 문자열함수
   - 파싱
   - Parsing
+  - 확장자 추출
 tags:
   - Python
-  - Syntax
-  - DataProcessing
-  - String
 related:
   - "[[Python_Variables_Types]]"
   - "[[Python_Lists_Tuples]]"
   - "[[00_Python_HomePage]]"
-  - "[[RDD_Essential_Transformations]]"
+  - "[[Spark_General_Transformations]]"
 ---
 ## 개념 한 줄 요약
 
 **"긴 문장을 쪼개서(Split) 리스트로 만들거나, 리스트를 다시 문장으로 붙이는(Join) 기술."**
 
-* **데이터 엔지니어링의 일상:** "콤마(`,`)로 구분된 CSV 파일을 읽어서 리스트로 바꿔라." -> **`split`**
+- **데이터 엔지니어링의 일상:** "콤마(`,`)로 구분된 CSV 파일을 읽어서 리스트로 바꿔라."
+- **핵심 도구:** `split` (칼), `join` (풀), `replace` (수정테이프)
 
 ---
 ## 쪼개기: `split()` 
@@ -150,6 +149,48 @@ print(s) # "Jello"
 ```
 
 ---
+## [실전 패턴] 파일명 다루기 (확장자 추출) 
+
+데이터 엔지니어링에서 파일 목록(`list`)을 필터링하거나 이름을 바꿀 때 무조건 쓰는 패턴입니다.
+
+### 1. 특정 파일만 골라내기 (`endswith`, `startswith`)
+
+`split`으로 쪼개서 비교하지 마세요! 가독성이 떨어집니다.
+
+**Situation:** `.csv` 파일만 리스트에 담고 싶다.
+
+```python
+files = ["data.csv", "README.md", "test.py", "result.csv"]
+
+# [Bad] 쪼개서 확인하기 (복잡함)
+# if file.split(".")[-1] == 'csv': ...
+
+# [Good] 직관적인 함수 사용 ✨
+csv_files = [f for f in files if f.endswith(".csv")]
+print(csv_files) 
+# 결과: ['data.csv', 'result.csv']
+```
+
+>**꿀팁:** 여러 개를 동시에 검사할 수도 있습니다. 
+>`if file.endswith((".csv", ".xls", ".json")): ...` (튜플로 넣기)`startswith / endswith`에 여러 조건 → 무조건 튜플로!
+> **꿀팁:** 시작하는 문자 찾기는 **`startswith("data")`** 를 쓰면 됩니다.
+
+### ② 파일명과 확장자 분리 (`rsplit`)
+
+`data.v1.final.csv` 처럼 점(`.`)이 많은 파일은 앞에서 자르면 엉망이 됩니다. 
+**오른쪽(Right) 끝에서** 잘라야 합니다.
+
+```python
+filename = "data.v1.final.csv"
+
+# rsplit(".", 1) -> 오른쪽에서 점을 기준으로 딱 1번만 잘라라
+name, ext = filename.rsplit(".", 1)
+
+print(name) # data.v1.final
+print(ext)  # csv
+```
+
+---
 ## Spark에서의 활용 (방금 본 코드 복습)
 
 ```python
@@ -163,12 +204,9 @@ rdd.flatMap(lambda line: line.split(" "))
 - **`flatMap` 적용:** 리스트가 벗겨지고 `Hello`, `World`가 낱개로 퍼짐.
 
 ---
-### 주의 사항 ! 
+### 주의사항 (버그 예방)
 
-"데이터 파일(CSV, 로그)을 다룰 때 **`split`** 은 칼이고 **`join`** 은 풀이야.
-근데 주의할 점! `text.split(",")`을 할 때, 만약 `text`가 텅 빈 문자열(`""`)이면 결과가 빈 리스트(`[]`)가 아니라 `['']` (빈 문자열이 든 리스트)가 나와. 
-이것 때문에 나중에 개수 셀 때 `1개`라고 잘못 세는 버그가 자주 생기니까 조심해!"
+**1. 빈 문자열의 함정** "데이터 파일(CSV, 로그)을 다룰 때 `text.split(",")`을 많이 쓰는데, 만약 `text`가 텅 빈 문자열(`""`)이라면? 빈 리스트(`[]`)가 나올 것 같지? 아니야! **`['']` (빈 문자열이 하나 들어있는 리스트)** 가 나와. 이것 때문에 개수 셀 때 1개라고 잘못 세는 버그가 진짜 많이 생기니까 조심해!"
 
- **'원본은 안 바뀐다'** 는 성질 때문에 초보자들이 `text.replace('a', 'b')` 라고만 써놓고 **'왜 안 바뀌지?'** 하고 밤새는 경우가 많아. 
- 문자열 함수들은 항상 **`변수 = 변수.함수()`** 형태로 써야 한다는 거 꼭 기억해줘!"
+**2. 변수 재할당 필수** "초보자들이 제일 많이 하는 실수 1위! `text.replace('a', 'b')` 라고만 써놓고 **'어? 왜 안 바뀌지?'** 하고 밤새 고민해. 문자열 함수들은 원본을 건드리지 못해. 항상 **`변수 = 변수.함수()`** 형태로 써야 한다는 거 잊지 마!"
 

@@ -8,8 +8,6 @@ aliases:
   - key옵션
 tags:
   - Python
-  - Syntax
-  - DataProcessing
 related:
   - "[[Python_Lists_Tuples]]"
   - "[[Python_String_Methods]]"
@@ -91,8 +89,33 @@ print(result)
 ---
 ### ① `sort()` vs `sorted()` (면접 단골)
 
-- **`my_list.sort()`**: 원본 리스트를 **직접 뜯어고칩니다.** (되돌릴 수 없음, 반환값 없음 `None`)
-- **`sorted(my_list)`**: 원본은 그대로 두고, **정렬된 새 복사본**을 줍니다. (**안전함! 데이터 엔지니어는 이걸 써야 함**)
+둘 다 정렬을 해주지만, **"원본을 건드리냐 안 건드리냐"** 의 차이가 엄청납니다.
+
+|**특징**|**sorted(리스트)**|**리스트.sort()**|
+|---|---|---|
+|**원본 변경**|❌ **(안 바뀜, 안전!)**|✅ **(바뀌어버림, 주의!)**|
+|**반환값**|**정렬된 새 리스트**|**None** (없음)|
+|**사용 대상**|모든 반복 가능한 것 (튜플, 딕셔너리 등)|오직 **리스트(List)** 만|
+|**체이닝**|가능 (`.method()` 계속 연결 가능)|불가능 (값이 없으니까)|
+
+### 초보자의 흔한 실수 (The None Trap)
+
+```python
+numbers = [3, 1, 2]
+
+# (X) 이렇게 하면 데이터 다 날아갑니다!
+result = numbers.sort()
+print(result) # 결과: None 😱
+
+# (O) sort()는 그냥 혼자 실행해야 합니다.
+numbers.sort()
+print(numbers) # 결과: [1, 2, 3] (원본이 바뀜)
+
+# (O) 안전하게 하려면 sorted()를 쓰세요.
+safe_result = sorted([3, 1, 2])
+print(safe_result) # 결과: [1, 2, 3]
+```
+
 
 ### ② `reverse=True` 깜빡함
 
