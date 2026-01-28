@@ -9,7 +9,7 @@ tags:
   - SQL
 related:
   - "[[SQL_Execution_Order]]"
-  - "[[SQL_Thinking_Roadmap]]"
+  - "[[01_SQL_Thinking_Roadmap]]"
   - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약

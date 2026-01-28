@@ -10,7 +10,7 @@ tags:
 related:
   - "[[HAVING_vs_WHERE]]"
   - "[[SQL_SELECT_FROM]]"
-  - "[[SQL_Thinking_Roadmap]]"
+  - "[[01_SQL_Thinking_Roadmap]]"
   - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약

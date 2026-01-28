@@ -2,7 +2,7 @@
 
 - [[SQL_Execution_Order]] : 작성 순서 vs 실행 순서 완벽 정리 (치트시트)
 - [[SQL_Main_Table_Strategy]] : 쿼리의 주인공(FROM)을 정하는 절대 원칙
-- [[SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
+- [[01_SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
 -  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 
 
 ## 1. 기초 문법 (Basics)
