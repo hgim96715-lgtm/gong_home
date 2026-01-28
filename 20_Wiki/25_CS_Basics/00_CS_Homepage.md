@@ -26,6 +26,18 @@
 - [[REST_API_Methods]] : GET, POST, PUT, DELETE의 정확한 의미와 멱등성 차이
 - [[TCP_IP]] : 인터넷이 데이터를 안 흘리고 배달하는 방법
 
+
+## 데이터 표현과 포맷 (Data Representation)
+
+> "0과 1을 어떻게 문자와 파일로 만들 것인가?"
+
+- [[Text_vs_Binary]] : 파일의 두 종류, 텍스트(Text)와 바이너리(Binary)의 차이 (r vs rb)
+- [[Data_Formats_CSV]] : 데이터 분석의 쌀, CSV의 구조와 주의점 (구분자, 이스케이프), "대표적인 텍스트 파일"
+- [[Encoding_Concept]] : "한글이 왜 깨지나요?" (ASCII, UTF-8, CP949의 원리)
+- [[Data_Formats_Parquet]] : CSV보다 10배 빠른 빅데이터 전용 포맷, "대표적인 바이너리 파일"
+- [[Serialization_JSON_XML]] :  사람이 읽기 편한 데이터 (Key-Value 텍스트)
+
+
 ##  데이터베이스 이론 (Database)
 
 > SQL 문법을 넘어선 데이터 관리 이론

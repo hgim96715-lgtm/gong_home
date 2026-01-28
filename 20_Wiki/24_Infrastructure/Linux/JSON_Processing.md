@@ -14,6 +14,7 @@ related:
   - "[[Pandas_Json_Normalize]]"
   - "[[Python_JSON]]"
   - "[[00_Linux_HomePage]]"
+  - "[[Serialization_JSON_XML]]"
 ---
 
 ## 개념 한 줄 요약
