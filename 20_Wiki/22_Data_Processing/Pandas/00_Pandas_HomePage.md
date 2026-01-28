@@ -3,13 +3,13 @@
 
 > "일단 데이터를 불러와야 요리를 하죠."
 > 
-- [[Pandas_DataStructures]] : Series와 DataFrame의 차이 (1차원 vs 2차원)
+- [[Pandas_DataStructures]] : Series와 DataFrame의 차이(1차원 vs 2차원), Schema란?(설계도) 
 - [[Pandas_Read_Write]] : 파일 읽고 쓰기 (`read_csv`, `to_parquet`, `read_json`)
 
 ## Level 2. 데이터 훑어보기 (Inspection)
 
 > "데이터가 어떻게 생겼는지 엑셀처럼 열어봐요."
-- [[Pandas_Inspection]] : 데이터 요약과 정보 확인 (`head`, `info`, `describe`, `shape`)
+- [[Pandas_Inspection]] : 데이터 요약과 정보 확인 (`head`, `info`, `describe`, `shape`,`tail`,`sample`)
 - [[Pandas_Selection]] : 원하는 행/열만 쏙 골라내기 (`loc`, `iloc`, `columns`)
 
 ## Level 3. 데이터 다듬기 (Cleaning)
