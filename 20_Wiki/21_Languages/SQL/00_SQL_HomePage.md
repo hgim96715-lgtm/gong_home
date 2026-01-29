@@ -21,6 +21,7 @@
 
 - [[Aggregation_GROUP_BY]] : 그룹별 통계 내기 (COUNT, SUM, AVG) 
 - [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (가장 많이 헷갈림!) 
+- [[Numeric_Functions]] : 소수점 반올림, 버림, 절댓값 완벽 정리  (ROUND,TRUNC,FLOOR,CEIL )
 - [[String_Functions]] : 문자열 자르고 붙이기 (SUBSTR, CONCAT) 
 - [[Date_Functions]] : 날짜 더하고 빼기 (DATE_ADD, DATEDIFF)
 
