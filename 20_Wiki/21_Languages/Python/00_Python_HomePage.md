@@ -6,10 +6,10 @@
 - [[Python_Variables_Types]] : 변수와 자료형 (`string`,`int`,`bool`)
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
-- [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`)
-- [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`)
+- [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`,`starswith`)
+- [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`,`lower`,`re.search`)
 - [[Python_Sorting_Logic]] : 딕셔너리 정렬과 sorted vs sort 차이 (`sorted`,`sort`)
-- [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs` - Airflow 필수!)
+- [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs`)
 
 ## Level 2. 데이터 자료구조 (Data Structures)
 
@@ -26,6 +26,7 @@
 > "남이 짠 코드를 가져다 쓰고, 내 코드를 정리해요."
 
 - [[Python_Modules_Imports]] : `import`와 `from`의 차이, 패키지 구조
+- [[Python_Regex]] : 정규표현식 마스터 (`re.search` vs `match`, `findall`, `group`,`span`,`re.sub`)
 - [[Python_Virtual_Env]] : 가상 환경 관리 (`venv`, `pip`, `requirements.txt`) - docker 실행시 필수 
 
 ## Level 4. 견고한 코드 만들기 (Robustness)
@@ -43,7 +44,7 @@
 
 > "Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해해요."
 
-- [[Python_Classes_Objects]] : 붕어빵 틀과 붕어빵 (Class & Instance)
+- [[Python_Classes_Objects]] : 클래스와 속성 접근 (`Class`, `Instance`, `self`, `object.attribute` - `.value`의 정체!)
 - [[Python_Inheritance]] : 상속과 오버라이딩 (`BaseOperator` 상속받기)
 
 ## Level 6. 고급 기능 (Advanced for DE)

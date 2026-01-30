@@ -8,11 +8,14 @@ aliases:
   - 정규식치환
   - upper
   - lower
+  - group
 tags:
   - python
 related:
   - "[[Python_String_Methods]]"
   - "[[Python_Modules_Imports]]"
+  - "[[Python_Regex]]"
+  - "[[00_Python_HomePage]]"
 ---
 ##  개념 한 줄 요약 
 
@@ -38,13 +41,13 @@ related:
 `if char.isupper():` 처럼 하나하나 검사하지 마세요. 
 통째로 바꾸는 게 빠릅니다.
 
-| 메서드 | 설명 | 예시 (`s = "PyThon"`) |
-| :--- | :--- | :--- |
-| **`.upper()`** | 싹 다 대문자로 | `"PYTHON"` |
-| **`.lower()`** | 싹 다 소문자로 | `"python"` |
-| **`.swapcase()`** | **대↔소 뒤집기** (기억!) | `"pYtHON"` |
-| `.capitalize()` | 문장 맨 앞만 대문자 | `"Python"` |
-| `.title()` | 단어마다 앞글자 대문자 | `"Python Programming"` |
+| 메서드               | 설명                | 예시 (`s = "PyThon"`)    |
+| :---------------- | :---------------- | :--------------------- |
+| **`.upper()`**    | 싹 다 대문자로          | `"PYTHON"`             |
+| **`.lower()`**    | 싹 다 소문자로          | `"python"`             |
+| **`.swapcase()`** | **대↔소 뒤집기** (기억!) | `"pYtHON"`             |
+| `.capitalize()`   | 문장 맨 앞만 대문자       | `"Python"`             |
+| `.title()`        | 단어마다 앞글자 대문자      | `"Python Programming"` |
 
 > **💡 상태 확인용 (True/False)**
 > * `.isupper()`, `.islower()`
@@ -87,6 +90,9 @@ new_text = re.sub(r"[a-z]", "X", text)
 clean_text = re.sub(r"\d", "", text)
 # 결과: "abcdef"
 ```
+
+> 정규식에 대한 자세한 내용은 [[Python_Regex]]참고 !
+
 ---
 ## 실전 꿀팁 (Coding Test Tip)
 
@@ -112,8 +118,14 @@ res = s.swapcase()
 - 복잡한 조건일 때만 사용하세요.
 
 ```python
-# 대문자면 소문자로 바꾸는 람다 함수 적용
-re.sub(r"[A-Z]", lambda x: x.group(0).lower(), s)
+# [초고수] re.sub 활용 (함수 매핑)
+# 복잡한 조건(예: 숫자는 냅두고 문자만 뒤집기 등)일 때 사용합니다.
+
+import re
+
+# 정규식으로 모든 알파벳([a-zA-Z])을 잡아서, 람다 함수로 대소문자 로직을 태움
+# x.group(0)은 매칭된 문자 하나하나를 뜻함
+re.sub(r"[a-zA-Z]", lambda x: x.group(0).lower() if x.group(0).isupper() else x.group(0).upper(), s)
 ```
 
 
