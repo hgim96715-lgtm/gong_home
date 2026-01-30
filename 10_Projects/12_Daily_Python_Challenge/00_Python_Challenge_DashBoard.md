@@ -1,0 +1,63 @@
+
+
+> [!abstract] **Developer's Log**
+> "Life is short, You need Python." 
+> 매일 한 줄이라도 코드를 짜는 습관이 나를 만든다. 💻
+
+---
+##  전투력 측정 📈
+
+```dataview
+TABLE WITHOUT ID
+  "🐍 **" + length(rows) + " 문제**" as "Total Challenges",
+  "🏆 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "Solved",
+  "🛠️ **" + length(filter(rows, (r) => !contains(r.status, "🟩"))) + " 개**" as "Refactoring Needed",
+  "📈 **" + round((length(filter(rows, (r) => contains(r.status, "🟩"))) / length(rows)) * 100) + "%**" as "Completion Rate"
+FROM "10_Projects/12_Daily_Python_Challenge"
+WHERE file.name != this.file.name
+GROUP BY true
+```
+
+---
+> [!info]+  📅 Coding Streak
+```dataview
+CALENDAR file.day
+FROM "10_Projects/12_Daily_Python_Challenge"
+WHERE status != null
+```
+
+
+
+---
+## 프로젝트 현황 (Status Board)
+
+>[!example]+ **🚀 최신 업데이트 (Latest Commits)**
+
+최근 건드린 코드 5개를 확인합니다.
+
+```dataview
+TABLE WITHOUT ID
+  link(file.link, split(file.name, "_")[1]) as "Project / Topic",
+  split(file.name, "_")[0] as "Date",
+  status as "Status"
+FROM "10_Projects/12_Daily_Python_Challenge"
+WHERE file.name != this.file.name
+SORT file.name DESC
+LIMIT 5
+```
+
+
+>[!warning]+ ** 디버깅/복습 필요 (Bug Report)**
+
+아직 `🟩 해결`되지 않은 코드들입니다. 다시 열어서 리팩토링 하세요!
+
+```dataview
+TABLE WITHOUT ID
+  link(file.link, split(file.name, "_")[1]) as "Topic",
+  split(file.name, "_")[0] as "Date",
+  status as "Current State"
+FROM "10_Projects/12_Daily_Python_Challenge"
+WHERE file.name != this.file.name
+  AND !contains(status, "🟩")
+SORT file.name ASC
+```
