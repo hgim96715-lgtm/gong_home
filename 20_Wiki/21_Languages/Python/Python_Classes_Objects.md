@@ -13,104 +13,112 @@ tags:
 related:
   - "[[Python_Inheritance]]"
   - "[[Python_Dictionaries]]"
+  - "[[Spark_Core_Broadcast]]"
 ---
-## 개념 한 줄 요약
+## 개념 한 줄 요약 
 
-**클래스(Class)** 는 제품을 찍어내는 **"설계도(붕어빵 틀)"** 이고,
-**객체(Object/Instance)** 는 그 설계도로 만들어진 **"실체(슈크림 붕어빵, 팥 붕어빵)"** 야.
+**"관련 있는 데이터(변수)와 행동(함수)을 한 박스에 묶어놓은 것."**
 
----
-## 왜 필요한가 (Why)
-
-**문제점:**
-- 똑같은 기능을 하는 로봇을 100개 만들어야 하는데, 그때마다 코드를 복사-붙여넣기 할 거야? (유지보수 지옥 )
-
-**해결책:**
-- "로봇 설계도(Class)"를 하나 잘 만들어두고, 필요할 때마다 `robot1`, `robot2` 하고 찍어내기만 하면 돼.
+* **클래스(Class):** 제품 설계도 (붕어빵 **틀**)
+* **객체(Object/Instance):** 설계도로 찍어낸 실체 (팥 **붕어빵**, 슈크림 **붕어빵**)
+* **속성(Attribute):** 객체 안에 들어있는 **데이터** (팥, 밀가루, 가격) 👈 **`.value`의 정체!**
+* **메서드(Method):** 객체가 할 수 있는 **행동** (먹기, 굽기)
 
 ---
-## Core Points (붕어빵 이론) 
+## 왜 필요한가? (Why) 
 
-### A. 문법 구조
+**[문제 상황]**
+똑같은 기능을 하는 로봇 100개를 만들어야 합니다.
+딕셔너리로 만들면, 로봇이 움직이는 함수(`move_robot`)를 따로 만들어서 매번 연결해줘야 합니다. (관리 지옥 🔥)
 
-* **`class`**: 설계도 이름 (보통 첫 글자 대문자)
-* **`__init__`**: 붕어빵이 처음 태어날 때(생성될 때) 속 재료를 넣는 곳.
-* **`self`**: "나 자신"을 가리키는 말. (이 붕어빵의 팥은 내 거야!)
+**[해결책]**
+**"로봇 설계도(Class)"** 하나만 완벽하게 짜두면, `robot1 = Robot()`, `robot2 = Robot()` 처럼 한 줄로 복제할 수 있습니다.
+게다가 데이터(`name`)와 행동(`move`)이 한 뭉치로 다닙니다.
+
+---
+## 핵심 해부 (Anatomy) 
+
+이 구조를 모르면 **"점(.)"** [초중요] 점(`.`) vs 대괄호(`[]`)을 이해할 수 없습니다.
 
 ```python
-# 1. 설계도 만들기 (Class)
+# 1. 설계도(Class) 정의
 class Bungeoppang:
-    # 생성자 (초기화)
-    def __init__(self, taste, price):
-        self.taste = taste  # 속 재료 (팥, 슈크림...)
-        self.price = price  # 가격
+    
+    # ① 생성자 (__init__): 태어날 때 무조건 실행되는 '초기 세팅'
+    def __init__(self, contents, price):
+        self.contents = contents  # 속성 1 (데이터)
+        self.price = price        # 속성 2 (데이터)
 
-    # 행동 (메서드)
+    # ② 메서드 (Method): 이 객체의 행동
     def eat(self):
-        print(f"냠냠! {self.taste} 맛이 나요.")
+        print(f"{self.contents} 맛 붕어빵을 먹어요! 냠냠.")
 
-# 2. 실제 붕어빵 찍어내기 (Instance)
-fish1 = Bungeoppang("팥", 1000)      # 팥 붕어빵 탄생!
-fish2 = Bungeoppang("슈크림", 1500)  # 슈크림 붕어빵 탄생!
+# -------------------------------------------------
+
+# 2. 객체(Instance) 생성 -> "실체화"
+fish1 = Bungeoppang("팥", 1000)      # 팥 붕어빵 탄생
+fish2 = Bungeoppang("슈크림", 1500)  # 슈크림 붕어빵 탄생
 ```
 
 ---
-## Deep Dive: Dictionary vs Class (네가 헷갈렸던 것!)
+## [내가 헷갈려하는것 ] 점(`.`) vs 대괄호(`[]`)
 
-이게 제일 중요해! 
-데이터를 담는다는 점은 비슷하지만, **꺼내는 도구**가 달라.
+스파크에서 `broadcast.value` 때문에 헷갈리셨죠? 여기서 완벽하게 정리합니다.
 
-|**구분**|**Dictionary (딕셔너리)**|**Class Object (객체)**|
+|**구분**|**딕셔너리 (Dictionary)**|**객체 (Object)**|
 |---|---|---|
-|**비유**|서랍장 (이름표 붙음)|로봇 (팔다리 달림)|
-|**생성**|`{ "taste": "팥" }`|`Bungeoppang("팥")`|
-|**접근법**|**대괄호 `['key']`**|**점 `.attribute`**|
-|**특징**|데이터만 담음|데이터 + **행동(함수)**도 있음|
+|**생김새**|`my_dict = {"name": "A"}`|`my_obj = ClassName()`|
+|**비유**|이름표 붙은 **서랍장**|팔다리 달린 **로봇**|
+|**데이터 꺼낼 때**|**대괄호 `['key']`**|**점 `.attribute`**|
+|**행동(함수)**|없음 (데이터만 저장)|있음 (`.method()`)|
+|**예시**|`data['price']`|`fish1.price`|
 
-```python
-# [상황] 팥 정보를 꺼내고 싶다!
+**절대 규칙 (Golden Rule)**
 
-# 1. 딕셔너리일 때
-my_dict = {"taste": "팥"}
-print(my_dict["taste"])  # ⭕️ 정답 (서랍 열기)
-# print(my_dict.taste)   # ❌ 에러! (서랍장에 팔다리가 어딨어?)
-
-# 2. 객체일 때
-my_obj = Bungeoppang("팥", 1000)
-print(my_obj.taste)      # ⭕️ 정답 (로봇 팔 조작)
-my_obj.eat()             # ⭕️ 정답 (로봇아 먹어라!)
-# print(my_obj["taste"]) # ❌ 에러! (로봇은 서랍이 아냐)
-```
+- **중괄호 `{}`** 로 만들었으면 ➡ **`['키']`** 로 꺼낸다.
+- **대문자 `Class()`** 로 만들었으면 ➡ **`.속성`** 으로 꺼낸다.
 
 ---
-## Practical Context (Airflow Operator)
+## 초보자 3대 난관 (FAQ)
 
-우리가 매일 쓰는 `BashOperator`도 사실은 다 **클래스**야!
+### ① `__init__`이 뭐예요?
+
+- **"Initialize(초기화)"** 의 약자입니다.
+- 붕어빵이 틀에서 `짠!` 하고 나오는 순간, **자동으로 실행**되는 함수입니다.
+- 여기서 팥을 넣을지(`self.contents`), 가격표를 붙일지(`self.price`) 정합니다.
+
+### ② `self`는 도대체 왜 자꾸 써요? 🤬
+
+- **"자기 자신"** 을 가리키는 손가락입니다.
+- `fish1`과 `fish2`는 같은 설계도에서 나왔지만 서로 다른 존재죠?
+- 컴퓨터에게 **"지금 말하는 `contents`는 `fish1` 꺼야!"** 라고 알려주기 위해 `self`를 붙입니다.
+    - `fish1.eat()`을 실행하면 ➡ `self`는 `fish1`이 됩니다.
+    - `fish2.eat()`을 실행하면 ➡ `self`는 `fish2`가 됩니다.
+
+### ③ `.value` 같은 건 어디서 온 거예요?
+
+- **클래스 안에서 `self.value = ...` 라고 정의해뒀기 때문**입니다.
+- 스파크의 `Broadcast` 클래스를 뜯어보면 내부에 `self.value` 라는 변수가 숨어있습니다. 우리는 점(`.`)을 찍어서 그 변수를 꺼내 쓰는 겁니다.
+
+---
+## 실전 예제 (Data Engineering Context) 
+
+우리가 맨날 쓰는 **Airflow Operator**도 사실 다 클래스입니다.
 
 ```python
 from airflow.operators.bash import BashOperator
 
-# BashOperator라는 '설계도'를 가지고
-# t1이라는 '실체(인스턴스)'를 생성하는 과정
+# 1. BashOperator 클래스(설계도)를 이용해
+# 2. t1 이라는 객체(인스턴스)를 생성함
 t1 = BashOperator(
     task_id='print_date',
     bash_command='date'
 )
 
-# 그래서 t1.task_id 처럼 점(.)으로 속성을 꺼낼 수 있는 거야.
-print(t1.task_id)
+# 3. t1 안에 있는 속성(Attribute) 꺼내기 -> 점(.) 사용!
+print(t1.task_id)      # 결과: 'print_date'
+print(t1.bash_command) # 결과: 'date'
 ```
 
----
-## 초보자가 자주 착각하는 포인트
 
-1. **"self는 왜 자꾸 들어가요?"**
-	- 함수 안에 `self`가 없으면, 이게 "누구의" 팥인지 몰라.
-	- `fish1.taste`인지 `fish2.taste`인지 구별하기 위해 **"지금 부르는 놈 자신(self)"** 이라고 명찰을 달아주는 거야.
 
-2. "`__init__`이 뭐예요?"
-	- **Initialize(초기화)** 의 약자야. 
-	- 붕어빵 틀에서 빵이 `짠!` 하고 나올 때 무조건 실행되는 **"탄생 의식"** 함수라고 생각하면 돼.
-
->**중괄호 `{}`** 로 만들었으면 ➡ **`[]`** 로 꺼낸다.
->**대문자 `Class()`** 로 만들었으면 ➡ **`.`** 으로 꺼낸다.

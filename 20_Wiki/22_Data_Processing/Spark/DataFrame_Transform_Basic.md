@@ -12,6 +12,7 @@ related:
   - "[[DataFrame_Aggregation]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_Functions_Library]]"
 ---
 ## 개념 한 줄 요약 
 
