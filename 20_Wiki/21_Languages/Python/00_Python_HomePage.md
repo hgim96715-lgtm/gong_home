@@ -7,6 +7,7 @@
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`)
+- [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`)
 - [[Python_Sorting_Logic]] : 딕셔너리 정렬과 sorted vs sort 차이 (`sorted`,`sort`)
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs` - Airflow 필수!)
 
