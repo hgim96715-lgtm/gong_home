@@ -1,5 +1,10 @@
 [[01_Spark_Master_Map]]
 
+> [!example] **🚀 내 실습 공간 (My Workspace)**
+ > 이론 공부하다가 실습이 필요하면 바로 여기로 이동! 
+ >  **📂 노트북 경로:** `/Users/gong/gong_study_de/apache-spark/notebooks` 
+ >   **👉 [폴더 바로 열기](file:///Users/gong/gong_study_de/apache-spark/notebooks)** > *(클릭이 안 되면 경로를 복사해서 Finder에서 `Cmd + Shift + G`로 이동하세요)*
+
 ## Level 0. 개념 잡기 (Why Spark?)
 
 > "하둡(Hadoop)은 왜 느렸고, 스파크는 왜 빠른가?"
@@ -13,10 +18,11 @@
 
 > "SQL처럼 데이터를 조작해보자. (RDD는 몰라도 DataFrame은 필수!)"
 
-- [x] **[[PySpark_Session_Context]]** : 스파크의 시작점, `SparkSession` 객체 만들기
+- [x] [[PySpark_Session_Context]]: 스파크의 시작점, `SparkSession` 객체 만들기
 - [x] [[Spark_Session_Deep_Dive]] :  Spark Session 전체 설정 내용
 - [x] [[Spark_DataFrame_SQL_Intro]] : RDD보다 훨씬 편한 DataFrame과 SparkSQL 소개
 - [x] [[Spark_DataFrame_Basics]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
+- [x] [[Spark_Data_IO]] : 데이터 저장의 비밀 (`read` vs `write`, 왜 폴더로 저장될까?)
 - [x] [[DataFrame_Transform_Basic]] : **[1부]** 변환과 정제 (Select, Filter, Column, withColumn)
 - [x] [[DataFrame_Aggregation]] : **[2부]** 집계와 순위 (GroupBy, Agg, Sort/orderBy)
 - [x] [[Spark_Functions_Library]] : 자주 쓰는 함수 사전 (Reference)
@@ -40,7 +46,7 @@
 > "데이터가 100GB가 넘어가니 에러가 나요. 튜닝이 필요해!"
 
 - [ ] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`)  
-- [ ] [[Spark_Core_Broadcast]] : 조인할 때 셔플 없애기 (작은 테이블 복제)
+- [x] [[Spark_Core_Broadcast]] : 셔플 제거의 기술 (Broadcast Join vs Python Dict Lookup),`broadcast`,`udf`
 
 ## Level 4. 데이터 저장과 포맷 (Storage)
 
@@ -48,10 +54,13 @@
 
 ## Level 5. 고급 주제 (Advanced)
 
+- [[Spark_Graph_Analysis_Basic]] : 관계 데이터 분석하기 (`collect_set`, `concat_ws`, `size`)
+
 
 ## Level 6. 트러블 슈팅 (Troubleshooting)
 
 > "에러가 났을 때 당황하지 않고 해결책을 찾아요."
 
+- [[Spark_Common_Mistakes]] : "왜 안 되지?" 자주 범하는 문법 실수 모음 (Syntax Trap)
 - [[Spark_Troubleshooting_FileNotFound]] : "Driver엔 파일이 있는데 Worker엔 없대요!" (Py4JJavaError)
 - [[WARN_NativeCodeLoader_Log]] : "빨간색 경고 로그(NativeCodeLoader)가 뜨는데 무시해도 되나요?"

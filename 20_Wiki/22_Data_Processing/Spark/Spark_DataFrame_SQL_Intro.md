@@ -14,6 +14,8 @@ related:
   - "[[PySpark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_with_Spark]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step5.ipynb
 ---
 ## Spark DataFrame이란?
 

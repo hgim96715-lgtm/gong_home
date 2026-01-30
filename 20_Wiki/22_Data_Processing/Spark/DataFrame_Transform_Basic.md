@@ -13,6 +13,9 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_DataFrame_Basics]]"
   - "[[Spark_Functions_Library]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step9.ipynb
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step7.ipynb
 ---
 ## 개념 한 줄 요약 
 

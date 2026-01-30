@@ -14,6 +14,9 @@ related:
   - "[[Spark_DataFrame_Basics]]"
   - "[[SQL_with_Spark]]"
   - "[[00_Apache_Spark_HomePage]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step10.ipynb
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step8.ipynb
 ---
 
 ## 1개념 한 줄 요약 

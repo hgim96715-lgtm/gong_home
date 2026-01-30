@@ -21,6 +21,8 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_Concepts_View]]"
   - "[[DataFrame_Transform_Basic]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step6.ipynb
 ---
 ## 개념 한 줄 요약
 

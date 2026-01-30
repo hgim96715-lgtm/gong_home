@@ -18,6 +18,8 @@ related:
   - "[[Python_Looping_Helpers]]"
   - "[[Transformations_vs_Actions]]"
   - "[[00_Apache_Spark_HomePage]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step1.ipynb
 ---
 ## 개념 한 줄 요약 
 

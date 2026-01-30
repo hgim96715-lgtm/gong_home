@@ -15,6 +15,7 @@ related:
   - "[[DataFrame_Aggregation]]"
   - "[[DataFrame_Transform_Basic]]"
   - "[[00_Apache_Spark_HomePage]]"
+linked: file:///Users/gong/gong_study_de/apache-spark/notebooks/step11.ipynb
 ---
 ##  개요 
 
