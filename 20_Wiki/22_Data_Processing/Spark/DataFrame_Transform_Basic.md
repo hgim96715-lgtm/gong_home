@@ -13,6 +13,7 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_DataFrame_Basics]]"
   - "[[Spark_Functions_Library]]"
+  - "[[Spark_Data_Cleaning]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step9.ipynb
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step7.ipynb
@@ -24,7 +25,7 @@ linked:
 * **핵심 도구:** 스파크의 모든 변환 작업은 **`pyspark.sql.functions`** 모듈에 있는 도구들을 가져와서 씁니다.
 - **대원칙 (불변성):** 모든 조작(`select`, `filter` 등)은 **원본을 절대 바꾸지 않고, 새로운 데이터프레임을 만듭니다.**
 	- **변경된 결과를 쓰려면 반드시 변수에 다시 담으세요!** (`df = df.select(...)`)
-	- 🔗 참고: [[Spark_DataFrame_Basics#[핵심] 불변성 (Immutability) 🔒|불변성 자세히 보기]]
+	- 🔗 참고: [[Spark_DataFrame_Basics#[핵심] 불변성 (Immutability)|불변성 자세히 보기]]
 
 
 ---
@@ -193,6 +194,8 @@ df.filter(F.col("email").isNotNull()).show() # Null이 아닌 것만 보기 (Cle
 df.filter("email IS NULL").show()
 df.filter("email IS NOT NULL").show()
 ```
+
+> 결측치 처리에 대해 더 보고싶다면 [[Spark_Data_Cleaning#결측치 현황 파악하기 (Null Check)|filter_null]] 참조
 
 ---
 
