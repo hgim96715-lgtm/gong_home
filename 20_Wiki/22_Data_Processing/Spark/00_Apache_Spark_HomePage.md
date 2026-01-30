@@ -40,6 +40,7 @@
 > "데이터가 100GB가 넘어가니 에러가 나요. 튜닝이 필요해!"
 
 - [ ] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`)  
+- [ ] [[Spark_Core_Broadcast]] : 조인할 때 셔플 없애기 (작은 테이블 복제)
 
 ## Level 4. 데이터 저장과 포맷 (Storage)
 
