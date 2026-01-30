@@ -10,6 +10,7 @@
 > 데이터 조회와 필터링의 기본기
 
 - [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
+- [[SQL_Concepts_View]] : 뷰(View)란 무엇인가? (가상 테이블과 보안)
 - [[Basic_Structure_and_Alias]] : 컬럼/로우 용어 정리와 별칭(AS) 짓기
 -  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE, IS NULL)
 -  [[SQL_ORDER_BY]] : 데이터 줄 세우기

@@ -11,7 +11,7 @@ tags:
 related:
   - "[[Pandas_Read_Write]]"
   - "[[Pandas_Inspection]]"
-  - "[[Spark_DataFrame]]"
+  - "[[Spark_DataFrame_Basics]]"
   - "[[00_Pandas_HomePage]]"
 ---
 ##  개념 한 줄 요약 

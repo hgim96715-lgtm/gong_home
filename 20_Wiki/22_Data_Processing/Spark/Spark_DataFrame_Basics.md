@@ -13,14 +13,16 @@ aliases:
 tags:
   - Spark
   - DataFrame
-  - Basics
-  - API
 related:
   - "[[Spark_DataFrame_SQL_Intro]]"
   - "[[PySpark_Session_Context]]"
   - "[[Pandas_DataStructures]]"
+  - "[[Python_Lambda_Map]]"
+  - "[[00_Apache_Spark_HomePage]]"
+  - "[[SQL_Concepts_View]]"
+  - "[[DataFrame_Transform_Basic]]"
 ---
-방법 2. 하나씩 콕 집어서 바꾸기 (`withColumnRenamed`)
+## 개념 한 줄 요약
 
 **"데이터프레임을 만드는 두 가지 방법(파일 읽기 vs 직접 만들기)과 눈으로 확인하는 방법."**
 
@@ -91,6 +93,51 @@ schema = StructType([  # <--- 전체 틀 (리스트로 시작)
 df = spark.createDataFrame(data, schema=schema)
 ```
 
+### [심화] Row 객체를 이용한 RDD 변환 (parse_line) 
+
+지저분한 텍스트 데이터를 읽을 때, 파이썬 함수로 한 줄씩 다듬어서(`map`) `Row` 객체로 만든 다음 데이터프레임으로 변환합니다.
+
+```python
+from pyspark.sql import Row
+
+# 1. 원본 데이터 (그냥 문자열 리스트)
+raw_lines = [
+    "James|Korea|james@email.com|5000",
+    "Anna|USA|anna@email.com|4000"
+]
+
+# 2. 파싱 함수 정의 (문자열 -> Row 객체)
+def parse_line(line: str):
+    fields = line.split('|')  # 1. 파이프(|)로 자른다. ['James', 'Korea'...]
+    
+    # 2. Row 객체에 이름표를 붙여서 담는다. (타입 변환도 여기서!)
+    return Row(
+        name=str(fields[0]),
+        country=str(fields[1]),
+        email=str(fields[2]),
+        compensation=int(fields[3]) # 숫자로 변환
+    )
+
+# 3. RDD 생성 및 매핑 (SparkContext 필요)
+rdd = spark.sparkContext.parallelize(raw_lines)
+rows = rdd.map(parse_line)  # 모든 줄에 parse_line 함수 적용
+
+# 4. 데이터프레임 생성
+df = spark.createDataFrame(rows)
+df.show()
+```
+
+**핵심:** `Row(키=값)` 형태로 만들면, 나중에 `createDataFrame` 할 때 스파크가 알아서 **"아, 이 키가 컬럼 이름이구나!"** 하고 스키마를 만들어줍니다.
+
+
+>"지금 본 `parse_line` 패턴은 **비정형 데이터(로그 파일 등)** 를 처리할 때 정말 많이 써.
+> `Row`는 그냥 **'이름표가 붙은 튜플'** 이라고 생각하면 돼.
+> `fields[0]` 이라고 쓰면 헷갈리지만, `Row`에 넣어서 `row.name` 이라고 부르면 훨씬 명확하잖아?
+> 그래서 귀찮더라도 `Row`로 감싸주는 거야!"
+> Row에 대한 설명이 더 궁금하다면? [[Spark_Core_Objects#② `Row` (로우)|Row ]] 참고 
+
+
+
 ---
 ### 자주 쓰는 Data Types 족보
 
@@ -107,6 +154,37 @@ df = spark.createDataFrame(data, schema=schema)
 |**`BooleanType`**|`bool`|참/거짓|결혼여부, 성인인증여부|
 |**`DateType`**|`datetime.date`|날짜 (연-월-일)|생일, 가입일 (`2024-01-01`)|
 |**`TimestampType`**|`datetime.datetime`|날짜 + 시간|로그 발생 시간 (`2024-01-01 12:00:00`)|
+
+---
+## [핵심] 불변성 (Immutability) 
+
+스파크 데이터프레임은 한 번 만들어지면 **절대 수정할 수 없습니다(Read-Only).**
+`select`, `withColumn`, `drop` 등 모든 변형 작업은 **새로운 데이터프레임**을 반환합니다.
+
+### ❌ 흔한 실수
+
+```python
+# 원본 df에서 컬럼을 지웠다고 생각했지만...
+df.drop("age") 
+
+# 다시 출력해보면 age가 그대로 있음! (원본은 안 변하니까)
+df.show()
+```
+
+### ⭕ 올바른 방법 (재할당)
+
+반드시 **변수에 다시 담아야** 변경 사항이 저장됩니다.
+
+```python
+# 1. 새로운 변수에 담거나
+df_v2 = df.drop("age")
+
+# 2. 자기 자신을 덮어쓰거나
+df = df.drop("age")
+```
+
+> "이게 귀찮아 보여도 **분산 처리** 환경에서는 엄청난 장점이야.
+> 여러 서버(Executor)가 동시에 같은 데이터를 읽어도, 누가 중간에 데이터를 바꿔칠 걱정이 없으니까 **락(Lock)을 걸 필요도 없고 에러가 나도 원본이 살아있으니 복구가 쉽거든.**"
 
 
 ---
@@ -199,6 +277,39 @@ df.show(truncate=False)
 # 상위 5줄만 보여줘
 df.show(5)
 ```
+
+### ③ [주의] .show()를 변수에 담지 마세요! 🚨 (초보 필독)
+
+스파크 입문자가 100% 겪는 **"NoneType 에러"** 의 원흉입니다.
+
+* **`transformation` (select, filter 등):** 새로운 데이터프레임을 반환함. (변수에 담아야 함)
+* **`action` (show, write 등):** 일을 수행하고 **아무것도 반환하지 않음 (`None`).**
+
+**❌ 틀린 예시 (변수에 show를 담음)**
+
+```python
+# df2에는 DataFrame이 아니라 'None'이 들어감
+df2 = df.select("name").show() 
+
+# 에러 발생! (None한테 select 하라고 시킨 꼴)
+df2.printSchema() 
+# AttributeError: 'NoneType' object has no attribute 'printSchema'
+```
+
+⭕ 올바른 예시 (변수 할당과 출력을 분리)
+
+```python
+# 1. 변환 결과는 변수에 담고
+df2 = df.select("name")
+
+# 2. 출력은 따로 한다!
+df2.show()
+```
+
+>"**`.show()`는 마침표야.** 문장이 끝난 거지. 
+>마침표 찍은 뒤에 뭘 더 연결(`.`Chain)하려고 하거나, 변수에 담으려고 하면 탈 나니까 꼭 줄을 나눠서 써!"
+
+
 
 ### ② `printSchema()`: 뼈대 확인하기
 

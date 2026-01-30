@@ -16,9 +16,13 @@
 - [x] **[[PySpark_Session_Context]]** : 스파크의 시작점, `SparkSession` 객체 만들기
 - [x] [[Spark_Session_Deep_Dive]] :  Spark Session 전체 설정 내용
 - [x] [[Spark_DataFrame_SQL_Intro]] : RDD보다 훨씬 편한 DataFrame과 SparkSQL 소개
-- [ ] [[Spark_DataFrame]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
-- [ ] [[DataFrame_Operations]] : 선택, 필터, 집계 (`select`, `filter`, `groupBy`, `agg`)
-- [ ] [[SQL_with_Spark]] : 파이썬 코드 대신 SQL 문법으로 쿼리하기 (`createOrReplaceTempView`)
+- [x] [[Spark_DataFrame_Basics]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
+- [x] [[DataFrame_Transform_Basic]] : **[1부]** 변환과 정제 (Select, Filter, Column, withColumn)
+- [x] [[DataFrame_Aggregation]] : **[2부]** 집계와 순위 (GroupBy, Agg, Sort/orderBy)
+- [x] [[Spark_Functions_Library]] : 자주 쓰는 함수 사전 (Reference)
+- [x] [[SQL_with_Spark]] : 파이썬 코드 대신 SQL 문법으로 쿼리하기 (`createOrReplaceTempView`)
+
+
 
 ## Level 2. 스파크의 작동 원리 (Internals) ⭐️ 핵심
 

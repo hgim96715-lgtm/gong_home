@@ -12,6 +12,8 @@ related:
   - "[[Spark_DataFrame_SQL_Intro]]"
   - "[[PySpark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
+  - "[[SQL_Concepts_View]]"
+  - "[[Spark_DataFrame_Basics]]"
 ---
 ## 개념 한 줄 요약 
 
@@ -67,6 +69,19 @@ df.createGlobalTempView("shared_table")
 # 2. 접근할 때 (global_temp 데이터베이스 밑에 있음)
 spark.sql("SELECT * FROM global_temp.shared_table").show()
 ```
+
+---
+## [개념 정리] TempView vs GlobalTempView
+
+|**구분**|**createTempView**|**createGlobalTempView**|
+|---|---|---|
+|**비유**|**내 책상 위의 메모지**|**거실 벽에 붙인 공지사항**|
+|**범위**|현재 **SparkSession** 안에서만 보임.|스파크 애플리케이션 전체에서 공유됨.|
+|**저장 위치**|현재 데이터베이스 (보통 `default`)|**`global_temp`** 라는 시스템 DB|
+|**목록 확인**|`spark.catalog.listTables()`|`spark.catalog.listTables("global_temp")`|
+|**SQL 사용법**|`SELECT * FROM income`|`SELECT * FROM global_temp.income` (접두어 필수!)|
+|**수명**|세션(`spark.stop()`) 끝나면 사라짐|애플리케이션 종료 시 사라짐|
+
 
 ---
 ## 테이블 관리하기 (Catalog) 

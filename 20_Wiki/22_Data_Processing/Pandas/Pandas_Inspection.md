@@ -10,7 +10,7 @@ aliases:
 tags:
   - Pandas
 related:
-  - "[[Spark_DataFrame]]"
+  - "[[Spark_DataFrame_Basics]]"
   - "[[Pandas_Read_Write]]"
   - "[[Pandas_DataStructures]]"
   - "[[00_Pandas_HomePage]]"
