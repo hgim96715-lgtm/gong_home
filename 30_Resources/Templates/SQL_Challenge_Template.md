@@ -1,5 +1,4 @@
 ---
-aliases: []
 tags:
   - SQL_TEST
 related: []

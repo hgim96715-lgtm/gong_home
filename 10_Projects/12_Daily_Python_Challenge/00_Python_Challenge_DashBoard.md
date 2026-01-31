@@ -3,7 +3,7 @@
 > [!abstract] **Developer's Log**
 > "Life is short, You need Python." 
 > 매일 한 줄이라도 코드를 짜는 습관이 나를 만든다. 💻
-
+ 
 ---
 ##  전투력 측정 📈
 
