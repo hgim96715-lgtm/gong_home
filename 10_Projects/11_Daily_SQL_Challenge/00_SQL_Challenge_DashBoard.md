@@ -12,8 +12,9 @@ tags:
 ```dataview
 TABLE WITHOUT ID
   "🦁 **" + length(rows) + " 문제**" as "총 도전",
-  "🟩 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "해결 완료",
-  "🧨 **" + length(filter(rows, (r) => !contains(r.status, "🟩"))) + " 개**" as "복습 필요"
+  "🟩 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "한방 해결",
+  "🟪 **" + length(filter(rows, (r) => contains(r.status, "🟪"))) + " 개**" as "복습 성공",
+  "🧨 **" + length(filter(rows, (r) => !contains(r.status, "🟩") AND !contains(r.status, "🟪"))) + " 개**" as "남은 숙제"
 FROM "10_Projects/11_Daily_SQL_Challenge"
 WHERE file.name != this.file.name
 GROUP BY true
@@ -54,7 +55,8 @@ TABLE WITHOUT ID
   status as "현재 상태"
 FROM "10_Projects/11_Daily_SQL_Challenge"
 WHERE file.name != this.file.name
-  AND !contains(status, "🟩")
+  AND !contains(status, "🟩") 
+  AND !contains(status, "🟪")  
 SORT file.name ASC
 ```
 

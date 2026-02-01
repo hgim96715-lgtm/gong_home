@@ -21,6 +21,7 @@ related: []
 
 ### 그룹이 보이면 바로 떠올릴 것
 
+
 |문제 표현|핵심 의미|추천 문법|한 줄 힌트|
 |---|---|---|---|
 |~별 / 유형별|그룹 분리|**GROUP BY**|‘별’ 보이면 GROUP|
@@ -67,105 +68,89 @@ related: []
 
 ```mermaid
 flowchart TD
-    Start((🚀 SQL 문제 시작)) --> Step0
+    %% === 시작점 ===
+    Start((🚀 SQL 문제 시작)) --> Step1_Analyze
 
     %% ==========================================
-    %% Step 0: 전략 수립 (Strategy)
-    %% "내가 필요한 재료가 무엇인가?"
+    %% Step 1: 데이터 재료 준비
     %% ==========================================
-    subgraph Step0_Strategy ["Step 0: 큰 그림 그리기 (비교 대상 확인)"]
+    subgraph Step1_Analyze ["Step 1: 데이터 재료 & 출처 결정"]
         direction TB
-        Q_NeedCalc{"평균/합계 등을 기준으로<br>크거나 작은 걸 찾는가?"}
         
-        Q_NeedCalc -- Yes --> Q_CalcScope{"그 숫자가<br>전체 기준인가?"}
+        Q_Complex{"집계된 결과나 가상 테이블이<br>먼저 필요한가?"}
         
-        Q_CalcScope -- "Yes (전체 평균 등)" --> Op_Scalar[":::point 💡 스칼라 서브쿼리<br>(WHERE절에 바로 사용)"]
-        Q_CalcScope -- "No (그룹별 평균 등)" --> Op_CTE["CTE (WITH절)<br>임시 테이블 만들기"]
+        Q_Complex -- "Yes (CTE 생성)" --> Op_CTE[":::point 🍳 CTE / SubQuery<br>(가상 테이블 생성)"]
+        Q_Complex -- "No (원본 사용)" --> Q_ColCheck
         
-        Q_NeedCalc -- No --> Q_Source
+        Op_CTE --> Q_ColCheck{"🎯 필요한 모든 컬럼이<br>현재 테이블(또는 CTE) 하나에<br>전부 다 들어있는가?"}
+        
+        Q_ColCheck -- "Yes (JOIN 금지 🚫)" --> Op_OneTable[":::point 💡 FROM 테이블 1개만 사용<br>(가장 깔끔한 정답)"]
+        Q_ColCheck -- "No (어쩔 수 없음)" --> Op_Join["JOIN (정보 합치기)"]
     end
 
-    %% 스칼라 서브쿼리와 CTE는 데이터 준비 단계로 합류
-    Op_Scalar -.-> Q_Source
-    Op_CTE --> Q_Source
+    Op_OneTable --> Q_Where
+    Op_Join --> Q_Where
 
     %% ==========================================
-    %% Step 1: 데이터 준비 (Data Source)
-    %% "어디서 가져올 것인가?"
+    %% Step 2: 행 걸러내기
     %% ==========================================
-    subgraph Step1_Source ["Step 1: 데이터 판 깔기"]
+    subgraph Step2_Filter ["Step 2: 원본 데이터 청소 (WHERE)"]
         direction TB
-        Q_Source{"테이블이<br>여러 개인가?"}
-        Q_Source -- No --> Op_From["FROM 테이블"]
-        Q_Source -- Yes --> Q_JoinType{"모든 행이<br>다 필요한가?"}
+        Q_Where{"'특정 조건'인 행만<br>필요한가?"}
         
-        Q_JoinType -- "교집합만 (필수)" --> Op_Inner["INNER JOIN"]
-        Q_JoinType -- "원본 유지 (옵션)" --> Op_Left["LEFT JOIN"]
-        
-        Op_From --> Q_Where
-        Op_Inner --> Q_Where
-        Op_Left --> Q_Where
+        Q_Where -- "Yes (날짜, 카테고리 등)" --> Op_Where["WHERE 절 사용"]
+        Q_Where -- "No (전체 데이터)" --> Q_Group
+        Op_Where --> Q_Group
     end
 
     %% ==========================================
-    %% Step 2: 사전 필터링 (Pre-Filter)
-    %% "쓸모없는 데이터 버리기"
+    %% Step 3: 뭉칠까 펼칠까 (핵심 분기점)
+    %% "Window Function 추가됨!"
     %% ==========================================
-    subgraph Step2_Filter ["Step 2: 재료 손질 (Filtering)"]
+    subgraph Step3_Agg ["Step 3: 집계 및 계산 방식 결정"]
         direction TB
-        Q_Where{"미리 걸러낼<br>조건이 있는가?"}
-        Q_Where -- "Yes (날짜, 상태 등)" --> Op_Where["WHERE 절"]
-        Q_Where -- No --> Q_Granularity
-        Op_Where --> Q_Granularity
+        Q_Group{"'~별'로 묶어서<br>행 개수를 줄일 것인가?"}
+        
+        %% [Path A] Group By (행 압축)
+        Q_Group -- "Yes (통계/요약)" --> Op_GroupBy["GROUP BY"]
+        Op_GroupBy --> Op_Calc["SUM / COUNT / AVG"]
+        Op_Calc --> Q_Having{"집계된 결과를<br>필터링해야 하는가?"}
+        Q_Having -- "Yes (HAVING)" --> Op_Having["HAVING"]
+        
+        %% [Path B] Window Function (행 유지) ⭐️ NEW!
+        Q_Group -- "No (행 유지)" --> Q_Window{"순위, 누적합, 이동평균,<br>이전 행 비교가 필요한가?"}
+        
+        Q_Window -- "Yes (고급 계산)" --> Op_Window[":::point 🪟 WINDOW FUNCTION<br>(RANK, LEAD, SUM OVER...)"]
+        
+        %% [Path C] 단순 조회
+        Q_Window -- "No (단순 조회)" --> Q_Distinct{"중복을 제거해야 하는가?<br>(Distinct)"}
+        Q_Distinct -- Yes --> Op_Distinct["SELECT DISTINCT"]
     end
 
+    %% Step 3 -> Step 4 연결 (모든 길이 Step 4로 모임)
+    Q_Having -- No --> Q_Order
+    Op_Having --> Q_Order
+    Op_Window --> Q_Order
+    Q_Distinct -- No --> Q_Order
+    Op_Distinct --> Q_Order
+
     %% ==========================================
-    %% Step 3: 핵심 로직 (Aggregation vs Window)
-    %% "데이터를 뭉칠까, 펼칠까?"
+    %% Step 4: 순서 및 제한
     %% ==========================================
-    subgraph Step3_Core ["Step 3: 행(Row)의 운명 결정"]
+    subgraph Step4_Final ["Step 4: 결과 다듬기"]
         direction TB
-        Q_Granularity{"🎯 결과 행 수를<br>줄일(압축) 것인가?"}
-
-        %% === [Path A] 집계 (Grouping) ===
-        Q_Granularity -- "Yes (그룹별 통계)" --> Op_Group["GROUP BY"]
-        Op_Group --> Op_Agg["SUM / AVG / COUNT"]
-        Op_Agg --> Q_Having{"집계 후<br>필터링 필요?"}
-        Q_Having -- Yes --> Op_Having["HAVING"]
-        Q_Having -- No --> Q_FinalCheck
-        Op_Having --> Q_FinalCheck
-
-        %% === [Path B] 윈도우/순위 (Window) ===
-        Q_Granularity -- "No (행 유지)" --> Q_RankNeed{"순위나<br>누적 계산 필요?"}
+        Q_Order{"순위나 정렬이<br>필요한가?"}
         
-        Q_RankNeed -- "Yes (순위/이동평균)" --> Op_Window["WINDOW FUNCTION<br>OVER (PARTITION BY...)"]
-        Q_RankNeed -- "No (단순 조회)" --> Q_FinalCheck
+        Q_Order -- Yes --> Op_Order["ORDER BY"]
+        Q_Order -- No --> Q_Limit
+        Op_Order --> Q_Limit{"상위 N개만 필요한가?"}
         
-        Op_Window --> Q_RankOnly{"1등만 뽑아야<br>하는가?"}
-        Q_RankOnly -- Yes --> Op_SubRank["서브쿼리로 감싸서<br>WHERE rank = 1"]
-        Q_RankOnly -- No --> Q_FinalCheck
+        Q_Limit -- Yes --> Op_Limit["LIMIT"]
+        Q_Limit -- No --> End((🏁 쿼리 완성))
+        Op_Limit --> End
     end
 
-    %% ==========================================
-    %% Step 4: 최종 가공 (Final Polish)
-    %% "예쁘게 포장하기"
-    %% ==========================================
-    subgraph Step4_Final ["Step 4: 마무리 (Formatting)"]
-        direction TB
-        Q_FinalCheck{"상위 N개만<br>필요한가?"}
-        
-        Q_FinalCheck -- "Yes (Top N)" --> Op_Limit["ORDER BY + LIMIT"]
-        Q_FinalCheck -- No --> Op_Select
-        
-        Op_Limit --> Op_Select["SELECT 컬럼 확정"]
-        Op_Select --> Q_Null{"NULL 처리?"}
-        
-        Q_Null -- Yes --> Op_Coalesce["COALESCE / IFNULL"]
-        Q_Null -- No --> End((🏁 쿼리 완성))
-        Op_Coalesce --> End
-    end
-
-    %% === 스타일링 (가독성 UP) ===
+    %% === 스타일 정의 ===
     classDef default fill:#fff,stroke:#333,stroke-width:1px;
     classDef startend fill:#2c3e50,stroke:#34495e,color:white,stroke-width:2px;
     classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
@@ -173,9 +158,9 @@ flowchart TD
     classDef point fill:#ffcdd2,stroke:#d32f2f,stroke-width:4px,color:black;
 
     class Start,End startend;
-    class Q_NeedCalc,Q_CalcScope,Q_Source,Q_JoinType,Q_Where,Q_Granularity,Q_Having,Q_RankNeed,Q_RankOnly,Q_FinalCheck,Q_Null decision;
-    class Op_CTE,Op_From,Op_Inner,Op_Left,Op_Where,Op_Group,Op_Agg,Op_Having,Op_Window,Op_SubRank,Op_Limit,Op_Select,Op_Coalesce action;
-    class Op_Scalar point;
+    class Q_Complex,Q_ColCheck,Q_Where,Q_Group,Q_Window,Q_Distinct,Q_Having,Q_Order,Q_Limit decision;
+    class Op_CTE,Op_Join,Op_OneTable,Op_Where,Op_GroupBy,Op_Calc,Op_Having,Op_Window,Op_Distinct,Op_Order,Op_Limit action;
+    class Op_OneTable,Op_CTE,Op_Window point;
 ```
 
 
@@ -185,72 +170,43 @@ flowchart TD
 
 **오프닝:** "SQL 쿼리를 짤 때 매번 막막하다면, 이 **5단계 지도**만 따라오세요. 복잡한 문제도 순서대로 풀립니다."
 
----
+## 🗣️ [멘탈 모델 가이드] SQL 문제 해결 4단계 사고법
 
-#### **0️⃣ Step 0: 전략 수립 (비교 대상 확인) ⭐**
+이 로드맵은 **"무작정 코드부터 치다가 길을 잃는 것"**을 막기 위해 존재합니다. 문제를 딱 보자마자, **Step 1부터 순서대로** 자문자답하며 내려가세요.
 
-계산된 숫자가 '넘어야 할 허들(조건)'인가요, 아니면 단순히 '1등을 뽑는(순위)' 건가요?"
+### Step 1. 재료 찾기 (Analyze) 🧐
 
-- **설명:** "`SUM`이나 `AVG` 같은 계산값이 필요한 건 똑같지만, 용도가 다릅니다."
+**"가장 먼저, 무조건 `JOIN`부터 하려는 습관을 버리세요!"**
 
-- **핵심 구분:**
+- 질문에서 요구하는 컬럼들을 보세요.
+- 만약 `customer_id` 하나만 필요한데, 굳이 `Customer` 테이블을 조인하고 있진 않나요?
+- **핵심:** **"테이블 하나로 해결된다면, 그게 가장 정답에 가깝습니다."** (`FROM` 하나만 쓰세요.)
+- 테이블이 찢어져 있어서 어쩔 수 없을 때만 `JOIN`을 꺼내 드세요.
+
+### Step 2. 재료 손질 (Pre-Filter) 🥦
+
+**"요리하기 전에 흙 묻은 재료부터 씻어내세요."**
+
+- 전체 데이터를 다 들고 갈 필요가 있나요?
+- "2024년 데이터만", "서울 지역만" 같은 조건이 있다면, **`WHERE` 절로 미리 쳐내야 합니다.**
+- 데이터가 가벼워져야 쿼리 속도도 빨라지고, 계산 실수도 줄어듭니다.
+
+### Step 3. 요리 방식 결정 (Aggregation) 🍳
+
+**"여기가 가장 중요한 갈림길입니다. 뭉칠 것인가, 펼칠 것인가?"**
+
+- **단순 조회:** 그냥 명단만 필요하다면 `GROUP BY`는 필요 없습니다. (혹시 중복이 거슬리면 `DISTINCT`만 살짝 쓰세요.)
+- **집계(통계):** "~별 합계", "팀별 평균" 같은 단어가 보이면 무조건 **`GROUP BY`**입니다.
     
-    - **허들(Filter)일 때 (Yes):** "전체 평균**보다 높은**, 전체 매출의 50% **이상인**..." 처럼 **비교해서 살아남는 놈만 뽑아야 한다면?**
-        - → **Step 0 Yes** (서브쿼리나 CTE로 '평균'이라는 허들을 먼저 만들어야 합니다.)
-            
-    - **순위/결과(Result)일 때 (No):** "가장 팁이 **많은**, 합계가 가장 **높은**..." 처럼 **그냥 줄 세워서 1등을 뽑는 거라면?**
-        - → **Step 0 No** (굳이 미리 비교할 필요 없습니다. 다 계산해서(`GROUP BY`) 줄 세우고(`ORDER BY`) 맨 위(`LIMIT 1`)만 가져오면 되니까요!)
+    - 🚨 **주의:** 집계(SUM, AVG)를 한 **결과값**을 거르고 싶나요? (예: 매출 1000만 원 이상)
+    - 그건 `WHERE`가 아니라 **`HAVING`**의 영역입니다. (이거 헷갈리면 에러 납니다!)
+        
 
-- **아까 푼 문제:** "팁이 **가장 많은** 요일" -> **순위(No)** -> `ORDER BY + LIMIT`
-- **다른 문제:** "팁이 **평균보다 많은** 요일" -> **허들(Yes)** -> `WHERE tip > (SELECT AVG...)`
+### Step 4. 예쁘게 담기 (Formatting) 🍽️
 
+**"이제 요리는 끝났습니다. 서빙 준비만 하세요."**
 
-#### **1️⃣ Step 1: 데이터 판 깔기 (JOIN 전략)**
+- **순서:** "가장 많이 판 순서대로" -> `ORDER BY`
+- **개수:** "상위 3명만" -> `LIMIT`
+- **마무리:** 컬럼 이름이 지저분하면 `AS`로 예쁘게 별명을 붙여주면 끝입니다.
 
-> **"전략이 섰으면, 데이터를 어디서 가져올지 정합니다."**
-> 
-> ![SQL joins venn diagram 이미지|500x400](https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcRf04gTjmk0mgdmkbR8hJmFmdpC0oahoAvS5CThon4i8rFrxKlvfv-4SVlz9eSqTcqsk4Jj9iG8lYIugInk27FM3Ip_Jssjn6FB5DhDmFAksON8MBg)
-> 
-
-- **설명:** "테이블이 여러 개라면 JOIN을 해야 하는데, 여기서 질문을 던집니다."
-    
-- **핵심:**
-    
-    - "두 테이블의 **공통된 데이터(교집합)** 만 필요한가? → **INNER JOIN**"
-    - "아니면, 왼쪽 테이블의 **원본 데이터는 다 살려야** 하는가? → **LEFT JOIN**"
-
-#### **2️⃣ Step 2: 재료 손질 (사전 필터링)**
-
-> **"데이터를 합쳤다면, 요리하기 전에 상한 재료부터 버립니다."**
-
-- **설명:** "무거운 집계 작업을 하기 전에, `WHERE` 절로 불필요한 행을 미리 쳐내야 쿼리 속도가 빨라집니다."
-- **예시:** "2024년 데이터만 남긴다거나, 취소된 주문은 제외하는 작업이 여기에 해당합니다."
-
-#### **3️⃣ Step 3: 행의 운명 결정 (핵심 갈림길) 🔥**
-
-> **"여기가 가장 중요합니다. 데이터의 행(Row) 개수를 줄일 건가요, 유지할 건가요?"**
-
-- **갈림길 A: 압축하기 (GROUP BY)**
-    - "데이터를 반별, 요일별로 뭉쳐서 **통계**를 낼 거라면 `GROUP BY`를 씁니다."
-    - "이때, 뭉쳐진 결과에 대해 필터링하려면(예: 평균 80점 이상) `HAVING`을 씁니다."
-- **갈림길 B: 유지하기 (WINDOW)**
-    - "데이터 행은 **그대로 둔 채**, 옆에 **등수**나 **누적 합계**만 붙이고 싶다면 `WINDOW 함수`를 씁니다."
-    - "그룹별로 순위를 매긴다면 `PARTITION BY`, 전체 순위라면 `OVER()`를 씁니다."        
-
-#### **4️⃣ Step 4: 순위 및 1등 뽑기**
-
-> **"순위를 구했다면, 1등만 필요한지 전체 순위표가 필요한지 결정합니다."**
-
-- **설명:**
-    - "단순히 **가장 높은 1명**만 필요하다? → `ORDER BY`로 정렬하고 `LIMIT 1`로 자릅니다."
-    - "각 **그룹별 1등**을 뽑아야 한다? → `RANK()` 함수로 순위를 매긴 뒤, 서브쿼리로 감싸서 `WHERE rank = 1` 조건을 겁니다."
-
-#### **5️⃣ Step 5: 마무리 (출력 및 포장)**
-
-> **"마지막으로 결과를 예쁘게 포장해서 내보냅니다."**
-
-- **설명:**
-    
-    - "필요한 컬럼만 `SELECT`에 적고,"
-    - "`NULL` 값이 있다면 `COALESCE`로 0이나 다른 값으로 채워줍니다."
-    - "최종적으로 보기에 좋게 `ORDER BY`로 정렬하면 쿼리 완성입니다."
