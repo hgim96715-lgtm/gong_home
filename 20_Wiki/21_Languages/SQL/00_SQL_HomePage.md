@@ -30,7 +30,7 @@
 
 > 흩어진 데이터를 하나로 모으기
 
-- [[JOIN_Concept]] : Inner, Left, Outer 조인의 벤다이어그램 이해 
+- [[SQL_JOIN_Concept]] : Inner, Left, Outer 조인의 벤다이어그램 이해 
 - [[Union_vs_Join]] : 위아래로 합치기(UNION) vs 옆으로 붙이기(JOIN)
 
 ## 4. 고급 분석 (Advanced) 

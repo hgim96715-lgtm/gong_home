@@ -184,6 +184,31 @@ FROM employees
 GROUP BY department;
 ```
 
+### Q3. "평균의 합계(`SUM(AVG)`)나 합계의 평균(`AVG(SUM)`) 되나요?" 
+
+처음에 가장 많이 하는 시도입니다.
+`SELECT AVG(SUM(amount)) FROM orders GROUP BY date`... 될 것 같죠?
+
+- **정답:** **절대 안 됩니다! (SQL 문법 에러)** 
+- **이유:** SQL은 한 번의 단계(Level)에서 **오직 한 번의 집계**만 할 수 있습니다. "묶어서 합계 구하기(1차)"와 "그것들의 평균 내기(2차)"를 동시에 못 합니다.
+- **해결책:** **서브쿼리(Subquery)** 를 써서 단계를 나눠야 합니다.
+
+```sql
+-- ❌ 틀린 코드 (에러 발생: Group function is nested too deeply)
+SELECT AVG(SUM(total_bill))
+FROM tips
+GROUP BY day;
+
+-- ⭕️ 맞는 코드 (2단계로 분리)
+SELECT AVG(daily_total)
+FROM (
+    -- [1단계] 안쪽에서 먼저 '일별 합계'를 구해서 가상 테이블로 만듦
+    SELECT day, SUM(total_bill) AS daily_total
+    FROM tips
+    GROUP BY day
+) t;
+```
+
 ---
 ## 💡 초보자 실수 패턴 분석: ID를 더하지 마라!
 
