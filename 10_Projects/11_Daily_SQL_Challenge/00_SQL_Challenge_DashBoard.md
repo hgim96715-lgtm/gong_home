@@ -28,15 +28,17 @@ GROUP BY true
 CALENDAR file.day FROM "10_Projects/11_Daily_SQL_Challenge" WHERE status != null
 ```
 ---
-## 학습 현황 (Tracking)
+## 학습 현황 (Status Board)
 
-> [!success]+ **최근 해결한 문제 (Recent Solved)** 최근에 푼 5개의 문제를 확인합니다.
+>[!example]+ **🚀 최신 업데이트 (Latest Commits)**
+
+최근 건드린 코드 5개를 확인합니다.
 
 ```dataview
 TABLE WITHOUT ID
-  link(file.link, split(file.name, "_")[1]) as "주제",
-  split(file.name, "_")[0] as "날짜",
-  status as "상태"
+  link(file.link, split(file.name, "_")[1]) as "Project / Topic",
+  split(file.name, "_")[0] as "Date",
+  status as "Status"
 FROM "10_Projects/11_Daily_SQL_Challenge"
 WHERE file.name != this.file.name
 SORT file.name DESC
