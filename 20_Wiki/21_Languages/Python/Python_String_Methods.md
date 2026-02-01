@@ -15,6 +15,7 @@ related:
   - "[[Python_Lists_Tuples]]"
   - "[[00_Python_HomePage]]"
   - "[[Spark_General_Transformations]]"
+  - "[[Python_String_Indexing_Slicing]]"
 ---
 ## 개념 한 줄 요약
 
@@ -105,6 +106,8 @@ print(clean_data)
 
 특정 글자를 찾아서 다른 글자로 바꿔줍니다. 
 오타 수정이나 불필요한 기호 삭제할 때 씁니다.
+
+>**"위치(Index)"가 아니라 "값(Value)"** 을 찾아서 바꾼다!!!!!!
 
 ### ① 기본 사용법
 

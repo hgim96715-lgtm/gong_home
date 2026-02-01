@@ -16,6 +16,7 @@ related:
   - "[[Python_Sorting_Logic]]"
   - "[[Python_Variables_Types]]"
   - "[[00_Python_HomePage]]"
+  - "[[Python_String_Indexing_Slicing]]"
 ---
 
 ##  개념 한 줄 요약 

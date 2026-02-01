@@ -4,6 +4,7 @@
 > "파이썬과 대화하는 법을 배워요."
 
 - [[Python_Variables_Types]] : 변수와 자료형 (`string`,`int`,`bool`)
+- [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice,`[`:`:-1]`)
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`,`starswith`)

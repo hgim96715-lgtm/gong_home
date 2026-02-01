@@ -24,8 +24,9 @@
 - [x] [[Spark_DataFrame_Basics]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
 - [x] [[Spark_Data_IO]] : 데이터 저장의 비밀 (`read` vs `write`, 왜 폴더로 저장될까?)
 - [x] [[DataFrame_Transform_Basic]] : **[1부]** 변환과 정제 (Select, Filter, Column, withColumn)
-- [ ] [[Spark_Data_Cleaning]] : [1.5부] 결측치 청소와 날짜 다루기 (`na.drop`, `na.fill`, `year`, `format_number`)
+- [x] [[Spark_Data_Cleaning]] : [1.5부] 결측치 청소와 날짜 다루기 (`na.drop`, `na.fill`, `year`, `format_number`)
 - [x] [[DataFrame_Aggregation]] : **[2부]** 집계와 순위 (GroupBy, Agg, Sort/orderBy)
+- [ ] [[Spark_DataFrame_Joins]] : [3부] 데이터 병합하기 (Inner, Left, Semi, Anti Join)
 - [x] [[Spark_Functions_Library]] : 자주 쓰는 함수 사전 (Reference)
 - [x] [[SQL_with_Spark]] : 파이썬 코드 대신 SQL 문법으로 쿼리하기 (`createOrReplaceTempView`)
 
