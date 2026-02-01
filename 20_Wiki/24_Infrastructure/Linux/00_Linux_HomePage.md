@@ -77,6 +77,7 @@
 > "반복 작업은 컴퓨터에게 시키고 퇴근해요."
 
 - [[Shell_Scripting_Basics]] : 쉘 스크립트 기초 문법 (`if`, `for`, `var`)
+- [[Shell_Input_Output]] : 사용자와 대화하기 (`read`, `$1` vs `stdin`)
 - [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`) 
 
 

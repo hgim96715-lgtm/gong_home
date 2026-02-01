@@ -13,6 +13,7 @@ tags:
 related:
   - "[[Linux_Scheduling_Crontab]]"
   - "[[File_Management]]"
+  - "[[00_Linux_HomePage]]"
 ---
 $##  개념 한 줄 요약
 
