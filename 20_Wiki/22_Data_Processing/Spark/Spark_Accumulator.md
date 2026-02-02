@@ -8,6 +8,8 @@ tags:
 related:
   - "[[RDD_Concept]]"
   - "[[Spark_Memory_Management]]"
+  - "[[Spark_UI_Guide]]"
+  - "[[00_Apache_Spark_HomePage]]"
 ---
 ## 개념 한 줄 요약 ️
 
@@ -107,6 +109,7 @@ error_count = errors.count()
 ### ② Spark UI에 그래프로 뜹니다 
 
 Accumulator를 쓰면 **Spark UI (Web Dashboard)** 의 `Stages` 탭에 **사용자 정의 지표(Custom Metrics)** 로 예쁘게 표시됩니다.
+>Stages 내용을 이해하려면  [[Spark_UI_Guide]]  같이 참고해서 보시오~!
 
 - **효과:** 운영 중에 "지금 작업이 50% 진행됐네?", "에러가 갑자기 폭증하네?"를 실시간으로 감시할 수 있습니다.
 

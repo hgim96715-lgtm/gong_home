@@ -1,75 +1,102 @@
-[[01_Spark_Master_Map]]
 
-> [!example] **🚀 내 실습 공간 (My Workspace)**
- > 이론 공부하다가 실습이 필요하면 바로 여기로 이동! 
- >  **📂 노트북 경로:** `/Users/gong/gong_study_de/apache-spark/notebooks` 
- >   **👉 [폴더 바로 열기](file:///Users/gong/gong_study_de/apache-spark/notebooks)** > *(클릭이 안 되면 경로를 복사해서 Finder에서 `Cmd + Shift + G`로 이동하세요)*
+- 필요한 개념이 생길 때마다 `Ctrl + F`로 찾아보세요.
 
-## Level 0. 개념 잡기 (Why Spark?)
+### 📂 [바로가기]
 
-> "하둡(Hadoop)은 왜 느렸고, 스파크는 왜 빠른가?"
+- **노트북 경로:** `/Users/gong/gong_study_de/apache-spark/notebooks`
+- 👉  [폴더 바로 열기](file:///Users/gong/gong_study_de/apache-spark/notebooks)
+- **다이어그램:** **[[01_Spark_Master_Map]]**
 
-- [x] **[[Spark_Concept_Evolution]]** : MapReduce vs Spark (디스크 vs 메모리)
-- [x] **[[Spark_Architecture]]** : Driver, Executor, Cluster Manager의 역할 분담
-- [x] [[RDD_Concept]] :스파크 데이터의 최소 단위 (불변성과 복구 능력)
-- [x] **[[Spark_Installation_Local]]** : 내 컴퓨터(Docker)에 PySpark 설치하기
+---
+## 아키텍처 및 핵심 원리 (Architecture & Internals)
 
-## Level 1. 데이터 다루기 (DataFrame API)
+> 스파크가 **"어떻게, 그리고 왜"** 이렇게 동작하는지 설명합니다.'
 
-> "SQL처럼 데이터를 조작해보자. (RDD는 몰라도 DataFrame은 필수!)"
+- **기초 개념**
+    
+    - **[[Spark_Concept_Evolution]]** : 하둡(MapReduce)과 스파크의 차이점 (Disk vs Memory)
+    - **[[Spark_Architecture]]** : Driver, Executor, Cluster Manager의 역할 완벽 정리
+    - **[[RDD_Concept]]** : 스파크 데이터의 불변성과 복구 능력 (Resilient Distributed Dataset)
+    - **[[Spark_Job_Scheduling]]** : 자원 배분 전쟁 (Static vs Dynamic, FIFO vs FAIR)
 
-- [x] [[PySpark_Session_Context]]: 스파크의 시작점, `SparkSession` 객체 만들기
-- [x] [[Spark_Session_Deep_Dive]] :  Spark Session 전체 설정 내용(`spark-submit`, `Master`, `Deploy Mode`)
-- [x] [[Spark_DataFrame_SQL_Intro]] : RDD보다 훨씬 편한 DataFrame과 SparkSQL 소개
-- [x] [[Spark_DataFrame_Basics]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
-- [x] [[Spark_Data_IO]] : 데이터 저장의 비밀 (`read` vs `write`, 왜 폴더로 저장될까?)
-- [x] [[DataFrame_Transform_Basic]] : **[1부]** 변환과 정제 (Select, Filter, Column, withColumn)
-- [x] [[Spark_Data_Cleaning]] : [1.5부] 결측치 청소와 날짜 다루기 (`na.drop`, `na.fill`, `year`, `format_number`)
-- [x] [[DataFrame_Aggregation]] : **[2부]** 집계와 순위 (GroupBy, Agg, Sort/orderBy)
-- [x] [[Spark_DataFrame_Joins]] : [3부] 데이터 병합하기 (Inner, Left, Semi, Anti Join)
-- [x] [[Spark_Functions_Library]] : 자주 쓰는 함수 사전 (Reference)
-- [x] [[SQL_with_Spark]] : 파이썬 코드 대신 SQL 문법으로 쿼리하기 (`createOrReplaceTempView`)
+- **실행 엔진 (Engine)**
+    
+    - **[[Transformations_vs_Actions]]** : Lazy Evaluation과 의존성 (Narrow vs Wide, 셔플의 원리)
+    - **[[Spark_Catalyst_Optimizer]]** : 스파크의 뇌, 논리적 계획이 물리적 계획으로 바뀌는 과정
+    - **[[Spark_Memory_Management]]** : Executor 메모리 구조 (Unified Memory, Storage vs Execution)
 
+---
+## 데이터 엔지니어링 (Data Engineering)
 
+> 데이터를 **읽고, 쓰고, 변환하는** 실무 기술들을 모았습니다.
 
-## Level 2. 스파크의 작동 원리 (Internals) ⭐️ 핵심
+- **설정 및 시작**
+    
+    - **[[Spark_Installation_Local]]** : 로컬/Docker 환경 구축
+    - **[[PySpark_Session_Context]]** : `SparkSession` 객체 생성과 필수 설정
+    - **[[Spark_Session_Deep_Dive]]** : `spark-submit`, Master, Deploy Mode 심층 분석
+        
+- **DataFrame & SQL (메인 무기)**
+    
+    - **[[Spark_DataFrame_Basics]]** : 기본 조작 (Read, Write, Show, Schema)
+    - **[[Spark_Data_IO]]** : 저장의 기술 (Parquet, CSV, PartitionBy)
+    - **[[DataFrame_Transform_Basic]]** : 조회와 필터링 (Select, Filter, Column, withColumn)
+    - **[[DataFrame_Aggregation]]** : 집계와 순위 (GroupBy, Agg, Sort)
+    - **[[Spark_DataFrame_Joins]]** : 조인 전략 총정리 (Inner, Left, Semi, Anti)
+    - **[[Spark_Data_Cleaning]]** : 결측치와 날짜 처리 (`na.drop`, `format_number`)
+    - **[[SQL_with_Spark]]** : Python 대신 SQL 문법 사용하기 (`TempView`)
+    - **[[Spark_Functions_Library]]** : 자주 쓰는 내장 함수 사전 (Reference)
+        
+- **RDD 로우 레벨 제어 (Low-Level)**
 
-> "코드를 짰는데 왜 바로 실행이 안 되지?"
+    - **[[Spark_General_Transformations]]** : 기본 변환 (`map`, `flatMap`, `filter`)
+    - **[[Spark_Key_Transformations]]** : 키(Key) 기준 제어 (`reduceByKey`, `groupByKey`, `sortByKey`)
+    - **[[Spark_Value_Transformations]]** : 값(Value)만 안전하게 변경 (`mapValues`)
 
-- [x] [[Spark_File_IO_Basic]] :파일 읽어오기 (`textFile`, `file://` 경로의 비밀)
-- [x] **[[Transformations_vs_Actions]]** :Lazy Evaluation과 의존성 (Narrow vs Wide, 셔플의 발생 원리) 
-- [x] [[Spark_Catalyst_Optimizer]] : 스파크의 뇌, Logical vs Physical Plan의 변환 과정
-- [x] [[Spark_Memory_Management]] : Executor 메모리 구조 (Unified Memory, Storage vs Execution)
-- [x] [[Spark_General_Transformations]] : Narrow (`map`, `flatMap` ,`glom`,`sample`,`filter`)
-- [x] [[Spark_Key_Transformations]]: 키 기준으로 뭉치고 정렬하기 (`reduceByKey`, `groupByKey`, `sortByKey`, `keys`,`countByKey`)
-- [x] [[Spark_Value_Transformations]] : 값만 안전하게 바꾸기 (`mapValues`, `values`,`countByValue`,`flatMapValues`)
-- [x] [[Spark_Iterating_Data]] : 반복문의 함정 (`collect` vs `foreach`)
+---
+## 성능 최적화 (Optimization & Tuning)
 
-## Level 3. 성능 최적화 (Optimization)
+> **"왜 느리지?"** 싶을 때 열어보는 튜닝 비법서입니다.
 
-> "데이터가 100GB가 넘어가니 에러가 나요. 튜닝이 필요해!"
+- **파티셔닝 (Partitioning)**
+    
+    - **[[Spark_Partitioning_Concept]]** : 파티셔닝 기초 (`repartition` vs `coalesce`)
+    - **[[Spark_AQE_Deep_Dive]]** : 실행 중에 계획을 바꾸는 AQE (Skew Join 해결)
+    - **[[Spark_Dynamic_Partition_Pruning(DPP)]]** : 조인할 때 필요한 데이터만 읽는 기술
+ 
+- **전략 및 테크닉**
+    
+    - **[[Spark_Caching_Strategies]]** : 반복 계산을 막는 캐싱 (cache vs persist)
+    - **[[Spark_Core_Broadcast]]** : 셔플을 없애는 기술 (Broadcast Variable & Join)
+    - **[[Spark_SQL_Hints]]** : 옵티마이저의 판단을 강제로 덮어쓰기 (Hint)
+    - **[[Spark_Speculative_Execution]]** : 느린 태스크(낙오자) 버리기 전략
+    - **[[Spark_Accumulator]]** : 분산 환경의 전역 카운터 (집계 및 디버깅)
+    - **[[Spark_Iterating_Data]]** : 반복문의 정석 (`collect` 절대 금지, `foreachPartition` 권장)
 
-- [x] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`,`spark.range()`,`RepartitionByRange`,`getNumPartitions()`,`glom()`)  
-- [x] [[Spark_AQE_Deep_Dive]] : 실행 중에 계획을 바꾸는 AQE (Coalesce, Skew Join)
-- [x] [[Spark_Dynamic_Partition_Pruning(DPP)]] : 조인할 때 필요한 파티션만 골라 읽기 (DPP)
-- [x] [[Spark_Caching_Strategies]] : 반복 계산을 막는 캐싱 전략 (cache vs persist)
-- [x] [[Spark_SQL_Hints]] : 옵티마이저의 판단을 강제로 덮어쓰는 기술 (Hint)
-- [ ] [[Spark_Accumulator]] : 분산 환경의 전역 카운터 (집계 및 디버깅)
-- [x] [[Spark_Core_Broadcast]] : 셔플 제거의 기술 (Broadcast Join vs Python Dict Lookup),`broadcast`,`udf`
+---
+## 트러블 슈팅 및 모니터링 (Troubleshooting)
 
-## Level 4. 데이터 저장과 포맷 (Storage)
+> 에러 로그를 해석하고 해결하는 방법입니다.
 
-> "CSV는 이제 그만. 프로들의 포맷을 쓰자."
+- **분석 도구**
 
-## Level 5. 고급 주제 (Advanced)
+    - **[[Spark_UI_Guide]]** : **(필수)** 스파크의 MRI, Event Timeline 색깔별 의미 해석
 
-- [[Spark_Graph_Analysis_Basic]] : 관계 데이터 분석하기 (`collect_set`, `concat_ws`, `size`)
+- **자주 겪는 에러**
+    
+    - **[[Spark_Common_Mistakes]]** : 초보자가 자주 범하는 문법 실수 모음
+    - **[[Spark_Troubleshooting_FileNotFound]]** : "Driver엔 있는데 Worker엔 없대요" (경로 문제)
+    - **[[WARN_NativeCodeLoader_Log]]** : "빨간색 경고 로그, 무시해도 되나요?"
 
+---
+## 고급 주제 (Advanced)
 
-## Level 6. 트러블 슈팅 (Troubleshooting)
+- **[[Spark_Graph_Analysis_Basic]]** : 관계 데이터 분석 (`collect_set`, `concat_ws`)
 
-> "에러가 났을 때 당황하지 않고 해결책을 찾아요."
+---
+## 실시간 데이터 처리 (Streaming)
 
-- [[Spark_Common_Mistakes]] : "왜 안 되지?" 자주 범하는 문법 실수 모음 (Syntax Trap)
-- [[Spark_Troubleshooting_FileNotFound]] : "Driver엔 파일이 있는데 Worker엔 없대요!" (Py4JJavaError)
-- [[WARN_NativeCodeLoader_Log]] : "빨간색 경고 로그(NativeCodeLoader)가 뜨는데 무시해도 되나요?"
+> "데이터가 멈춰있지 않고 계속 흘러들어온다면?"
+
+- **[[Spark_Streaming_Intro]]** : 스트리밍의 두 가지 얼굴 (DStream vs Structured Streaming)
+- [[Spark_Streaming_Socket_Boilerplate]] : [템플릿] 만능 소켓 스트리밍 코드
