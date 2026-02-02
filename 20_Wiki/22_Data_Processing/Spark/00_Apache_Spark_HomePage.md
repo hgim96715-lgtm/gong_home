@@ -38,7 +38,8 @@
 
 - [x] [[Spark_File_IO_Basic]] :파일 읽어오기 (`textFile`, `file://` 경로의 비밀)
 - [x] **[[Transformations_vs_Actions]]** :Lazy Evaluation과 의존성 (Narrow vs Wide, 셔플의 발생 원리) 
-- [ ] [[Spark_Catalyst_Optimizer]] : 스파크의 뇌, Logical vs Physical Plan의 변환 과정
+- [x] [[Spark_Catalyst_Optimizer]] : 스파크의 뇌, Logical vs Physical Plan의 변환 과정
+- [x] [[Spark_Memory_Management]] : Executor 메모리 구조 (Unified Memory, Storage vs Execution)
 - [x] [[Spark_General_Transformations]] : Narrow (`map`, `flatMap` ,`glom`,`sample`,`filter`)
 - [x] [[Spark_Key_Transformations]]: 키 기준으로 뭉치고 정렬하기 (`reduceByKey`, `groupByKey`, `sortByKey`, `keys`,`countByKey`)
 - [x] [[Spark_Value_Transformations]] : 값만 안전하게 바꾸기 (`mapValues`, `values`,`countByValue`,`flatMapValues`)
@@ -49,6 +50,8 @@
 > "데이터가 100GB가 넘어가니 에러가 나요. 튜닝이 필요해!"
 
 - [ ] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`)  
+- [x] [[Spark_AQE_Deep_Dive]] : 실행 중에 계획을 바꾸는 AQE (Coalesce, Skew Join)
+- [ ] [[Spark_Dynamic_Partition_Pruning(DPP)]] : 조인할 때 필요한 파티션만 골라 읽기 (DPP)
 - [x] [[Spark_Core_Broadcast]] : 셔플 제거의 기술 (Broadcast Join vs Python Dict Lookup),`broadcast`,`udf`
 
 ## Level 4. 데이터 저장과 포맷 (Storage)

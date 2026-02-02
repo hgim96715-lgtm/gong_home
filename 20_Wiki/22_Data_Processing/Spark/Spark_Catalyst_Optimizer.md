@@ -10,6 +10,7 @@ related:
   - "[[Spark_Architecture]]"
   - "[[Transformations_vs_Actions]]"
   - "[[00_Apache_Spark_HomePage]]"
+  - "[[Spark_AQE_Deep_Dive]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step17.ipynb
 ---
@@ -79,6 +80,8 @@ Spark 3.0부터 도입된 게임 체인저입니다.
     * 원래 `SortMergeJoin`을 하려 했는데, 막상 까보니 데이터가 작으면 **`BroadcastJoin`** 으로 바꿔버립니다 (속도 급상승)
 3.  **Optimize Skew Joins:**
     * 특정 키에 데이터가 쏠려있으면(Skew), 알아서 쪼개서 병렬 처리합니다
+
+> 더 자세한 내용은 [[Spark_AQE_Deep_Dive]] 참고 
 
 ---
 ## 5. 실전: `.explain(True)` 해부하기  > step17.ipynb

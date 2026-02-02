@@ -6,106 +6,105 @@
 ```mermaid
 graph TD
     %% ==========================================
-    %% 🎨 스타일 정의 (시각적 구분)
+    %% 🎨 스타일 정의 (역할 구분)
     %% ==========================================
-    classDef user fill:#34495e,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef brain fill:#2980b9,stroke:#fff,stroke-width:4px,color:#fff;
-    classDef logic fill:#8e44ad,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef partition fill:#e67e22,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef scheduler fill:#d35400,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef task fill:#f1c40f,stroke:#333,stroke-width:2px,color:#000;
-    classDef worker fill:#27ae60,stroke:#fff,stroke-width:4px,color:#fff;
-    classDef data fill:#7f8c8d,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef user fill:#34495e,color:#fff;
+    classDef brain fill:#2980b9,color:#fff;
+    classDef plan fill:#8e44ad,color:#fff;
+    classDef rdd fill:#9b59b6,color:#fff;
+    classDef partition fill:#e67e22,color:#fff;
+    classDef scheduler fill:#d35400,color:#fff;
+    classDef task fill:#f1c40f,color:#000;
+    classDef exec fill:#27ae60,color:#fff;
+    classDef memory fill:#16a085,color:#fff;
+    classDef data fill:#7f8c8d,color:#fff;
+    classDef shuffle fill:#c0392b,color:#fff;
 
     %% ==========================================
-    %% 1. DRIVER NODE (두뇌 & 계획 & 분배)
+    %% 1. 사용자
     %% ==========================================
-    subgraph Driver ["🧠 Driver Node (작전 사령부)"]
-        direction TB
+    Code["👤 User Code<br/>- DataFrame / SQL 작성<br/>- 아직 실행 ❌"]:::user
+    Action["🔥 Action<br/>- count / show / collect<br/>- 이 시점에 실행 시작"]:::user
 
-        %% 1-1. 사용자 요청
-        subgraph UserLayer ["👤 User Request"]
-            Code["Code<br/>(DataFrame/SQL)"]:::user
-            Action["🔥 ACTION!<br/>(count, collect)"]:::user
-        end
+    %% ==========================================
+    %% 2. Driver & Catalyst
+    %% ==========================================
+    LogPlan["📐 Logical Plan<br/>- 어떤 컬럼을 쓰는지<br/>- 어떤 조건으로 필터하는지<br/>- 아직 데이터는 모름"]:::plan
 
-        %% 1-2. 두뇌 (최적화)
-        subgraph Catalyst ["⚙️ Catalyst Optimizer (지능)"]
-            LogPlan["Logical Plan<br/>(무엇을?)"]:::brain
-            PhyPlan["Physical Plan<br/>(어떻게?)"]:::brain
-        end
+    PhyPlan["⚙️ Physical Plan<br/>- 어떤 Join 전략을 쓸지<br/>- Shuffle 발생 여부 결정<br/>- 실행 방법 확정"]:::plan
 
-        %% 1-3. RDD & 파티션 로직 (여기가 합쳐진 핵심!)
-        subgraph DataLogic ["📄 Data Logic (쪼개기 전략)"]
-            RDD["RDD (논리적 전체)"]:::logic
-            
-            subgraph Partitions ["🔪 Partitioning (조각내기)"]
-                P1["🍰 Part 1"]:::partition
-                P2["🍰 Part 2"]:::partition
-            end
-        end
+    %% ==========================================
+    %% 3. RDD (핵심 개념)
+    %% ==========================================
+    RDD["📄 RDD (Resilient Distributed Dataset)<br/>- Spark 내부의 실제 실행 단위 개념<br/>- 데이터 전체를 논리적으로 표현<br/>- DataFrame도 내부적으로 RDD 기반"]:::rdd
 
-        %% 1-4. 스케줄링 (배송)
-        subgraph SchedulerLayer ["📅 Scheduling (배차)"]
-            DAG["🗺️ DAG Scheduler<br/>(Stage 분할)"]:::scheduler
-            
-            subgraph TaskSched ["📨 Task Scheduler (1:1 매핑)"]
-                Map1["Part 1 ➔ Task 1"]:::scheduler
-                Map2["Part 2 ➔ Task 2"]:::scheduler
-            end
-        end
+    %% ==========================================
+    %% 4. Partition
+    %% ==========================================
+    P1["🍰 Partition 1<br/>- RDD의 일부 데이터 조각<br/>- 하나의 Task가 처리"]:::partition
+    P2["🍰 Partition 2<br/>- 병렬 처리 단위<br/>- Executor 메모리에 로드됨"]:::partition
+
+    %% ==========================================
+    %% 5. Scheduler
+    %% ==========================================
+    DAG["🗺️ DAG Scheduler<br/>- Shuffle 기준으로 Stage 분리<br/>- 실행 순서 결정"]:::scheduler
+
+    TaskSched["📨 Task Scheduler<br/>- Partition 1 : 1 Task 생성<br/>- Executor로 Task 전달"]:::scheduler
+
+    %% ==========================================
+    %% 6. Task
+    %% ==========================================
+    T1["📦 Task 1<br/>- Partition 1 처리<br/>- Filter / Map / Join 실행"]:::task
+    T2["📦 Task 2<br/>- Partition 2 처리<br/>- 동일한 로직 병렬 실행"]:::task
+
+    %% ==========================================
+    %% 7. Executor & Memory
+    %% ==========================================
+    subgraph Exec1 ["👷 Executor 1 (JVM)"]
+        Mem1["🧠 Executor Memory<br/>- cache / persist 데이터 저장<br/>- 재사용 시 파일 재읽기 ❌"]:::memory
+    end
+
+    subgraph Exec2 ["👷 Executor 2 (JVM)"]
+        Mem2["🧠 Executor Memory<br/>- Shuffle 결과 저장 가능<br/>- 메모리 부족 시 Disk 사용"]:::memory
     end
 
     %% ==========================================
-    %% 2. CLUSTER / WORKERS (실행 현장)
+    %% 8. Shuffle
     %% ==========================================
-    subgraph Cluster ["🏗️ Cluster (실행 현장)"]
-        direction TB
-
-        %% Executor 1
-        subgraph Exec1 ["👷 Executor 1"]
-            T1["📦 <b>Task 1</b><br/>(Read Part1 + Calc)"]:::task
-        end
-
-        %% Executor 2
-        subgraph Exec2 ["👷 Executor 2"]
-            T2["📦 <b>Task 2</b><br/>(Read Part2 + Calc)"]:::task
-        end
-    end
+    Shuffle["🌪️ Shuffle<br/>- Partition 간 데이터 재분배<br/>- Network + Disk IO 발생<br/>- groupBy / join 시 필수"]:::shuffle
 
     %% ==========================================
-    %% 3. DATA SOURCE (저장소)
+    %% 9. Data Source
     %% ==========================================
-    File[("💾 HDFS / S3 / File<br/>(10GB Data)")]:::data
+    File["💾 Data Source (HDFS / S3 / File)<br/>- Executor가 직접 읽음<br/>- Driver는 절대 읽지 않음"]:::data
 
     %% ==========================================
-    %% 🔗 연결 흐름 (Flow)
+    %% 🔗 흐름
     %% ==========================================
-    
-    %% 1. 코드 -> 최적화
     Code --> Action --> LogPlan --> PhyPlan
-    
-    %% 2. 최적화 -> RDD 생성 -> 파티션 분할
-    PhyPlan -- "RDD 변환" --> RDD
-    RDD -- "Split" --> P1
-    RDD -- "Split" --> P2
-    
-    %% 3. 파티션 정보를 DAG Scheduler가 참조
+    PhyPlan --> RDD
+    RDD --> P1
+    RDD --> P2
+
     P1 -.-> DAG
     P2 -.-> DAG
     DAG --> TaskSched
-    
-    %% 4. Task Scheduler가 파티션을 Task로 포장 (1:1)
-    P1 === Map1
-    P2 === Map2
-    
-    %% 5. Task 배송 (Executor로)
-    Map1 -- "전송" --> Exec1
-    Map2 -- "전송" --> Exec2
-    
-    %% 6. 실제 데이터 읽기 (Task가 직접 함)
+
+    TaskSched --> T1 --> Exec1
+    TaskSched --> T2 --> Exec2
+
+    P1 -- groupBy / join --> Shuffle
+    P2 -- groupBy / join --> Shuffle
+
+    Shuffle --> P1
+    Shuffle --> P2
+
     T1 -.-> File
     T2 -.-> File
+
+    T1 --> Mem1
+    T2 --> Mem2
+
 ```
 
 

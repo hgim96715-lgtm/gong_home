@@ -6,7 +6,6 @@ aliases:
   - KryoSerializer
   - ShufflePartitions
 tags:
-  - PySpark
   - Spark
 related:
   - "[[PySpark_Session_Context]]"
