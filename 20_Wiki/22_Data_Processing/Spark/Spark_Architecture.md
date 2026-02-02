@@ -12,6 +12,7 @@ related:
   - "[[Spark_Installation_Local]]"
   - "[[Spark_Concept_Evolution]]"
   - "[[Process_vs_Thread]]"
+  - "[[Spark_Submit_Command]]"
 ---
 ##  개념 한 줄 요약
 

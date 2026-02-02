@@ -13,6 +13,7 @@ related:
   - "[[Python_Virtual_Env]]"
   - "[[Dockerfile_Basics]]"
   - "[[Spark_Troubleshooting_FileNotFound]]"
+  - "[[Spark_Submit_Command]]"
 ---
 ## 개념 한 줄 요약
 

@@ -19,14 +19,14 @@
 > "SQL처럼 데이터를 조작해보자. (RDD는 몰라도 DataFrame은 필수!)"
 
 - [x] [[PySpark_Session_Context]]: 스파크의 시작점, `SparkSession` 객체 만들기
-- [x] [[Spark_Session_Deep_Dive]] :  Spark Session 전체 설정 내용
+- [x] [[Spark_Session_Deep_Dive]] :  Spark Session 전체 설정 내용(`spark-submit`, `Master`, `Deploy Mode`)
 - [x] [[Spark_DataFrame_SQL_Intro]] : RDD보다 훨씬 편한 DataFrame과 SparkSQL 소개
 - [x] [[Spark_DataFrame_Basics]] : 데이터 읽기(`read`), 만들기(`createDataFrame`), 확인(`show`, `printSchema`)
 - [x] [[Spark_Data_IO]] : 데이터 저장의 비밀 (`read` vs `write`, 왜 폴더로 저장될까?)
 - [x] [[DataFrame_Transform_Basic]] : **[1부]** 변환과 정제 (Select, Filter, Column, withColumn)
 - [x] [[Spark_Data_Cleaning]] : [1.5부] 결측치 청소와 날짜 다루기 (`na.drop`, `na.fill`, `year`, `format_number`)
 - [x] [[DataFrame_Aggregation]] : **[2부]** 집계와 순위 (GroupBy, Agg, Sort/orderBy)
-- [ ] [[Spark_DataFrame_Joins]] : [3부] 데이터 병합하기 (Inner, Left, Semi, Anti Join)
+- [x] [[Spark_DataFrame_Joins]] : [3부] 데이터 병합하기 (Inner, Left, Semi, Anti Join)
 - [x] [[Spark_Functions_Library]] : 자주 쓰는 함수 사전 (Reference)
 - [x] [[SQL_with_Spark]] : 파이썬 코드 대신 SQL 문법으로 쿼리하기 (`createOrReplaceTempView`)
 
@@ -37,7 +37,8 @@
 > "코드를 짰는데 왜 바로 실행이 안 되지?"
 
 - [x] [[Spark_File_IO_Basic]] :파일 읽어오기 (`textFile`, `file://` 경로의 비밀)
-- [x] **[[Transformations_vs_Actions]]** : 족보를 만드는 함수 vs 결과를 내는 함수 모음 
+- [x] **[[Transformations_vs_Actions]]** :Lazy Evaluation과 의존성 (Narrow vs Wide, 셔플의 발생 원리) 
+- [ ] [[Spark_Catalyst_Optimizer]] : 스파크의 뇌, Logical vs Physical Plan의 변환 과정
 - [x] [[Spark_General_Transformations]] : Narrow (`map`, `flatMap` ,`glom`,`sample`,`filter`)
 - [x] [[Spark_Key_Transformations]]: 키 기준으로 뭉치고 정렬하기 (`reduceByKey`, `groupByKey`, `sortByKey`, `keys`,`countByKey`)
 - [x] [[Spark_Value_Transformations]] : 값만 안전하게 바꾸기 (`mapValues`, `values`,`countByValue`,`flatMapValues`)
