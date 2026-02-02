@@ -49,9 +49,10 @@
 
 > "데이터가 100GB가 넘어가니 에러가 나요. 튜닝이 필요해!"
 
-- [ ] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`)  
+- [x] **[[Spark_Partitioning_Concept]]** : 데이터를 몇 조각으로 나눌 것인가? (`repartition` vs `coalesce`,`spark.range()`,`RepartitionByRange`,`getNumPartitions()`,`glom()`)  
 - [x] [[Spark_AQE_Deep_Dive]] : 실행 중에 계획을 바꾸는 AQE (Coalesce, Skew Join)
-- [ ] [[Spark_Dynamic_Partition_Pruning(DPP)]] : 조인할 때 필요한 파티션만 골라 읽기 (DPP)
+- [x] [[Spark_Dynamic_Partition_Pruning(DPP)]] : 조인할 때 필요한 파티션만 골라 읽기 (DPP)
+- [x] [[Spark_Caching_Strategies]] : 반복 계산을 막는 캐싱 전략 (cache vs persist)
 - [x] [[Spark_Core_Broadcast]] : 셔플 제거의 기술 (Broadcast Join vs Python Dict Lookup),`broadcast`,`udf`
 
 ## Level 4. 데이터 저장과 포맷 (Storage)

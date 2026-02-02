@@ -8,6 +8,7 @@ tags:
 related:
   - "[[Spark_Partitioning_Concept]]"
   - "[[Spark_AQE_Deep_Dive]]"
+  - "[[00_Apache_Spark_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step18.ipynb
 ---
