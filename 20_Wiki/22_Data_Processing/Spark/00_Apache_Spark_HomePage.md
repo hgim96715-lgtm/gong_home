@@ -53,7 +53,8 @@
 - [x] [[Spark_AQE_Deep_Dive]] : 실행 중에 계획을 바꾸는 AQE (Coalesce, Skew Join)
 - [x] [[Spark_Dynamic_Partition_Pruning(DPP)]] : 조인할 때 필요한 파티션만 골라 읽기 (DPP)
 - [x] [[Spark_Caching_Strategies]] : 반복 계산을 막는 캐싱 전략 (cache vs persist)
-- [ ] [[Spark_SQL_Hints]] : 옵티마이저의 판단을 강제로 덮어쓰는 기술 (Hint)
+- [x] [[Spark_SQL_Hints]] : 옵티마이저의 판단을 강제로 덮어쓰는 기술 (Hint)
+- [ ] [[Spark_Accumulator]] : 분산 환경의 전역 카운터 (집계 및 디버깅)
 - [x] [[Spark_Core_Broadcast]] : 셔플 제거의 기술 (Broadcast Join vs Python Dict Lookup),`broadcast`,`udf`
 
 ## Level 4. 데이터 저장과 포맷 (Storage)
