@@ -16,6 +16,8 @@ related:
   - "[[SQL_with_Spark]]"
   - "[[Pandas_Merge_Concat]]"
   - "[[SQL_JOIN_Concept]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/step16.ipynb
 ---
 ## Join의 기본 문법 
 
@@ -114,3 +116,23 @@ df.join(other_df, df.id == other_df.id, "inner")
 # 조건: 양쪽 테이블의 컬럼 이름("id")이 같아야 함.
 df.join(other_df, on=["id"], how="inner")
 ```
+
+---
+## 5. [부록] Pandas vs Spark Join 
+
+"비슷해 보이지만, **작동 원리**와 **결과**가 미묘하게 다릅니다."
+
+| 비교 항목           | Pandas (`pd.merge`)                      | Spark (`df.join`)                        |
+| :-------------- | :--------------------------------------- | :--------------------------------------- |
+| **문법 스타일**      | `pd.merge(left, right)`<br>(독립 함수 형태 선호) | `left.join(right)`<br>(메서드 체이닝 형태)       |
+| **컬럼명 중복 시**    | **자동 해결** (`_x`, `_y` 접미사 붙여줌)           | **방치함** (그냥 두 개 다 생김 -> 에러 주범 🚨)        |
+| **순서(Order)**   | **보장됨** (왼쪽 데이터 순서 유지)                   | **보장 안 됨** (분산 처리 중 뒤섞임) 🌪️             |
+| **Semi / Anti** | 직접 구현 필요 (`isin`, `~isin`)               | **전용 옵션 존재** (`leftsemi`, `leftanti`) 👍 |
+| **Null 조인 키**   | `NaN`끼리 매칭 안 됨 (기본값)                     | `null`끼리 매칭 안 됨 (SQL 표준 준수)              |
+| **작동 방식**       | 단일 메모리에서 계산                              | 네트워크 타고 데이터 이동 (**Shuffle** 발생) 🚚       |
+
+### 💡 핵심 차이점 3줄 요약
+
+1.  **Pandas는 친절합니다.** 컬럼 이름이 같으면 알아서 이름을 바꿔주지만, **Spark는 불친절합니다.** (그래서 `on=['col']`을 꼭 써야 합니다.)
+2.  **Spark는 순서를 섞어버립니다.** 데이터가 서버 여러 대를 왔다 갔다 하기 때문에(`Shuffle`), 정렬이 필요하면 마지막에 꼭 `orderBy`를 해야 합니다.
+3.  **Spark는 Semi/Anti가 강력합니다.** 대용량 데이터에서 "없는 것 찾기"를 할 때 Pandas보다 훨씬 효율적인 전용 키워드를 제공합니다.

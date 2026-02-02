@@ -12,6 +12,8 @@ tags:
 related:
   - "[[Spark_DataFrame_Joins]]"
   - "[[SQL_JOIN_Concept]]"
+linked:
+  - file:////Users/gong/gong_study_de/pandas/notebooks/merge.ipynb
 ---
 ##  개념 한 줄 요약 
 
@@ -86,7 +88,7 @@ merged_inner = pd.merge(left_df, right_df, on='id', how='inner')
 merged_left = pd.merge(left_df, right_df, on='id', how='left')
 
 # 3. Right Join (오른쪽 기준)
-# 설명: 오른쪽 원본을 유지하고, 왼쪽 정보를 붙입니다.
+# 설명: 오른쪽 원본을 유지하고, 왼쪽 정보를 붙입니다. (매칭 안 되면 NaN)
 merged_right = pd.merge(left_df, right_df, on='id', how='right')
 
 # 4. Outer Join (합집합) - 전체 데이터 확인용
@@ -107,3 +109,58 @@ pd.merge(left_df, right_df,
 ```
 
 
+---
+## 키 값이 중복될 때 (1:N 조인) 🤯
+
+내가 가장 많이 헷갈리는 상황
+왼쪽(Customer)에는 ID가 1개뿐인데, 오른쪽(Order)에는 ID가 여러 개(1번 고객이 2번 주문) 있을 때 어떻게 될까요?
+
+**결론:** **"행이 늘어납니다!" (Row Explosion)**
+판다스는 오른쪽에서 매칭되는 게 2개면, **왼쪽 데이터도 똑같이 2개로 복사**해서 짝을 맞춰줍니다.
+
+### ① 데이터 준비
+
+```python
+customers = pd.DataFrame({
+    'id': [1, 2, 3],
+    'name': ['Kim', 'Lee', 'Park']
+})
+
+orders = pd.DataFrame({
+    'id': [1, 1, 3],
+    'product': ['Apple', 'Banana', 'Cherry']
+})
+```
+### ② Inner Join 결과 (교집합 + 증식)
+
+ID가 양쪽에 다 있는 1번(Kim)과 3번(Park)만 남습니다. 
+이때, **1번 Kim은 주문을 2번 했으므로 2줄로 늘어납니다.**
+
+```python
+pd.merge(customers, orders, on='id', how='inner')
+```
+
+**결과 확인:** (2번 Lee는 주문 내역 없어서 삭제됨)
+
+|**id**|**name**|**product**|**설명**|
+|---|---|---|---|
+|**1**|**Kim**|Apple|1번 Kim 데이터 복사됨 (1)|
+|**1**|**Kim**|Banana|1번 Kim 데이터 복사됨 (2)|
+|3|Park|Cherry|1:1 매칭|
+
+### ③ Left Join 결과 (왼쪽 유지 + 증식) 
+
+왼쪽(Customer)은 무조건 살립니다. 1번 Kim은 주문이 많아서 늘어나고, 2번 Lee는 주문이 없어도 살아남습니다.
+
+```python
+pd.merge(customers, orders, on='id', how='left')
+```
+
+**결과 확인:** (2번 Lee 생존, Product는 NaN)
+
+| **id** | **name** | **product** | **설명**                      |
+| ------ | -------- | ----------- | --------------------------- |
+| **1**  | **Kim**  | Apple       | 1번 Kim 복사됨                  |
+| **1**  | **Kim**  | Banana      | 1번 Kim 복사됨                  |
+| **2**  | **Lee**  | **NaN**     | **주문 안 했지만 Left Join이라 생존** |
+| 3      | Park     | Cherry      | 매칭됨                         |
