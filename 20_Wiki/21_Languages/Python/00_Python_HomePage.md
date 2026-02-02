@@ -10,6 +10,7 @@
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`,`starswith`)
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`,`lower`,`re.search`)
 - [[Python_Sorting_Logic]] : 딕셔너리 정렬과 sorted vs sort 차이 (`sorted`,`sort`)
+- [[Python_Builtin_Functions]] : 코드를 줄여주는 마법, 내장 함수 (`max`, `min`, `sum`, `len`, `abs`)
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs`)
 
 ## Level 2. 데이터 자료구조 (Data Structures)
