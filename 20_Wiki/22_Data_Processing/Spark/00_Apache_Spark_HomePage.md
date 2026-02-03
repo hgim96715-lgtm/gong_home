@@ -13,7 +13,7 @@
 > 스파크가 **"어떻게, 그리고 왜"** 이렇게 동작하는지 설명합니다.'
 
 - **기초 개념**
-    
+
     - **[[Spark_Concept_Evolution]]** : 하둡(MapReduce)과 스파크의 차이점 (Disk vs Memory)
     - **[[Spark_Architecture]]** : Driver, Executor, Cluster Manager의 역할 완벽 정리
     - **[[RDD_Concept]]** : 스파크 데이터의 불변성과 복구 능력 (Resilient Distributed Dataset)
@@ -99,4 +99,9 @@
 > "데이터가 멈춰있지 않고 계속 흘러들어온다면?"
 
 - **[[Spark_Streaming_Intro]]** : 스트리밍의 두 가지 얼굴 (DStream vs Structured Streaming)
-- [[Spark_Streaming_Socket_Boilerplate]] : [템플릿] 만능 소켓 스트리밍 코드
+- [[Spark_Streaming_Socket_Boilerplate]] :  만능 소켓 스트리밍 코드(`Netcat,nc`,`readStream`,`writeStream`)
+- [[Streaming_Source_Comparison]] : 소켓(Socket) vs 카프카(Kafka) 완벽 비교
+- [[Spark_Streaming_Architecture]] : 데이터 소스, 처리 모델(Micro-batch), 트리거 설정
+- [[Spark_Streaming_Fault_Tolerance]] : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
+- [[Apache_Kafka_Intro]] : 대용량 데이터 파이프라인의 심장, 카프카 기초
+- [[Spark_Kafka_Docker_Setup]] : 환경 구축 Docker Compose
