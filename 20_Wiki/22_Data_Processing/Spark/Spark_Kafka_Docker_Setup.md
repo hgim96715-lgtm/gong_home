@@ -10,6 +10,7 @@ related:
   - "[[Spark_Streaming_Socket_Boilerplate]]"
   - "[[Apache_Kafka_Intro]]"
   - "[[Spark_Kafka_Docker_Setup]]"
+  - "[[00_Apache_Spark_HomePage]]"
 ---
 ## 스파크 + 카프카(KRaft) 통합 실습 환경
 

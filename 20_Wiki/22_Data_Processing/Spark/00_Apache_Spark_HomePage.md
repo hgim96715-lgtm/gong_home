@@ -40,12 +40,13 @@
     
     - **[[Spark_DataFrame_Basics]]** : 기본 조작 (Read, Write, Show, Schema)
     - **[[Spark_Data_IO]]** : 저장의 기술 (Parquet, CSV, PartitionBy)
-    - **[[DataFrame_Transform_Basic]]** : 조회와 필터링 (Select, Filter, Column, withColumn)
+    - **[[DataFrame_Transform_Basic]]** : 조회와 필터링 (Select, Filter, Column, withColumn,cast)
     - **[[DataFrame_Aggregation]]** : 집계와 순위 (GroupBy, Agg, Sort)
     - **[[Spark_DataFrame_Joins]]** : 조인 전략 총정리 (Inner, Left, Semi, Anti)
     - **[[Spark_Data_Cleaning]]** : 결측치와 날짜 처리 (`na.drop`, `format_number`)
     - **[[SQL_with_Spark]]** : Python 대신 SQL 문법 사용하기 (`TempView`)
     - **[[Spark_Functions_Library]]** : 자주 쓰는 내장 함수 사전 (Reference)
+    - [[Spark_JSON_Handling]] : JSON 데이터 파싱과 생성 (from_json, to_json)
         
 - **RDD 로우 레벨 제어 (Low-Level)**
 
@@ -105,3 +106,6 @@
 - [[Spark_Streaming_Fault_Tolerance]] : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
 - [[Apache_Kafka_Intro]] : 대용량 데이터 파이프라인의 심장, 카프카 기초
 - [[Spark_Kafka_Docker_Setup]] : 환경 구축 Docker Compose
+- [[Spark_Streaming_Kafka_Integration]] : [코드] 스파크로 카프카 데이터 읽고 쓰기
+- **[[Spark_Streaming_JSON_ETL_Project]]** (실전 프로젝트: JSON 데이터 변환)
+- [[Spark_Streaming_Sink_Multiple]] 
