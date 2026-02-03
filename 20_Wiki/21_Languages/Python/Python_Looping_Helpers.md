@@ -54,6 +54,31 @@ print(r)       # 출력: range(0, 999999999999) (안 보여줌)
 print(list(r)) # 🚨 주의! 이러면 컴퓨터 멈춤 (메모리 폭발)
 ```
 
+### 💡 실전 꿀팁: 조건문(if) 없애기
+
+반복문 안에서 `if i % 2 == 0` 처럼 짝수/홀수를 거르는 로직은 `range`의 **step**을 쓰면 아예 없앨 수 있습니다.
+
+**[Before] 초보자의 코드 (if문 남발)**
+
+```python
+# 1부터 n까지 홀수만 더하기
+total = 0
+for i in range(n + 1):
+ if i % 2 == 1: # 굳이 하나하나 검사함 
+	 total += i
+```
+
+[After] 파이써닉한 코드 (step 활용)
+
+```python
+# 시작점을 1로 잡고, 2칸씩 점프! (검사할 필요가 없음)
+total = sum(range(1, n + 1, 2))
+```
+
+>**[[Python_List_Comprehension]]** : `[i*i for i in range(2, n+1, 2)]` 처럼 짝수 제곱을 한 줄로 만드는 법 참고.
+
+
+
 ---
 ## 번호표 붙이기: `enumerate()` 
 

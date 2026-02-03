@@ -17,6 +17,7 @@ related:
   - "[[Python_Variables_Types]]"
   - "[[Spark_Iterating_Data]]"
   - "[[00_Python_HomePage]]"
+  - "[[Python_List_Comprehension]]"
 ---
 ## 개념 한 줄 요약
 
@@ -67,6 +68,25 @@ elif status == "failed":
 else:
     print("대기 중...")
 ```
+
+### Truthy & Falsy (참과 거짓)
+
+파이썬에서는 숫자 그 자체를 조건문으로 쓸 수 있습니다.
+
+- **0** : `False`로 취급
+- **0이 아닌 모든 수** (1, -1, 100...) : `True`로 취급
+
+**활용 예시:**
+
+```python
+n = 3
+if n % 2:  # 나머지가 1이면 True (홀수)
+    print("홀수입니다")
+else:      # 나머지가 0이면 False (짝수)
+    print("짝수입니다")
+```
+
+**[[Python_List_Comprehension]]** : `[i*i for i in range(2, n+1, 2)]` 처럼 짝수 제곱을 한 줄로 만드는 법 참고.
 
 ---
 ## For 문 (순회 반복) 
