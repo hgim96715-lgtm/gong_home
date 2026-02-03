@@ -21,6 +21,7 @@
 > 엑셀의 피벗 테이블을 SQL로 구현하기
 
 - [[Aggregation_GROUP_BY]] : 그룹별 통계 내기 (COUNT, SUM, AVG) 
+- [[SQL_DISTINCT_vs_GROUP_BY]] : 중복만 제거할까(`DISTINCT`) vs 묶어서 계산할까(`GROUP BY`)?
 - [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (가장 많이 헷갈림!) 
 - [[Numeric_Functions]] : 소수점 반올림, 버림, 절댓값 완벽 정리  (ROUND,TRUNC,FLOOR,CEIL )
 - [[String_Functions]] : 문자열 자르고 붙이기 (SUBSTR, CONCAT) 

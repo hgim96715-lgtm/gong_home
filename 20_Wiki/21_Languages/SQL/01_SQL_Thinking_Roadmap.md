@@ -99,40 +99,40 @@ flowchart TD
         Q_Where{"'특정 조건'인 행만<br>필요한가?"}
         
         Q_Where -- "Yes (날짜, 카테고리 등)" --> Op_Where["WHERE 절 사용"]
-        Q_Where -- "No (전체 데이터)" --> Q_Group
-        Op_Where --> Q_Group
+        Q_Where -- "No (전체 데이터)" --> Q_Goal
+        Op_Where --> Q_Goal
     end
 
     %% ==========================================
-    %% Step 3: 뭉칠까 펼칠까 (핵심 분기점)
-    %% "Window Function 추가됨!"
+    %% Step 3: 핵심 분기점 (수정됨!)
     %% ==========================================
-    subgraph Step3_Agg ["Step 3: 집계 및 계산 방식 결정"]
+    subgraph Step3_Agg ["Step 3: 데이터 가공 방식 결정 (목적)"]
         direction TB
-        Q_Group{"'~별'로 묶어서<br>행 개수를 줄일 것인가?"}
         
-        %% [Path A] Group By (행 압축)
-        Q_Group -- "Yes (통계/요약)" --> Op_GroupBy["GROUP BY"]
-        Op_GroupBy --> Op_Calc["SUM / COUNT / AVG"]
+        %% 질문을 '목적'으로 변경하여 모호함 제거
+        Q_Goal{"데이터를 가공하는<br>진짜 목적은 무엇인가?"}
+
+        %% [Path A] 통계 산출 (GROUP BY)
+        Q_Goal -- "그룹별 통계/계산<br>(SUM, COUNT)" --> Op_GroupBy[":::action GROUP BY<br>(그룹화 + 계산)"]
+        Op_GroupBy --> Op_Calc["집계 함수 사용"]
         Op_Calc --> Q_Having{"집계된 결과를<br>필터링해야 하는가?"}
         Q_Having -- "Yes (HAVING)" --> Op_Having["HAVING"]
-        
-        %% [Path B] Window Function (행 유지) ⭐️ NEW!
-        Q_Group -- "No (행 유지)" --> Q_Window{"순위, 누적합, 이동평균,<br>이전 행 비교가 필요한가?"}
-        
-        Q_Window -- "Yes (고급 계산)" --> Op_Window[":::point 🪟 WINDOW FUNCTION<br>(RANK, LEAD, SUM OVER...)"]
-        
-        %% [Path C] 단순 조회
-        Q_Window -- "No (단순 조회)" --> Q_Distinct{"중복을 제거해야 하는가?<br>(Distinct)"}
-        Q_Distinct -- Yes --> Op_Distinct["SELECT DISTINCT"]
+
+        %% [Path B] 단순 중복 제거 (DISTINCT) -> 펭귄 문제 해결 루트!
+        Q_Goal -- "단순 목록 조회<br>(중복만 제거)" --> Op_Distinct[":::point SELECT DISTINCT<br>(계산 없이 유니크한 값만)"]
+
+        %% [Path C] 분석 (Window Function)
+        Q_Goal -- "행 유지 + 분석<br>(순위, 누적합)" --> Op_Window[":::action WINDOW FUNCTION<br>(RANK, LEAD, OVER...)"]
+
+        %% [Path D] 그냥 조회
+        Q_Goal -- "그대로 조회" --> Q_Order
     end
 
-    %% Step 3 -> Step 4 연결 (모든 길이 Step 4로 모임)
+    %% Step 3 -> Step 4 연결
     Q_Having -- No --> Q_Order
     Op_Having --> Q_Order
-    Op_Window --> Q_Order
-    Q_Distinct -- No --> Q_Order
     Op_Distinct --> Q_Order
+    Op_Window --> Q_Order
 
     %% ==========================================
     %% Step 4: 순서 및 제한
@@ -158,9 +158,9 @@ flowchart TD
     classDef point fill:#ffcdd2,stroke:#d32f2f,stroke-width:4px,color:black;
 
     class Start,End startend;
-    class Q_Complex,Q_ColCheck,Q_Where,Q_Group,Q_Window,Q_Distinct,Q_Having,Q_Order,Q_Limit decision;
+    class Q_Complex,Q_ColCheck,Q_Where,Q_Goal,Q_Having,Q_Order,Q_Limit decision;
     class Op_CTE,Op_Join,Op_OneTable,Op_Where,Op_GroupBy,Op_Calc,Op_Having,Op_Window,Op_Distinct,Op_Order,Op_Limit action;
-    class Op_OneTable,Op_CTE,Op_Window point;
+    class Op_OneTable,Op_CTE,Op_Distinct point;
 ```
 
 
