@@ -1,4 +1,4 @@
-[^1]
+
 > [!abstract] **Engineer's Log**
 > "Everything is a file."
 > 터미널을 지배하는 자가 서버를 지배한다. 💻

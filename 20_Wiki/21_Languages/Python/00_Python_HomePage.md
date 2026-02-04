@@ -11,6 +11,9 @@
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`,`lower`,`re.search`)
 - [[Python_Sorting_Logic]] : 딕셔너리 정렬과 sorted vs sort 차이 (`sorted`,`sort`)
 - [[Python_Builtin_Functions]] : 코드를 줄여주는 마법, 내장 함수 (`max`, `min`, `sum`, `len`, `abs`)
+- [[Python_Math_Module]] : 정밀한 수학 연산 (`math.prod`, `ceil`, `floor`, `gcd`)
+- [[Python_Statistics_Module]] : 데이터 요약 통계 (`mean`, `median`, `stdev`)
+- [[Python_Collections_Counter]] : 빈도 분석 (`Counter`, `most_common`)
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs`)
 
 ## Level 2. 데이터 자료구조 (Data Structures)
