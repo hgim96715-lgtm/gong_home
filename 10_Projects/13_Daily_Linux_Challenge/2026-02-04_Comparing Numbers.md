@@ -4,7 +4,7 @@ tags:
 status: 🟩 해결
 related:
   - "[[Shell_Scripting_Basics]]"
-source:
+source: HackerRank
 ---
 ## 📋 문제 분석 & 파이프라인 설계 (Shell logic)
 

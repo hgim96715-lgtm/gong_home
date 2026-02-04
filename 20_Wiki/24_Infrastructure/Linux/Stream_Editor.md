@@ -13,6 +13,7 @@ related:
   - "[[Filtering_Text]]"
   - "[[00_Linux_HomePage]]"
   - "[[File_Management]]"
+  - "[[Text_Transformation_tr]]"
 ---
 ## 개념 한 줄 요약
 

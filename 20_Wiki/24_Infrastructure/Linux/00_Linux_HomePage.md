@@ -35,7 +35,8 @@
 
 > "내 컴퓨터가 나를 알아보게 만들어요."
 
-- [[Environment_Variables]] : 환경 변수의 개념과 설정 (`env`, `export`)  
+- [[Environment_Variables]] : 환경 변수의 개념과 설정 (`env`, `export`)
+- [[Shell_Parameter_Expansion]] : 변수 가공의 마법 (`${var,,}`, `${var:-default}`)
 - [[Path_Variable]] : 마법의 변수 PATH 이해하기 (`$PATH`) 
 - [[Shell_Config]] : 설정을 영구 저장하고 적용하기 (`.zshrc`, `.bashrc`, `source`)
 
@@ -67,6 +68,7 @@
 > "수만 줄의 로그에서 원하는 정보만 딱! 골라내요."
 
 - [[Filtering_Text]] : 원하는 글자 찾기 (`grep`)
+- [[Text_Transformation_tr]] : 문자 치환 및 삭제의 기본 (`tr`)
 - [[Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`)
 - [[JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`)
 - [[Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`)
