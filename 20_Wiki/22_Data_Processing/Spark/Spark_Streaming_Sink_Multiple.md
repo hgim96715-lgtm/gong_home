@@ -10,6 +10,10 @@ tags:
 related:
   - "[[Spark_Streaming_JSON_ETL_Project]]"
   - "[[Spark_JSON_Handling]]"
+  - "[[Spark_Streaming_Fault_Tolerance 죽어도 살아나는 법]]"
+  - "[[00_Apache_Spark_HomePage]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-spark/notebooks/kafka_multi.py
 ---
 ##  Sink to Multiple Places (다중 출력) 
 
@@ -50,7 +54,7 @@ related:
 file_writer = concat_df \
     .writeStream \
     .format("json") \
-    .option("path", "transformed") \
+    .option("path", "data/transformed") \
     .option("checkpointLocation", "chk/json") \
     .start()
 ```
@@ -69,3 +73,25 @@ kafka_writer = output_df \
 ```
 
 ---
+## 3. 쿼리 식별을 위한 이름표 (`.queryName`) 
+
+한 코드 안에서 여러 개의 `writeStream`이 돌아갈 때, 각각의 스트림을 구분하기 위해 이름을 붙여줍니다.
+
+- **문법**: `{python}.queryName("이름")`
+- **비유**: 한 공장 안에 여러 라인이 있을 때 "1번 라인(Kafka)", "2번 라인(JSON)"이라고 **관리 명찰**을 다는 것
+
+###  왜 써야 하나요?
+
+1. **모니터링**: 스파크 UI나 로그를 볼 때 `"transformed kafka"`라는 이름으로 뜨기 때문에 어떤 쿼리가 문제인지 바로 알 수 있습니다. 
+2. **제어 가능**: 변수에 담아두면 나중에 특정 이름의 쿼리만 골라서 멈추거나 상태를 확인할 수 있습니다. 
+
+```python
+# 예시: 변수에 담아서 개별 제어하기
+kafka_writer = output_df \
+                .writeStream \
+                .queryName("transformed kafka") \
+                .start()
+
+# 나중에 이 쿼리의 상태만 보고 싶을 때
+print(kafka_writer.status)
+```

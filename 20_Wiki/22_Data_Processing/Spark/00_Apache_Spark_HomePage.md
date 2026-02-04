@@ -103,9 +103,9 @@
 - [[Spark_Streaming_Socket_Boilerplate]] :  만능 소켓 스트리밍 코드(`Netcat,nc`,`readStream`,`writeStream`)
 - [[Streaming_Source_Comparison]] : 소켓(Socket) vs 카프카(Kafka) 완벽 비교
 - [[Spark_Streaming_Architecture]] : 데이터 소스, 처리 모델(Micro-batch), 트리거 설정
-- [[Spark_Streaming_Fault_Tolerance]] : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
+- [[Spark_Streaming_Fault_Tolerance 죽어도 살아나는 법]] : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
 - [[Apache_Kafka_Intro]] : 대용량 데이터 파이프라인의 심장, 카프카 기초
 - [[Spark_Kafka_Docker_Setup]] : 환경 구축 Docker Compose
 - [[Spark_Streaming_Kafka_Integration]] : [코드] 스파크로 카프카 데이터 읽고 쓰기
 - **[[Spark_Streaming_JSON_ETL_Project]]** (실전 프로젝트: JSON 데이터 변환)
-- [[Spark_Streaming_Sink_Multiple]] 
+- **[[Spark_Streaming_Sink_Multiple]]**: 다중 출력 및 `.queryName`을 활용한 쿼리 관리법

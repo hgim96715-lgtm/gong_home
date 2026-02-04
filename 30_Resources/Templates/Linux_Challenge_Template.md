@@ -1,7 +1,7 @@
 ---
 tags:
   - Linux_Test
-status: "⬜ 진행중 # (완료 시: 🟩 해결 / 복습 필요 시: 🟧 복습)"
+status: 🟧 복습
 related:
 source:
 ---

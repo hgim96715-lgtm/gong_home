@@ -11,6 +11,7 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_JSON_Handling]]"
   - "[[DataFrame_Transform_Basic]]"
+  - "[[Spark_Streaming_Fault_Tolerance 죽어도 살아나는 법]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/kafka_json.py
 ---
@@ -74,6 +75,7 @@ from pyspark.sql.functions import expr, from_json, col, lower, to_json, struct
 spark = SparkSession \
     .builder \
     .appName("StructuredJSONETL") \
+    .master("spark://spark-master:7077") \
     .config("spark.streaming.stopGracefullyOnShutdown", "true") \
     .config("spark.sql.shuffle.partitions", "3") \
     .getOrCreate()
@@ -249,7 +251,7 @@ docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh \
 **터미널 3(투입구)** 에 아래 데이터를 복사해서 넣고 엔터를 치세요.
 
 ```json
-{"city": "SEOUL", "domain": "naver.com", "event": "click"}
+{"city": "DAEGU", "domain": "naver.com", "event": "click"}
 ```
 
 그 순간, **터미널 1(감시자)** 에 아래처럼 변환된 결과가 뜨면 성공입니다!
