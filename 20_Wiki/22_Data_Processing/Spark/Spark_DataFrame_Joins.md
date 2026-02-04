@@ -117,6 +117,53 @@ df.join(other_df, df.id == other_df.id, "inner")
 df.join(other_df, on=["id"], how="inner")
 ```
 
+### Python 문법 주의: `on=` 뒤에 `"inner"` 금지!
+
+ **Python 언어의 규칙**
+함수를 부를 때 `이름=값` (키워드 인자)을 한 번이라도 썼으면, 그 뒤에는 무조건 `이름=값` 형태로만 써야 합니다.
+
+```python
+# ❌ SyntaxError 발생!
+# 이유: 키워드 인자(on=...) 뒤에 위치 인자("inner")가 왔음
+df.join(other_df, on=["uuid"], "inner")
+
+# ✅ 올바른 방법 1: how=를 명시 (가장 추천)
+df.join(other_df, on=["uuid"], how="inner")
+```
+
+### 예외: 시간 조건(Interval)을 넣을 때는 `on` 못 씀!
+
+>**관련 문서 참고**
+>[[Spark_Streaming_Stream_Join]]: 스트림 조인 기본 개념 및 실습 
+>[[Spark_Streaming_Window_Aggregation]]: 시간 윈도우 집계 방식
+> [[Spark_Streaming_Watermark]]: 늦게 도착한 데이터 처리(State 정리) 기준
+
+Stream-Stream Join의 핵심인 **"시간 제약(예: 10분 이내)"** 조건을 넣는 순간, 편리했던 `on=['uuid']`는 더 이상 사용할 수 없습니다.
+`on` 파라미터는 오직 **"컬럼 값이 똑같다(Equality)"** 는 조건만 처리할 수 있기 때문입니다.
+
+복잡한 조건(범위, 부등호 등)이 필요할 땐 **`expr`** 을 써야 합니다.
+
+**💡 중요:** `on`을 쓰지 못하므로, 조인 후에는 **중복 컬럼(`uuid`)이 다시 발생**합니다. 반드시 뒤에서 `.drop()`을 해줘야 합니다!
+
+```python
+from pyspark.sql.functions import expr
+
+# ❌ 불가능한 문법
+# on은 "범위 조건"을 받을 자리가 없습니다.
+# df.join(other_df, on=['uuid'], "inner", where="time < ...") (X)
+
+# ✅ 올바른 문법 (expr 사용)
+join_df = impressions_df.join(
+    clicks_df,
+    expr("""
+        impressions_df.uuid = clicks_df.uuid AND
+        clicks_df.create_date >= impressions_df.create_date AND
+        clicks_df.create_date <= impressions_df.create_date + interval 10 minutes
+    """),
+    "inner"
+).drop(clicks_df.uuid) # 👈 on을 안 썼으니 직접 지워줘야 함!
+```
+
 ---
 ## 5. [부록] Pandas vs Spark Join 
 

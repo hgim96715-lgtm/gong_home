@@ -94,25 +94,34 @@ tags: [Index, Spark, DataEngineering]
 
 > "데이터가 멈춰있지 않고 계속 흘러들어온다면?"
 
-- **개념 및 구조**
+- **개념 및 구조 (Concept)**
     - **[[Spark_Streaming_Intro]]** : 스트리밍의 두 가지 얼굴 (DStream vs Structured Streaming)
-    - **[[Spark_Streaming_Architecture]]** : 데이터 소스, 처리 모델(Micro-batch), 트리거 설정 
+    - **[[Spark_Streaming_Architecture]]** : 데이터 소스, 처리 모델(Micro-batch), 트리거 설정
     - **[[Streaming_Source_Comparison]]** : 소켓(Socket) vs 카프카(Kafka) 완벽 비교
     - **[[Spark_Streaming_Fault_Tolerance]]** : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
-    - **[[Spark_Streaming_Stateful_Stateless]]** :  변환의 종류 (기억력 유무, Stateful vs Stateless) 
+    - **[[Spark_Streaming_Stateful_Stateless]]** : 변환의 종류 (기억력 유무, Stateful vs Stateless)
     - **[[Spark_Streaming_Window_Aggregation]]** : 시간 단위 집계 (Tumbling vs Sliding)
-    - [[Spark_Streaming_Watermark]] : 늦게 온 데이터 버리기 (메모리 관리)
-	- [[Spark_Streaming_Cassandra_Setup]]  : 카산드라 setup(docker compose)
-	- [[Spark_Streaming_Code_Analysis]] 카산드라 파이썬에서 녹아드는 법 
-	- [[Spark_Streaming_Static_Join_Run_Guide]] 카산드라 실행하는법 kafka + cassandra 
-
-- **실습 및 응용**
-    - **[[Spark_Streaming_Socket_Boilerplate]]** : 만능 소켓 스트리밍 코드 (`Netcat`, `readStream`, `writeStream`)
+    - **[[Spark_Streaming_Watermark]]** : 늦은 데이터 처리와 메모리 관리 (Late Data Dropping)
+        
+- **환경 설정 및 연동 (Setup & Integration)**
     - **[[Apache_Kafka_Intro]]** : 대용량 데이터 파이프라인의 심장, 카프카 기초
-    - **[[Spark_Kafka_Docker_Setup]]** : 환경 구축 Docker Compose
-    - **[[Spark_Streaming_Kafka_Integration]]** : [코드] 스파크로 카프카 데이터 읽고 쓰기 ⭐(참고 많이)
-    - **[[Spark_Streaming_JSON_ETL_Project]]** : (실전 프로젝트) JSON 데이터 변환 ⭐️(참고 많이)
+    - **[[Spark_Kafka_Docker_Setup]]** : Kafka & Spark 환경 구축 (Docker Compose)
+    - **[[Spark_Streaming_Cassandra_Setup]]** : Cassandra 환경 구축 (Docker Compose)
+    - **[[Spark_Streaming_Kafka_Integration]]** : [코드] 스파크로 카프카 데이터 읽고 쓰기 ⭐
+    - **[[Spark_Streaming_Code_Analysis]]** : 구조적 스트리밍과 Cassandra 연동 (foreachBatch 활용)
+
+- **심화 패턴: 조인 (Join Patterns)**
+    - **[[Spark_Streaming_Stream_Join]]** : Stream-Stream Join (두 개의 실시간 데이터 조인)
+    - **[[Spark_Streaming_Outer_Join_Limits]]** : 스트림 간 Outer Join의 제약사항과 특징
+    - **[[Spark_Streaming_Static_Join_Run_Guide]]** : Stream-Static Join (실시간 데이터 + 고정 테이블 조인)
+
+- **실습 프로젝트 (Hands-on)**
+    - **[[Spark_Streaming_Socket_Boilerplate]]** : 만능 소켓 스트리밍 코드 (`Netcat` 등)
+    - **[[Spark_Streaming_JSON_ETL_Project]]** : (실전) 복잡한 JSON 데이터 실시간 변환 ⭐️
     - **[[Spark_Streaming_Sink_Multiple]]** : 다중 출력(Sink to Multiple) 및 `.queryName` 활용법
+
+- **문제 해결 (Troubleshooting)**
+    - **[[Spark_Streaming_Troubleshooting]]** : 짝이 맞는데 결과가 안 나올 때 (좀비 데이터 & 환경 리셋)
 
 ---
 
@@ -124,3 +133,5 @@ tags: [Index, Spark, DataEngineering]
 - **[[Spark_Kafka_Tumbling_Window_Template]]** : Kafka + 윈도우(시간) 집계 템플릿
 - [[Kafka_Spark_CLI_Cheatsheet]] : 토픽 생성, 스파크 실행 명령어 모음
 - **[[Spark_Functions_Library]]** : 자주 쓰는 내장 함수 모음
+
+>스트리밍-정적 조인은 실시간 스트림에 변화가 적은 기존 데이터를 붙일 때 유용합니다. 스트리밍-스트리밍 조인보다 간단하며 워터마크가 필수는 아닙니다.

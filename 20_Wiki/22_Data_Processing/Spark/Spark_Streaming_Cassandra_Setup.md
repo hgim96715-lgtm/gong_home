@@ -14,6 +14,8 @@ related:
   - "[[Spark_DataFrame_Joins]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_Streaming_Static_Join_Run_Guide]]"
+linked:
+  - https://github.com/apache/cassandra-spark-connector/blob/trunk/doc/reference.md
 ---
 ## 개요: Streaming to Static Join 
 
