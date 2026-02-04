@@ -7,7 +7,6 @@ aliases:
 tags:
   - Spark
   - Streaming
-  - Advanced
 related:
   - "[[Spark_Streaming_Architecture]]"
   - "[[00_Apache_Spark_HomePage]]"

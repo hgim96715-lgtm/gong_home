@@ -10,7 +10,7 @@ tags:
 related:
   - "[[Spark_Streaming_JSON_ETL_Project]]"
   - "[[Spark_JSON_Handling]]"
-  - "[[Spark_Streaming_Fault_Tolerance 죽어도 살아나는 법]]"
+  - "[[Spark_Streaming_Fault_Tolerance]]"
   - "[[00_Apache_Spark_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/kafka_multi.py

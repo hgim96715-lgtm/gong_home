@@ -11,7 +11,7 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_JSON_Handling]]"
   - "[[DataFrame_Transform_Basic]]"
-  - "[[Spark_Streaming_Fault_Tolerance 죽어도 살아나는 법]]"
+  - "[[Spark_Streaming_Fault_Tolerance]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/kafka_json.py
 ---
