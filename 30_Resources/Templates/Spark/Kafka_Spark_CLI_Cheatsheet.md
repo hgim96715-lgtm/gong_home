@@ -55,7 +55,7 @@ docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
 ```bash
 /opt/spark/bin/spark-submit \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
-  kafka_stateful.py
+  kafka_sliding.py
 ```
 
 ---
@@ -69,7 +69,7 @@ docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
 ```bash
 docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server kafka:9092 \
-  --topic pra-json
+  --topic timeseries
 ```
 
 ### **컨슈머 실행 (메시지 확인하기)**

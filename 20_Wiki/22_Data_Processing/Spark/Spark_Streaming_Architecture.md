@@ -9,6 +9,7 @@ tags:
 related:
   - "[[Spark_Streaming_Intro]]"
   - "[[Streaming_Source_Comparison]]"
+  - "[[00_Apache_Spark_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step24.ipynb
 ---
@@ -127,21 +128,26 @@ query.awaitTermination()
 ### 코드 뜯어보기 (핵심 옵션)
 
 1. **`{python}spark.streaming.stopGracefullyOnShutdown`, `true`**
+
 	- **의미:** "스파크야, 종료 신호(SIGTERM)를 받으면 **하던 일(배치)은 마저 끝내고** 퇴근해라."
 	- **왜 쓰나요?** 이 옵션이 없으면 종료 버튼을 누르는 순간 작업 중이던 데이터가 증발할 수 있습니다. (강제 종료 방지)
 	- **비유:** 컴퓨터 끄기 전에 "저장하시겠습니까?" 묻고 안전하게 끄는 것과 같습니다.
 
 2. **`{python}spark.sql.streaming.schemaInference`, `true`**
+
     - 원래 스트리밍은 스키마(컬럼 구조)를 미리 정해줘야 하지만, 이 옵션을 켜면 파일 내용을 보고 **스파크가 알아서 추측**합니다. (편리함!)
 
 3. **`{python}maxFilesPerTrigger`, `1`**
+
     - **"한 번에 파일 1개씩만 처리해!"** 라고 제한을 겁니다.
     - 갑자기 파일 100개가 쏟아져도 1개씩 차근차근 처리하므로 **부하 조절(Throttling)** 에 유용합니다.
         
 4. **`{python}trigger(processingTime='5 seconds')`**
+
     - **Fixed Interval Trigger**입니다. 5초마다 새로운 파일이 있는지 확인하고 배치를 실행합니다.
 
 5. **`{python}option("checkpointLocation", ...)`**
+
     - **"어디까지 읽었는지 책갈피 저장."**
     - 스파크가 중간에 죽었다 살아나도, 이 체크포인트를 보고 **안 읽은 파일부터 다시 시작**할 수 있습니다. (파일 소스 필수 옵션!)
 

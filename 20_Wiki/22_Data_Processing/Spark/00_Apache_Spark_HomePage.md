@@ -101,6 +101,7 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_Streaming_Fault_Tolerance]]** : 죽어도 살아나는 법 (Checkpoint & Exactly-once)
     - **[[Spark_Streaming_Stateful_Stateless]]** :  변환의 종류 (기억력 유무, Stateful vs Stateless) 
     - **[[Spark_Streaming_Window_Aggregation]]** : 시간 단위 집계 (Tumbling vs Sliding)
+    - [[Spark_Streaming_Watermark]] : 늦게 온 데이터 버리기 (메모리 관리)
 
 - **실습 및 응용**
     - **[[Spark_Streaming_Socket_Boilerplate]]** : 만능 소켓 스트리밍 코드 (`Netcat`, `readStream`, `writeStream`)
@@ -117,5 +118,6 @@ tags: [Index, Spark, DataEngineering]
 > 자주 쓰는 코드는 복사해서 쓰세요.
 
 - **[[Spark_Kafka_Stateful_Agg_Template]]** : Kafka + Stateful 집계(GroupBy) 기본 파이썬 코드 
+- **[[Spark_Kafka_Tumbling_Window_Template]]** : Kafka + 윈도우(시간) 집계 템플릿
 - [[Kafka_Spark_CLI_Cheatsheet]] : 토픽 생성, 스파크 실행 명령어 모음
 - **[[Spark_Functions_Library]]** : 자주 쓰는 내장 함수 모음

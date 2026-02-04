@@ -14,6 +14,7 @@ related:
   - "[[Pandas_Missing_Values]]"
   - "[[DataFrame_Transform_Basic]]"
   - "[[00_Apache_Spark_HomePage]]"
+  - "[[Spark_Streaming_Window_Aggregation]]"
 ---
 ## 결측치 현황 파악하기 (Null Check) 
 
@@ -242,18 +243,6 @@ df = df.na.drop()
 df_clean = df.na.drop()
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## 실전 예제: 연도별 평균 구하기 
 
 위의 기능들을 조합하면 이런 리포트를 만들 수 있습니다.
@@ -274,4 +263,51 @@ df.withColumn("year", F.year('date')) \
 
 >"**평균값으로 채우기** 코드가 제일 중요해! `df.na.fill(df.mean()...)` 처럼 한 줄에 안 써진다고 당황하지 마. 
 >**1. 계산해서 변수에 담고(`collect`) -
->> 2. 그 변수를 넣는다(`fill`)**
+> 2. 그 변수를 넣는다(`fill`)**
+
+
+---
+## 🕒 날짜와 시간 타입 변환 (Date & Timestamp)
+
+스파크에서 시간 계산이나 윈도우 집계를 하려면 반드시 **TimestampType**이어야 합니다.
+하지만 CSV나 JSON에서 읽어오면 대부분 **String(문자열)** 상태이므로 변환이 필수입니다.
+
+###  `to_timestamp()`: 문자를 시간으로 
+
+입력된 날짜 포맷을 해석해서 Timestamp 타입으로 바꿉니다. 
+포맷이 맞지 않으면 `null`을 반환하니 주의하세요.
+
+- **문법**: `{python}to_timestamp(컬럼, "포맷")`
+
+```python
+from pyspark.sql.functions import to_timestamp, col
+
+# 예시 데이터: "2024-05-01 12:30:00" (String)
+df_cleaned = df.withColumn(
+    "event_time",
+    to_timestamp(col("raw_time"), "yyyy-MM-dd HH:mm:ss")
+)
+```
+
+### 자주 쓰는 날짜 포맷 (Java SimpleDateFormat 기준)
+
+스파크는 Java의 날짜 포맷을 따릅니다. 
+대소문자를 틀리면 에러가 납니다!
+
+|**기호**|**의미**|**예시**|**주의사항**|
+|---|---|---|---|
+|**`y`**|년 (Year)|`2024`|소문자 y|
+|**`M`**|월 (Month)|`05`|**대문자 M** (소문자 m은 '분'!)|
+|**`d`**|일 (Day)|`01`|소문자 d|
+|**`H`**|시 (Hour 0-23)|`14`|**대문자 H** (소문자 h는 1-12)|
+|**`m`**|분 (Minute)|`30`|소문자 m|
+|**`s`**|초 (Second)|`59`|소문자 s|
+
+**꿀팁:** 포맷을 생략하면 기본적으로 `"yyyy-MM-dd HH:mm:ss"` 형식을 기대하고 변환합니다.
+
+---
+### 💡 왜 `to_date`가 아니라 `to_timestamp`인가요?
+
+-  **`to_date`**: 연-월-일(`2024-01-01`)까지만 남기고 시간은 버립니다.
+- **`to_timestamp`**: 연-월-일 시:분:초(`2024-01-01 12:00:00`)까지 모두 살립니다.
+- **스트리밍 집계에서는 초 단위가 중요하므로 `to_timestamp`를 써야 합니다.**
