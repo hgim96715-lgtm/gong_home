@@ -55,7 +55,7 @@ docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
 ```bash
 /opt/spark/bin/spark-submit \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
-  kafka_sliding.py
+  kafka_water_mark.py
 ```
 
 ---

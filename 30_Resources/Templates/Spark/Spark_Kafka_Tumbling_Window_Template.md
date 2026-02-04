@@ -13,6 +13,7 @@ related:
   - "[[Spark_Streaming_Window_Aggregation]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_Streaming_Architecture]]"
+  - "[[Spark_Streaming_Watermark]]"
 ---
 
 ## 🚀 Spark Streaming: Tumbling Window Aggregation
@@ -24,7 +25,6 @@ related:
 ```python
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
-# sum 함수와 window 함수 필수 Import
 from pyspark.sql.functions import from_json, col, to_timestamp, window, sum
 
 # 1. Spark Session 설정
