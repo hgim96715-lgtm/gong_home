@@ -102,6 +102,9 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_Streaming_Stateful_Stateless]]** :  변환의 종류 (기억력 유무, Stateful vs Stateless) 
     - **[[Spark_Streaming_Window_Aggregation]]** : 시간 단위 집계 (Tumbling vs Sliding)
     - [[Spark_Streaming_Watermark]] : 늦게 온 데이터 버리기 (메모리 관리)
+	- [[Spark_Streaming_Cassandra_Setup]]  : 카산드라 setup(docker compose)
+	- [[Spark_Streaming_Code_Analysis]] 카산드라 파이썬에서 녹아드는 법 
+	- [[Spark_Streaming_Static_Join_Run_Guide]] 카산드라 실행하는법 kafka + cassandra 
 
 - **실습 및 응용**
     - **[[Spark_Streaming_Socket_Boilerplate]]** : 만능 소켓 스트리밍 코드 (`Netcat`, `readStream`, `writeStream`)
