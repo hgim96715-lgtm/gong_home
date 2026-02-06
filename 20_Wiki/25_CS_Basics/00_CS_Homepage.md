@@ -18,6 +18,20 @@
 - [[Concurrency_vs_Parallelism]] : 동시성(빠르게 번갈아 하기) vs 병렬성(진짜 동시에 하기) 
 - [[Blocking_vs_NonBlocking]] : "기다릴까(Blocking), 아니면 딴 거 하고 있을까(Non-Blocking)?"
 
+
+
+## 분산 시스템 및 인프라 (Distributed Systems & Infra)
+
+> "컴퓨터 한 대로는 부족할 때, 여러 대를 팀으로 만드는 기술"
+
+- **[[Concept_Cluster]]** : 컴퓨터 여러 대를 한 팀으로 만드는 원리 (Master & Worker, 이사 팀 비유)
+- **[[Concept_Node_Scaling]]** : "더 큰 컴퓨터를 살까(Scale-up), 컴퓨터를 더 살까(Scale-out)?"
+- **[[Load_Balancing]]** : 들어오는 요청을 여러 서버에 골고루 나눠주기 (교통 정리)
+
+
+
+
+
 ##  네트워크 & 통신 (Network)
 
 > 데이터가 이동하는 길
@@ -53,4 +67,5 @@
 
 - [[Big_O_Notation]] : "이 코드, 데이터 100만 개 넣으면 멈출까요?" (시간 복잡도)
 - [[CS_Stack_Queue]] : 접시 쌓기(LIFO) vs 맛집 줄 서기(FIFO)
-- [[Hash_Map]] : 검색 속도를 광속으로 만드는 마법 (Key-Value)
+- [[Hash_Map]] : 검색 속도를 광속으로 만드는 마법 (Key-Value
+
