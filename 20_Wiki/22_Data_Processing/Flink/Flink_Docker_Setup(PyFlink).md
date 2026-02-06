@@ -95,7 +95,8 @@ services:
   # 👑 JobManager (상시 대기)
   jobmanager:
     build: .
-    image: pyflink:2.2.0 # 이미지는 여기서 한 번만 명명
+    image: pyflink:1.18.1
+    platform: linux/amd64 # 👈 [추가] "나 인텔 컴퓨터야!"라고 속임
     volumes:
 	  - ./playground:/opt/flink/playground # 코드 공유 폴더 연결
     ports:
@@ -109,8 +110,8 @@ services:
 
   # 👷 TaskManager (일꾼)
   taskmanager:
-    build: .
-    # image: pyflink:2.2.0 (제거함: 위에서 빌드된 것 자동 사용)
+	image: pyflink:1.18.1
+	platform: linux/amd64 # 👈 [추가] 여기도 똑같이!
     volumes:
 		- ./playground:/opt/flink/playground # 일꾼도 코드를 볼 수 있어야 함
     depends_on:
@@ -123,6 +124,12 @@ services:
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 2
 ```
+
+|Mac|기본 아키텍처|
+|---|---|
+|M1 / M2 / M3|`linux/arm64`|
+|Intel Mac|`linux/amd64`|
+인데, `PyFlink`에서 linux/arm64 이걸로 하면 에러,오류가 너무나서 `linux/amd64` 이걸로 속임 
 
 ### ③ docker-compose.application.yml (배포용)
 
@@ -239,5 +246,9 @@ flink run -py playground/src/(내가만든 py이름).py
 - `Job has been submitted...` 메시지 확인.
 - 웹 대시보드(localhost:8081)에서 **Stdout** 로그 확인.
 
+### 로그 확인
 
+```bash
+docker compose -f compose.session.yml logs -f taskmanager
+```
 
