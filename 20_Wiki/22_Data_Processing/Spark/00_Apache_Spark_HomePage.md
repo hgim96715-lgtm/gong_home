@@ -124,6 +124,20 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_Streaming_Troubleshooting]]** : 짝이 맞는데 결과가 안 나올 때 (좀비 데이터 & 환경 리셋)
 
 ---
+## 저장소 및 포맷 (Storage & Formats)
+
+> 효율적인 데이터 저장을 위한 기술들입니다.
+
+- **파일 포맷**
+    - **[[Spark_Data_Formats]]** : Parquet, Avro, ORC 완벽 비교
+    - **[[Spark_Compression_Strategies]]** : 압축 방식 장단점 (Gzip, Snappy, ZSTD)
+
+- **Apache Iceberg**
+    - **[[Apache_Iceberg_Intro]]** : 차세대 테이블 포맷 Iceberg란?
+    - **[[Apache_Iceberg_Setup]]** : Iceberg 로컬 실습 및 Time Travel
+
+
+---
 
 ##  참고 자료 (Resources & Templates)
 
