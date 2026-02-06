@@ -270,14 +270,17 @@ df = spark.read.csv("...", schema=my_schema, header=False)
 ### ① `show()`: 데이터 눈으로 보기
 
 ```python
-# 상위 20줄을 예쁘게 보여줌 (기본값)
-df.show()
+# 1. 상위 20줄을 세로로 예쁘게 (기본값 + vertical) 
+# 주의: 내용은 예쁘게 세로로 나오지만, 너무 긴 값은 여전히 '...'으로 잘릴 수 있습니다. 
+df.show(vertical=True)
 
-# 내용이 길어도 자르지 말고 다 보여줘 (truncate=False)
-df.show(truncate=False)
+# 2. 내용이 길어도 자르지 말고 + 세로로 다 보여줘 (★ Best) 
+#  "다 나오면서 + 이쁘게"가 바로 이 조합입니다. 
+df.show(truncate=False, vertical=True)
 
-# 상위 5줄만 보여줘
-df.show(5)
+# 3. 상위 5줄만 세로로 보여줘 
+# vertical 모드는 스크롤이 길어지니, 이렇게 숫자를 줄여서(5개) 보는 게 효율적입니다.
+df.show(5, vertical=True)
 ```
 
 ### ③ [주의] .show()를 변수에 담지 마세요! 🚨 (초보 필독)
