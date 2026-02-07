@@ -116,6 +116,32 @@ awk '{names[$1]++} END {for (name in names) print name, names[name]}' file1.txt
 awk '{print strftime("%Y-%m-%d %H:%M:%S", $1)}' timestamps.txt
 ```
 
+### F. 문자열 가공 (String Manipulation) - `substr` 
+
+데이터가 공백으로 예쁘게 안 잘려있고, **"글자 위치"로 잘라야 할 때** 사용합니다. (엑셀의 `MID` 함수와 동일)
+
+> **⚠️ 주의 (함정 카드):** 파이썬이나 C언어는 숫자를 0부터 세지만, **`awk`는 사람처럼 1부터 셉니다.**
+> - Python: `text[0]` (첫 번째 글자)
+> - awk: `substr($0, 1, 1)` (첫 번째 글자)
+
+- **문법**: `{bash}substr(대상, 시작위치, 가져올_개수)`
+
+**상황:** 아래와 같은 주문 번호가 있다n. `ORD-2024-A01` (앞의 3글자는 주문 유형, 뒤의 4글자는 연도)
+
+```bash
+# 예제 데이터 생성
+echo "ORD-2024-A01" > order.txt
+
+# 1. 발견하신 기능: 3번째 글자부터 1개만 (결과: D)
+awk '{print substr($0, 3, 1)}' order.txt
+
+# 2. [응용] 연도만 추출하기: 5번째 글자부터 4개 (결과: 2024)
+awk '{print substr($0, 5, 4)}' order.txt
+
+# 3. [꿀팁] 개수 생략하면 끝까지: 5번째부터 끝까지 (결과: 2024-A01)
+awk '{print substr($0, 5)}' order.txt
+```
+
 ----
 ## Code Core Points: ② `sed` (텍스트 수정가)
 

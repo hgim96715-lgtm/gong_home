@@ -56,6 +56,47 @@ read -p "이름을 입력하세요: " name
 read -s -p "비밀번호: " password
 ```
 
+### ④  핵심 원리: "한 줄 소비" (Stream Consumption)
+
+`read`는 단순히 입력을 기다리는 게 아니라, **"표준 입력(Stdin) 스트림에서 한 줄을 뚝 떼어가는(Consume)"** 명령어입니다.
+
+#### ❌ 흔한 실수 (The Trap)
+
+파일 내용을 한 줄씩 읽는 `while` 반복문 안에서, 사용자에게 질문을 하려고 또 `read`를 쓰면?
+
+```bash
+# data.txt 파일 내용:
+# 1. 사과
+# 2. 바나나
+# 3. 포도
+
+cat data.txt | while read line
+do
+    echo "현재 과일: $line"
+    
+    # [문제 발생] 사용자의 입력을 기다리는 게 아니라,
+    # 파이프로 들어오고 있는 data.txt의 '다음 줄(바나나)'을 훔쳐 먹어버립니다!
+    read -p "계속 할까요? (y/n) " answer 
+done
+```
+
+**결과:**
+
+1. `while read line`이 "1. 사과"를 읽음.
+2. 안쪽의 `read answer`가 "2. 바나나"를 **훔쳐서 `answer` 변수에 넣고 소비해버림.** (사용자 입력은 무시됨)
+3. 다시 `while`로 돌아가니 "3. 포도"를 읽음.
+4. **결국 "2. 바나나"는 출력되지 않고 증발함.**
+
+#### ✅ 해결책 (Redirect)
+
+사용자 입력(키보드)을 받고 싶다면, 표준 입력(`0`)을 강제로 **터미널(`/dev/tty`)** 로 지정해야 합니다.
+
+```bash
+# "야, 파일 내용 말고(Stdin), 키보드(TTY)에서 읽어와!"
+read -p "계속 할까요? " answer < /dev/tty
+```
+
+
 ---
 ## 던져서 받기: Positional Parameters (`$1`) 
 

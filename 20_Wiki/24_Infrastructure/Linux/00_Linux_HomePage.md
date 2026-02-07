@@ -13,7 +13,7 @@
 - [[Linux_Distributions]]: "왜 서버마다 `apt`를 쓰기도 하고 `yum`을 쓰기도 하는가?" (가문별 명령어 차이)
 - [[Linux_Fundamental_Rules]]: "대소문자, 공백, 루트 권한... 리눅스에서 절대 어기면 안 되는 법도는 무엇인가?" (`whoami`,`id`)
 - [[Filesystem Hierarchy Standard]] : 리눅스 계층 구조, 디렉토리 구조 (지도 보기)
-- [[Linux_Docker_Setup]] : 실습 환경 구축 (Docker로 나만의 연습장 만들기)
+- [[Linux_Docker_Setup]] : 실습 환경 구축 (Docker로 나만의 연습장 만들기)ㅊ
 
 ## Level 1. 터미널 생존 신고 (Basics)
 
@@ -69,6 +69,7 @@
 
 - [[Filtering_Text]] : 원하는 글자 찾기 (`grep`)
 - [[Text_Transformation_tr]] : 문자 치환 및 삭제의 기본 (`tr`)
+- [[Text_Slicing_cut]] : 칼로 자르듯 원하는 열만 쏙! (`cut`)
 - [[Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`)
 - [[JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`)
 - [[Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`)
