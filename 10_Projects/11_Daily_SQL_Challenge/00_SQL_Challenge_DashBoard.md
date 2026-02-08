@@ -2,7 +2,7 @@
 tags:
   - DashBoard
 ---
-  
+c  
 > [!abstract] **Current Status**
 > 쿼리 마스터가 되는 그날까지! 매일매일 꾸준함이 답이다. 🔥
 

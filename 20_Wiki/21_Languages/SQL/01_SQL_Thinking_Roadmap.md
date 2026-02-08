@@ -7,6 +7,38 @@ tags:
   - SQL_Guide
 related: []
 ---
+## 테이블의 1 row 판단하기
+
+>SQL 문법을 고르기 전에 반드시 먼저 확인할 것
+
+### 이 테이블의 1 row는 무엇인가?
+
+|확인 포인트|스스로 던질 질문|힌트|
+|---|---|---|
+|테이블 이름|`order_items`, `logs`, `events` 같은 복수형인가?|단위가 쪼개져 있음|
+|컬럼 구성|`order_id` + `product_id` 가 같이 있는가?|주문 ≠ row|
+|중복 가능성|같은 `order_id` 가 여러 번 나올 수 있는가?|DISTINCT 의심|
+|의미 단위|이 row 하나가 “사건 1번”인가?|이벤트/아이템 단위|
+
+### Row 단위별 대표 패턴
+
+|1 row의 의미|예시 테이블|집계 시 주의점|
+|---|---|---|
+|**주문 1건**|orders|`COUNT(*) = 주문 수`|
+|**주문 + 상품 1개**|order_items|주문 수 = `COUNT(DISTINCT order_id)`|
+|**유저 행동 1번**|logs / events|유저 수 = `COUNT(DISTINCT user_id)`|
+|**세션 1개**|sessions|이벤트 수 ≠ 세션 수|
+
+### 이 문장이 보이면 자동으로 떠올릴 것
+
+|문제 표현|실제로 세야 하는 것|자동 반응|
+|---|---|---|
+|주문 **건수**|고유 order_id|`DISTINCT order_id`|
+|구매한 **사람 수**|고유 user_id|`DISTINCT user_id`|
+|방문 **횟수**|session_id|DISTINCT 의심|
+|판매한 **상품 수**|row 수|DISTINCT 필요 없음|
+
+
 ## SQL 문법 선택 표 (치트시트)
 
 ### 기준값이 하나냐? 여러 개냐?
@@ -55,6 +87,8 @@ related: []
 
 >“순위표가 필요하면 RANK,  
 >최고값 하나면 ORDER BY + LIMIT”
+
+
 
 ---
 
