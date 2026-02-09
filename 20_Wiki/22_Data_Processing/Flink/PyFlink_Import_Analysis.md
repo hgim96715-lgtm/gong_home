@@ -5,7 +5,6 @@ aliases:
   - StreamFormat 설명
 tags:
   - Flink
-  - PyFlink
   - Concept
   - Basics
 related:

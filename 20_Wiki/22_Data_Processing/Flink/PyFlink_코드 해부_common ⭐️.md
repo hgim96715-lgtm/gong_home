@@ -9,6 +9,7 @@ related:
   - "[[Flink_Docker_Setup(PyFlink)]]"
   - "[[PyFlink_Import_Analysis]]"
   - "[[Flink_Dashboard_Analysis]]"
+  - "[[00_Apache Flink_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/word_count.py
 ---
@@ -92,7 +93,7 @@ ds = env.from_source(
 - **`WatermarkStrategy.no_watermarks()`**: "이 데이터는 실시간이 아니라 이미 저장된 파일이야. 시간 순서 따질 필요 없어." (배치 처리할 때 씀)
 - **`ds` (DataStream)**: 이제부터 데이터는 `ds`라는 파이프를 타고 흐름.
 
-#### `FileSource.for_record_stream_format(...)`
+#### `{python}FileSource.for_record_stream_format(...)`
 
 > **의미:** "파일 읽는 기계(FileSource)를 조립할 건데, 포맷이랑 위치를 알려줘!"
 
@@ -103,7 +104,7 @@ FileSource.for_record_stream_format(StreamFormat, Path, ...)
 - `StreamFormat` : 파일 껍데기 말고 **내용물**이 뭔지 알려달라는 것. (`StreamFormat.text_line_format()`: "텍스트 파일이야, 한 줄씩 읽어.")
 -  `Path` : 파일이 있는 위치 
 
-#### `env.from_source(...)`
+#### `{python}env.from_source(...)`
 
 - **의미:** "자, 위에서 만든 소스(기계)를 Flink 환경(env)에 연결할게!"(FileSource를 environment에 등록)
 - 전선을 콘센트에 꽂듯 `env`에 등록해야 합니다.
@@ -139,7 +140,7 @@ ds = ds.flat_map(split, output_type=Types.STRING()) \
 - **`sum(1)` (더하기)**:묶인 애들의 1번째 요소(숫자 1)를 계속 더해라.
 - `yield`? (왜 return을 안 쓰나?) -> `return list`를 쓰면 문장이 1억 줄일 때 메모리가 터진다. **`yield`** 를 쓰면 단어를 찾는 족족 하나씩 다음 단계로 넘겨주므로 **메모리를 거의 안 쓰고 속도가 빠르다.** (스트림 처리에 최적화됨)
 
-#### `output_type`
+#### `{python}output_type`
 
 - 파이썬 함수가 처리를 끝내고 뱉어내는 결과물이 **문자열인지, 숫자인지** Flink 엔진(Java)에게 미리 신고
 - **Python:** "상자 안에 뭐가 들었든 상관없어. 열어봐야 알지." (동적 타입)
@@ -166,6 +167,36 @@ output_type=Types.TUPLE([Types.STRING(), Types.INT()])
 output_type=Types.LIST(Types.STRING())
 ```
 
+#### `{python}sum(n)` 
+
+- `sum(n)`은 **"n번째 위치(Index)에 있는 값을 기준으로 합계를 구해라"** 라는 뜻
+- Flink에서 데이터가 **튜플(Tuple)** 형태로 흐를 때는 **"이름"이 없고 "순서"만 있기 때문**이다.
+
+```python
+# 데이터: ("Apple", 1)
+ds.key_by(lambda x: x[0]) # 0번(단어)끼리 묶어라
+.sum(1) # 묶인 애들의 1번(개수)을 더해라
+```
+
+**② 만약 데이터 구조가 다르다면? (가격 합계)**
+
+```python
+# 데이터: ("Item", "Category", 1000) -> (이름, 분류, 가격)
+# 인덱스:    0         1         2
+
+ds.key_by(lambda x: x[1])  # 1번(카테고리) 별로 묶어서
+  .sum(2)                  # 2번(가격)을 더해라!
+```
+
+- 이때 `sum(1)`을 하면 에러가 난다. (1번은 문자열이니까 더할 수 없음)
+
+ **③ sum 말고 다른 것도 되나?**
+
+- `min(1)`: 1번째 값 중 **최솟값**을 남겨라.
+- `max(1)`: 1번째 값 중 **최댓값**을 남겨라.
+- `min_by(1)` / `max_by(1)`: (고급) 최솟값/최댓값을 가진 **줄 전체**를 남겨라.
+
+
 ### ④ Step 4: 싱크 (Sink) - 파일로 저장하기
 
 ```python
@@ -190,7 +221,7 @@ ds.map(lambda i: f"{i[0]},{i[1]}", output_type=Types.STRING()) \
 - **주의할 점**: `sink`에 넣기 전에 데이터를 **"문자열(String)"** 형태로 예쁘게 포장(`map`)해줘야 파일에 깔끔하게 써진다. (튜플 채로 넣으면 깨질 수 있음)
 
 
-#### `FileSink.for_row_format(...)`
+#### `{python}FileSink.for_row_format(...)`
 
 - **의미:** "줄(Row) 단위로 데이터를 쓰는 저장소를 만들겠다." (주로 TXT, CSV 만들 때 씀)
 

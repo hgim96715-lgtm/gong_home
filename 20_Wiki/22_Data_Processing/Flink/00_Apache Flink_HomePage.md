@@ -1,41 +1,86 @@
-### 📂 [바로가기]
+---
+aliases: [Flink Home, Flink MOC, PyFlink Study]
+tags: [ApacheFlink, PyFlink, DataEngineering, Kafka, StudyMap]
+cssclass: dashboard
+---
 
-- **노트북 경로:** `/Users/gong/gong_study_de/apache-flink/playground/src`
-- **소스코드(Src):** [Playground 폴더 열기](file:///Users/gong/gong_study_de/apache-flink/playground/src/)
-- **다이어그램:** [[01_Apache Flink_Flow]]
+# 🐿️ Apache Flink & PyFlink: The Event-Driven Journey
 
 > [!QUOTE] 핵심 철학
 > **"Spark가 '배치'를 잘게 쪼개서 스트리밍 흉내를 낸다면, Flink는 태생부터 '스트리밍'이다."**
-> 진정한 Event-Driven 아키텍처와 저지연(Low Latency) 처리를 위한 여정입니다.
+> *진정한 Real-time Stream Processing과 저지연(Low Latency) 아키텍처를 향한 여정.*
 
 ---
-##  Concept (이론 & 개념)
 
-Flink를 다루기 위해 필수적으로 알아야 할 기초 지식입니다.
+## 📂 Quick Access (바로가기)
 
-- [[Flink_Introduction]] : **Flink란 무엇인가?** (특징, 장점)
-- [[Batch_vs_Stream]] : **Batch vs Streaming** (데이터 처리의 두 가지 관점)
-- [[Flink_vs_Spark]] : **Flink vs Spark** (아키텍처 및 사용 사례 비교)
-- [[Flink_Architecture_Overview]] : **Flink Architecture** (JobManager, TaskManager의 역할)
+| 항목 | 경로 / 링크 | 비고 |
+| :--- | :--- | :--- |
+| **Project Root** | `/Users/gong/gong_study_de/apache-flink/playground/src` | 로컬 작업 공간 |
+| **Source Code** | [📂 Playground 폴더 열기](file:///Users/gong/gong_study_de/apache-flink/playground/src/) | 실제 파이썬 코드 |
+| **Diagram** | [[01_Apache Flink_Flow]] | 데이터 흐름도 |
+| **Official Docs** | [PyFlink API Reference](https://nightlies.apache.org/flink/flink-docs-stable/api/python/_modules/pyflink/datastream/functions.html) | 공식 매뉴얼 |
+
+---
+## 1. Concept (이론 & 개념)
+
+*Flink를 지탱하는 핵심 사상과 아키텍처 이해하기.*
+
+- [[Flink_Introduction]] : **Flink란 무엇인가?** (Stateful Computations over Data Streams)
+- [[Batch_vs_Stream]] : **Batch vs Streaming** (Bounded vs Unbounded 데이터의 차이)
+- [[Flink_vs_Spark]] : **Flink vs Spark** (마이크로 배치 vs 네이티브 스트리밍)
+- [[Flink_Architecture_Overview]] : **Architecture** (JobManager와 TaskManager의 역할 분담)
 - [[Flink_Execution_Models]] : **실행 모드** (Session Mode vs Application Mode)
+- [[Flink_Cluster_Deployment_Modes]] : **배포 전략** (Native Kubernetes, YARN, Standalone)
 
-##  Environment (환경 구축)
 
-로컬(Mac/Docker)에서 Flink를 실행하기 위한 환경 설정입니다.
+## 2. Environment (환경 구축)
 
-- [[Flink_Docker_Setup(PyFlink)]] : **Docker Set up** (docker-compose, Dockerfile 설정, 트러블슈팅)
+*로컬(Mac)과 Docker를 활용한 격리된 개발 환경.*
 
-##  PyFlink Coding (코드 & 문법)
+- [[Flink_Docker_Setup(PyFlink)]] : **Docker Compose Setup** (이미지 빌드, `docker-compose.yml` 설정)
 
-실제 파이썬 코드로 Flink 파이프라인을 구축하는 핵심 노트입니다.
 
-- [[PyFlink_Import_Analysis]] : **Import 모음+분석** (Environment, Types, Source 등 필수 모듈 해설)
-- [[PyFlink_코드 해부_common ⭐️]] : **코드 뜯어보기** (Word Count 예제로 배우는 5단계 공식 & `yield` 패턴)
+## 3. PyFlink Coding (코드 & 문법)
 
-##  Operations (운영 & 모니터링)
+*DataStream API를 활용한 파이프라인 개발의 기초.*
 
-실행된 Job을 관리하고 결과를 확인하는 방법입니다.
+- [[PyFlink_Import_Analysis]] : **Import 모음+분석** (TypeInfo, Source, Environment 등 필수 모듈)
+- [[PyFlink_코드 해부_common ⭐️]] : **코드 뜯어보기** (Word Count 예제로 익히는 Flink 5단계 공식)
+    1.  Environment 설정
+    2.  Source (Input)
+    3.  Transformation (Logic)
+    4.  Sink (Output)
+    5.  Execute
 
-- [[Flink_Dashboard_Analysis]] : **Web UI 분석** (Job Graph, Backpressure, 에러 로그 확인법)
+## 4. Kafka Integration (실전 연동) ⭐
+️
+*정적 데이터(`fromData`)를 넘어선 리얼타임 파이프라인의 시작.*
+
+> [!check] **Why Kafka?**
+> PyFlink 학습 중 메모리 데이터(`fromData`)만으로는 실무적인 에러 핸들링과 스트리밍 특성을 배우기에 한계가 있음. **"진짜 데이터 흐름"**을 만들기 위해 Kafka를 도입함.
+
+- [[Flink_Kafka_Docker_Setup]] : **Kafka 환경 구축** (docker-compose에 Kafka 추가 및 네트워크 설정)
+- [[Flink_Kafka_Source]] : **Source 변경** (`fromData` → `KafkaSource` 로 코드 마이그레이션)
+- [[PyFlink + Kafka 연동 완벽 가이드]] : "실행" 매뉴얼 +트러블슈팅
+
+## ⚙️ 5. Operations (운영 & 모니터링)
+
+*제출된 Job의 상태를 확인하고 관리하는 법.*
+
+- [[Flink_Dashboard_Analysis]] : **Web UI 분석** (Job Graph, Checkpoints, Backpressure 확인)
 
 ---
+
+## 🚀 Next Steps (학습 로드맵)
+
+- [x] Docker 환경 구축 완료
+- [x] PyFlink 기본 문법 습득 (Source -> Sink)
+- [x] Kafka 연동 및 트러블슈팅 정복
+- [ ] **Transformation 심화** (`map`, `filter`, `flatMap`, `keyBy`)
+- [ ] **Window API** (Tumbling, Sliding, Session Window) 👈 *Next!*
+- [ ] **Sink 확장** (Elasticsearch, PostgreSQL, S3 적재)
+- [ ] **State Backend & Checkpoint** (장애 복구 메커니즘)
+
+---
+*Last Updated: 2026-02-09*

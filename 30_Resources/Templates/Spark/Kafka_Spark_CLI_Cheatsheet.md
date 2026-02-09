@@ -67,9 +67,9 @@ docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
 - `pra-json`은 보내려는 토픽 이름입니다.
 
 ```bash
-docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh \
+docker exec -it apache-flink-kafka-1 /opt/kafka/bin/kafka_source.sh \
   --bootstrap-server kafka:9092 \
-  --topic impression
+  --topic input-topic
 ```
 
 ### **컨슈머 실행 (메시지 확인하기)**
