@@ -181,6 +181,67 @@ data.remove("Green") # "Green"을 찾아서 지워라
 # data.remove("Black") <-- 없는 걸 지우려 하면 에러(ValueError) 남!
 ```
 
+### C. 탐색 및 통계 (Analysis) 
+
+데이터를 수정하지 않고, 안에 뭐가 들어있는지 확인하는 함수들입니다.
+
+#### ① `count()`: 몇 개인지 세어줘 (빈도수)
+
+리스트 안에 **특정 값이 몇 번 등장하는지** 정수로 반환합니다. (엑셀의 `COUNTIF` 함수와 똑같습니다.)
+
+```python
+votes = ["Apple", "Banana", "Apple", "Kiwi", "Apple"]
+
+# 1. 존재하는 값 세기
+apple_count = votes.count("Apple")
+print(apple_count) # 3 ("Apple"이 3개 있음)
+
+# 2. 없는 값 세기 (에러 안 남!)
+orange_count = votes.count("Orange")
+print(orange_count) # 0 (없으면 0을 반환)
+```
+
+>**불리언(Boolean) 체크 대용**
+> `if item in list:` 대신 `if list.count(item) > 0:`을 쓰기도 합니다. 
+> 하지만 단순히 **"있냐 없냐"** 만 볼 때는 **`in`** 연산자가 훨씬 빠릅니다.
+>  `count`는 개수를 세느라 끝까지 다 훑어보거든요.
+
+#### ② `index()`: 어디에 있는지 찾아줘 (위치 찾기)
+
+값의 **위치(인덱스)** 를 알려줍니다. 
+**주의:** 같은 값이 여러 개면 **맨 앞에 있는 것(가장 먼저 발견된 것)** 하나만 알려줍니다.
+
+```python
+data = ["A", "B", "C", "A"]
+
+# "A"가 어디 있어?
+print(data.index("A")) # 0 (맨 앞의 0번 인덱스만 반환)
+
+# "C"는 어디 있어?
+print(data.index("C")) # 2
+
+# "Z"는 어디 있어? (없는 값 찾기)
+# print(data.index("Z")) # 🚨 에러 발생! (ValueError: 'Z' is not in list)
+```
+
+### ③ [심화] 모든 위치 찾기 (`enumerate`) 
+
+`index()`는 맨 처음 하나만 알려주기 때문에, 전부 찾으려면 **리스트 내포(List Comprehension)** 와 **`enumerate`** 를 조합해서 씁니다.
+
+>**핵심 원리: `enumerate(리스트)`** 리스트의 데이터에 **"번호표(Index)"** 를 붙여서 `(번호, 값)` 쌍으로 뱉어줍니다.
+
+```python
+data = ["A", "B", "C", "A", "B", "A"]
+
+# 목표: "A"가 있는 모든 위치(인덱스)를 리스트로 만들기
+# 해석: "번호(i)와 값(val)을 꺼내서, 만약 값이 'A'면 번호(i)를 저장해라."
+locations = [i for i, val in enumerate(data) if val == "A"]
+
+print(locations) 
+# 결과: [0, 3, 5] (0번째, 3번째, 5번째에 있다!)
+```
+
+
 ---
 ## Tuple (튜플): 안전 금고 
 

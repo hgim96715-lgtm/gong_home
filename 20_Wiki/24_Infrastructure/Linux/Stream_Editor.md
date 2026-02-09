@@ -124,7 +124,7 @@ awk '{print strftime("%Y-%m-%d %H:%M:%S", $1)}' timestamps.txt
 > - Python: `text[0]` (첫 번째 글자)
 > - awk: `substr($0, 1, 1)` (첫 번째 글자)
 
-- **문법**: `{bash}substr(대상, 시작위치, 가져올_개수)`
+- **문법**: `{scss}substr(대상, 시작위치, 가져올_개수)`
 
 **상황:** 아래와 같은 주문 번호가 있다n. `ORD-2024-A01` (앞의 3글자는 주문 유형, 뒤의 4글자는 연도)
 
