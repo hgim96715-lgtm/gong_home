@@ -5,6 +5,16 @@
 - [[01_SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
 -  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 
 
+## Level 0. 밑그림 그리기 (Data Modeling)
+
+> "건물을 짓기 전에 설계도부터 봐야죠. 테이블이 왜 이렇게 생겨먹었는지 이해하는 단계입니다."
+
+- **[[Data_Modeling_Overview]]** : 모델링의 3단계와 관점 (개념/논리/물리)
+- **[[ERD_Components]]** : 엔터티(Entity), 속성(Attribute), 관계(Relationship)의 정체
+- **[[Keys_and_Identifiers]]** : PK(주민번호)와 FK(참조)의 관계 완벽 정리
+- **[[Normalization_Theory]]** : 테이블을 쪼개는 기술, 정규화(1NF, 2NF, 3NF)
+
+
 ## 1. 기초 문법 (Basics)
 
 > 데이터 조회와 필터링의 기본기
