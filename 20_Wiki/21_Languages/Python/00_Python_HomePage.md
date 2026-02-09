@@ -32,6 +32,7 @@
 > "남이 짠 코드를 가져다 쓰고, 내 코드를 정리해요."
 
 - [[Python_Modules_Imports]] : `import`와 `from`의 차이, 패키지 구조
+- [[Python_Entry_Point]] : 프로그램 시작점과 실행 제어 (`if __name__ == '__main__':`)
 - [[Python_Regex]] : 정규표현식 마스터 (`re.search` vs `match`, `findall`, `group`,`span`,`re.sub`)
 - [[Python_Virtual_Env]] : 가상 환경 관리 (`venv`, `pip`, `requirements.txt`) - docker 실행시 필수 
 
@@ -58,6 +59,7 @@
 > "Airflow 2.0의 마법 같은 기능을 써봐요."
 
 - [[Python_Decorators]] : 골뱅이(`@`)의 정체 (TaskFlow API 핵심)
+- [[Python_Generators_Yield]] : 메모리를 아끼는 반복문 (`yield`, `next`, `generator`)
 - [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리(`lambda`,`Map` ,`list` ,`filter` ,`reduce`)
 - [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`) - 스케줄링 필수!
 - [[Python_Random_Seed]] : 랜덤 시드 (`random`,`seed`,`randint`)
