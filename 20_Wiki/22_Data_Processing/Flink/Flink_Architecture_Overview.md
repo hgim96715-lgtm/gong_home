@@ -5,7 +5,7 @@ aliases:
   - TaskManager
   - Task Slot
 tags:
-  - Flink
+  - PyFlink
 related:
   - "[[Flink_vs_Spark]]"
   - "[[Flink_Introduction]]"

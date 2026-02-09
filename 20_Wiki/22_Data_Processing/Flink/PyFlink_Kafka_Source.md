@@ -3,16 +3,19 @@ aliases:
   - PyFlink Kafka Source
   - Flink Kafka
 tags:
-  - Flink
   - Kafka
+  - PyFlink
 related:
-  - "[[Flink_Kafka_Docker_Setup]]"
+  - "[[PyFlink_Kafka_Docker_Setup]]"
   - "[[00_Apache Flink_HomePage]]"
   - "[[PyFlink_코드 해부_common ⭐️]]"
+  - "[[PyFlink_Kafka_Sink_Guide]]"
+linked:
+  - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_source.py
 ---
 # PyFlink: Kafka Source 연결
 
-## 한줄 용약
+## 한줄요약 
 
 **"실시간으로 쏟아지는 Kafka 토픽(`KafkaSource`)을 빨대 꽂아서 읽어오기."**
 
@@ -119,7 +122,7 @@ if __name__ == '__main__':
 
 Docker 컨테이너에 접속해서 실행하면 `-j` 옵션 없이 아주 심플하게 실행됩니다.
 
-> **상세 트러블슈팅 및 전체 가이드:** [[PyFlink + Kafka 연동 완벽 가이드]] 참고 
+> **상세 트러블슈팅 및 전체 가이드:** [[PyFlink + Kafka 연동 완벽 가이드 ⭐️]] 참고 
 
 
 

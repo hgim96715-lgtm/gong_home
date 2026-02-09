@@ -5,7 +5,7 @@ aliases:
 tags:
   - Kafka
   - Docker
-  - Flink
+  - PyFlink
 related:
   - "[[Flink_Docker_Setup(PyFlink)]]"
   - "[[Spark_Kafka_Docker_Setup]]"

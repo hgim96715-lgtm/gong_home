@@ -7,7 +7,7 @@ tags:
   - Concept
   - BigData
   - Architecture
-  - Flink
+  - PyFlink
 related:
   - "[[00_Apache Flink_HomePage]]"
   - "[[Flink_Introduction]]"

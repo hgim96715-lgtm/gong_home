@@ -4,10 +4,9 @@ aliases:
   - Flink Web UI
   - Job Graph 분석
 tags:
-  - Flink
   - Dashboard
   - Monitoring
-  - Debugging
+  - PyFlink
 related:
   - "[[PyFlink_코드 해부_common ⭐️]]"
   - "[[00_Apache Flink_HomePage]]"

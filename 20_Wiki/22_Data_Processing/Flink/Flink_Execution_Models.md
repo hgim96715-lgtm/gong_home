@@ -5,7 +5,7 @@ aliases:
   - Application Mode
   - Per-Job Cluster
 tags:
-  - Flink
+  - PyFlink
 related:
   - "[[Flink_Architecture_Overview]]"
   - "[[00_Apache Flink_HomePage]]"

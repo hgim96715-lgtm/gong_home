@@ -4,7 +4,7 @@ aliases:
   - 스트리밍 엔진 비교
 tags:
   - Spark
-  - Flink
+  - PyFlink
 related:
   - "[[Batch_vs_Stream]]"
   - "[[Flink_Introduction]]"

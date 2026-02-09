@@ -4,7 +4,7 @@ aliases:
   - Session Mode vs Application Mode
   - Flink Cluster Modes
 tags:
-  - Flink
+  - PyFlink
 related:
   - "[[Flink_Architecture_Overview]]"
   - "[[Flink_Execution_Models]]"

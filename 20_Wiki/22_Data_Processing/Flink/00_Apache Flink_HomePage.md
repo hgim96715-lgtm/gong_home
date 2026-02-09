@@ -47,40 +47,28 @@ cssclass: dashboard
 
 - [[PyFlink_Import_Analysis]] : **Import 모음+분석** (TypeInfo, Source, Environment 등 필수 모듈)
 - [[PyFlink_코드 해부_common ⭐️]] : **코드 뜯어보기** (Word Count 예제로 익히는 Flink 5단계 공식)
-    1.  Environment 설정
-    2.  Source (Input)
-    3.  Transformation (Logic)
-    4.  Sink (Output)
-    5.  Execute
 
-## 4. Kafka Integration (실전 연동) ⭐
-️
+## 🔗 4. Kafka Integration (실전 연동) ⭐️
 *정적 데이터(`fromData`)를 넘어선 리얼타임 파이프라인의 시작.*
 
 > [!check] **Why Kafka?**
 > PyFlink 학습 중 메모리 데이터(`fromData`)만으로는 실무적인 에러 핸들링과 스트리밍 특성을 배우기에 한계가 있음. **"진짜 데이터 흐름"**을 만들기 위해 Kafka를 도입함.
 
-- [[Flink_Kafka_Docker_Setup]] : **Kafka 환경 구축** (docker-compose에 Kafka 추가 및 네트워크 설정)
-- [[Flink_Kafka_Source]] : **Source 변경** (`fromData` → `KafkaSource` 로 코드 마이그레이션)
-- [[PyFlink + Kafka 연동 완벽 가이드]] : "실행" 매뉴얼 +트러블슈팅
+- [[PyFlink_Kafka_Docker_Setup]] : **Kafka 환경 구축** (docker-compose 설정, 네트워크 격리 해결)
+- [[PyFlink_Kafka_Source]] : **Source 변경** (`fromData` → `KafkaSource` 코드 마이그레이션)
+- [[PyFlink + Kafka 연동 완벽 가이드 ⭐️]] : **🔥 실행 & 트러블슈팅 매뉴얼** (무조건 성공하는 실행법)
+- [[PyFlink_Kafka_Sink_Guide]] : **Sink 확장** (`sink_to` vs `add_sink`, 데이터 내보내기)
+- [[PyFlink_Kafka_코드해부_Common ⭐️]] : **Import & 문법 완전 분석**
+    1. **Environment 설정** (JAR 로딩)
+    2. **Source (Input)** (KafkaSource 설정)
+    3. **Transformation (Logic)** (TypeInfo, Map)
+    4. **Sink (Output)** (KafkaSink 설정)
+    5. **Execute** (Job 제출)
 
 ## ⚙️ 5. Operations (운영 & 모니터링)
-
 *제출된 Job의 상태를 확인하고 관리하는 법.*
 
-- [[Flink_Dashboard_Analysis]] : **Web UI 분석** (Job Graph, Checkpoints, Backpressure 확인)
-
+- [[Flink_Dashboard_Analysis]] : **Web UI 분석** (Job Graph, Checkpoints, Backpressure 확인법)
 ---
 
-## 🚀 Next Steps (학습 로드맵)
 
-- [x] Docker 환경 구축 완료
-- [x] PyFlink 기본 문법 습득 (Source -> Sink)
-- [x] Kafka 연동 및 트러블슈팅 정복
-- [ ] **Transformation 심화** (`map`, `filter`, `flatMap`, `keyBy`)
-- [ ] **Window API** (Tumbling, Sliding, Session Window) 👈 *Next!*
-- [ ] **Sink 확장** (Elasticsearch, PostgreSQL, S3 적재)
-- [ ] **State Backend & Checkpoint** (장애 복구 메커니즘)
-
----
-*Last Updated: 2026-02-09*

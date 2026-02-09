@@ -4,8 +4,8 @@ aliases:
   - Flink 로컬 환경 구축
   - PyFlink Docker Setup
 tags:
-  - Flink
   - Docker
+  - PyFlink
 related:
   - "[[Flink_Execution_Models]]"
   - "[[00_Apache Flink_HomePage]]"

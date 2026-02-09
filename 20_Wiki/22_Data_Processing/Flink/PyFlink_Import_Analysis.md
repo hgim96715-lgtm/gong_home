@@ -4,9 +4,9 @@ aliases:
   - Flink 필수 모듈
   - StreamFormat 설명
 tags:
-  - Flink
   - Concept
   - Basics
+  - PyFlink
 related:
   - "[[PyFlink_코드 해부_common ⭐️]]"
 ---

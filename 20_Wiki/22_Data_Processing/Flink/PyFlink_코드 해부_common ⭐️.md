@@ -4,7 +4,7 @@ aliases:
   - Flink WordCount 분석
   - PyFlink 기초 문법
 tags:
-  - Flink
+  - PyFlink
 related:
   - "[[Flink_Docker_Setup(PyFlink)]]"
   - "[[PyFlink_Import_Analysis]]"

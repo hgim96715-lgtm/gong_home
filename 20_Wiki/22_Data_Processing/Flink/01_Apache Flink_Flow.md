@@ -96,3 +96,56 @@ graph TD
 
 ---
 
+## **코드 작성 순서(Logic Flow)** 와 **데이터 흐름(Data Flow)**
+
+```mermaid
+graph TD
+    %% 스타일 정의 (색상 테마)
+    classDef env fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef kafka fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef logic fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef exec fill:#ffebee,stroke:#c62828,stroke-width:4px;
+
+    %% 1. Environment (준비)
+    subgraph Step1 ["Environment Setup (환경 설정)"]
+        Env["StreamExecutionEnvironment<br/>(작업장 생성)"]
+        Jar["add_jars<br/>(Kafka 통역사/JAR 주입)"]
+        Env --> Jar
+    end
+
+    %% 2. Source (입력)
+    subgraph Step2 [" Source Input (데이터 읽기)"]
+        KafkaIn[("Kafka Topic<br/>(input-topic)")]
+        SourceCode["KafkaSource.builder<br/>(소스 설정: 주소, 토픽, 그룹ID)"]
+        KafkaIn -.->|"Read (구독)"| SourceCode
+    end
+
+    %% 3. Transformation (가공)
+    subgraph Step3 ["Transformation (데이터 가공)"]
+        Map["Map / FlatMap<br/>(로직: lambda x...)"]
+        TypeInfo["output_type=Types...<br/>(⚠️ 직렬화 타입 명시 필수!)"]
+        Map --- TypeInfo
+    end
+
+    %% 4. Sink (출력)
+    subgraph Step4 ["Sink Output (데이터 저장)"]
+        SinkCode["KafkaSink.builder<br/>(싱크 설정: 주소, 토픽)"]
+        KafkaOut[("Kafka Topic<br/>(output-topic)")]
+        SinkCode -.->|"Write (전송)"| KafkaOut
+    end
+
+    %% 5. Execute (실행)
+    Step5["Execute<br/>(실행 버튼: env.execute)"]
+
+    %% 전체 흐름 연결
+    Jar --> SourceCode
+    SourceCode -->|DataStream| Map
+    Map -->|Processed Stream| SinkCode
+    SinkCode -->|"sink_to (연결)"| Step5
+
+    %% 스타일 적용
+    class Env,Jar env;
+    class KafkaIn,KafkaOut,SourceCode,SinkCode kafka;
+    class Map,TypeInfo logic;
+    class Step5 exec;
+```

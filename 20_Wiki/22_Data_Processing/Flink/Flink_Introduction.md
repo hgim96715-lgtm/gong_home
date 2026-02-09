@@ -4,7 +4,7 @@ aliases:
   - Flink 소개
   - Stratosphere
 tags:
-  - Flink
+  - PyFlink
 related:
   - "[[00_Apache Flink_HomePage]]"
 ---
