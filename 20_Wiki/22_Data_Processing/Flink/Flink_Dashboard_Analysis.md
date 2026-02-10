@@ -81,6 +81,56 @@ Flink 대시보드는 **"내 공장(Cluster)의 CCTV"** 다.
     * 박스 안에 `Parallelism: 1`이라고 써있다. 일꾼 1명이 처리했다는 뜻.
 
 ---
+## Job Graph
+
+![[Pasted image 20260210144459.png]]
+
+```python
+stream = env.from_source(source, WatermarkStrategy.no_watermarks(), "Kafka Source")
+```
+
+- `Source: Kafka Source` : `env.from_source(..., "Kafka Source")` 부분.
+- **`-> Map`**: 그 밑에 작성한 `.map(...)` 함수
+- **`...key_by...`**: `.key_by(...)`를 하기 위해 키를 뽑아내는(Selector) 과정.
+
+**Why?** 데이터를 메모리에서 건네주고 건네받는 것보다, 한 놈(Thread)이 "읽고, 변환하고, 키 뽑기"까지 한 번에 하는 게 훨씬 빠르기 때문입니다.
+
+### 왜 두 줄로 나뉘었나요? (Network Shuffle)
+
+- **Row 1:** `Source ... -> Map ...`
+- **Row 2:** `Reduce ... -> Sink ...`
+
+범인이 바로 **`KeyBy` (Network Shuffle)** 입니다!
+
+```mermaid
+graph TD
+    subgraph Task1 [Task 1: 첫 번째 줄]
+        Source[Kafka Source]
+        Map[Map 연산]
+        KeySelect[Key 뽑기]
+        Source --> Map --> KeySelect
+    end
+
+    %% 여기서 네트워크 셔플 발생! (Chain이 끊어짐)
+    Shuffle((KeyBy<br/>Network Shuffle))
+
+    subgraph Task2 [Task 2: 두 번째 줄]
+        Reduce[Reduce 연산]
+        Map2["Map (Output Formatting)"]
+        Sink[Kafka Sink]
+        Reduce --> Map2 --> Sink
+    end
+
+    KeySelect == 데이터 이동 (비용 발생) ==> Shuffle
+    Shuffle == 데이터 이동 (비용 발생) ==> Reduce
+```
+
+
+
+
+
+
+---
 ## 초보자의 오해 (Common Misconceptions)
 
 * **Q: FAILED(빨간색)가 뜨면 망한 건가요?**

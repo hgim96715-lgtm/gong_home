@@ -105,6 +105,7 @@ graph TD
     classDef kafka fill:#fff3e0,stroke:#e65100,stroke-width:2px;
     classDef logic fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,stroke-dasharray: 5 5;
     classDef exec fill:#ffebee,stroke:#c62828,stroke-width:4px;
+    classDef stream fill:#e1bee7,stroke:#4a148c,stroke-width:2px,stroke-dasharray: 0;
 
     %% 1. Environment (준비)
     subgraph Step1 ["Environment Setup (환경 설정)"]
@@ -113,15 +114,20 @@ graph TD
         Env --> Jar
     end
 
-    %% 2. Source (입력)
-    subgraph Step2 [" Source Input (데이터 읽기)"]
+    %% 2. Source (입력 & 연결) - 여기가 변경됨! ⭐️
+    subgraph Step2 [" Source Input & Connect (설정 및 연결)"]
         KafkaIn[("Kafka Topic<br/>(input-topic)")]
-        SourceCode["KafkaSource.builder<br/>(소스 설정: 주소, 토픽, 그룹ID)"]
+        SourceCode["KafkaSource.builder<br/>(소스 부품 조립)"]
+        
+        %% ⭐️ 추가된 핵심 노드
+        StreamInit["stream = env.from_source(...)<br/>(🌊 수도꼭지 연결 / Stream 생성)"]
+        
         KafkaIn -.->|"Read (구독)"| SourceCode
+        SourceCode -->|"source 객체 주입"| StreamInit
     end
 
     %% 3. Transformation (가공)
-    subgraph Step3 ["Transformation (데이터 가공)"]
+    subgraph Step3 [" Transformation (데이터 가공)"]
         Map["Map / FlatMap<br/>(로직: lambda x...)"]
         TypeInfo["output_type=Types...<br/>(⚠️ 직렬화 타입 명시 필수!)"]
         Map --- TypeInfo
@@ -135,11 +141,11 @@ graph TD
     end
 
     %% 5. Execute (실행)
-    Step5["Execute<br/>(실행 버튼: env.execute)"]
+    Step5[" Execute<br/>(실행 버튼: env.execute)"]
 
     %% 전체 흐름 연결
     Jar --> SourceCode
-    SourceCode -->|DataStream| Map
+    StreamInit -->|mapped_stream = stream.map| Map
     Map -->|Processed Stream| SinkCode
     SinkCode -->|"sink_to (연결)"| Step5
 
@@ -148,4 +154,5 @@ graph TD
     class KafkaIn,KafkaOut,SourceCode,SinkCode kafka;
     class Map,TypeInfo logic;
     class Step5 exec;
+    class StreamInit stream;
 ```

@@ -64,6 +64,7 @@ cssclass: dashboard
     3. **Transformation (Logic)** (TypeInfo, Map)
     4. **Sink (Output)** (KafkaSink 설정)
     5. **Execute** (Job 제출)
+- [[PyFlink_Operators_Basic]]
 
 ## ⚙️ 5. Operations (운영 & 모니터링)
 *제출된 Job의 상태를 확인하고 관리하는 법.*

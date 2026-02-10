@@ -10,6 +10,7 @@ related:
   - "[[PyFlink_Import_Analysis]]"
   - "[[PyFlink + Kafka 연동 완벽 가이드 ⭐️]]"
   - "[[PyFlink_코드 해부_common ⭐️]]"
+  - "[[01_Apache Flink_Flow#**코드 작성 순서(Logic Flow)** 와 **데이터 흐름(Data Flow)**]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_sink.py
 ---
@@ -115,9 +116,34 @@ source = KafkaSource.builder() \
 	- Kafka 메시지는 `Key`, `Value`, `Header` 등이 있는데, "난 내용물(`Value`)만 필요해!" 라고 선언하고, 그걸 `String`으로 바꿔달라고 요청함.
 
 ---
+## Source 연결 & Stream 생성 (The Connection)
+
+만들어둔 소스(부품)를 작업장에 조립해서, **실제로 데이터가 흐르는 `stream` 객체**를 만드는 단계입니다. 
+**이 한 줄이 없으면 `map` 함수를 아예 사용할 수 없습니다.**
+
+```python
+stream = env.from_source(
+    source, 
+    WatermarkStrategy.no_watermarks(), 
+    "Kafka Source"
+)
+```
+
+- **`{scss}env.from_source(...)`**: **(수도꼭지 설치 & 물 틀기)**
+	- **Why?**: 위에서 만든 `source` 변수는 아직 "설정값 뭉치(객체)"일 뿐입니다. 이걸 실행 환경(`env`)에 등록해야 비로소 데이터가 흐르는 **Stream(강물)** 이 됩니다.
+	- **Return (`stream`)**: 이제부터 이 `stream` 변수를 가지고 `map`, `filter`, `sink_to` 등을 수행합니다. (**Source 객체에는 `map` 함수가 없습니다!**)
+
+- **`{scss}WatermarkStrategy.no_watermarks()`**: **(시간 관리 옵션)**
+	- 실시간 데이터의 시간 흐름(Event Time)을 어떻게 다룰지 정하는 건데, 단순 데이터 처리나 로그 수집에서는 `no_watermarks()`(신경 안 씀)로 충분합니다.
+
+- **`{scss}"Kafka Source"`**:
+	-  나중에 Flink Web UI(대시보드) 그래프에서 보여질 이름표입니다.
+
+----
 ## Transformation & TypeInfo (데이터 가공 & 타입 정의) 
 
 이 부분이 빠지거나 틀리면 **"알 수 없는 리턴 타입"** 에러가 발생하며 Job이 시작조차 안 됩니다.
+위에서 만든 'stream' 객체를 사용합니다!
 
 ### Why: 왜 굳이 타입을 적어야 하나요?
 
@@ -133,13 +159,15 @@ source = KafkaSource.builder() \
 
 가장 많이 쓰는 3가지 패턴, (Import 필수: `from pyflink.common.typeinfo import Types`)
 
-#### Case 1. 문자열 (String)
+#### Case 1. 문자열 (String).
 
 가장 기본입니다. 텍스트를 다룰 때 사용합니다.
 
 ```python
+# 위에서 만든 'stream' 객체를 사용합니다!
+# stream.map(...) 은 "흐르는 강물에 변형을 가한다"는 뜻입니다.
 # 예: 소문자로 변환
-stream.map(
+stream.map( # 👈 여기서 stream을 씁니다!
     lambda x: x.lower(), 
     output_type=Types.STRING()
 )

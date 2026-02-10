@@ -63,4 +63,5 @@
 - [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리(`lambda`,`Map` ,`list` ,`filter` ,`reduce`)
 - [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`) - 스케줄링 필수!
 - [[Python_Random_Seed]] : 랜덤 시드 (`random`,`seed`,`randint`)
+- [[Python_AST_Structure_Analysis]] : 코드 구조 분석과 안전한 파싱 (`ast`, `literal_eval`, `parse`)
 ---

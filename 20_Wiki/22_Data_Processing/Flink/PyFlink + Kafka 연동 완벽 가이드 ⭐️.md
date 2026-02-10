@@ -120,6 +120,17 @@ docker exec -it apache-flink-kafka-1 ls -F /opt/kafka/bin/
 - `kafka/`: Kafka 설치 폴더
 - `bin/`: 실행 파일(Binary) 모음
 
+
+## **토픽 목록 확인 (List)**
+
+- 현재 생성된 모든 우체통(토픽) 이름을 확인합니다.
+
+```bash
+docker exec -it apache-flink-kafka-1 /opt/kafka/bin/kafka-topics.sh \
+--list \
+--bootstrap-server kafka:9092
+```
+
 ---
 ## Execution Patterns (실행 패턴 비교)  ⭐️⭐️
 
@@ -209,7 +220,7 @@ docker exec -it apache-flink-jobmanager-1 bash
 
 # 2. 실행 (JAR 파일 필수!)
 /opt/flink/bin/flink run \
-  -py /opt/flink/playground/src/kafka_copy_job.py \
+  -py /opt/flink/playground/src/kafka_operator.py \
   -j /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.18.jar
 ```
 
