@@ -11,6 +11,8 @@ related:
   - "[[PyFlink_KeyBy_DeepDive]]"
   - "[[PyFlink_Operators_Basic]]"
   - "[[PyFlink_Kafka_코드해부_Common ⭐️]]"
+  - "[[00_Apache Flink_HomePage]]"
+  - "[[PyFlink_Window_Functions]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_windows.py
 ---

@@ -220,7 +220,7 @@ docker exec -it apache-flink-jobmanager-1 bash
 
 # 2. 실행 (JAR 파일 필수!)
 /opt/flink/bin/flink run \
-  -py /opt/flink/playground/src/kafka_operator.py \
+  -py /opt/flink/playground/src/kafka_window_function.py \
   -j /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.18.jar
 ```
 
@@ -231,8 +231,39 @@ docker exec -it apache-flink-jobmanager-1 bash
 2. **[창 2]** 에 `hello world` 라고 입력하고 **엔터**.
 3. **[창 1]** 에 `Processed: Hello World` ( 로직 적용됨)가 짠! 하고 나타나면 성공! 🎉
 
+---
+##  Job 관리 및 종료 (Docker 환경) 
+
+테스트가 끝났거나 코드를 수정해서 다시 올리려면, **반드시 기존 Job을 종료**해야 합니다.
+Docker를 쓰고 계시므로, 명령어 앞에 `docker exec`를 붙여서 컨테이너에게 명령을 전달해야 합니다.
+
+### 1단계: 실행 중인 Job ID 찾기 🔍
+
+컨테이너 안에 직접 들어가지 않고, 밖에서 명령만 툭 던져서 확인하는 방법입니다.
+
+```bash
+# 문법: docker exec <컨테이너명> <명령어>
+docker exec -it apache-flink-jobmanager-1 ./bin/flink list
+```
+
+**출력 예시:** `Waiting for response...` `------------------ Running/Restarting Jobs -------------------` `10.10.10.10 : e7a96d6ab3120f3ed44db75aedd4c263 : PyFlink Window Example (RUNNING)`
+
+👉 중간에 있는 긴 문자열(`e7a...`)이 **Job ID**입니다.
+
+### 2단계: Job 강제 종료 (Cancel) 
+
+복사한 Job ID를 넣어서 취소 명령을 날립니다.
+
+```bash
+# 문법: docker exec -it <컨테이너명> ./bin/flink cancel <JOB_ID>
+docker exec -it apache-flink-jobmanager-1 ./bin/flink cancel e7a96d6ab3120f3ed44db75aedd4c263
+```
+
+**성공 시 출력:** `Cancelling job e7a96d6ab3120f3ed44db75aedd4c263.` `Job has been cancelled.`
 
 
-__
+### 💡 꿀팁: Web UI가 제일 편해요
+
+명령어가 너무 길고 복잡하죠? 개발 중에는 그냥 **Web Dashboard (http://localhost:8081)** 접속 -> 해당 Job 클릭 -> 우측 상단 **`Cancel Job`** 버튼
 
 

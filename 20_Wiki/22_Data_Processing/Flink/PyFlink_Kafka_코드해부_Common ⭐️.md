@@ -47,6 +47,22 @@ from pyflink.datastream import StreamExecutionEnvironment
 	- **Why?** 파이썬은 `var = 1` 했다가 `var = "hi"` 해도 되지만, Flink(자바)는 안 됩니다.
 	- **Role:** `map` 같은 함수가 **"결과로 뭘 뱉는지(String인지 Int인지)"** Flink에게 미리 신고하는 역할. (안 하면 에러 남!)
 
+#### 자주 쓰는 타입 매핑표 (Cheat Sheet)
+
+파이썬 자료형을 Flink `Types`로 바꿀 때 참고하세요.
+
+|**파이썬 코드 (return)**|**Flink 타입 (Types)**|**설명**|
+|---|---|---|
+|`return "hello"`|`Types.STRING()`|문자열|
+|`return 100`|`Types.INT()`|정수 (약 ±21억)|
+|`return 10000000000`|`Types.LONG()`|큰 정수 (ID, 시간 등)|
+|`return 3.14`|`Types.DOUBLE()`|실수 (소수점)|
+|`return (1, "A")`|`Types.TUPLE([Types.INT(), Types.STRING()])`|튜플 (순서 중요!)|
+|`return [1, 2, 3]`|`Types.LIST(Types.INT())`|리스트 (모두 같은 타입)|
+
+>**사용자 수, 개수:** `Types.INT()` (충분함)
+>**타임스탬프(밀리초), DB의 ID값:** 무조건 **`Types.LONG()`** 을 쓰세요! (가장 많이 하는 실수입니다.)
+
 - **`{scss}StreamExecutionEnvironment`**: **(작업장)**
 	- **Role:** Flink 파이프라인(Source -> Process -> Sink)을 그리는 도화지.
 
@@ -89,6 +105,19 @@ from pyflink.common.time import Time
 - **`{python}Time`**: **(시간 단위 변환기)**
 	- **Why?** 컴퓨터에게 숫자 `10`만 주면 10초인지 10분인지 모릅니다.
 	- **Role:** `Time.seconds(10)`, `Time.minutes(5)` 처럼 사람이 쓰는 시간을 Flink가 알아먹는 단위로 바꿔주는 도우미 클래스.
+
+### Function & Logic 
+
+윈도우 안에 모인 데이터를 실제로 요리(계산)하는 도구입니다.
+
+```python
+from pyflink.datastream.functions import AggregateFunction
+```
+
+- **`{python}AggregateFunction`**: **(고급 요리사 / 복합 계산기)**
+	- **Why?** `reduce`(단순 더하기)만으로는 **평균(Average)** 같은 복잡한 계산을 못 합니다. (총점과 개수를 따로 기억해야 하니까요!)
+	- **Role:** `create_accumulator`(그릇 준비), `add`(담기), `getResult`(계산) 단계를 직접 정의하여 **복잡한 로직을 처리**하는 클래스.
+
 
 ---
 ## Environment & JAR 설정 (The Bridge)
