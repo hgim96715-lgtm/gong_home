@@ -58,12 +58,37 @@ from pyflink.datastream.connectors.kafka import KafkaSource, KafkaSink, \
 ```
 
 - **`{scss}KafkaSource`**: **(수도꼭지)** Kafka에서 데이터를 빨아들이는 입구 구현체.
+
 - **`{scss}KafkaSink`**: **(배수구)** 처리된 데이터를 Kafka로 내보내는 출구 구현체.
+
 - **`{scss}KafkaRecordSerializationSchema`**: **(포장 전문가)**
 	- **Why?** 데이터를 Kafka로 보낼 때 "어느 토픽으로?", "Key는 뭐로?", "Value는 뭐로?" 보낼지 결정해야 함.
 	- **Role:** Sink로 나가는 데이터의 포장 방식을 정의함.
+
 - **`{scss}KafkaOffsetsInitializer`**: **(출발점 지정)**
 	- **Role:** "처음부터 읽을래(`earliest`)?" 아니면 "지금부터 읽을래(`latest`)?"를 결정.
+
+### Window & Time 도구 (The Slicers) 
+
+무한한 데이터 스트림을 "시간"이나 "개수" 단위로 뚝뚝 끊어주는 도구들입니다.
+
+```python
+from pyflink.datastream.window import TumblingProcessingTimeWindows, SlidingProcessingTimeWindows
+from pyflink.common.time import Time
+```
+
+- **`{python}TumblingProcessingTimeWindows`**: **(일정한 간격의 칼)**
+	- **Why?** 스트림은 끝이 없어서 합계(`sum`)를 못 구합니다. "10초마다 끊어서 계산해!"라고 명령해야 합니다.
+	- **Role:** 시간을 기준으로 **겹치지 않게(Tumbling)**, **서버 시간(Processing Time)** 에 맞춰 데이터를 자르는 윈도우 생성기.
+	- _참고:_ `EventTime`을 쓸 땐 `TumblingEventTimeWindows`로 바꿔야 함.
+
+- **`{python}SlidingProcessingTimeWindows`**: **(미끄러지는 창문 - 스르륵)** 
+	- **Why?** "지난 1분간의 평균을 **10초마다 갱신**해서 보여줘!" (데이터가 겹침)
+	- **Role:** 윈도우를 옆으로 밀면서(Sliding) 생성함. **크기(Size)** 와 **갱신 주기(Slide)** 두 가지 설정이 필요함.
+
+- **`{python}Time`**: **(시간 단위 변환기)**
+	- **Why?** 컴퓨터에게 숫자 `10`만 주면 10초인지 10분인지 모릅니다.
+	- **Role:** `Time.seconds(10)`, `Time.minutes(5)` 처럼 사람이 쓰는 시간을 Flink가 알아먹는 단위로 바꿔주는 도우미 클래스.
 
 ---
 ## Environment & JAR 설정 (The Bridge)

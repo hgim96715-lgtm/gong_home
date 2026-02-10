@@ -65,6 +65,8 @@ cssclass: dashboard
     4. **Sink (Output)** (KafkaSink 설정)
     5. **Execute** (Job 제출)
 - [[PyFlink_Operators_Basic]]
+- [[PyFlink_KeyBy_DeepDive]]
+- [[PyFlink_Windows]]
 
 ## ⚙️ 5. Operations (운영 & 모니터링)
 *제출된 Job의 상태를 확인하고 관리하는 법.*

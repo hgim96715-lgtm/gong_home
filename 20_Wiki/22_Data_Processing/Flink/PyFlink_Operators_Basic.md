@@ -13,6 +13,7 @@ related:
   - "[[01_Apache Flink_Flow#**코드 작성 순서(Logic Flow)** 와 **데이터 흐름(Data Flow)**]]"
   - "[[PyFlink_KeyBy_DeepDive]]"
   - "[[Python_AST_Structure_Analysis]]"
+  - "[[PyFlink_Windows]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_operator.py
 ---
