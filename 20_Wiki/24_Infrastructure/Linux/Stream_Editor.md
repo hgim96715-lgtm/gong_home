@@ -48,7 +48,7 @@ related:
 
 `awk`는 데이터를 **공백(스페이스)** 기준으로 잘라서 엑셀처럼 다룹니다.
 
-### A. 기본 조회 (Select)
+###  기본 조회 (Select)
 
 가장 많이 쓰는 기능입니다. 원하는 "칸"만 뽑아옵니다.
 
@@ -61,7 +61,34 @@ awk '{print $1, $2}' file.txt
 awk '{printf "이름: %s, 나이: %d\n", $1, $2}' file.txt
 ```
 
-### B. 조건 필터링 (Where)
+### 구분자 다루기 (Delimiter) ⭐️ [중요]
+
+기본적으로 `awk`는 공백을 기준으로 자르지만, 실무 데이터는 쉼표나 탭인 경우가 많습니다.
+
+- **`FS` (Field Separator):** 입력 파일을 읽을 때 자르는 기준 (옵션: `-F` 또는 **`BEGIN {FS="\t"}`**)
+- **`OFS` (Output Field Separator):** 결과를 출력할 때 사이에 끼워줄 문자 (변수: `OFS`)
+
+```bash
+# 1. 들어올 때 (Input): 쉼표(,)로 구분된 CSV 파일 읽기
+awk -F, '{print $1}' data.csv
+
+# 2. 들어올 때 (Input): 탭(Tab)으로 구분된 파일 읽기
+awk -F'\t' '{print $1}' data.tsv
+
+# 콜론(:)으로 구분된 파일 읽기 (예: /etc/passwd)
+awk -F: '{print $1}' /etc/passwd
+
+# 2. 내부 변수 (FS) 변경
+# BEGIN 블록은 "파일 읽기 전"에 실행되므로 여기서 설정을 잡습니다.
+awk 'BEGIN {FS="\t"} {print $1}' file.tsv
+
+# 3. 나갈 때 (Output): 콤마를 찍어서 내보내기 (CSV 변환)
+# "들어올 땐 공백이지만, 나갈 땐 쉼표로 이어줘"
+# 주의: print $1, $2 처럼 쉼표(,)를 찍어야 OFS가 작동함
+awk -v OFS="," '{print $1, $2}' file.txt
+```
+
+### 조건 필터링 (Where)
 
 SQL의 `WHERE` 절과 똑같습니다.
 
@@ -73,7 +100,7 @@ awk '$2 > 20' file.txt
 awk '/Admin/ {print $0}' file.txt
 ```
 
-### C. 통계 및 계산 (Aggregation) ⭐️
+### 통계 및 계산 (Aggregation) 
 
 `awk`의 꽃입니다. 합계와 평균을 즉석에서 계산합니다.
 
@@ -89,7 +116,7 @@ awk '{sum += $2} END {print sum}' data.txt
 awk '{total += $2; count++} END {print "평균:", total/count}' data.txt
 ```
 
-### D. 쉘 변수 전달하기 (`-v` 옵션) 
+###  쉘 변수 전달하기 (`-v` 옵션) 
 
 터미널의 변수(Shell Variable)는 `awk` 내부로 바로 못 들어갑니다.
 **`-v` (Variable)** 옵션으로 통행증을 발급해줘야 합니다.
@@ -100,7 +127,7 @@ limit=50
 awk -v lim="$limit" '$2 > lim {print $0}' data.txt
 ```
 
-###  E. 고급 데이터 가공 (Advanced)
+###  고급 데이터 가공 (Advanced)
 
 로그 분석할 때 필수로 쓰는 **빈도 분석**과 **시간 변환**입니다.
 
@@ -116,7 +143,7 @@ awk '{names[$1]++} END {for (name in names) print name, names[name]}' file1.txt
 awk '{print strftime("%Y-%m-%d %H:%M:%S", $1)}' timestamps.txt
 ```
 
-### F. 문자열 가공 (String Manipulation) - `substr` 
+### 문자열 가공 (String Manipulation) - `substr` 
 
 데이터가 공백으로 예쁘게 안 잘려있고, **"글자 위치"로 잘라야 할 때** 사용합니다. (엑셀의 `MID` 함수와 동일)
 
@@ -152,7 +179,7 @@ awk '{print substr($0,2,1) substr($0,7,1)}' order.txt
 awk '{print substr($0,2,1), substr($0,7,1)}' order.txt
 ```
 
-### G. 반복문 (Loops) - `for`
+### 반복문 (Loops) - `for`
 
 `awk`는 기본적으로 줄(Row)을 자동으로 넘겨주지만, **한 줄 안에서 여러 칸(Column)을 훑어야 할 때** `for`문을 씁니다. 
 
@@ -215,7 +242,7 @@ echo "1 2 3 4 5" | awk '{
 ----
 ## Code Core Points: ② `sed` (텍스트 수정가)
 
-` 문법: sed 's/찾을거/바꿀거/g' 파일명`
+- **문법:** `{bash}sed 's/찾을거/바꿀거/g' 파일명`
 
 ### A. 교체하기 (Substitution)
 
