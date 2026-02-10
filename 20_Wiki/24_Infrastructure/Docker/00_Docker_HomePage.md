@@ -8,9 +8,9 @@
 
 > "가상머신(VM)이랑 뭐가 달라요?"
 
-- [ ] **[[Docker_Concept_vs_VM]]** : 가상머신은 '집 전체'를 빌리는 것, 도커는 '방 한 칸'만 빌리는 것.
-- [ ] **[[Docker_Architecture]]** : Client, Daemon, Registry의 관계.
-- [ ] **[[Image_vs_Container]]** : 프로그램(Image)과 프로세스(Container)의 차이.
+- [x] **[[Docker_Concept_vs_VM]]** : 가상머신은 '집 전체'를 빌리는 것, 도커는 '방 한 칸'만 빌리는 것.
+- [x] **[[Docker_Architecture]]** : Client, Daemon, Registry의 관계.
+- [x] **[[Image_vs_Container]]** : 프로그램(Image)과 프로세스(Container)의 차이.
 
 ## Level 1. 컨테이너 조작하기 (Basic Commands)
 
@@ -40,7 +40,6 @@
 
 - [ ] **[[Docker_Compose_Setup]]** : `docker-compose.yml` 문법 완벽 정리. **(스파크 클러스터 구축의 핵심)**
 - [ ] **[[Compose_Commands]]** : 한 방에 실행하고 관리하기 (`up`, `down`, `ps`)
-    
 
 ## Level 5. 실전 팁 (Advanced)
 
