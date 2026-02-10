@@ -152,33 +152,78 @@ print(s) # "Jello"
 ```
 
 ---
-## [실전 패턴] 파일명 다루기 (확장자 추출) 
+## 특정 파일만 골라내기 (`endswith`, `startswith`)
 
-데이터 엔지니어링에서 파일 목록(`list`)을 필터링하거나 이름을 바꿀 때 무조건 쓰는 패턴입니다.
+`split`으로 쪼개거나 인덱싱(`[:4]`)으로 비교하지 마세요! 가독성이 떨어집니다.
 
-### 1. 특정 파일만 골라내기 (`endswith`, `startswith`)
+### ① 기본: 접두사(Prefix) / 접미사(Suffix) 검사
 
-`split`으로 쪼개서 비교하지 마세요! 가독성이 떨어집니다.
+문자열이 특정 패턴으로 시작하거나 끝나는지 검사하여 **참/거짓**을 알려줍니다.
 
-**Situation:** `.csv` 파일만 리스트에 담고 싶다.
+- **`startswith()`**: 접두사 검사 ("이걸로 시작하니?")
+- **`endswith()`**: 접미사 검사 ("이걸로 끝나니?")
 
 ```python
-files = ["data.csv", "README.md", "test.py", "result.csv"]
-
-# [Bad] 쪼개서 확인하기 (복잡함)
-# if file.split(".")[-1] == 'csv': ...
-
-# [Good] 직관적인 함수 사용 ✨
-csv_files = [f for f in files if f.endswith(".csv")]
-print(csv_files) 
-# 결과: ['data.csv', 'result.csv']
+filename = "data_2024.csv"
+# 결과는 무조건 True 또는 False
+print(filename.startswith("data_")) # True
+print(filename.endswith(".txt")) # False
 ```
 
->**꿀팁:** 여러 개를 동시에 검사할 수도 있습니다. 
->`if file.endswith((".csv", ".xls", ".json")): ...` (튜플로 넣기)`startswith / endswith`에 여러 조건 → 무조건 튜플로!
-> **꿀팁:** 시작하는 문자 찾기는 **`startswith("data")`** 를 쓰면 됩니다.
+### ② 실무 활용: 리스트 컴프리헨션과 찰떡궁합
 
-### ② 파일명과 확장자 분리 (`rsplit`)
+파일 목록에서 원하는 것만 쏙쏙 뽑아낼 때 가장 많이 씁니다.
+
+```python
+files = ["data.csv", "README.md", "data_backup.txt", "result.csv"]
+
+# 1. 확장자가 .csv인 것만 (접미사)
+csv_files = [f for f in files if f.endswith(".csv")]
+
+# 2. 이름이 data_로 시작하는 것만 (접두사)
+data_files = [f for f in files if f.startswith("data_")]
+```
+
+### 불리언의 마법: 조건문(`if`) 없애기
+
+파이썬에서 **`True`는 `1`, `False`는 `0`** 으로 취급된다는 점을 이용하면 코드가 엄청나게 짧아집니다.
+
+#### `int()` 형변환으로 한 방에 해결
+
+조건문 없이 불리언 결과를 바로 정수로 바꿔버리세요.
+
+```python
+def check_prefix(my_string, is_prefix):
+    # startswith의 결과는 True/False
+    # int(True) -> 1
+    # int(False) -> 0
+    return int(my_string.startswith(is_prefix))
+```
+
+- 데이터 분석에서 "조건을 만족하는 행의 개수"를 셀 때 `sum()`을 바로 때려버리는 것도 이 원리입니다.
+
+### **여러 조건 한 번에 검사하기 (튜플)** 
+
+`endswith`나 `startswith`에 **튜플(Tuple)** 을 넣으면 `OR` 조건처럼 동작합니다
+
+```python
+# .jpg 혹은 .png로 끝나는지 확인
+if file.endswith((".jpg", ".png")): 
+    pass
+```
+
+### **대소문자 무시하고 싶다면?**
+
+먼저 소문자로 변환(`lower()`)한 뒤 검사하세요.
+
+```python
+# "Data.CSV" 처럼 대소문자가 섞여 있을 때
+if file.lower().endswith(".csv"):
+    pass
+```
+
+---
+## 파일명과 확장자 분리 (`rsplit`)
 
 `data.v1.final.csv` 처럼 점(`.`)이 많은 파일은 앞에서 자르면 엉망이 됩니다. 
 **오른쪽(Right) 끝에서** 잘라야 합니다.
