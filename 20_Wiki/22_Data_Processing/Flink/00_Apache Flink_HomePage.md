@@ -63,6 +63,7 @@ _DataStream API를 활용한 파이프라인 개발의 기초._
 - [[PyFlink_Trigger_Watermark]] : **윈도우 제어 (Timing & Control)** 
 	- **Trigger:** "데이터가 n개 모이면 발사!" (조기 출력 결정) 
 	- **Watermark:** "늦게 온 데이터는 버려!" (이벤트 시간 및 지연 처리)
+- [[PyFlink_Evictor]] 
 
 ---
 ##  Operations (운영 & 모니터링)

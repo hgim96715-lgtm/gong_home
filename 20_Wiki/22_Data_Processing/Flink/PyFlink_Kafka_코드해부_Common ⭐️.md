@@ -116,6 +116,7 @@ from pyflink.common.time import Time
 
 >더보기 : 더 자세한 Trigger내용은 **[[PyFlink_Trigger_Watermark]]** 참조 
 
+
 - **`{python}Time`**: **(시간 단위 변환기)**
 	- **Why?** 컴퓨터에게 숫자 `10`만 주면 10초인지 10분인지 모릅니다.
 	- **Role:** `Time.seconds(10)`, `Time.minutes(5)` 처럼 사람이 쓰는 시간을 Flink가 알아먹는 단위로 바꿔주는 도우미 클래스.
@@ -125,13 +126,18 @@ from pyflink.common.time import Time
 윈도우 안에 모인 데이터를 실제로 요리(계산)하는 도구입니다.
 
 ```python
-from pyflink.datastream.functions import AggregateFunction
+from pyflink.datastream.functions import AggregateFunction,ProcessWindowFunction 
 ```
 
 - **`{python}AggregateFunction`**: **(고급 요리사 / 복합 계산기)**
 	- **Why?** `reduce`(단순 더하기)만으로는 **평균(Average)** 같은 복잡한 계산을 못 합니다. (총점과 개수를 따로 기억해야 하니까요!)
 	- **Role:** `create_accumulator`(그릇 준비), `add`(담기), `getResult`(계산) 단계를 직접 정의하여 **복잡한 로직을 처리**하는 클래스.
 
+- **`{python}ProcessWindowFunction`**: **(전지전능한 관리자 / 일괄 처리반)**
+	- **Why?** `Reduce`는 데이터가 올 때마다 합쳐버려서 **"순서"** 나 **"전체 데이터"** 를 모릅니다. "중앙값(Median) 구하기", "정렬(Sorting)", "최신 N개만 남기기(Custom Evictor)" 처럼 **데이터를 전부 펼쳐놓고 봐야 하는 로직**에 씁니다.
+	- **Role:** 윈도우가 닫힐 때까지 기다렸다가, 모인 데이터를 **반복자(Iterable)** 형태로 한 번에 던져줍니다.
+
+> 더보기 [[PyFlink_Evictor]] 참고 
 
 ### State Management (The Memory) 
 

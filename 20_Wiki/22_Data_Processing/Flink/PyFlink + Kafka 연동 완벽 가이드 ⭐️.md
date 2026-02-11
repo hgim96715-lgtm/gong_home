@@ -175,7 +175,7 @@ docker exec -it apache-flink-jobmanager-1 bash
 
 # Job 제출 (표준 명령어)
 /opt/flink/bin/flink run \
-  -py /opt/flink/playground/src/kafka_trigger.py \
+  -py /opt/flink/playground/src/kafka_Evictors.py \
   -j /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.18.jar
 ```
 
