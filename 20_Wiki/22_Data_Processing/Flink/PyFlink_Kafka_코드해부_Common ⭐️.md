@@ -89,7 +89,7 @@ from pyflink.datastream.connectors.kafka import KafkaSource, KafkaSink, \
 무한한 데이터 스트림을 "시간"이나 "개수" 단위로 뚝뚝 끊어주는 도구들입니다.
 
 ```python
-from pyflink.datastream.window import TumblingProcessingTimeWindows, SlidingProcessingTimeWindows
+from pyflink.datastream.window import TumblingProcessingTimeWindows, SlidingProcessingTimeWindows, CountTrigger,Trigger, TriggerResult
 from pyflink.common.time import Time
 ```
 
@@ -101,6 +101,20 @@ from pyflink.common.time import Time
 - **`{python}SlidingProcessingTimeWindows`**: **(미끄러지는 창문 - 스르륵)** 
 	- **Why?** "지난 1분간의 평균을 **10초마다 갱신**해서 보여줘!" (데이터가 겹침)
 	- **Role:** 윈도우를 옆으로 밀면서(Sliding) 생성함. **크기(Size)** 와 **갱신 주기(Slide)** 두 가지 설정이 필요함.
+
+- **`{python}CountTrigger`**: **(개수 기준 방아쇠)**
+	- **Why?** "1시간짜리 윈도우인데, 데이터가 100개 쌓이면 **미리** 계산해주면 안 돼?" (시간을 기다리기 지루할 때)
+	- **Role:** 윈도우 안에 데이터가 **설정된 개수(N)** 만큼 찰 때마다 계산(`FIRE`)을 명령하는 트리거. (예: `CountTrigger.of(10)`)
+
+- **`{python}Trigger`**: **(커스텀 트리거 설계도)**
+	- **Why?** "데이터가 10개 모이거나(OR) 20초가 지나면 발사해!" 같은 **복합 조건**은 기본 트리거로 안 됩니다.
+	- **Role:** 나만의 트리거를 만들 때 상속받아야 하는 **부모 클래스(Abstract Class)**. (`on_element` 등 필수 규칙 정의)
+
+- **`{python}TriggerResult`**: **(판결 신호등)**
+	- **Why?** 트리거가 조건을 확인한 후, Flink에게 "발사해!", "기다려!", "삭제해!"라고 **최종 명령**을 내려야 합니다.
+	- **Role:** `FIRE`(발사), `CONTINUE`(대기), `PURGE`(삭제) 등 4가지 상태를 정의한 **열거형 상수(Enum)**.
+
+>더보기 : 더 자세한 Trigger내용은 **[[PyFlink_Trigger_Watermark]]** 참조 
 
 - **`{python}Time`**: **(시간 단위 변환기)**
 	- **Why?** 컴퓨터에게 숫자 `10`만 주면 10초인지 10분인지 모릅니다.
@@ -118,6 +132,19 @@ from pyflink.datastream.functions import AggregateFunction
 	- **Why?** `reduce`(단순 더하기)만으로는 **평균(Average)** 같은 복잡한 계산을 못 합니다. (총점과 개수를 따로 기억해야 하니까요!)
 	- **Role:** `create_accumulator`(그릇 준비), `add`(담기), `getResult`(계산) 단계를 직접 정의하여 **복잡한 로직을 처리**하는 클래스.
 
+
+### State Management (The Memory) 
+
+데이터가 흐르는 도중에도 **값을 기억(저장)** 해야 할 때 쓰는 도구입니다.
+
+```python
+from pyflink.datastream.state import ValueStateDescriptor
+```
+
+- **`{python}ValueStateDescriptor`**: **(기억 상자 명찰 / 사물함 신청서)**
+	- **Why?** 파이썬 변수(`a = 1`)는 함수 실행이 끝나면 휘발되어 사라집니다. 하지만 "지금까지의 합계"나 "이전 데이터"를 **계속 기억**하려면 Flink에게 "저장 공간 좀 줘!"라고 해야 합니다.
+	- **Role:** Flink에게 **"나 'count'라는 이름의 사물함(State) 하나 쓸게. 거기엔 '숫자(Int)'만 넣을 거야."** 라고 **스펙을 정의(`"이름", 타입`)해서 신청**하는 객체.
+	- _사용 예시:_ `self.count_state_desc = ValueStateDescriptor("count", Types.INT())`
 
 ---
 ## Environment & JAR 설정 (The Bridge)

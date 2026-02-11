@@ -7,9 +7,11 @@ aliases:
   - LAG
   - ROW_NUMBER
 tags:
-  - SQL
+  - PyFlink
 related:
   - "[[00_SQL_HomePage]]"
+  - "[[00_Apache Flink_HomePage]]"
+  - "[[PyFlink_Windows]]"
 ---
 ##  개념 한 줄 요약
 

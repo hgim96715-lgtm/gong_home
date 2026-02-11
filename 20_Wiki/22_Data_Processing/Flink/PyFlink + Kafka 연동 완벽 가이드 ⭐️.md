@@ -160,7 +160,7 @@ docker logs -f apache-flink-taskmanager-1
 ### [창 2] 데이터 전송 (Producer)
 
 ```bash
-docker exec -it {별칭: apache-flink-kafka-1} /opt/kafka/bin/kafka-console-producer.sh \
+docker exec -it apache-flink-kafka-1 /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server localhost:9092 \
   --topic input-topic
 ```
@@ -175,7 +175,7 @@ docker exec -it apache-flink-jobmanager-1 bash
 
 # Job 제출 (표준 명령어)
 /opt/flink/bin/flink run \
-  -py /opt/flink/playground/src/{내가만든 파이썬 이름}.py \
+  -py /opt/flink/playground/src/kafka_trigger.py \
   -j /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.18.jar
 ```
 
