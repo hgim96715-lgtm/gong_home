@@ -14,6 +14,7 @@ related:
   - "[[PyFlink_Windows]]"
   - "[[Python_Generators_Yield]]"
   - "[[Python_Lists_Tuples]]"
+  - "[[Python_Iterables_Iterators]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_Evictors.py
 ---

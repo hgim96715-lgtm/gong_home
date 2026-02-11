@@ -59,6 +59,7 @@
 > "Airflow 2.0의 마법 같은 기능을 써봐요."
 
 - [[Python_Decorators]] : 골뱅이(`@`)의 정체 (TaskFlow API 핵심)
+- **[[Python_Iterables_Iterators]]** : 하나씩 꺼내 쓰는 줄 세우기 (`iter`, `next`, `Iterable` vs `Iterator`)
 - [[Python_Generators_Yield]] : 메모리를 아끼는 반복문 (`yield`, `next`, `generator`)
 - [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리(`lambda`,`Map` ,`list` ,`filter` ,`reduce`)
 - [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`) - 스케줄링 필수!
