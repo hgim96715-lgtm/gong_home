@@ -8,7 +8,7 @@ tags:
   - Docker
 related:
   - "[[Spark_Streaming_Socket_Boilerplate]]"
-  - "[[Apache_Kafka_Intro]]"
+  - "[[Apache_Kafka_Concept]]"
   - "[[Spark_Kafka_Docker_Setup]]"
   - "[[00_Apache_Spark_HomePage]]"
 ---

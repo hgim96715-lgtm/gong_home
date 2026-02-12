@@ -9,7 +9,7 @@ tags:
   - Spark
 related:
   - "[[Spark_Kafka_Docker_Setup]]"
-  - "[[Apache_Kafka_Intro]]"
+  - "[[Apache_Kafka_Concept]]"
   - "[[kafka_spark_streaming_code]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[DataFrame_Transform_Basic]]"

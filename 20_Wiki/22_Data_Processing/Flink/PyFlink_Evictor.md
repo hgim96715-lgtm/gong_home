@@ -28,7 +28,7 @@ linked:
 하지만 **PyFlink**에는 **Evictor 클래스와 `.evictor()` 메서드가 아예 없습니다.**
 
 > PyFlink에서 Evictor 기능(데이터 솎아내기)이 필요하면, **`ProcessWindowFunction`** 내부에서 파이썬의 **리스트 슬라이싱(`list[-N:]`)** 기능을 이용해 직접 구현해야 합니다.
-
+>`ProcessWindowFunction` 에 자세히 알려면 , [[PyFlink_Window_Functions#`ProcessWindowFunction` ?|`ProcessWindowFunction`란?]]  참조 
 ---
 ## 왜 필요한가?
 
@@ -53,51 +53,6 @@ linked:
 - **변경점:** `.evictor(...)`와 `.reduce(...)`를 사용하지 않습니다.
 - **핵심 함수:** `.process(KeepLastNFunction(N))`
 - **로직:** `process` 함수 안에서 `elements`(전체 데이터)를 리스트로 바꾸고, `[-3:]` 슬라이싱을 통해 솎아냅니다.
-
----
-## `ProcessWindowFunction` ?
-
-- `Reduce`가 들어오는 족족 계산하는 "성격 급한 녀석"이라면,
-- `Process`는 **"윈도우 닫힐 때까지 기다렸다가, 데이터를 몽땅 받아서 한 번에 처리하는 신중한 녀석"** 입니다.
-
-### 함수의 기본 골격 (Anatomy)
-
-이 함수는 반드시 **`process`** 라는 메서드를 구현해야 하며, Flink가 4가지 재료를 넣어줍니다.
-
-```python
-class MyProcessFunction(ProcessWindowFunction):
-    
-    # key: 이 윈도우의 주인 (예: "Alice")
-    # context: 윈도우의 시간 정보 (시작 시간, 끝 시간 등)
-    # elements: 윈도우에 모인 "모든 데이터" (여기가 핵심!)
-    def process(self, key, context, elements):
-        # ... 로직 구현 ...
-        yield 결과
-```
-
-#### `elements`: "리스트가 아니라 `Iterable` (반복자) 객체입니다."
-
-**특징:**
-- 자판기처럼 **"하나씩 꺼낼 수만"** 있습니다. (`next()`)
-- 전체 길이가 몇 개인지(`len()`), 뒤에 뭐가 있는지 미리 알 수 없습니다.
-- **메모리 절약**을 위해 Flink가 데이터를 아직 다 꺼내놓지 않은 상태입니다.
-**변환 필수:**
-- `data_list = list(elements)` 또는 `[e for e in elements]` 를 통해 리스트로 변환!
-- **경고:** 윈도우 안에 데이터가 100만 개라면? 리스트로 바꾸는 순간 100만 개가 RAM에 올라가서 **메모리 폭발(OOM)** 이 일어날 수 있습니다. (그래서 `KeepLastN` 로직은 윈도우 사이즈가 작을 때만 써야 합니다.)
-
-
-#### `yield`: "return 쓰면 해고당합니다"
-
-- 일반적인 함수는 `return`을 쓰지만, Flink 함수들은 **제너레이터(Generator)** 패턴인 `yield`를 씁니다.
-- Flink는 유연성을 위해 무조건 `yield`를 쓰도록 설계되었습니다.
-
-#### `key` & `context`: "주소와 시간"
-
-- **`key`:** 지금 처리하는 윈도우의 주인님입니다. (예: `key_by(x[0])` 했다면 "Alice").
-- **`context`:** 윈도우의 **메타데이터**입니다.
-	- `context.window().start`: 윈도우 시작 시간
-	- `context.window().end`: 윈도우 끝 시간 (이걸로 파일 이름 만들 때 유용함)
-	- `context.current_watermark`: 현재 워터마크 시간
 
 ---
 ### `Reduce` vs `Process` 비교 (왜 이걸 써야 해?)
@@ -209,6 +164,39 @@ if __name__ == "__main__":
 ```
 
 ---
+## `.process()`는 **이중 생활**
+
+PyFlink에서 `.process()`는 **이중 생활**을 합니다. 
+호출하는 '대상'이 누구냐에 따라 들어가는 함수의 종류가 다릅니다.
+
+### KeyedStream에서 쓸 때 (윈도우 없을 때)
+
+- **대상:** `stream.key_by(...)` 바로 뒤
+- **함수:** `KeyedProcessFunction` (타이머, 상태 사용)
+- **코드:** `.process(MyKeyedFunction(), output_type=Types.STRING())`
+
+```python
+# 윈도우 없이 키별로 실시간 처리
+stream.key_by(lambda x: x[0]) \
+      .process(AverageProcessFunction(), output_type=Types.STRING()) 
+      # 여기서 AverageProcessFunction은 KeyedProcessFunction을 상속받아야 함!
+```
+
+### WindowedStream에서 쓸 때 (윈도우 있을 때)
+
+- **대상:** `stream.key_by(...).window(...)` 뒤
+- **함수:** `ProcessWindowFunction` (윈도우 데이터 일괄 처리)
+- **코드:** `.process(MyWindowFunction(), output_type=Types.STRING())`
+
+```python
+# 윈도우 안에서 데이터를 모아 처리
+stream.key_by(lambda x: x[0]) \
+      .window(TumblingProcessingTimeWindows.of(Time.seconds(30))) \
+      .process(KeepLastNFunction(3), output_type=Types.STRING())
+      # 여기서 KeepLastNFunction은 ProcessWindowFunction을 상속받아야 함!
+```
+
+
 ## 질문사항
 
 **"성능은 괜찮나요?"**

@@ -183,6 +183,65 @@ for i in range(10):
 # 결과: 0, 1, 2, 4 (5부터는 안 찍힘)
 ```
 
+
+---
+## For-Else 문법 (파이썬의 특권)
+
+다른 언어에는 없는 파이썬만의 독특한 문법입니다. 
+**"반복문을 다 돌았는데도 특정 사건(break)이 발생하지 않았을 때"**  실행됩니다.
+
+### 문법 구조 (Syntax)
+
+```python
+for 변수 in 리스트:
+    if 조건:
+        # 찾았다! (성공)
+        break
+else:
+    # 반복문이 끝까지 돌았는데도 break를 못 만남 (실패/완료)
+    # 즉, "찾는 게 없었다"는 뜻
+```
+
+  ### 왜 필요한가? (Flag 변수 제거)
+
+보통은 "찾았니?"를 표시하기 위해 `is_found = False` 같은 변수(Flag)를 둡니다.
+`for-else`를 쓰면 이 변수를 없애고 코드를 직관적으로 짤 수 있습니다.
+
+[Before: 깃발(Flag) 변수 사용]
+
+```python
+numbers = [1, 3, 5, 7]
+is_found = False  # 깃발 준비
+
+for n in numbers:
+    if n == 4:
+        is_found = True
+        print("4 찾았다!")
+        break
+
+if not is_found:  # 깃발 확인
+    print("4가 없네요.")
+```
+
+[After: For-Else 사용]
+
+```python
+numbers = [1, 3, 5, 7]
+
+for n in numbers:
+    if n == 4:
+        print("4 찾았다!")
+        break  # 찾으면 반복문 탈출 (else 실행 안 됨)
+else:
+    # break 없이 끝까지 돌았으면 실행
+    print("4가 없네요.")
+```
+
+**핵심 요약:**
+
+- **Break를 만남** → Else 실행 **X** (중도 하차)
+- **Break 안 만남** → Else 실행 **O** (완주 성공)
+
 ---
 ## 초보자가 자주 착각하는 포인트 
 

@@ -8,14 +8,12 @@ aliases:
   - timedelta
 tags:
   - Python
-  - DateTime
-  - Time
-  - Scheduling
 related:
   - "[[Blocking_vs_NonBlocking]]"
   - "[[Airflow_Queues_Scaling]]"
   - "[[Python_Modules_Imports]]"
   - "[[Airflow_Sensors]]"
+  - "[[Python_Mock_Data_Generator]]"
 ---
 
 ## 개념 한 줄 요약
@@ -91,6 +89,9 @@ thirty_mins = timedelta(minutes=30)
 ### C. time.sleep (잠깐 멈춤)
 
 프로그램을 지정한 시간(초 단위)만큼 강제로 재우는 거야.
+
+컴퓨터는 너무 빨라서 반복문을 돌리면 0.001초 만에 끝납니다. 
+**"사람 속도"** 나 **"센서 주기"** 를 흉내 내려면 반드시 재워야 합니다.
 
 ```python
 import time

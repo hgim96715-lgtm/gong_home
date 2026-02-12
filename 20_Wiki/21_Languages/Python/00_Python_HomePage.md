@@ -4,8 +4,8 @@
 > "파이썬과 대화하는 법을 배워요."
 
 - [[Python_Variables_Types]] : 변수와 자료형 (`string`,`int`,`bool`)
-- [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice,`[`:`:-1]`)
-- [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`)
+- [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice,`[:​:-1]`)
+- [[Python_Control_Flow]] : 흐름 제어하기 (`if`,`for`,`while`,`for-else`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `endswith`, `join`, `strip`, `rsplit`,`확장자 추출(파일명다루기)`,`starswith`,`isdigit`,`isalpha`,`isalnum`)
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `swapcase`, `replace` vs `re.sub`,`lower`,`re.search`)
@@ -32,6 +32,7 @@
 > "남이 짠 코드를 가져다 쓰고, 내 코드를 정리해요."
 
 - [[Python_Modules_Imports]] : `import`와 `from`의 차이, 패키지 구조
+- [[Python_Sys_Module]] :`sys` 모듈 (`sys.stdout`,`sys.argv`,`sys.exit()`,`sys.path`)
 - [[Python_Entry_Point]] : 프로그램 시작점과 실행 제어 (`if __name__ == '__main__':`)
 - [[Python_Regex]] : 정규표현식 마스터 (`re.search` vs `match`, `findall`, `group`,`span`,`re.sub`)
 - [[Python_Virtual_Env]] : 가상 환경 관리 (`venv`, `pip`, `requirements.txt`) - docker 실행시 필수 
@@ -62,7 +63,11 @@
 - **[[Python_Iterables_Iterators]]** : 하나씩 꺼내 쓰는 줄 세우기 (`iter`, `next`, `Iterable` vs `Iterator`)
 - [[Python_Generators_Yield]] : 메모리를 아끼는 반복문 (`yield`, `next`, `generator`)
 - [[Python_Lambda_Map]] : 이름 없는 함수와 고속 처리(`lambda`,`Map` ,`list` ,`filter` ,`reduce`)
-- [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`) - 스케줄링 필수!
-- [[Python_Random_Seed]] : 랜덤 시드 (`random`,`seed`,`randint`)
+- [[Python_DateTime]] : 날짜 계산과 실행 대기 (`datetime`, `timedelta`, `time.sleep`,`strftime`,`strptime`) - 스케줄링 필수!
+- [[Python_Random_Seed]] : 랜덤 시드 (`random`,`seed`,`randint`,`uniform`,`choice`)
 - [[Python_AST_Structure_Analysis]] : 코드 구조 분석과 안전한 파싱 (`ast`, `literal_eval`, `parse`)
+
 ---
+## simulation
+
+[[Python_Mock_Data_Generator]]

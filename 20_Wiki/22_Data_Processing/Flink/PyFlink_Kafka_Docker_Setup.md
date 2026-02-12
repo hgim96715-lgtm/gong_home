@@ -9,7 +9,7 @@ tags:
 related:
   - "[[Flink_Docker_Setup(PyFlink)]]"
   - "[[Spark_Kafka_Docker_Setup]]"
-  - "[[Apache_Kafka_Intro]]"
+  - "[[Apache_Kafka_Concept]]"
 ---
 #  Kafka (KRaft Mode) & Flink Docker Setup
 

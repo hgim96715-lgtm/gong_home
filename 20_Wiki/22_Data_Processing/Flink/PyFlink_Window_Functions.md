@@ -84,32 +84,50 @@ return (accumulator[0] + value[1], accumulator[1] + 1)
     - **코드:** `return (총점A+총점B, 개수A+개수B)`
 
 ---
-### ③ ProcessWindowFunction (고급: "종합 감사") 🥇
+## `ProcessWindowFunction` ?
 
-데이터뿐만 아니라 **"메타 데이터(Context)"** 가 필요할 때 씁니다. 가장 무겁습니다.
+- `Reduce`가 들어오는 족족 계산하는 "성격 급한 녀석"이라면,
+- `Process`는 **"윈도우 닫힐 때까지 기다렸다가, 데이터를 몽땅 받아서 한 번에 처리하는 신중한 녀석"** 입니다.
 
+### 함수의 기본 골격 (Anatomy)
 
-- **역할:** 윈도우가 닫힐 때까지 기다렸다가, **모든 데이터(Iterable)** 와 **윈도우 정보(Context)** 를 한 번에 받아서 처리합니다
-
-- **비유 (기말고사 채점):**
-> "시험이 끝날 때까지(Window End) 기다립니다. 
-> 답안지를 전부 걷어서(Iterable), 학생 이름(Key)과 시험 시간(Context)을 확인한 뒤, 종합 성적표를 작성합니다."
->"사건 기록부" (누가, 언제, 무엇을 했는지 상세하게 기록)
-
-- 구조 (Process):
+이 함수는 반드시 **`process`** 라는 메서드를 구현해야 하며, Flink가 4가지 재료를 넣어줍니다.
 
 ```python
 class MyProcessFunction(ProcessWindowFunction):
-    # key: 그룹핑된 키 (예: "Alice")
-    # context: 윈도우 시작/끝 시간 정보 (핵심!) 
-    # elements: 윈도우 안에 모인 모든 데이터 리스트 
-    def process(self, key, context, elements, out):
-        window_start = context.window().start  # 윈도우 시작 시간 알 수 있음
-        count = len([e for e in elements])     # 데이터 전수 조사 가능
-        out.collect(f"Window({window_start}) -> {key}: {count}개")
+    
+    # key: 이 윈도우의 주인 (예: "Alice")
+    # context: 윈도우의 시간 정보 (시작 시간, 끝 시간 등)
+    # elements: 윈도우에 모인 "모든 데이터" (여기가 핵심!)
+    def process(self, key, context, elements):
+        # ... 로직 구현 ...
+        yield 결과
 ```
 
-**단점:** 모든 데이터를 메모리에 들고 있다가 처리하므로, 데이터가 너무 많으면 메모리가 터질 수 있습니다.
+#### `elements`: "리스트가 아니라 `Iterable` (반복자) 객체입니다."
+
+**특징:**
+- 자판기처럼 **"하나씩 꺼낼 수만"** 있습니다. (`next()`)
+- 전체 길이가 몇 개인지(`len()`), 뒤에 뭐가 있는지 미리 알 수 없습니다.
+- **메모리 절약**을 위해 Flink가 데이터를 아직 다 꺼내놓지 않은 상태입니다.
+**변환 필수:**
+- `data_list = list(elements)` 또는 `[e for e in elements]` 를 통해 리스트로 변환!
+- **경고:** 윈도우 안에 데이터가 100만 개라면? 리스트로 바꾸는 순간 100만 개가 RAM에 올라가서 **메모리 폭발(OOM)** 이 일어날 수 있습니다. (그래서 `KeepLastN` 로직은 윈도우 사이즈가 작을 때만 써야 합니다.)
+
+
+#### `yield`: "return 쓰면 해고당합니다"
+
+- 일반적인 함수는 `return`을 쓰지만, Flink 함수들은 **제너레이터(Generator)** 패턴인 `yield`를 씁니다.
+- Flink는 유연성을 위해 무조건 `yield`를 쓰도록 설계되었습니다.
+
+#### `key` & `context`: "주소와 시간"
+
+- **`key`:** 지금 처리하는 윈도우의 주인님입니다. (예: `key_by(x[0])` 했다면 "Alice").
+- **`context`:** 윈도우의 **메타데이터**입니다.
+	- **`context.window().start`**: 윈도우 시작 시간 (Unix Timestamp, **밀리세컨드 단위**)
+	-  **`context.window().end`**: 윈도우 종료 시간 (Unix Timestamp, **밀리세컨드 단위**)
+	- `context.current_watermark`: 현재 워터마크 시간
+
 
 ---
 ## `aggregate` 함수의 문법 (Type Hinting)

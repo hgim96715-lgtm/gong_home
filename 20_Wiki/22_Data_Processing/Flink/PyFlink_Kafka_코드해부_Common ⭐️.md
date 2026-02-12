@@ -11,6 +11,7 @@ related:
   - "[[PyFlink + Kafka 연동 완벽 가이드 ⭐️]]"
   - "[[PyFlink_코드 해부_common ⭐️]]"
   - "[[01_Apache Flink_Flow#**코드 작성 순서(Logic Flow)** 와 **데이터 흐름(Data Flow)**]]"
+  - "[[00_Apache Flink_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/kafka_sink.py
 ---
@@ -126,7 +127,7 @@ from pyflink.common.time import Time
 윈도우 안에 모인 데이터를 실제로 요리(계산)하는 도구입니다.
 
 ```python
-from pyflink.datastream.functions import AggregateFunction,ProcessWindowFunction 
+from pyflink.datastream.functions import AggregateFunction,ProcessWindowFunction,RuntimeContext,KeyedProcessFunction
 ```
 
 - **`{python}AggregateFunction`**: **(고급 요리사 / 복합 계산기)**
@@ -138,6 +139,29 @@ from pyflink.datastream.functions import AggregateFunction,ProcessWindowFunction
 	- **Role:** 윈도우가 닫힐 때까지 기다렸다가, 모인 데이터를 **반복자(Iterable)** 형태로 한 번에 던져줍니다.
 
 > 더보기 [[PyFlink_Evictor]] 참고 
+
+- **`{python}RuntimeContext`**: **(작업 환경 / 도구 상자)**
+	- **Why?** 함수(`Map`, `Process` 등)가 단순히 "계산"만 하는 게 아니라, **"외부 정보"** 가 필요할 때가 있습니다.
+		- **State 접근:** "어제까지의 합계(State) 좀 꺼내줘." (가장 중요 ⭐️)
+		- **병렬 정보:** "나 지금 10개 병렬 태스크 중 몇 번째(Subtask Index)로 돌고 있어?" (디버깅용)
+		- **메트릭:** "이거 처리하는 데 몇 초 걸렸는지 기록(Metric) 좀 해줘."
+	- **Role:** Flink 엔진(Runtime)과 내 코드(Function)를 연결해 주는 **다리(Bridge)** 역할.
+		- 주로 `open()` 함수 안에서 `self.get_runtime_context()`로 불러와서, **State를 초기화**하는 데 씁니다.
+
+- **`{python}KeyedProcessFunction`**: **(만능 기술자 / 저수준 제어반)**
+
+- **Why?** `window()` API는 편리하지만 정해진 틀(Tumbling, Sliding 등) 안에서만 움직여야 합니다. 만약 "첫 데이터가 들어온 지 정확히 10초 뒤에 내보내고 싶다"거나, "특정 조건이 만족될 때만 즉시 결과를 쏘고 싶다"는 등 **시간과 상태를 1ms 단위로 정교하게 제어**해야 할 때 씁니다.
+- **Role:** 
+	- **`process_element`**: 데이터가 한 건 들어올 때마다 실행되는 로직입니다. 여기서 상태(State)를 업데이트하고 **타이머(Alarm)**를 맞춥니다.
+    - **`on_timer`**: 내가 설정한 타이머가 울리는 순간 실행되는 로직입니다. 윈도우가 닫히는 시점을 기다리지 않고, **내가 원하는 시점에 집계 결과를 출력**할 수 있습니다.
+    - **`TimerService`**: "X시 X분에 깨워줘"라고 부탁하는 **알람 시계** 역할을 합니다
+
+
+| **함수 이름**                 | **비유**     | **특징**                                                                  |
+| ------------------------- | ---------- | ----------------------------------------------------------------------- |
+| **AggregateFunction**     | **전문 요리사** | 들어오는 재료(Data)를 쉬지 않고 다져서 중간 합계(Accumulator)를 만듦. 효율이 아주 좋음.             |
+| **ProcessWindowFunction** | **일괄 처리반** | 윈도우가 닫힐 때까지 재료를 냉장고에 다 모아놨다가, 마지막에 한꺼번에 꺼내서 요리함. 전체를 볼 수 있음.            |
+| **KeyedProcessFunction**  | **만능 기술자** | 냉장고(State)도 쓰고 알람 시계(Timer)도 써서, 레시피에 없는 **세상에 하나뿐인 복잡한 요리**를 만들어냄.<br> |
 
 ### State Management (The Memory) 
 
@@ -314,6 +338,24 @@ stream.map(
 ### ⚠️ 주의사항
 
 - **타입 불일치:** `Types.INT()`라고 선언해놓고 실제 코드에서 문자열("hello")을 리턴하면, 실행 중에 **ClassCastException**이 터집니다. (거짓말하면 안 됨!)
+
+
+### PyFlink `Types` 전체 참조표 (DataStream API 기준)
+
+|**분류**|**PyFlink Types 메서드**|**Python 자료형**|**설명**|
+|---|---|---|---|
+|**기본**|`Types.STRING()`|`str`|문자열 (이름, 주소 등)|
+|**기본**|`Types.INT()`|`int`|4바이트 정수|
+|**기본**|`Types.LONG()`|`int`|8바이트 큰 정수 (타임스탬프용)|
+|**기본**|`Types.FLOAT()`|`float`|소수점 (온도, 좌표 등)|
+|**기본**|`Types.BOOLEAN()`|`bool`|True / False|
+|**배열**|`Types.LIST(타입)`|`list`|동일한 타입의 목록|
+|**매핑**|`Types.MAP(키타입, 값타입)`|`dict`|파이썬 딕셔너리 (타입 고정)|
+|**구조**|`Types.TUPLE([타입들])`|`tuple`|**(추천)** 순서가 고정된 모음|
+|**구조**|`Types.ROW([타입들])`|`Row`|필드명이 있는 데이터 구조|
+|**특수**|**`Types.PICKLED_BYTE_ARRAY()`**|**`Any`**|**만능 보자기 (딕셔너리, 객체 등)**|
+
+>파이썬의 `pickle` 라이브러리를 사용해 객체를 통째로 직렬화하는 타입입니다.(PICKLED_BYTE_ARRAY())
 
 ---
 ## Kafka Sink 설정 (Output)

@@ -104,7 +104,7 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_Streaming_Watermark]]** : 늦은 데이터 처리와 메모리 관리 (Late Data Dropping)
         
 - **환경 설정 및 연동 (Setup & Integration)**
-    - **[[Apache_Kafka_Intro]]** : 대용량 데이터 파이프라인의 심장, 카프카 기초
+    - **[[Apache_Kafka_Concept]]** : 대용량 데이터 파이프라인의 심장, 카프카 기초
     - **[[Spark_Kafka_Docker_Setup]]** : Kafka & Spark 환경 구축 (Docker Compose)
     - **[[Spark_Streaming_Cassandra_Setup]]** : Cassandra 환경 구축 (Docker Compose)
     - **[[Spark_Streaming_Kafka_Integration]]** : [코드] 스파크로 카프카 데이터 읽고 쓰기 ⭐
