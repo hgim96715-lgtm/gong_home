@@ -8,6 +8,8 @@ aliases:
   - 파싱
   - Parsing
   - 확장자 추출
+  - isdigit
+  - isalpha
 tags:
   - Python
 related:
@@ -22,7 +24,7 @@ related:
 **"긴 문장을 쪼개서(Split) 리스트로 만들거나, 리스트를 다시 문장으로 붙이는(Join) 기술."**
 
 - **데이터 엔지니어링의 일상:** "콤마(`,`)로 구분된 CSV 파일을 읽어서 리스트로 바꿔라."
-- **핵심 도구:** `split` (칼), `join` (풀), `replace` (수정테이프)
+- **핵심 도구:** `split` (칼), `join` (풀), `replace` (수정테이프), `isdigit` (감별사)
 
 ---
 ## 쪼개기: `split()` 
@@ -41,6 +43,7 @@ words = text.split()
 print(words)
 # 결과: ['Spark', 'is', 'very', 'fast']
 ```
+
 
 ### ② 특정 문자로 자르기 (CSV 파싱)
 
@@ -67,10 +70,9 @@ print(parts)
 ---
 ## 반대 기술: `join()`
 
-은근히 모르는 꿀기능입니다. 
-`split`으로 쪼갠 리스트를 다시 **문자열 하나로 합칠 때** 씁니다.
+은근히 모르는 꿀기능입니다. `split`으로 쪼갠 리스트를 다시 **문자열 하나로 합칠 때** 씁니다.
 
-- `{python}문법: "구분자".join(리스트)`
+- **문법:** `"구분자".join(리스트)`
 
 ```python
 words = ['Spark', 'is', 'cool']
@@ -88,9 +90,9 @@ print(arrow)
 ```
 
 ---
-## 청소하기: `strip()` 
+## 청소하기: `strip()`
 
-사용자 입력이나 파일 읽을 때 **앞뒤 공백(엔터 포함)** 을 제거합니다.
+사용자 입력이나 파일 읽을 때 **앞뒤 공백(엔터 포함)** 을 제거합니다. 
 `split` 하기 전에 무조건 해주는 게 좋습니다.
 
 ```python
@@ -102,12 +104,11 @@ print(clean_data)
 ```
 
 ---
-##  갈아끼우기: `replace()` 
+## 갈아끼우기: `replace()`
 
-특정 글자를 찾아서 다른 글자로 바꿔줍니다. 
-오타 수정이나 불필요한 기호 삭제할 때 씁니다.
+특정 글자를 찾아서 다른 글자로 바꿔줍니다. 오타 수정이나 불필요한 기호 삭제할 때 씁니다.
 
->**"위치(Index)"가 아니라 "값(Value)"** 을 찾아서 바꾼다!!!!!!
+> **"위치(Index)"가 아니라 "값(Value)"** 을 찾아서 바꾼다!!!!!!
 
 ### ① 기본 사용법
 
@@ -134,6 +135,7 @@ clean_money = money.replace(",", "").replace("원", "")
 print(clean_money)
 # 결과: "1000000" (이제 숫자로 변환 가능!)
 ```
+
 
 ### ⚠️ 주의: 원본은 안 바뀐다! (Immutability)
 
@@ -202,9 +204,7 @@ def check_prefix(my_string, is_prefix):
 
 - 데이터 분석에서 "조건을 만족하는 행의 개수"를 셀 때 `sum()`을 바로 때려버리는 것도 이 원리입니다.
 
-### **여러 조건 한 번에 검사하기 (튜플)** 
-
-`endswith`나 `startswith`에 **튜플(Tuple)** 을 넣으면 `OR` 조건처럼 동작합니다
+**여러 조건 한 번에 검사하기 (튜플)** `endswith`나 `startswith`에 **튜플(Tuple)** 을 넣으면 `OR` 조건처럼 동작합니다
 
 ```python
 # .jpg 혹은 .png로 끝나는지 확인
@@ -223,6 +223,53 @@ if file.lower().endswith(".csv"):
 ```
 
 ---
+## 데이터 검증 (`isdigit`, `isalpha`)
+
+사용자 입력이나 파일 데이터가 **"숫자로만 되어있는지"**, **"글자로만 되어있는지"** 검사할 때 씁니다. 
+결과는 무조건 `True` 아니면 `False`입니다.
+
+### ① 주요 함수 3대장
+
+- **`.isdigit()`**: "전부 숫자니?" (0~9)
+- **`.isalpha()`**: "전부 문자니?" (한글, 영어 포함 / 공백, 특수문자 X)
+- **`.isalnum()`**: "숫자랑 문자가 섞여 있니?" (특수문자만 없으면 OK)
+
+### ② 실전 예제
+
+```python
+age = "25"
+name = "Alice"
+trash = "1000원"
+
+print(age.isdigit())   # True
+print(name.isalpha())  # True
+
+# 사람이 보기엔 숫자 같지만 '원' 때문에 False
+print(trash.isdigit()) # False
+```
+
+### ⚠️ 주의사항 (실수하기 쉬운 점)
+
+`isdigit()`은 **"모양이 숫자인가?"** 를 봅니다.
+`-5`(음수 기호)나 `3.14`(소수점)는 문자로 취급되어 `False`가 나옵니다. 
+실수는 `try-except`로 `float()` 변환을 시도하는 것이 정석입니다.
+
+
+```python
+def is_number(s):
+    try:
+        float(s) # 숫자로 변환 시도
+        return True # 성공하면 숫자임
+    except ValueError:
+        return False # 에러나면 글자임
+
+print(is_number("3.14"))  # True
+print(is_number("-10"))   # True
+print(is_number("1,000")) # False (쉼표 때문에)
+```
+
+
+---
 ## 파일명과 확장자 분리 (`rsplit`)
 
 `data.v1.final.csv` 처럼 점(`.`)이 많은 파일은 앞에서 자르면 엉망이 됩니다. 
@@ -239,7 +286,7 @@ print(ext)  # csv
 ```
 
 ---
-## Spark에서의 활용 (방금 본 코드 복습)
+## Spark에서의 활용 (코드 복습)
 
 ```python
 # RDD Transformation
@@ -257,4 +304,3 @@ rdd.flatMap(lambda line: line.split(" "))
 **1. 빈 문자열의 함정** "데이터 파일(CSV, 로그)을 다룰 때 `text.split(",")`을 많이 쓰는데, 만약 `text`가 텅 빈 문자열(`""`)이라면? 빈 리스트(`[]`)가 나올 것 같지? 아니야! **`['']` (빈 문자열이 하나 들어있는 리스트)** 가 나와. 이것 때문에 개수 셀 때 1개라고 잘못 세는 버그가 진짜 많이 생기니까 조심해!"
 
 **2. 변수 재할당 필수** "초보자들이 제일 많이 하는 실수 1위! `text.replace('a', 'b')` 라고만 써놓고 **'어? 왜 안 바뀌지?'** 하고 밤새 고민해. 문자열 함수들은 원본을 건드리지 못해. 항상 **`변수 = 변수.함수()`** 형태로 써야 한다는 거 잊지 마!"
-
