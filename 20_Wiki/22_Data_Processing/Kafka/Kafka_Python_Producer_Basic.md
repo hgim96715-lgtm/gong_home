@@ -11,6 +11,7 @@ related:
   - "[[00_Kafka_HomePage]]"
   - "[[Apache_Kafka_Concept]]"
   - "[[Python_JSON]]"
+  - "[[Docker_Host_vs_Internal_Network]]"
 ---
 ## Concept Summary(한줄요약)
 
@@ -53,6 +54,10 @@ producer = KafkaProducer(
 - **`bootstrap_servers`**: "어디로 보낼까?"
 	- 카프카 서버의 주소입니다. (로컬: `localhost:29092`, 도커 내부: `kafka:9092`)
 	- 하나만 적어줘도 알아서 클러스터 전체 정보를 찾아냅니다(Bootstrap).
+	- **내 맥북(터미널)에서 부를 때:** 도커 밖이니까 **"외부 연결용 문"** 인 `localhost:29092`
+	- **도커 안(Spark/Flink)에서 부를 때:** 같은 도커 안이니까 **"내부 주소"** 인 `kafka:9092` 사용
+
+> server를 뭘 할지 모르겠다면 [[Docker_Host_vs_Internal_Network]] 참고 
 
 - **`value_serializer`**: "어떻게 포장할까?" (직렬화)
 	- 카프카는 오직 **0과 1(Byte)** 만 알아듣습니다. 파이썬 딕셔너리(`{'a': 1}`)를 그대로 던지면 에러 납니다.

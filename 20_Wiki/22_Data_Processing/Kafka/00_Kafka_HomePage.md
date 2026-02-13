@@ -5,6 +5,7 @@
 - [[Kafka_Topic_Partition_Offset]] : 파티션과 오프셋, 병렬 처리의 핵심 ⭐️
 - [[Kafka_Consumer_Group_Lag]] : 컨슈머 그룹과 랙(Lag) 관리
 - [[Kafka_Replication_ISR]] : 데이터 복제와 장애 복구 원리
+- [[Docker_Host_vs_Internal_Network]] : `localhost` vs `Container_Name` (외부 접속과 내부 통신 차이 완벽 정리)
 
 ## 2. CLI & Operations (도구)
 
