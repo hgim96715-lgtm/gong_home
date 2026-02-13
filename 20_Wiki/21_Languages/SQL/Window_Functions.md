@@ -12,6 +12,7 @@ related:
   - "[[00_SQL_HomePage]]"
   - "[[00_Apache Flink_HomePage]]"
   - "[[PyFlink_Windows]]"
+  - "[[SQL_JOIN_Concept]]"
 ---
 ##  개념 한 줄 요약
 
