@@ -224,6 +224,21 @@ print(data.index("C")) # 2
 # print(data.index("Z")) # 🚨 에러 발생! (ValueError: 'Z' is not in list)
 ```
 
+**심화:**
+뒤에서부터 찾고 싶다면? `[:​:-1]`로 뒤집은 후 `index()` 사용! 
+`index()`는 항상 앞에서부터만 찾기 때문에, 배열을 뒤집으면 뒤에서부터 찾는 효과를 낼 수 있다!
+
+```python
+data = ["A", "B", "C", "A"]
+# 뒤에서부터 "A"를 찾고 싶어!
+print(data[::-1].index("A"))  # 0 (뒤집힌 배열 기준 0번)
+
+# ⚠️ 주의: 뒤집힌 배열 기준의 인덱스라 원래 인덱스와 다르다
+# 원래 배열의 인덱스로 변환하려면?
+print(len(data) - 1 - data[::-1].index("A"))  # 3 (원래 배열 기준 마지막 "A"의 위치)
+```
+
+
 ### ③ [심화] 모든 위치 찾기 (`enumerate`) 
 
 `index()`는 맨 처음 하나만 알려주기 때문에, 전부 찾으려면 **리스트 내포(List Comprehension)** 와 **`enumerate`** 를 조합해서 씁니다.
