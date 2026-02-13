@@ -64,8 +64,9 @@
 - [[Python_Iterables_Iterators]] : 반복 가능한 객체의 원리 (`iter`, `next`)
 - [[Python_Generators_Yield]] : 메모리를 아끼는 반복문 (`yield`, `generator`)
 - [[Python_Lambda_Map]] : 익명 함수와 고속 처리 (`lambda`, `map`, `filter`)
-- [[Python_DateTime]] : 날짜 계산과 스케줄링 (`datetime`, `timedelta`, `strptime`, `strftime`)
-- [[Python_Random_Seed]] : 랜덤 시드 고정 (`random`, `seed`, `randint`)
+- [[Python_DateTime]] : 날짜 계산과 스케줄링 (`datetime`, `timedelta`, `strptime`, `strftime`,`isoformat`)
+- [[Python_Random_Seed]] : 랜덤 시드 고정 (`random`, `seed`, `randint`,`choice`,`uniform`)
+- [[Python_Random_Sampling]] : 랜덤 추출과 가중치 (`weight`,`k`,`choices`,`choice`)
 - [[Python_AST_Structure_Analysis]] : 코드 구조 분석 (`ast`, `literal_eval`)
 
 ## Level 7. 실전 시뮬레이션 (Simulation & Utils) 
@@ -74,3 +75,4 @@
 
 - [[Python_Library_Faker]] : 그럴싸한 가짜 데이터 생성 라이브러리 (이름, 주소, IP 등)
 - [[Python_Mock_Data_Generator]] : 직접 만드는 데이터 생성기 패턴 (Generator 활용)
+- **[[Python_UUID]]** : 유일한 ID 만들기 (분산 환경 필수)

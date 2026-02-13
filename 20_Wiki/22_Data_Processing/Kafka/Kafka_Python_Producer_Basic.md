@@ -64,29 +64,33 @@ producer = KafkaProducer(
 	- **공식:** `{python}lambda v: json.dumps(v).encode('utf-8')`
 		- `v` (데이터)를 받아서>`json.dumps` (문자열로 바꾸고)>`.encode('utf-8')` (최종적으로 바이트로 변환)
 
-### ③ 연결 재시도 패턴 (Retry Logic) 
 
-"카프카 켜질 때까지 10번만 봐준다." 하는 국룰 코드입니다.
+### ③ 연결 재시도 (Retry)와 무한 전송 (Loop)의 조화 ️
+
+실무 코드는 보통 **"1. 연결될 때까지 기다림"** -> **"2. 연결되면 무한히 보냄"** 순서로 구성됩니다.
 
 ```python
-import time
-
-# 10번 시도한다 (기회는 10번)
+# 1단계: 연결 시도 (최대 10번)
+producer = None
 for _ in range(10):
     try:
-        # 연결 시도!
         producer = KafkaProducer(...)
-        
-        # 성공하면 바로 반복문 탈출 (성공!)
-        break 
-        
+        break # 성공하면 탈출!
     except NoBrokersAvailable:
-        # 실패하면 여기로 옴
-        print("카프카 아직 자는 중... 3초 뒤에 다시 깨움.")
-        time.sleep(3)
-else:
-    # for문이 10번 다 돌 때까지 break를 못 만났다? (= 10번 다 실패)
-    raise RuntimeError("10번이나 깨웠는데 안 일어남. 시스템 종료.")
+        time.sleep(3) # 실패하면 3초 대기
+
+# 연결 실패 시 종료
+if not producer:
+    raise RuntimeError("카프카가 죽었습니다.")
+
+# 2단계: 데이터 전송 (무한 루프)
+try:
+    while True:
+        data = make_fake_data()
+        producer.send('topic', value=data)
+        time.sleep(1) # 1초마다 발송
+except KeyboardInterrupt:
+    producer.close()
 ```
 
 - **`for - else` 문법:** 파이썬의 특이한 문법입니다. 

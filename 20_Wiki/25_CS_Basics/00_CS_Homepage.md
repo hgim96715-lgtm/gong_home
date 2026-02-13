@@ -47,7 +47,7 @@
 
 - [[Text_vs_Binary]] : 파일의 두 종류, 텍스트(Text)와 바이너리(Binary)의 차이 (r vs rb)
 - [[Data_Formats_CSV]] : 데이터 분석의 쌀, CSV의 구조와 주의점 (구분자, 이스케이프), "대표적인 텍스트 파일"
-- [[Encoding_Concept]] : "한글이 왜 깨지나요?" (ASCII, UTF-8, CP949의 원리)
+- [[Encoding_Concept]] : "한글이 왜 깨지나요?" (ASCII, UTF-8, CP949의 원리) `Encoding`,`Decoding`
 - [[Data_Formats_Parquet]] : CSV보다 10배 빠른 빅데이터 전용 포맷, "대표적인 바이너리 파일"
 - [[Serialization_JSON_XML]] :  사람이 읽기 편한 데이터 (Key-Value 텍스트)
 
