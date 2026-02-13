@@ -44,6 +44,36 @@ related:
     - `sed 's/[0-9]\{11\}/***/g' user.log`
 
 ---
+## 심화: 내장 변수와 옵션 (Advanced)
+
+`awk`가 미리 정의해둔 편리한 변수들입니다.
+
+| **변수**  | **의미 (Full Name)**     | **설명**                             |     |
+| ------- | ---------------------- | ---------------------------------- | --- |
+| **NR**  | Number of Records      | 현재 **행 번호** (1, 2, 3...)           |     |
+| **NF**  | Number of Fields       | 현재 줄의 **전체 칸 개수** (맨 마지막 칸은 `$NF`) |     |
+| **FS**  | Field Separator        | **입력** 구분자 (기본값: 공백)               |     |
+| **OFS** | Output Field Separator | **출력** 구분자 (출력할 때 뭘로 나눌지)          |     |
+
+### 실무 꿀팁 예제
+
+```bash
+# 1. 줄 번호(NR) 같이 찍기
+echo -e "데이터1\n데이터2" | awk '{print NR, $0}'
+# 결과: 1 데이터1 ...
+
+# 2. CSV 파일 처리하기 (-F 옵션) ️
+# "이 파일은 쉼표(,)로 나뉘어 있어!"라고 알려줌
+awk -F, '{print $1}' data.csv
+
+# 3. 특수문자 출력 (echo -e)
+# \n(엔터), \t(탭)을 문자가 아닌 기능으로 인식시킴
+echo -e "첫줄\n둘째줄"
+```
+
+- echo -e에 대해 알고 싶다면 , [[File_Management#① `echo` 화면 출력 & 파일 생성의 마술사|echo -e ]] 참조 
+
+---
 ##  Code Core Points: ① `awk` (데이터 분석가)
 
 `awk`는 데이터를 **공백(스페이스)** 기준으로 잘라서 엑셀처럼 다룹니다.
@@ -312,35 +342,7 @@ sed -e 's/apple/orange/g' -e '/delete me/d' file.txt
 ```
 
 
----
-## 심화: 내장 변수와 옵션 (Advanced)
 
-`awk`가 미리 정의해둔 편리한 변수들입니다.
-
-|**변수**|**의미 (Full Name)**|**설명**|
-|---|---|---|
-|**NR**|Number of Records|현재 **행 번호** (1, 2, 3...)|
-|**NF**|Number of Fields|현재 줄의 **전체 칸 개수** (맨 마지막 칸은 `$NF`)|
-|**FS**|Field Separator|**입력** 구분자 (기본값: 공백)|
-|**OFS**|Output Field Separator|**출력** 구분자 (출력할 때 뭘로 나눌지)|
-
-### 실무 꿀팁 예제
-
-```bash
-# 1. 줄 번호(NR) 같이 찍기
-echo -e "데이터1\n데이터2" | awk '{print NR, $0}'
-# 결과: 1 데이터1 ...
-
-# 2. CSV 파일 처리하기 (-F 옵션) ️
-# "이 파일은 쉼표(,)로 나뉘어 있어!"라고 알려줌
-awk -F, '{print $1}' data.csv
-
-# 3. 특수문자 출력 (echo -e)
-# \n(엔터), \t(탭)을 문자가 아닌 기능으로 인식시킴
-echo -e "첫줄\n둘째줄"
-```
-
-- echo -e에 대해 알고 싶다면 , [[File_Management#① `echo` 화면 출력 & 파일 생성의 마술사|echo -e ]] 참조 
 
 ---
 ## 실무 종합 예제 (Log Analysis)
