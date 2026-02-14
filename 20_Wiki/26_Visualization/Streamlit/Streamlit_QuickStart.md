@@ -8,6 +8,8 @@ tags:
   - Streamlit
 related:
   - "[[00_Streamlit_HomePage]]"
+linked:
+  - file:///Users/gong/gong_study_de/streamlit/requirements.txt
 ---
 
 ## 1. 설치하기 (Installation)
