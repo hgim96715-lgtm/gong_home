@@ -6,11 +6,10 @@ related:
   - "[[Stream_Editor]]"
   - "[[Text_Slicing_cut]]"
 source: HackerRank
+difficulty:
+  - Easy
 ---
-
-# [문제 제목]
-
-## 📋 문제 분석 & 파이프라인 설계 (Shell logic)
+## 문제 분석 & 파이프라인 설계 (Shell logic)
 
 > 텍스트의 각 줄에서 문자를 추출합니다.
 > 각 입력 라인에서 **2번째, 7번째 위치의 문자**를 출력합니다.

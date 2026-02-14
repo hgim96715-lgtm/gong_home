@@ -7,6 +7,8 @@ related:
   - "[[Redirection_Pipe]]"
   - "[[Data_Statistics]]"
 source: HackerRank
+difficulty:
+  - Easy
 ---
 ##  문제 분석 & 파이프라인 설계 (Shell logic)
 

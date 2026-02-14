@@ -1,14 +1,12 @@
 ---
 tags:
   - Linux_Test
-status: 🟧 복습
+status:
 related:
 source:
+difficulty:
 ---
-
-# [문제 제목]
-
-## 📋 문제 분석 & 파이프라인 설계 (Shell logic)
+## 문제 분석 & 파이프라인 설계 (Shell logic)
 
 > 터미널에 입력하기 전, 데이터 흐름(Stream)과 명령어 조합을 먼저 설계합니다.
 

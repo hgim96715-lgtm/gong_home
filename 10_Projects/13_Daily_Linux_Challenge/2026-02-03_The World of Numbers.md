@@ -6,6 +6,8 @@ related:
   - "[[Shell_Arithmetic]]"
   - "[[Shell_Input_Output]]"
 source: HackerRank
+difficulty:
+  - Easy
 ---
 
 # [문제 제목]

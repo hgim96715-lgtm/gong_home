@@ -5,12 +5,6 @@ related: []
 source:
 difficulty:
 status:
-  - 🟥 실패
-  - 🟨 힌트참고
-  - 🟩 해결
-  - 🟧 복습
-  - 🟨 진행중
-  - 🟪 복습후 해결함
 ---
 ##  해결 전략 (Code Before Think)
 

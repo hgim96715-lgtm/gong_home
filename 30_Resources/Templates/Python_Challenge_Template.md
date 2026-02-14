@@ -1,12 +1,11 @@
 ---
-status: 🟨 진행중
 tags:
   - Python_Test
+status:
 related:
 difficulty:
 source:
 ---
-
 ## 문제 분석 & 설계 (Code Before Think)
 
 > 코드를 치기 전, 입출력과 로직을 먼저 설계합니다.

@@ -6,10 +6,7 @@ related:
   - "[[Text_Slicing_cut]]"
 source: HackerRank
 ---
-
-# [문제 제목]
-
-## 📋 문제 분석 & 파이프라인 설계 (Shell logic)
+##  문제 분석 & 파이프라인 설계 (Shell logic)
 
 > 각 줄의 첫 네 글자를 표시합니다.
 

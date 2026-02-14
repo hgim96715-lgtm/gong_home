@@ -5,11 +5,10 @@ status: 🟩 해결
 related:
   - "[[Stream_Editor]]"
 source: HackerRank
+difficulty:
+  - Easy
 ---
-
-# [문제 제목]
-
-## 📋 문제 분석 & 파이프라인 설계 (Shell logic)
+## 문제 분석 & 파이프라인 설계 (Shell logic)
 
 >문자열에서 2번째 위치부터 7번째 위치까지(양 끝 포함) 문자를 출력 하세요.
 
