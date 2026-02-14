@@ -102,6 +102,20 @@ WHERE species IS NOT NULL AND body_mass_g IS NOT NULL
 >`{sql}WHERE review LIKE '%50\%%' ESCAPE '\'` (50%라는 글자를 찾아라)
 
 
+### ⭐️ 여러 패턴 한 번에 찾기 (`ILIKE ANY(ARRAY[...])`)
+
+`OR`를 여러 번 쓰는 대신, 배열(`ARRAY`)을 사용하여 `IN`처럼 깔끔하게 씁니다.
+
+```sql
+-- ✅ OR 반복 사용 (지저분함)
+WHERE email ILIKE '%gmail%' OR email ILIKE '%naver%'
+
+-- ✅ ILIKE ANY 사용 (깔끔!) ✨
+-- "배열 안의 패턴 중 하나(ANY)라도 맞으면 가져와라"
+WHERE email ILIKE ANY (ARRAY['%gmail%', '%naver%'])
+```
+
+
 ### 결측치 확인 (IS NULL) 
 
 **가장 많이 틀리는 부분 1위입니다.**
@@ -116,7 +130,7 @@ WHERE species IS NOT NULL AND body_mass_g IS NOT NULL
 ### Q. `IN` 안에 와일드카드(`%`)를 쓸 수 있나요?
 
 **A. 아니요, 불가능합니다.**
-`IN`은 오직 **값이 완전히 똑같은지(Exact Match)** 만 확인합니다.
+`IN`은 오직 **값이 완전히 똑같은지(Exact Match)** 만 확인합니다.!!!!!!!
 
 ```sql
 -- ❌ 틀린 시도 (아무것도 안 나옴)
@@ -124,18 +138,6 @@ WHERE email IN ('%@gmail.com', '%@naver.com')
 -- 해석: 이메일 주소가 진짜로 "%@gmail.com"이라는 글자인 사람을 찾아라.
 ```
 
-### Solution 1. 여러 패턴 한 번에 찾기 (`ILIKE ANY`)
-
-`OR`를 여러 번 쓰는 대신, 배열(`ARRAY`)을 사용하여 `IN`처럼 깔끔하게 씁니다.
-
-```sql
--- ✅ OR 반복 사용 (지저분함)
-WHERE email ILIKE '%gmail%' OR email ILIKE '%naver%'
-
--- ✅ ILIKE ANY 사용 (깔끔!) ✨
--- "배열 안의 패턴 중 하나(ANY)라도 맞으면 가져와라"
-WHERE email ILIKE ANY (ARRAY['%gmail%', '%naver%'])
-```
 
 ### Solution 2. 정규표현식 사용 (Regular Expressions)
 
