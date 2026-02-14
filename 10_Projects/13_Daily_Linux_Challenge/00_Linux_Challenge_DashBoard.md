@@ -1,3 +1,10 @@
+---
+tags:
+  - Linux_Test
+  - Dashboard
+related:
+  - "[[00_Linux_HomePage]]"
+---
 
 > [!abstract] **Engineer's Log**
 > "Everything is a file."

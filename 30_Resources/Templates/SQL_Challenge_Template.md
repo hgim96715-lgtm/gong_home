@@ -1,7 +1,8 @@
 ---
 tags:
   - SQL_TEST
-related: []
+related:
+  - "[[00_SQL_Challenge_DashBoard]]"
 source:
 difficulty:
 status:

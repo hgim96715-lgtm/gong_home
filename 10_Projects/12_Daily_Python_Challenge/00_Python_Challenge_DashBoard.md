@@ -1,3 +1,10 @@
+---
+tags:
+  - Dashboard
+  - Python_Test
+related:
+  - "[[00_Python_HomePage]]"
+---
 
 
 > [!abstract] **Developer's Log**

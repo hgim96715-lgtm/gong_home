@@ -4,6 +4,7 @@ tags:
 status: 🟨 힌트참고
 related:
   - "[[Shell_Input_Output]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:
   - Easy

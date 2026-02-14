@@ -5,6 +5,7 @@ status: 🟩 해결
 related:
   - "[[Text_Slicing_cut]]"
   - "[[Stream_Editor]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 ---
 

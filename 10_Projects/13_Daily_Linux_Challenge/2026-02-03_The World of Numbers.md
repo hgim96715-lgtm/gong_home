@@ -5,6 +5,7 @@ status: 🟩 해결
 related:
   - "[[Shell_Arithmetic]]"
   - "[[Shell_Input_Output]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:
   - Easy

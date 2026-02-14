@@ -5,6 +5,7 @@ status: 🟨 힌트참고
 related:
   - "[[Stream_Editor]]"
   - "[[Text_Slicing_cut]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:
   - Easy

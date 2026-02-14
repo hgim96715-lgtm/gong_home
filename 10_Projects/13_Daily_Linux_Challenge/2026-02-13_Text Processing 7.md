@@ -4,6 +4,7 @@ tags:
 status: 🟧 복습
 related:
   - "[[Text_Slicing_cut]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 ---
 ## 📋 문제 분석 & 파이프라인 설계 (Shell logic)

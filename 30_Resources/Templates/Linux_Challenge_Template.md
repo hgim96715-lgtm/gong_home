@@ -3,6 +3,7 @@ tags:
   - Linux_Test
 status:
 related:
+  - "[[00_Linux_Challenge_DashBoard]]"
 source:
 difficulty:
 ---

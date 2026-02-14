@@ -6,6 +6,7 @@ related:
   - "[[Text_Transformation_tr]]"
   - "[[Shell_Parameter_Expansion]]"
   - "[[Shell_Scripting_Basics]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:
   - Easy

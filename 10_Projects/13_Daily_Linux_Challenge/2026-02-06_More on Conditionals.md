@@ -6,6 +6,7 @@ related:
   - "[[Shell_Scripting_Basics]]"
   - "[[Redirection_Pipe]]"
   - "[[Data_Statistics]]"
+  - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:
   - Easy
