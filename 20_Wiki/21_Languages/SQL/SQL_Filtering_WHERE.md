@@ -101,6 +101,14 @@ WHERE species IS NOT NULL AND body_mass_g IS NOT NULL
 >진짜 `%` 글자를 찾고 싶다면? 앞에 역슬래시(`\`)를 붙여주세요. 
 >`{sql}WHERE review LIKE '%50\%%' ESCAPE '\'` (50%라는 글자를 찾아라)
 
+```sql
+--  (PostgreSQL 기본 동작)
+WHERE page_location ILIKE '%\_%'
+
+-- 이것과 동일
+WHERE page_location ILIKE '%\_%' ESCAPE '\'
+```
+
 
 ### ⭐️ 여러 패턴 한 번에 찾기 (`ILIKE ANY(ARRAY[...])`)
 
