@@ -61,6 +61,9 @@ project/
 ├── 📂 spark_app/              # [Batch] Spark 대용량 배치 처리 로직 (Python)
 ├── 📂 plugins/                # [Airflow] 커스텀 플러그인 (현재 미사용)
 ├── 📂 include/                # [Airflow] SQL 파일이나 기타 보조 파일
+└── 📂 streamlit_app/ 
+	 ├── 📜 Dashboard.py <-- (메인 대시보드 파일) 
+	 └── 📂 .streamlit/ <-- (secrets.toml 같은 설정 파일 넣을 곳)
 │
 ├── 📂 config/                 # [Config] Airflow 설정 파일
 ├── 📂 spark_conf/             # [Config] Spark 설정 (log4j, defaults.conf 등)
@@ -150,5 +153,8 @@ docker-compose down --volumes --rmi all
 ## 진행 상황 (Roadmap)
 
 1. [x] 환경 구축 완료 (Docker Compose)
-2. [ ] **Faker로 가짜 데이터 생성하기** [[01_Faker_data]] 
+2. [x] **Faker로 가짜 데이터 생성하기** [[01_Faker_data]] 
+3. [ ] **Streamlit으로 실시간 모니터링하기 (Consumer)** [[02_Streamlit_Dashboard]] 
+    - Kafka에 들어온 데이터를 실시간으로 꺼내서 차트와 표로 시각화 (데이터 유입 확인용)
+
 

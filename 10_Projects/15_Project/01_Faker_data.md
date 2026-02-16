@@ -30,7 +30,6 @@ linked:
 |**`user-log`**|Python Producer (Faker)|고객이 쇼핑몰에서 **주문을 완료**했을 때|`order_id`, `total_amount`, `order_status`, `timestamp`|
 
 
-
 ---
 ##  주요 용어 사전 (Dictionary)
 
@@ -53,8 +52,6 @@ linked:
 ---
 ##  구현 코드 (Producer)
 
-
----
 ## 실행방법 
 
 ### Kafka Topic 생성
