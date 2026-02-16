@@ -14,7 +14,7 @@ related:
   - "[[Python_JSON]]"
   - "[[Python_Classes_Objects]]"
   - "[[Python_Sorting_Logic]]"
-  - "[[Spark_Data_Aggregation]]"
+  - "[[Python_Membership_In]]"
 ---
 ## 개념 한 줄 요약 
 

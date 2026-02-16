@@ -18,6 +18,7 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Spark_General_Transformations]]"
   - "[[Python_String_Indexing_Slicing]]"
+  - "[[Python_Membership_In]]"
 ---
 ## 개념 한 줄 요약
 

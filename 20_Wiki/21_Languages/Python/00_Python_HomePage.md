@@ -17,6 +17,7 @@
 - [[Python_Statistics_Module]] : 데이터 요약 통계 (`mean`, `median`, `stdev`)
 - [[Python_Collections_Counter]] : 빈도 분석의 강자 (`Counter`, `most_common`)
 - [[Python_Functions]] : 함수 정의와 인자 (`def`, `*args`, `**kwargs`)
+- **[[Python_Unpacking]]** :  리스트/튜플 한 방에 풀기 (`a, b = [1, 2]`, `*rest`, `_`)
 - [[Python_Variable_Swapping]] : 파이썬 변수 교환 (`a, b = b, a`)
 
 ## Level 2. 데이터 자료구조 (Data Structures)

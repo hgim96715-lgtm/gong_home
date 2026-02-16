@@ -4,6 +4,7 @@ aliases:
   - not in
   - 멤버십 연산자
   - 포함 여부 확인
+  - in
 tags:
   - Python
 related:

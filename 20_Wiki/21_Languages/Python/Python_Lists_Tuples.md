@@ -17,6 +17,8 @@ related:
   - "[[Python_Variables_Types]]"
   - "[[00_Python_HomePage]]"
   - "[[Python_String_Indexing_Slicing]]"
+  - "[[Python_Unpacking]]"
+  - "[[Python_Membership_In]]"
 ---
 
 ##  개념 한 줄 요약 
