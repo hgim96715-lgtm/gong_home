@@ -104,6 +104,45 @@ print(clean_data)
 ```
 
 ---
+## 대소문자 변환 (`upper`, `lower`)
+
+**가장 많이 하는 실수!** `lower(변수)`가 아니라 **`변수.lower()`** 입니다. 
+파이썬에서 문자열 함수들은 대부분 **메서드(Method)** 라서 주어(변수) 뒤에 점을 찍어야 합니다.
+
+### ① 기본 사용법
+
+- **`.upper()`**: 전부 대문자로 ("shout" -> "SHOUT")
+- **`.lower()`**: 전부 소문자로 ("Quiet" -> "quiet")
+
+```python
+text = "Python Is Easy"
+
+# (X) 이렇게 쓰면 에러납니다!
+# print(lower(text)) -> NameError: name 'lower' is not defined
+
+# (O) 변수 뒤에 점(.)을 찍으세요!
+print(text.upper()) # "PYTHON IS EASY"
+print(text.lower()) # "python is easy"
+```
+
+### ② 실무 활용: 대소문자 무시하고 비교하기 (Normalization)
+
+사용자가 "Yes", "yes", "YES" 중 뭘 입력할지 모를 때, **무조건 소문자로 바꿔서 비교**하는 게 국룰입니다.
+
+```python
+user_input = "Yes"
+
+# 그냥 비교하면 틀림 ("Yes" != "yes")
+if user_input == "yes":
+    print("통과") # 실행 안 됨
+
+# 소문자로 변환 후 비교 (정규화)
+if user_input.lower() == "yes":
+    print("통과!") # 실행 됨!
+```
+
+
+---
 ## 갈아끼우기: `replace()`
 
 특정 글자를 찾아서 다른 글자로 바꿔줍니다. 오타 수정이나 불필요한 기호 삭제할 때 씁니다.
@@ -218,6 +257,7 @@ if file.endswith((".jpg", ".png")):
 
 ```python
 # "Data.CSV" 처럼 대소문자가 섞여 있을 때
+# 소문자로 바꾼 뒤(.lower()) 검사하세요!
 if file.lower().endswith(".csv"):
     pass
 ```
