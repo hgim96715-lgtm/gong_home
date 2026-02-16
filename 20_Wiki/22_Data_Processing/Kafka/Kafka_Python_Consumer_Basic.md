@@ -9,6 +9,7 @@ tags:
 related:
   - "[[Kafka_Python_Producer_Basic]]"
   - "[[00_Kafka_HomePage]]"
+  - "[[Docker_Host_vs_Internal_Network]]"
 ---
 ## Concept Summary
 
@@ -46,6 +47,7 @@ consumer = KafkaConsumer(
     auto_offset_reset='latest',      # ④ 읽기 시작 위치 (Start Point)
     enable_auto_commit=True,         # ⑤ 자동 체크 (Auto Save)
     value_deserializer=lambda x: x.decode('utf-8') # ⑥ 번역기 (Decoder)
+    consumer_timeout_ms=1000 # ⑦ 대기 시간 (Timeout)
 )
 ```
 
@@ -57,6 +59,10 @@ consumer = KafkaConsumer(
 - 리스트(`['topic_A', 'topic_B']`)로 여러 개를 동시에 구독할 수도 있습니다.
 - 정규표현식으로 `'iot-.*'` (iot로 시작하는 거 다 줘!)라고 쓸 수도 있습니다.
 
+#### **⚠️ 주의 (Critical): Producer와 일치 필수!** 
+Producer(데이터 생산자) 코드에서 보낼 때 설정한 토픽 이름과 **글자 하나, 띄어쓰기 하나까지 똑같아야** 합니다.
+
+
 ### ② `bootstrap_servers` (Connection)
 
 - **의미:** "방송국(Kafka) 위치가 어디야?"
@@ -66,6 +72,10 @@ consumer = KafkaConsumer(
     - `'localhost:9092'`: 내 컴퓨터(Host)에서 파이썬을 켤 때 씁니다.
     - 이 주소가 틀리면 `NoBrokersAvailable` 에러가 뜹니다.
 
+**핵심:** **Producer 소스코드에 적힌 주소와 똑같이 맞춰야 합니다.** 서로 다른 문(Port)을 바라보면 데이터를 못 찾습니다.
+
+> server를 뭘 할지 모르겠다면 [[Docker_Host_vs_Internal_Network]] 참고 
+
 ### ③ `group_id` (Identity) ⭐️⭐️⭐️ (가장 중요)
 
 - **의미:** "너 어느 팀 소속이야?"
@@ -74,6 +84,13 @@ consumer = KafkaConsumer(
     - **같은 ID끼리:** 데이터를 **N빵(분산 처리)** 합니다. (Consumer가 3개고 파티션이 3개면, 각자 1개씩 맡아서 처리)
     - **다른 ID끼리:** 데이터를 **복제(Broadcast)** 해서 받습니다. (A팀도 받고, B팀도 똑같이 받음)
 - **만약 이걸 안 쓰면?:** Kafka가 임의의 ID를 부여하는데, 껐다 켜면 "새로운 사람"으로 인식해서 **처음부터 다시 읽거나 데이터를 놓칠 수 있습니다.**
+
+#### 💡 [꿀팁] Streamlit 실시간 대시보드 할 때는? (생략 권장)
+
+- **안 쓰는 게 국룰!** (`group_id=None` 혹은 생략)
+- **이유 1 (Broadcast):** 브라우저 탭을 3개 켰을 때, 3개 화면 모두 **똑같은 데이터가 온전히** 나와야 하기 때문입니다. 
+	- (ID를 쓰면 데이터가 3등분 돼서 차트가 끊깁니다!)
+- **이유 2 (Latest):** 앱을 껐다 켰을 때, 과거에 밀린 데이터 말고 **"지금 당장"** 들어오는 최신 데이터부터 보는 게 목적이기 때문입니다.
 
 ### ④ `auto_offset_reset` (Policy)
 
@@ -100,6 +117,17 @@ consumer = KafkaConsumer(
     - **문자열로:** `lambda x: x.decode('utf-8')`
     - **JSON(딕셔너리)으로:** `lambda x: json.loads(x.decode('utf-8'))` (가장 많이 씀)
     - **이걸 안 쓰면?:** `b'hello'` 처럼 바이트 덩어리가 그대로 튀어나옵니다.
+
+### ⑦ 대기 시간 (`consumer_timeout_ms`)  (Streamlit 필수)
+
+- **의미:** **"데이터가 안 오면 얼마나 기다릴까?"**
+- **기본값:** 무한 대기 (데이터가 올 때까지 영원히 기다림)
+- **설정값:** `1000` (1000ms = 1초)
+
+**왜 쓸까?**
+- **UI 멈춤 방지:** 이걸 설정하지 않으면, 데이터가 끊겼을 때 Streamlit이 **"데이터 주세요..."** 하고 멍하니 기다리느라 화면 업데이트(새로고침)를 못 합니다.
+- **루프 탈출:** 1초 동안 기다려보고 데이터가 없으면, `StopIteration` 에러를 내거나 루프를 빠져나와서 **"잠깐 쉬었다가(UI 갱신하고) 다시 올게"** 할 수 있게 해줍니다.
+
 
 ---
 

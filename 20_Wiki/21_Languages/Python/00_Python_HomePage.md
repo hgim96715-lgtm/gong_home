@@ -45,7 +45,9 @@
 > **"에러가 나도 파이프라인이 멈추지 않게 해요."**
 
 - [[Python_Error_Handling]] : 예외 처리 (`try`, `except`, `finally`, `raise`)
+- **[[Python_OS_Module]]** : 운영체제 제어의 원조 (`os.path.exists`, `environ`, `remove`)
 - [[Python_File_IO]] : 파일 읽고 쓰기 (`open`, `with` context manager)
+- [[Python_Pathlib]] : `os.path`보다 똑똑한 현대적 경로 처리 (`exists`, `mkdir`)
 - [[Python_Logging]] : `print`는 그만! 로그 남기기 (`logging`)
 - [[Python_Requests_Methods]] : API 요청 보내기 (`requests.get`, `post`, `params`, `data`)
 - [[Python_Requests_Response]] : 응답 데이터 처리 (`status_code`, `.json()`)

@@ -11,6 +11,7 @@
 > "데이터가 어떻게 생겼는지 엑셀처럼 열어봐요."
 - [[Pandas_Inspection]] : 데이터 요약과 정보 확인 (`head`, `info`, `describe`, `shape`,`tail`,`sample`)
 - [[Pandas_Selection]] : 원하는 행/열만 쏙 골라내기 (`loc`, `iloc`, `columns`)
+- [[Pandas_Datatypes_Filtering]] :  특정 타입(숫자, 문자 등)만 골라내기 (`select_dtypes`)
 
 ## Level 3. 데이터 다듬기 (Cleaning)
 
@@ -42,6 +43,14 @@
 
 - [[Pandas_Apply_Map]] : 함수를 데이터 전체에 적용하기 (`apply`, `lambda`)
 - [[Pandas_Efficiency]] : 대용량 데이터 처리 팁 (Parquet, Chunksize)
+
+## **Level 7. 시각화 및 대시보드 (Visualization)** 
+
+>"분석한 데이터를 그래프나 표로 예쁘게 보여줘요."
+
+- [[Pandas_Plotting]] : 판다스 내장 그래프 그리기 (`plot`, `bar`, `line`)
+
+
 
 ---
 

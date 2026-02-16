@@ -10,6 +10,7 @@ tags:
 related:
   - "[[00_Kafka_HomePage]]"
   - "[[Kafka_Python_Producer_Basic]]"
+  - "[[Kafka_Python_Consumer_Basic]]"
 ---
 
 ## 개념 한 줄 요약 (Concept Summary)
