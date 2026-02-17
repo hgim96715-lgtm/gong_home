@@ -154,7 +154,8 @@ docker-compose down --volumes --rmi all
 
 1. [x] 환경 구축 완료 (Docker Compose)
 2. [x] **Faker로 가짜 데이터 생성하기** [[01_Faker_data]] 
-3. [ ] **Streamlit으로 실시간 모니터링하기 (Consumer)** [[02_Streamlit_Dashboard]] 
+3. [x] **Streamlit으로 실시간 모니터링하기 (Consumer)** [[02_Streamlit_Dashboard]] 
     - Kafka에 들어온 데이터를 실시간으로 꺼내서 차트와 표로 시각화 (데이터 유입 확인용)
+4. [x] **Kafka 데이터를 DB(PostgreSQL)에 저장하기 (Sink)** [[03_kafka_to_Postgres]]
 
 
