@@ -14,6 +14,8 @@ tags:
 related:
   - "[[SQL_SELECT_FROM]]"
   - "[[HAVING_vs_WHERE]]"
+  - "[[SQL_CASE_WHEN]]"
+  - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약 
 
@@ -108,6 +110,11 @@ WHERE page_location ILIKE '%\_%'
 -- 이것과 동일
 WHERE page_location ILIKE '%\_%' ESCAPE '\'
 ```
+
+
+> 🚫 주의: 비율(%) 계산할 때는 `WHERE` 쓰지 마세요!
+> `WHERE credit ILIKE '%gift%'`를 쓰는 순간, 기프트카드가 아닌 데이터는 다 사라집니다. (**분모 실종 사건**)
+>  전체 대비 비율을 구할 때는 필터링(`WHERE`) 대신 **[[SQL_CASE_WHEN]]** 의 `SUM(CASE WHEN ...)` 방식을 써야 합니다.
 
 
 ### ⭐️ 여러 패턴 한 번에 찾기 (`ILIKE ANY(ARRAY[...])`)
