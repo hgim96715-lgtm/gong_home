@@ -65,6 +65,12 @@ related:
 
 * **`BOOLEAN`**: `TRUE` (1, 'yes', 'on') 또는 `FALSE` (0, 'no', 'off')
 
+### ⑤ 특수 식별자 (Special Types) 
+
+- **`UUID`**: 128비트의 전 세계 유일한 식별자. (`aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee`)
+    - **장점:** `VARCHAR(36)`으로 저장하는 것보다 **저장 공간을 절반 이하(16 byte)로 쓰고, 검색 속도가 훨씬 빠름.** 
+    - **활용:** 분산 환경(MSA, Kafka)에서 PK로 쓸 때 최고의 선택! (PostgreSQL만의 특권)
+
 ---
 
 ## 상세 분석: 형변환 (Casting) 

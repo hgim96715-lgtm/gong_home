@@ -5,15 +5,20 @@ aliases:
   - args
   - kwargs
   - 가변인자
+  - 언패킹
+  - 딕셔너리
+  - 튜플
 tags:
   - Python
 related:
   - "[[Airflow_DAG_Operators]]"
   - "[[Airflow_Hooks]]"
+  - "[[Python_Database_Connect]]"
+  - "[[Python_Dictionaries]]"
 ---
 ## 개념 한 줄 요약
 
-**함수(Function)** 는 특정 작업을 수행하는 코드 덩어리에 이름을 붙여 재사용하는 것이며, 
+**"자주 쓰는 코드를 '부품'처럼 포장해서 이름을 붙인 것. (입력을 넣으면 → 뚝딱뚝딱 처리해서 → 출력을 뱉어냄)"**
 **`*args`와 `**kwargs`** 는 입력값이 몇 개가 들어올지 모를 때 사용하는 **'마법의 주머니(가변 인자)'** 입니다.
 
 ---
@@ -28,75 +33,144 @@ related:
 - **`**kwargs`** 를 사용해 Airflow가 던져주는 수십 개의 정보를 **딕셔너리 하나로 퉁쳐서** 받아냅니다.
 
 ---
-## Practical Context (Airflow 필수!)
+## 함수 (Anatomy)
 
-데이터 엔지니어가 이 문법을 모르면 **`PythonOperator`** 를 제대로 쓸 수 없습니다.
-
-```python
-# Airflow에서 가장 흔한 패턴
-def my_task_logic(**kwargs):
-    # Airflow가 던져준 모든 정보가 kwargs라는 딕셔너리에 들어있음
-    execution_date = kwargs['ds'] 
-    ti = kwargs['ti']
-    print(f"이 태스크는 {execution_date} 데이터를 처리합니다.")
-
-task = PythonOperator(
-    task_id='example_task',
-    python_callable=my_task_logic,
-    provide_context=True # (구버전) 모든 정보를 kwargs로 넘겨라!->지금은 이거 필요 없음
-)
-```
-
----
-## 코드 심화 포인트
-
-- **`def`**: 함수 정의 시작 키워드.
-- **`return`**: 함수의 결과를 뱉어내는 곳. (이게 없으면 `None`을 반환)
-- **`*args` (Arguments)**: 입력값들을 **튜플(Tuple)** 로 묶어서 받음. (순서 중요)
-- **`**kwargs` (Keyword Arguments)**: 입력값들을 **딕셔너리(Dictionary)** 로 묶어서 받음. (이름 중요)
-
----
-## 상세 분석
-
-### 1. 기본 함수와 `return`
+함수는 크게 **입력(Input), 처리(Process), 출력(Output)** 3단계로 이루어집니다.
 
 ```python
-def add(a, b):
-    result = a + b
+#      (함수 이름)   (입력 = 파라미터)
+def make_coffee(bean_type, water):
+    # [처리]
+    print(f"{bean_type} 원두를 갑니다...")
+    result = f"{bean_type} 커피 + 물 {water}ml"
+    
+    # [출력 = 반환값]
     return result
-
-# 사용
-val = add(3, 5) # val에는 8이 저장됨
 ```
 
-### 2. `*args` : 갯수 무제한 (튜플)
+- **`def`**: "나 지금부터 함수 만든다!" 선언.
+- **`return`**: "이게 내 결과물이야. 가져가!" (함수 종료).
 
-인자가 1개일지 100개일지 모를 때 씁니다.
+---
+## `return` vs `print` (가장 큰 착각)
+
+초보자가 가장 많이 하는 실수입니다.
+
+- **`print`**: 화면에 그냥 **보여주고 끝**입니다. (영수증 보여주기)
+- **`return`**: 값을 **변수에 저장**할 수 있게 줍니다. (실제 물건 건네주기)
 
 ```python
-def sum_all(*args):
-    print(args)  # (1, 2, 3) <-- 튜플로 들어옴
-    return sum(args)
+def print_sum(a, b):
+    print(a + b)  # 화면에 '5'가 보임
 
-print(sum_all(1, 2, 3))    # 6
-print(sum_all(1, 2, 3, 4)) # 10
+def return_sum(a, b):
+    return a + b  # 값 5를 던져줌
+
+# 테스트
+x = print_sum(2, 3)
+print(x)  # 결과: None (받은 게 없음!)
+
+y = return_sum(2, 3)
+print(y)  # 결과: 5 (값을 받아서 y에 저장함!)
 ```
 
-### 3. `**kwargs` : 이름표가 있는 무제한 (딕셔너리) 
+---
+## `*args` : "몇 개가 올지 몰라요" (튜플) 
 
-**Airflow가 사랑하는 문법**입니다. 
-"키=값" 형태로 들어오는 모든 것을 딕셔너리로 만듭니다.
+입력값이 1개일 수도, 100개일 수도 있을 때 사용합니다. 
+받은 값들을 **튜플(Tuple)** 로 묶어서 처리합니다.
+
+- **상황:** "숫자를 다 더하는 함수를 만들어줘. 근데 숫자가 몇 개일지는 몰라."
 
 ```python
-def print_info(**kwargs):
-    print(kwargs) # {'name': 'Luke', 'age': 25} <-- 딕셔너리로 들어옴
+# *args: 입력값들을 'args'라는 튜플로 몽땅 받음
+def add_all(*args):
+    print(args)      # (1, 2, 3, 4, 5) <- 튜플로 들어옴!
+    return sum(args) # 튜플 합계 계산
+
+print(add_all(1, 2))          # 3
+print(add_all(1, 2, 3, 4, 5)) # 15
+```
+
+---
+## `**kwargs` : "이름표 붙여서 딕셔너리로 주세요"
+
+입력값을 `키=값` 형태로 주면, 함수 내부에서는 **딕셔너리(Dictionary)** 로 받아서 씁니다. (Keyword Arguments의 약자)
+
+- **상황:** "회원가입 함수를 만드는데, 이름/나이는 필수고 취미/주소/MBTI는 선택사항이야."
+
+### ① 함수 정의할 때 (`**kwargs`로 받기)
+
+```python
+def introduce(**kwargs):
+    print(kwargs)  # {'name': 'Gong', 'age': 20} <- 딕셔너리가 됨!
     
     if 'name' in kwargs:
-        print(f"Hello, {kwargs['name']}")
+        print(f"제 이름은 {kwargs['name']}입니다.")
 
-# 사용법: 함수 부를 때 '키=값' 형태로 전달
-print_info(name="Luke", age=25, planet="Tatooine")
+# 사용법: 키=값 형태로 전달
+introduce(name="Gong", age=20, city="Seoul")
 ```
+
+### ② 함수 사용할 때 (`**`로 딕셔너리 풀기) ️
+
+반대로, **이미 만들어진 딕셔너리**를 함수에 한 방에 넣고 싶을 때도 `**`를 씁니다.
+
+```python
+def save_user(name, age, city):
+    print(f"{name}님({age}세)은 {city}에 삽니다.")
+
+# 내 데이터가 딕셔너리로 있다면?
+user_data = {'name': 'Kim', 'age': 30, 'city': 'Busan'}
+
+# [방법 1] 하나씩 꺼내기 (귀찮음)
+save_user(user_data['name'], user_data['age'], user_data['city'])
+
+# [방법 2] 딕셔너리 언패킹 (초간단!) ⭐️
+# "user_data 딕셔너리를 풀어서(Unpack) 인자에 쇽쇽 넣어줘!"
+save_user(**user_data)
+```
+
+**데이터 엔지니어링 팁:** DB 설정(`DB_CONFIG`)이나 API 요청 보낼 때 이 **언패킹(`**`)** 기술을 정말 많이 씁니다.
+
+---
+## 기본값 설정 (Default Parameter)
+
+값을 안 넣었을 때 사용할 **기본값**을 정해둘 수 있습니다.
+
+```python
+# tax_rate를 안 넣으면 자동으로 0.1로 계산
+def calc_price(price, tax_rate=0.1):
+    return price * (1 + tax_rate)
+
+print(calc_price(10000))       # 11000.0 (기본값 0.1 적용)
+print(calc_price(10000, 0.2))  # 12000.0 (0.2 적용)
+```
+
+**주의:** 기본값이 있는 파라미터(`tax_rate`)는 무조건 **맨 뒤**에 와야 합니다.
+
+---
+## Type Hinting
+
+코드를 읽기 좋게 "이건 숫자야", "이건 문자야"라고 힌트를 적어주는 것이 좋습니다. (강제성은 없음)
+
+```python
+# name은 str이고, age는 int이고, 결과는 str일 것이다.
+def greeting(name: str, age: int) -> str:
+    return f"{name} is {age} years old."
+```
+
+---
+## 요약 (Cheat Sheet)
+
+|**문법**|**의미**|**자료형(내부)**|**예시**|
+|---|---|---|---|
+|`def func(a, b)`|일반 파라미터|변수|`func(1, 2)`|
+|`def func(a=10)`|기본값 파라미터|변수|`func()` 또는 `func(5)`|
+|`def func(*args)`|개수 무제한 (값만)|**튜플 (Tuple)**|`func(1, 2, 3)`|
+|`def func(**kwargs)`|개수 무제한 (키=값)|**딕셔너리 (Dict)**|`func(a=1, b=2)`|
+|`func(**my_dict)`|딕셔너리 언패킹|-|`func(**{'a':1})`|
+
 
 ---
 ## 초보자가 자주 착각하는 포인트

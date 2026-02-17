@@ -15,6 +15,16 @@
 - **[[Normalization_Theory]]** : 테이블을 쪼개는 기술, 정규화(1NF, 2NF, 3NF)
 
 
+## Level 0.5. 집 짓기와 가구 채우기 (DDL & DML) 
+
+> "설계도(모델링)가 나왔으니 이제 실제로 테이블을 생성하고(`CREATE`), 데이터를 넣어봅시다(`INSERT`)."
+
+- **[[SQL_DDL_Create]]** : 테이블 생성과 삭제의 모든 것 (`CREATE`, `DROP`, `TRUNCATE`, `ALTER`)
+- **[[SQL_DML_CRUD]]** : 데이터 넣고, 수정하고, 지우기 (`INSERT`, `UPDATE`, `DELETE`)
+- **[[SQL_Constraints]]** : 이상한 데이터가 못 들어오게 막는 문지기 (`PRIMARY KEY`, `NOT NULL`, `UNIQUE`, `DEFAULT`)
+- **[[SQL_Auto_Increment]]** : 번호표 자동 발급기 (`SERIAL`, `AUTO_INCREMENT`, `SEQUENCE`)
+
+
 ## 1. 기초 문법 (Basics)
 
 > 데이터 조회와 필터링의 기본기

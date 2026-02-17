@@ -36,7 +36,7 @@ python3 -m streamlit run streamlit_app/Dashboard.py
 ----
 ## 전체 코드 (`Dashboard.py`)
 
-```python
+```python title='Dashboard.py'
 import streamlit as st
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
@@ -174,7 +174,7 @@ for message in consumer:
 
 대시보드 종료 버튼과 연동하기 위해 **시작 전 청소(unlink)**와 **실시간 감지(exists)** 로직을 추가
 
-```python
+```python title='fake_log_producer.py 업데이트'
 from pathlib import Path  # [필수] 맨 위에 추가
 # ... (기존 import) ...
 
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 ---
 ## 실행 명령어 (터미널 2개 필요!)
 
-대시보드가 작동하려면 **데이터를 보내주는 방송국(Producer)**과 **데이터를 받는 TV(Dashboard)**가 동시에 켜져 있어야 합니다.
+대시보드가 작동하려면 **데이터를 보내주는 방송국(Producer)** 과 **데이터를 받는 TV(Dashboard)** 가 동시에 켜져 있어야 합니다.
 
 ### ① 터미널 A: 데이터 생성기 실행 (Producer)
 

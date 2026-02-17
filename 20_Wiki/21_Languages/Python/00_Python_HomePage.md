@@ -80,3 +80,9 @@
 - [[Python_Library_Faker]] : 그럴싸한 가짜 데이터 생성 라이브러리 (이름, 주소, IP 등)
 - [[Python_Mock_Data_Generator]] : 직접 만드는 데이터 생성기 패턴 (Generator 활용)
 - **[[Python_UUID]]** : 유일한 ID 만들기 (분산 환경 필수)
+
+## Level 8. 외부 시스템 연결 (Integration) 
+
+> **"파이썬이 데이터베이스나 클라우드와 대화해요."**
+
+- **[[Python_Database_Connect]] : 파이썬으로 SQL 실행하기 (`psycopg2`, `connect`, `cursor`)**
