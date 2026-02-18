@@ -18,25 +18,32 @@ satatus:
 
 ```mermaid
 graph LR
-    Generator["Log Generator<br>(Faker)"] -->|Push| Kafka["Kafka<br>(Msg Broker)"]
-    
-    subgraph Streaming Layer
-    Kafka -->|Stream| Flink["Flink<br>(Real-time)"]
+    %% 1. 데이터 생성 (Source)
+    Generator["Log Generator<br>(Faker)"] -->|Push Log| Kafka["Kafka<br>(Msg Broker)"]
+
+    %% 2. 실시간 모니터링 (Speed Layer) - 완료!
+    subgraph Real-Time View
+        Kafka -->|Consume| Streamlit["Streamlit<br>(Dashboard)"]
     end
-    
-    subgraph Batch Layer
-    Kafka -->|Batch Read| Spark["Spark<br>(Batch Process)"]
+
+    %% 3. 데이터 저장 (Storage Layer) - 완료!
+    subgraph Data Lake & Serving
+        Kafka -->|Consume| PyConsumer["Python Consumer<br>(save_to_db.py)"]
+        PyConsumer -->|Insert| DB[("PostgreSQL<br>(Main DB)")]
     end
-    
-    subgraph Storage
-    Flink -->|Result| Cassandra["(Cassandra<br>NoSQL)"]
-    Spark -->|Result| MinIO["(MinIO<br>S3 Storage)"]
+
+    %% 4. 배치 분석 (Batch Layer) - [NEXT STEP]
+    subgraph Batch Analytics
+        DB -->|Batch Read| Spark["Spark<br>(Batch Process)"]
+        Spark -->|Result Report| DB
     end
-    
-    subgraph Orchestration
-    Airflow["Airflow<br>(Scheduler)"] -->|Trigger| Spark
+
+    %% 5. 자동화 (Orchestration) - [FINAL STEP]
+    subgraph Scheduling
+        Airflow["Airflow<br>(Scheduler)"] -.->|Trigger Daily| Spark
     end
 ```
+
 
 ## 구성 요소
 
@@ -157,5 +164,5 @@ docker-compose down --volumes --rmi all
 3. [x] **Streamlit으로 실시간 모니터링하기 (Consumer)** [[02_Streamlit_Dashboard]] 
     - Kafka에 들어온 데이터를 실시간으로 꺼내서 차트와 표로 시각화 (데이터 유입 확인용)
 4. [x] **Kafka 데이터를 DB(PostgreSQL)에 저장하기 (Sink)** [[03_kafka_to_Postgres]]
-
+5.  [x] **Spark로 대용량 배치 분석하기** [[04_Spark_Batch]] 적재된 데이터를 Spark로 읽어서 종합 리포트 생성 + Dashboard에 시각화
 
