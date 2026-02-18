@@ -21,6 +21,7 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_Concepts_View]]"
   - "[[DataFrame_Transform_Basic]]"
+  - "[[Python_Database_Connect]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step6.ipynb
 ---
@@ -205,6 +206,34 @@ df_json = spark.read.json("data.json")
 # 3. Parquet 읽기 (압축률 좋고 빠름, 스키마 자동 포함)
 df_parquet = spark.read.parquet("data.parquet")
 ```
+
+#### 데이터베이스 읽기 (JDBC)
+
+파일이 아니라 **PostgreSQL, MySQL, Oracle** 같은 DB에 있는 테이블을 읽어올 때는 `.jdbc()` 함수를 사용합니다.
+
+```python
+# DB 연결 설정 (URL, 테이블, 인증정보 필수)
+df_jdbc = spark.read.jdbc(
+    url="jdbc:postgresql://postgres:5432/airflow",  # 1. 접속 주소
+    table="public.user_logs",                         # 2. 가져올 데이터
+    properties={                                      # 3. 인증 및 드라이버
+        "user": "airflow",
+        "password": "airflow",
+        "driver": "org.postgresql.Driver"
+    }
+)
+```
+
+`spark.read.jdbc()` 안에는 반드시 이 3가지가 들어가야 합니다.
+
+|**파라미터**|**설명**|**예시**|
+|---|---|---|
+|**`url`**|**DB 접속 주소** (Protocol + IP + Port + DB Name)|`"jdbc:postgresql://localhost:5432/mydb"`|
+|**`table`**|**가져올 대상** (테이블명 또는 서브쿼리)|`"users"` 또는 `"(SELECT * FROM users WHERE id > 10) as sub"`|
+|**`properties`**|**인증 정보 & 통역사** (딕셔너리 형태)|`{"user": "root", "password": "1234", "driver": "..."}`|
+
+>**[주의]** 이 기능을 쓰려면 **JDBC Driver(.jar)** 파일이 Spark 환경에 미리 세팅되어 있어야 합니다.
+> (상세 설정법 👉 **[[Spark_JDBC_Postgres_Guide]]** 참고)
 
 ---
 ### [팁] CSV 읽을 때 필수 옵션 2가지

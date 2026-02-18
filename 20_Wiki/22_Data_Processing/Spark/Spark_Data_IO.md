@@ -23,7 +23,7 @@ related:
 * **Write:** `df.write...` (데이터 내보내기)
 
 ---
-##  미스터리: "왜 폴더로 저장되나요?" 
+##  "왜 폴더로 저장되나요?" 
 
 파이썬 `pandas`는 `result.csv` 파일 하나를 딱 뱉어내지만, 스파크는 다릅니다.
 
@@ -43,9 +43,9 @@ output/               <-- 1. 네가 지정한 이름은 '폴더'가 됨
 ```
 
 **이유 (Why)**
-- 스파크는 **분산 처리 시스템**입니다.
-- 작업자(Executor) 100명이 동시에 데이터를 저장하는데, 파일 하나에 몰아 쓰려고 하면 **병목 현상(줄 서기)** 이 생깁니다.
-- 그래서 **"일단 각자 알아서 파일로 저장해! 폴더에 모아두기만 해!"** 방식(Distributed Write)을 씁니다.
+Spark는 **분산 처리 시스템**이다. 
+작업자(Executor) 수백 명이 동시에 저장하는데, 파일 하나에 몰아쓰면 병목이 생긴다. 
+그래서 **"각자 알아서 파일로 저장하고, 폴더에 모아두기만 해!"** 방식(Distributed Write)을 쓴다.
 
 >**💡 꿀팁:** 파일 하나로 깔끔하게 보고 싶다면? 
 >저장하기 직전에 **`coalesce(1)`** 을 써서 작업자를 1명으로 줄여야 합니다. 
@@ -70,31 +70,56 @@ data.coalesce(1).write.csv("output")
 df.write.mode("overwrite").csv("output")
 ```
 
-|**모드 (Mode)**|**설명**|**위험도**|
-|---|---|---|
-|**`error`** (기본값)|폴더가 있으면 **에러 내고 멈춤**. (안전 제일)|🟢 안전|
-|**`overwrite`**|기존 폴더를 **싹 지우고** 새로 만듦.|🔴 위험 (덮어쓰기)|
-|**`append`**|기존 폴더 안에 **새 파일들을 추가**함.|🟡 주의 (중복 데이터 가능성)|
-|**`ignore`**|있으면 그냥 **무시**하고 아무것도 안 함.|⚪️ 글쎄...|
-
+|**모드 이름**|**코드**|**실제 동작**|**추천 상황**|
+|---|---|---|---|
+|**Error**|`.mode("error")`|이미 있으면 **중단(에러)**|데이터 소실 방지 (기본값)|
+|**Overwrite**|**`.mode("overwrite")`**|기존꺼 **다 지우고** 새로 생성|일일 리포트 갱신|
+|**Append**|**`.mode("append")`**|기존꺼 뒤에 **이어서 추가**|매시간 쌓이는 로그 데이터|
+|**Ignore**|`.mode("ignore")`|이미 있으면 **아무것도 안 함**|중복 실행 방지|
 
 ---
 ## 실전 코드 패턴 (Best Practice) 
 
-가장 많이 쓰는 포맷은 CSV가 아니라 **Parquet(파케이)** 입니다.
+### 파일로 저장하기 (File Write)
+
+실무에서는 CSV보다 **Parquet(파케이)** 포맷을 더 많이 쓴다.
+Spark는 분산 처리 엔진이므로, 파일을 저장할 때 **'폴더'**를 만들고 그 안에 여러 작업자가 각자 조각 파일(`part-xxxx`)을 뱉어냅니다.
 
 ```python
 # 1. 쓰기 (Write)
-df.write\
-    .mode("overwrite")\       # 덮어쓰기 허용
-    .option("header", True)\  # (CSV일 때만) 첫 줄에 컬럼명 포함
-    .csv("my_data_folder")    # 폴더 이름 지정
-
-# 2. 읽기 (Read)
-# 폴더 경로만 주면 알아서 안의 part 파일들을 다 읽어들임
-df_load = spark.read\
-    .option("header", True)\
-    .csv("my_data_folder")
+df.write \
+    .format("parquet")      # 포맷 지정 (parquet / csv / json 등)
+    .mode("overwrite") \    # 덮어쓰기 허용
+    .save("output_folder")  # 폴더 이름
 ```
 
+#### CSV를 써야 한다면 `header` 옵션을 챙길 것.
 
+```python
+df.write \
+    .format("csv") \
+    .mode("overwrite") \
+    .option("header", True) \   # 첫 줄에 컬럼명 포함
+    .save("output_folder")
+```
+
+### 데이터베이스로 저장하기 (JDBC Write)
+
+```python
+df.write.jdbc(
+    url="jdbc:postgresql://postgres:5432/airflow", # 1. 도착지 주소 (내부망)
+    table="report_category_sales",                 # 2. 만들거나 채울 테이블 이름
+    mode="overwrite",                              # 3. 기존 리포트 삭제 후 생성
+    properties={                                   # 4. 통역사 및 인증정보
+        "user": "airflow",
+        "password": "airflow",
+        "driver": "org.postgresql.Driver"
+    }
+)
+```
+
+- **`url`** → 어디로 쏠까? 도커 내부망은 `jdbc:postgresql://postgres:5432/DB명` 형식
+- **`table`** → 어떤 이름으로? 테이블이 없으면 Spark가 스키마 보고 **자동 생성**
+	- `overwrite` : 기존 테이블 DROP 후 재생성 → 리포트 갱신용
+	- `append` : 기존 데이터 아래에 덧붙임 → 로그 누적용
+- **`properties`** → 인증 정보 + 드라이버. `driver` 키를 **반드시** 명시해야 한다.

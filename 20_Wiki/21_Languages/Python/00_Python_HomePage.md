@@ -86,4 +86,4 @@
 
 > **"파이썬이 데이터베이스나 클라우드와 대화해요."**
 
-- **[[Python_Database_Connect]] : 파이썬으로 SQL 실행하기 (`psycopg2`, `connect`, `cursor`)**
+- **[[Python_Database_Connect]] : 파이썬으로 SQL 실행하기 (`psycopg2`, `connect`, `cursor`,`.env`,`sqlalchemy`,`create_engine`)**

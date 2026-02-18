@@ -40,8 +40,8 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_Session_Deep_Dive]]** : `spark-submit`, Master, Deploy Mode 심층 분석
 
 - **DataFrame & SQL (메인 무기)**
-    - **[[Spark_DataFrame_Basics]]** : 기본 조작 (Read, Write, Show, Schema)
-    - **[[Spark_Data_IO]]** : 저장의 기술 (Parquet, CSV, PartitionBy)
+    - **[[Spark_DataFrame_Basics]]** : 기본 조작 (Read, Show, Schema)
+    - **[[Spark_Data_IO]]** : 저장의 기술 (Parquet, CSV, PartitionBy,Write)
     - **[[DataFrame_Transform_Basic]]** : 조회와 필터링 (Select, Filter, Column, withColumn, cast)
     - **[[DataFrame_Aggregation]]** : 집계와 순위 (GroupBy, Agg, Sort)
     - **[[Spark_DataFrame_Joins]]** : 조인 전략 총정리 (Inner, Left, Semi, Anti)
@@ -54,6 +54,9 @@ tags: [Index, Spark, DataEngineering]
     - **[[Spark_General_Transformations]]** : 기본 변환 (`map`, `flatMap`, `filter`) 
     - **[[Spark_Key_Transformations]]** : 키(Key) 기준 제어 (`reduceByKey`, `groupByKey`, `sortByKey`)
     - **[[Spark_Value_Transformations]]** : 값(Value)만 안전하게 변경 (`mapValues`)
+
+- **외부 데이터 연동 (External Data Sources)** 
+	- **[[Spark_JDBC_Postgres_Guide]]** : **(필수)** PostgreSQL 연동 완벽 가이드 (서버 vs 드라이버 개념, Docker 설정, JDBC 템플릿)
 
 ---
 

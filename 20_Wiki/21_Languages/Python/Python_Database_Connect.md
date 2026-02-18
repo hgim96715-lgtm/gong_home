@@ -4,6 +4,8 @@ aliases:
   - psycopg2
   - 파이썬-SQL
   - 데이터베이스 연동
+  - sqlalchemy
+  - create_engine
 tags:
   - Python
   - SQL
@@ -11,13 +13,29 @@ related:
   - "[[SQL_SELECT_FROM]]"
   - "[[00_Python_HomePage]]"
   - "[[SQL_DDL_Create]]"
+  - "[[Python_OS_Module]]"
+  - "[[Python_File_IO]]"
+  - "[[Python_Virtual_Env]]"
 ---
 ## 개념 한 줄 요약
 
 **"파이썬(Python)이 통역사(Driver)를 통해 데이터베이스(DB)와 대화하며 데이터를 넣고 빼는 기술"**
 
 ---
-## 준비물 (Library Install)
+## 어떤 라이브러리를 써야 할까?
+
+|         | `psycopg2`                    | `sqlalchemy`                   |
+| ------- | ----------------------------- | ------------------------------ |
+| 역할      | SQL 직접 실행                     | Python ↔ DB 고수준 연결             |
+| 주로 쓰는 곳 | `cursor.execute()`            | `pd.read_sql()`, `df.to_sql()` |
+| 특징      | 저수준, 세밀한 제어                   | 고수준, pandas 연동에 편리             |
+| 실전 예시   | Kafka 로그 저장 (`save_to_db.py`) | Streamlit Dashboard DB 조회      |
+
+
+---
+# psycopg2
+
+### 설치 
 
 파이썬은 기본적으로 SQL을 모릅니다. PostgreSQL과 대화하려면 **`psycopg2`** 라는 라이브러리가 필요합니다.
 
@@ -289,3 +307,85 @@ def insert_log(data):
             conn.close()
 ```
 
+---
+---
+# sqlalchemy — pandas 연동 / Streamlit Dashboard
+
+`psycopg2`보다 한 단계 위의 고수준 라이브러리다. 
+`pd.read_sql()`, `df.to_sql()` 처럼 **pandas와 함께 쓸 때** 주로 사용한다.
+
+## 설치
+
+```bash
+pip3 install sqlalchemy psycopg2-binary
+```
+
+>`sqlalchemy`는 내부적으로 `psycopg2`를 드라이버로 쓰기 때문에 함께 설치해야 한다.
+
+---
+## 연결 방법 (`create_engine`)
+
+```python
+import os
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_url = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+engine = create_engine(db_url)
+```
+
+### URL 구조
+
+```python
+postgresql://유저:비밀번호@호스트:포트/DB명
+```
+
+### `create_engine`이란?
+
+`psycopg2`의 `connect()`와 다르게, **`create_engine`은 실제로 연결을 여는 게 아니다.** 
+"이 주소로 연결할 준비"를 해두는 **연결 공장(Factory)** 을 만드는 것이다.
+
+```text
+db_url                →  create_engine(db_url)  →  pd.read_sql(..., engine)
+"어디에 연결할지            "연결 공장 세팅"            "실제로 연결해서
+ 주소만 적어둠"              (아직 연결 안 함)            데이터 가져오기"
+```
+
+- `engine`을 만든다고 DB에 바로 붙는 게 아니다.
+- `pd.read_sql()` 같이 실제로 데이터가 필요한 순간에 연결이 일어난다.
+- 한 번 만들어두면 여러 번 재사용할 수 있다. (매번 새로 만들 필요 없음)
+
+>**psycopg2와 비교**
+>`psycopg2.connect()` → 즉시 연결, 직접 관리
+>`create_engine()` → 연결 준비만, 필요할 때 자동 연결
+
+
+---
+## 주요 사용 패턴
+
+```python
+import pandas as pd
+
+# DB → DataFrame (읽기)
+df = pd.read_sql("SELECT * FROM report_category_sales", engine)
+
+# DataFrame → DB (쓰기)
+df.to_sql("테이블명", engine, if_exists="replace", index=False)
+```
+
+---
+## 실전 사용 예시 (Streamlit Dashboard)
+
+```python
+# 페이지 로드 시 DB 데이터 한 번 읽어서 화면에 표시
+try:
+    df_db = pd.read_sql("SELECT * FROM report_category_sales", engine)
+    st.dataframe(df_db)
+except Exception as e:
+    st.warning(f"DB 연결 확인 필요: {e}")
+```
+
+>**💡 네트워크 주의:** Streamlit은 로컬에서 실행되므로 `DB_HOST=localhost`를 써야 한다. 
+>Spark(도커 내부)에서는 `postgres` 컨테이너명으로 접근하는 것과 다르다. → [[04_Spark_Batch]] 참고

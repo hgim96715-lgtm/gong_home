@@ -11,6 +11,7 @@ related:
   - "[[00_Kafka_HomePage]]"
   - "[[Kafka_Python_Producer_Basic]]"
   - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Spark_JDBC_Postgres_Guide]]"
 ---
 
 ## 개념 한 줄 요약 (Concept Summary)
@@ -36,7 +37,7 @@ related:
 
 **데이터 엔지니어링 상황별 접속 공식:**
 
-1.  **내 맥북(Host)에서 실행할 때:** (예: `fake_log_producer.py`, DBeaver, Web Browser)
+1.  **내 맥북(Host)에서 실행할 때:** (예: `fake_log_producer.py`, DBeaver, Web Browser,DataGrip,Postgre에 넣을때 )
     - 우리는 도커라는 아파트 단지 **"외부인"** 이다.
     - 무조건 **`localhost`** 와 **`외부 포트(External Port)`** 를 써야 한다.
     - 예: `localhost:29092` (Kafka), `localhost:8080` (Airflow Web)

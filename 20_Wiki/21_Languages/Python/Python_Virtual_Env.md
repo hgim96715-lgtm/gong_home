@@ -13,6 +13,7 @@ related:
   - "[[Linux_Fundamental_Rules]]"
   - "[[Spark_Installation_Local]]"
   - "[[Dockerfile_Basics]]"
+  - "[[Python_Database_Connect]]"
 ---
 ## 개념 한 줄 요약
 
