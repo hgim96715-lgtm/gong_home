@@ -5,6 +5,7 @@ aliases:
   - 멤버십 연산자
   - 포함 여부 확인
   - in
+  - ==
 tags:
   - Python
 related:
@@ -64,6 +65,47 @@ def solution(myString, pat):
 ```
 
 > lower은 [[Python_String_Methods#대소문자 변환 (`upper`, `lower`)|lower_upper]] 참고 
+
+
+### ⚠️ 주의: 부분 포함(`in`) vs 완전 일치(`{text}==`)
+
+데이터 엔지니어링에서 파일명이나 날짜 형식을 검사할 때, `in`을 쓰면 **치명적인 버그**가 생길 수 있습니다.
+
+**상황:** "이 파일이 `.csv` 파일인지 확인하고 싶다."
+
+- 파일명: `data.csv.backup` (백업 파일이라 처리하면 안 됨!)
+
+```python
+filename = "data.csv.backup"
+
+# 1. [위험] in 사용 (부분 포함)
+# ".csv"가 문자열 중간에 들어있기만 하면 통과시켜버림 -> 버그 발생!
+if ".csv" in filename:
+    print("CSV 파일입니다.")  # 출력됨 (오작동)
+
+# 2. [안전] 슬라이싱 + == 사용 (완전 일치)
+# 뒤에서 4글자를 잘라낸 뒤, 그 조각이 ".csv"와 똑같은지 비교해야 함.
+ext = filename[-4:]  # ".ckup"
+if ext == ".csv":
+    print("CSV 파일입니다.")  # 출력 안 됨 (정상)
+```
+
+
+#### 💡 [심화] 더 좋은 방법: `startswith`, `endswith`
+
+슬라이싱해서 `{text}==`로 비교하는 것도 좋지만, 파이썬에는 더 직관적인 전용 함수가 있습니다.
+
+>[[Python_String_Methods#특정 파일만 골라내기 (`endswith`, `startswith`)|endswith&startswith]] 내용 참고 
+
+```python
+# 파일 끝부분 검사 (Slicing + == 보다 가독성이 좋음)
+if filename.endswith(".csv"):
+    pass
+
+# 날짜 연도 검사 (text[:4] == "2024" 대신)
+if date_text.startswith("2024"):
+    pass
+```
 
 ### ② 리스트/튜플 (List/Tuple) - 요소 확인
 

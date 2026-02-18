@@ -5,11 +5,12 @@
 > **"파이썬과 대화하는 법을 배워요."**
 
 - [[Python_Variables_Types]] : 변수와 자료형 (`str`, `int`, `bool`, `float`)
-- **[[Python_Membership_In]]** :  있다? 없다? 멤버십 연산자 (`in`, `not in`)
+- **[[Python_Membership_In]]** :  있다? 없다? 멤버십 연산자 (`in`, `not in`,`{text} 완전일치 ==`)
 - [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice, `[::-1]`)
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`, `for`, `while`, `for-else`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `join`, `strip`, `startswith`, `endswith`, `isdigit`, `isalpha`,`lower`)
+- [[Python_String_Search]] : 문자열 검색,위치 찾기(`find`,`index`,`rfind`,`rindex`)
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `lower`, `replace` vs `re.sub`)
 - [[Python_Sorting_Logic]] : 정렬의 미학 (`sort` vs `sorted`, key lambda)
 - [[Python_Builtin_Functions]] : 코드를 줄여주는 마법 (`max`, `min`, `sum`, `len`, `abs`, `ord`, `chr`)
