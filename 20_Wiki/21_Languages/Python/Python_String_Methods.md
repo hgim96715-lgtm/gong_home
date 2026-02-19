@@ -194,6 +194,45 @@ print(s) # "Jello"
 ```
 
 ---
+## 한 번에 여러 개 바꾸기 (`translate` + `maketrans`)
+
+`replace`는 한 번에 하나씩만 바꿉니다. 만약 **"A를 B로 바꾸고, B를 A로 바꾸라"** 는 미션이 있다면?
+
+```python
+text = "AB"
+
+# 1. replace 두 번 쓰면 망함 (순차 실행의 함정)
+# A -> B 로 바뀜 ("BB") -> 그 다음 B -> A 로 바뀜 ("AA")
+broken = text.replace("A", "B").replace("B", "A")
+print(broken) # 결과: "AA" (원래 의도는 "BA"였는데!)
+```
+
+**해결책: 
+`translate` (사전 대조표 만들기)** 1:1 교환이 필요할 때는 **변환 테이블(Table)** 을 만들어서 **한 번에** 적용해야 합니다.
+
+- **`str.maketrans("찾을거", "바꿀거")`**: 변환 규칙이 담긴 사전(Dictionary)을 만듭니다.
+- **`text.translate(규칙)`**: 사전을 보고 문자를 싹 갈아끼웁니다.
+
+```python
+text = "Hello Python World"
+
+# 규칙: "A"는 "B"로, "B"는 "A"로, "o"는 "0"으로 바꿔라
+# 길이가 똑같아야 함! (A->B, B->A, o->0)
+table = str.maketrans("ABo", "BA0")
+
+result = text.translate(table)
+print(result)
+# 결과: "Hell0 Pyth0n W0rld" (A, B가 없어서 o만 바뀜)
+
+# 실전 예제: 암호 해독 (Caesar Cipher)
+# a->z, b->y ... 처럼 서로 맞바꿀 때 필수!
+code = str.maketrans("abcde", "12345")
+print("apple".translate(code)) # "1ppl5"
+```
+
+>**Tip:** `replace`는 **단어(문자열)** 를 통째로 바꿀 때 쓰고, `translate`는 **글자(Character)** 를 1:1로 매핑할 때 씁니다.
+
+---
 ## 특정 파일만 골라내기 (`endswith`, `startswith`)
 
 `split`으로 쪼개거나 인덱싱(`[:4]`)으로 비교하지 마세요! 가독성이 떨어집니다.
