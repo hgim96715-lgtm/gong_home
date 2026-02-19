@@ -11,6 +11,7 @@ related:
   - "[[PyFlink_Windows]]"
   - "[[00_Apache Flink_HomePage]]"
   - "[[PyFlink_Kafka_코드해부_Common ⭐️]]"
+  - "[[PyFlink_SQL_Watermark]]"
 ---
 # PyFlink Trigger & Watermark: 윈도우가 터지는 순간 결정하기
 
