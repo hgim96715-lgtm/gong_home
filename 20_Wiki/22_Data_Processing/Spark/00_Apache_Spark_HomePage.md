@@ -1,6 +1,11 @@
 ---
-aliases: [Spark Home, 스파크 공부 지도, Index]
-tags: [Index, Spark, DataEngineering]
+aliases:
+  - Spark Home
+  - 스파크 공부 지도
+  - Index
+tags:
+  - Index
+  - Spark
 ---
 
 ---

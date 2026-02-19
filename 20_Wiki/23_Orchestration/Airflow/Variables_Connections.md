@@ -14,6 +14,7 @@ tags:
 related:
   - "[[Airflow_Hooks]]"
   - "[[Airflow_UI_Usage]]"
+  - "[[00_Airflow_HomePage]]"
 ---
 ## 개념 한 줄 요약
 
@@ -31,6 +32,16 @@ related:
 - 코드는 `get_connection('my_db')`라고만 적고, 진짜 비밀번호는 **Airflow 웹 UI (Admin -> Connections)** 에 따로 저장해두는 거야.
 
 ---
+## BaseHook vs Variable.get() — 언제 뭘 써야 하나?
+
+|            | `BaseHook.get_connection()`              | `Variable.get()`  |
+| ---------- | ---------------------------------------- | ----------------- |
+| **저장 위치**  | Admin → Connections                      | Admin → Variables |
+| **용도**     | DB 접속 정보 (host, port, user, password 묶음) | 단순 설정값, 개별 값      |
+| **꺼내는 방식** | `conn.host`, `conn.password` 속성으로 접근     | 바로 값으로 반환         |
+
+
+---
 ##  Practical Context (UI 설정법)
 
 코드를 돌리기 전에 먼저 UI에 정보를 등록해야 해. 
@@ -39,7 +50,7 @@ related:
 2.  **커넥션 선택:** 메뉴 리스트에서 **[커넥션 (Connections)]** 선택.
 3.  **생성:** 파란색 **(+)** 버튼 클릭.
 4.  **정보 입력:**
-	- **Connection Id:** `my_postgres_connection` (코드에서 부를 이름)
+	- **Connection Id:** `my_postgres_connection` (코드에서 부를 이름)!! 여기서 만듬 ! 
 	- **Connection Type:** `Postgres` (혹은 Generic)
 	- **Host, Login, Password:** 실제 접속 정보 입력.
 
@@ -238,3 +249,87 @@ Variable.get(key, deserialize_json=False, default_var=None)
 
 >**`default_var`** 도 실무에서 진짜 많이 써요.
 >`Variable.get("my_key", default_var="없음")` 이렇게 짜면, 누가 실수로 UI에서 변수를 지워버려도 **DAG가 빨간불(Error)을 뿜으며 죽는 대참사**는 막을 수 있거든요. 😉
+
+
+----
+## 트러블슈팅: 환경변수 주입 삽질 기록
+
+`daily_report.py` 안에서 DB 비밀번호 같은 민감 정보가 필요한데, 이걸 코드에 하드코딩하기 싫어서 여러 방법을 시도하다 막히는 패턴
+
+### ❌ 실패 1: `env_file` 방식 (용량 에러)
+
+```yaml
+# docker-compose.yml
+x-airflow-common: &airflow-common
+  env_file:
+    - .env   # ← 여기에 추가했을 때 에러 발생
+```
+
+**에러 내용:**
+```
+docker.errors.APIError: ... request body too large
+```
+
+**왜 터지나?**
+
+`.env` 파일을 `x-airflow-common`에 넣으면, Airflow 컨테이너들이 뜰 때 `.env`의 모든 내용을 읽어서 환경변수로 등록하려 합니다.
+이때 `.env` 파일 크기가 Docker API의 요청 허용 한도를 초과하면 터집니다.
+```
+.env 전체 내용
+    ↓
+Docker API로 전송 (컨테이너 생성 요청에 포함)
+    ↓
+💥 request body too large
+```
+
+>`.env` 파일에 내용이 많을수록, 또는 긴 값(긴 API 키, 긴 경로 등)이 있을수록 잘 발생합니다.
+
+
+### 해결: `environment` + `Variable.get` 조합
+
+DockerOperator의 `environment` 파라미터로 직접 주입하고, 민감 정보는 Airflow Variables에서 가져옵니다.
+
+```python
+# DAG 파일 (dags/daily_report_dag.py)
+from airflow.models import Variable
+
+run_spark_job = DockerOperator(
+    ...
+    environment={
+        'DB_HOST': Variable.get("daily_report_db_host"),  # Airflow 금고에서 꺼냄
+        'DB_PORT': '5432',
+        'DB_NAME': 'airflow',
+        'DB_USER': 'airflow',
+        'DB_PASSWORD': Variable.get("daily_report_db_pwd")
+    }
+)
+```
+
+```python
+# daily_report.py (컨테이너 안에서 실행)
+import os
+db_host = os.getenv("DB_HOST")  # ✅ 이제 값이 잘 들어옴!
+```
+
+**흐름:**
+```
+Airflow Variables (금고)
+    ↓ Variable.get()
+DAG 파일 environment={} 에 담김
+    ↓ DockerOperator
+새 컨테이너 환경변수로 주입
+    ↓ os.getenv()
+daily_report.py에서 정상 읽힘 ✅
+```
+
+|방법|결과|이유|
+|---|---|---|
+|`env_file=".env"`|❌ 용량 에러|Docker API body 크기 제한 초과|
+|`os.getenv()` 단독|❌ None 반환|새 컨테이너에 환경변수 주입 안 됨|
+|`environment` + `Variable.get()`|✅ 정상 작동|Variables→DAG→컨테이너 순서로 주입|
+
+> `os.getenv` 자체가 틀린 게 아닙니다. `environment`로 먼저 주입해줘야 컨테이너 안에서 `os.getenv`로 읽을 수 있습니다. **주입 → 읽기** 순서가 핵심입니다.
+
+
+
+---

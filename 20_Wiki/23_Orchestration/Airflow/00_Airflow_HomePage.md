@@ -9,7 +9,7 @@
 
 > "이론 공부 전, 내 컴퓨터에 Airflow를 띄워봅시다."
 
-- [[Airflow_Installation]] : Docker vs Standalone 설치 가이드 (맥북 유저 필독!)
+- [[Airflow_Installation]] : Docker vs Standalone 설치 가이드 (맥북 유저 필독!) 
 - [[Airflow_Configuration]] : 초기 설정 꿀팁 (지저분한 예제 DAG 싹 지우기)
 - [[Docker_Host_Access]] : Docker 컨테이너에서 내 컴퓨터(DB) 접속하는 법 (**가장 중요!**)
 - [[Airflow_UI_Usage]] : 로그 확인 & 재시도 버튼 위치 완벽 정리
@@ -25,12 +25,13 @@
 - [[Airflow_Providers]] : 외부 서비스(AWS, DB, Slack)와 연동하기 위한 확장팩
 - [[Execution_Date_Confusion]] :  가장 헷갈리는 '실행 기준일' 개념 잡기 (오늘 돌지만 어제 날짜로 찍히는 이유)
 
-## 1. DAG 작성하기 (Building Pipelines)
+## 1. DAG 작성하기 (Building Pipelines).
 
 > "레고 블록 조립하듯 워크플로우 짜기"
 
 - [[Airflow_DAG_Skeleton]] : `with DAG(...)` 기본 골격 템플릿 (필수 설정값 4대장 포함)
 - [[Airflow_DAG_Operators]] : PythonOperator (Classic Way - 아직 많이 씀)
+- [[DockerOperator_Usage]] : **"내 파이썬 환경 더럽히기 싫어!" 컨테이너로 태스크 격리해서 실행하기**(`DockeOperator`)
 - [[Airflow_TaskFlow_API]] : `@task` 데코레이터로 파이썬 함수처럼 짜기 (Modern Way)
 - [[Task_Dependencies]] : 순서 정하기 (`>>`, `[]` 리스트 활용)
 - [[Dynamic_Tasks]] : `for`문으로 태스크 대량 생산하기 (Classic Pattern)
