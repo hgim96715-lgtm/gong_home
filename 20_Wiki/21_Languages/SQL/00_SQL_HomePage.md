@@ -11,8 +11,10 @@
 
 - **[[Data_Modeling_Overview]]** : 모델링의 3단계와 관점 (개념/논리/물리)
 - **[[ERD_Components]]** : 엔터티(Entity), 속성(Attribute), 관계(Relationship)의 정체
-- **[[Keys_and_Identifiers]]** : PK(주민번호)와 FK(참조)의 관계 완벽 정리
+- **[[Keys_and_Identifiers]]** : PK(주민번호)와 FK(참조)의 관계 완벽 정리(본질식별자, 인조식별자 )
 - **[[Normalization_Theory]]** : 테이블을 쪼개는 기술, 정규화(1NF, 2NF, 3NF)
+- **[[De_Normalization]]** : 성능을 위해 다시 합치는 기술, 반정규화 (중복 허용, 파생 컬럼)
+- [[SQL_Denormalization_Deep_Dive]] 반정규화 SQLD 내용추가 
 
 
 ## Level 0.5. 집 짓기와 가구 채우기 (DDL & DML) 
@@ -31,7 +33,9 @@
 
 - [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
 - [[SQL_Concepts_View]] : 뷰(View)란 무엇인가? (가상 테이블과 보안)
+- [[Database_Transactions_TCL]] : 트랜잭션 (ACID, Commit, Rollback)
 - [[Basic_Structure_and_Alias]] : 컬럼/로우 용어 정리와 별칭(AS) 짓기
+- [[SQL_Understanding_NULL]] : (NULL의 모든 것)
 -  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE, IS NULL)
 -  [[SQL_ORDER_BY]] : 데이터 줄 세우기
 -  [[Data_Types]] : 문자, 숫자, 날짜 타입의 이해

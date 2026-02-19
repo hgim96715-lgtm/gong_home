@@ -10,6 +10,7 @@ tags:
 related:
   - "[[SQL_DDL_Create]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_Understanding_NULL]]"
 ---
 ## 개념 한 줄 요약
 

@@ -4,11 +4,14 @@ aliases:
   - DB Identifier Theory
   - 주식별자와 보조식별자
   - 식별자 분류
+  - 인조식별자vs본질식별자
 tags:
   - SQL
 related:
   - "[[Data_Modeling_Overview]]"
   - "[[ERD_Components]]"
+  - "[[00_SQL_HomePage]]"
+  - "[[SQL_Constraints]]"
 ---
 #  Identifier Theory: 식별자의 모든 것
 
@@ -66,7 +69,7 @@ related:
     * *단점: 값이 길어지거나 변경될 위험이 있음.
 
 * **인조식별자 (Surrogate/Artificial Identifier):**
-    * 업무적으로는 없지만, 편의상 인위적으로 만든 식별자. (예: **일련번호(Sequence)**, 로그ID)
+    * 업무적으로는 없지만, 편의상 인위적으로 만든 식별자. (예: **일련번호(Sequence)**, 로그ID,주문번호+상품번호로 구성된 주문목록번호)
     * 주식별자의 속성이 두 개이상인 경우 그 속성들을 하나로 묶어서 사용하는 식별자
     * 대리식별자라고도 함 
     * *장점: 절대 중복 안 되고 관리가 편함.*

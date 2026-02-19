@@ -10,6 +10,8 @@ aliases:
   - 확장자 추출
   - isdigit
   - isalpha
+  - translate
+  - maketrans
 tags:
   - Python
 related:

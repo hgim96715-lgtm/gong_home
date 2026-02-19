@@ -16,6 +16,7 @@ related:
   - "[[HAVING_vs_WHERE]]"
   - "[[SQL_CASE_WHEN]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_Understanding_NULL]]"
 ---
 ## 개념 한 줄 요약 
 
