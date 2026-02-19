@@ -61,7 +61,7 @@
 - [[Window_Functions]] : 순위, 누적합, 이동평균 (RANK, LEAD, LAG) 
 - [[SubQuery_CTE]] : 복잡한 쿼리를 레고 블록처럼 관리하기 (WITH 절) 
 - [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 바꾸기
-- [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (CASE WHEN,`FILTER`,비율)
+- [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (CASE WHEN,`FILTER`,비율,조건별집계)
 
 ##  실전 연습 (Projects)
 
