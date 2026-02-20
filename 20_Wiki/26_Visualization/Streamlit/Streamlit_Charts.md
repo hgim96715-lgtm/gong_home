@@ -10,6 +10,7 @@ tags:
   - Streamlit
 related:
   - "[[00_Streamlit_HomePage]]"
+  - "[[Streamlit_Concept]]"
 ---
 ## 개념 한 줄 요약 (Concept Summary)
 
@@ -81,3 +82,21 @@ st.subheader("2. Plotly Chart")
 fig = px.line(df, title="Interactive Plotly Line")
 st.plotly_chart(fig)
 ```
+
+---
+##  자주 겪는 에러 
+`
+`There are multiple plotly_chart elements with the same auto-generated ID... please pass a unique key argument`
+
+- **원인:**
+	- Streamlit에서 실시간으로 숫자가 바뀌는 원리는 **"빈 의자(Placeholder)를 먼저 놓고, 나중에 사람(데이터)을 앉히는 방식"** 입니다.
+	- 그런데 루프가 돌면서 예전 차트가 있던 똑같은 자리에 새로운 차트를 계속 밀어 넣으려니까 Streamlit이 헷갈려서 충돌이 난 것입니다.
+- **해결 방안:** 
+	- **"차트마다 고유한 이름표(`key`)를 달아줘!"** 차트를 그리는 함수 안에 `key` 파라미터를 추가하여 고유한 값을 넣어주면 해결됩니다.
+
+```python
+# 예시: 루프 카운터를 이용해 매번 새로운 이름표 달아주기
+st.plotly_chart(fig, key=f"my_chart_{loop_count}")
+```
+
+> 빈의자(Placeholder) 전략 [[Streamlit_Concept]] 참고 

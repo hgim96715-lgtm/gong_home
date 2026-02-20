@@ -16,6 +16,7 @@ related:
   - "[[Python_OS_Module]]"
   - "[[Python_File_IO]]"
   - "[[Python_Virtual_Env]]"
+  - "[[Streamlit_Data_Display]]"
 ---
 ## 개념 한 줄 요약
 
@@ -308,7 +309,6 @@ def insert_log(data):
 ```
 
 ---
----
 # sqlalchemy — pandas 연동 / Streamlit Dashboard
 
 `psycopg2`보다 한 단계 위의 고수준 라이브러리다. 
@@ -335,6 +335,8 @@ load_dotenv()
 db_url = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 engine = create_engine(db_url)
 ```
+
+>"Streamlit은 밖에서 실행하니까 localhost!" [[Docker_Host_vs_Internal_Network]] 참고!
 
 ### URL 구조
 

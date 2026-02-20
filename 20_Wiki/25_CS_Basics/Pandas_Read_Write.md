@@ -18,6 +18,7 @@ related:
   - "[[Text_vs_Binary]]"
   - "[[Pandas_DataStructures]]"
   - "[[Python_File_IO]]"
+  - "[[Python_Database_Connect]]"
 ---
 
 ## 1. 개념 한 줄 요약 
@@ -110,6 +111,27 @@ df = pd.read_json("data.json")
 df = pd.read_json("log.json", lines=True)
 ```
 
+### ⑤ 데이터베이스 읽기 (`read_sql`)
+
+- **주의:** Pandas는 DB와 직접 대화할 수 없습니다. 통역사 역할을 하는 `engine` (주로 `SQLAlchemy` 라이브러리)이 반드시 필요합니다.
+- **필수 라이브러리:** `SQLAlchemy` 및 DB 종류에 맞는 통신 드라이버 (예: PostgreSQL의 경우 `psycopg2`)
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+
+# 1. Engine 생성 (DB 통역사 연결)
+# 포맷: "디비종류://아이디:비밀번호@주소:포트/디비이름"
+db_url = "postgresql://airflow:airflow@postgres:5432/airflow"
+engine = create_engine(db_url)
+
+# 2. 쿼리문 작성 및 데이터 읽기
+query = "SELECT * FROM sales_aggregation WHERE category = '패션'"
+df = pd.read_sql(query, engine)
+```
+
+
+
 ---
 ## 파일 저장하기 (Write / To) 📤
 
@@ -134,6 +156,27 @@ df.to_csv("result.csv", index=False, encoding="utf-8-sig")
 # 압축 방식(compression) 지정 가능 (snappy, gzip, brotli 등)
 df.to_parquet("result.parquet", engine="pyarrow", compression="snappy")
 ```
+
+### ③ 데이터베이스로 저장 (`to_sql`)
+
+분석이나 집계가 끝난 데이터프레임을 DB 테이블로 바로 꽂아 넣을 때 사용합니다.
+
+**`if_exists` 옵션:** 테이블이 이미 존재할 때 어떻게 행동할지 결정하는 핵심 옵션입니다.
+
+- `'fail'` (기본값): 에러를 냅니다.
+- `'replace'`: 기존 테이블을 싹 지우고 새로 만듭니다.
+- `'append'`: 기존 데이터 밑에 새로운 데이터를 추가합니다. (실무에서 가장 많이 씀!)
+
+```python
+# df 데이터를 'sales_report' 테이블에 밀어넣기
+df.to_sql(
+    name="sales_report",     # DB에 저장될 테이블 이름
+    con=engine,              # 연결해둔 engine 객체
+    if_exists="append",      # 이미 테이블이 있으면 밑에 추가해라
+    index=False              # DataFrame의 인덱스 번호는 DB에 넣지 마라
+)
+```
+
 
 ---
 ## [비교] Spark vs Pandas I/O 차이

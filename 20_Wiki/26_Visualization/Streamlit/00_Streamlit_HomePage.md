@@ -60,3 +60,5 @@
 > **"매번 로딩하지 말고 기억하자! 속도 10배 높이기."** 
 
 - **[[Streamlit_Cache]]** : `@st.cache_data`와 `@st.cache_resource`로 중복 연산 방지
+
+

@@ -13,6 +13,7 @@ related:
   - "[[PyFlink_Table_Expressions]]"
   - "[[Docker_Host_vs_Internal_Network]]"
   - "[[PyFlink_SQL_Windows]]"
+  - "[[Python_Database_Connect]]"
 ---
 ## 한줄 요약
 
@@ -305,7 +306,51 @@ WITH (
 )
 ```
 
+###  jdbc (`connector='jdbc'`)
+
+관계형 데이터베이스(PostgreSQL, MySQL, Oracle 등)의 데이터를 읽거나, 분석된 결과를 DB에 밀어 넣을(Write) 때 사용합니다. 
+실시간 대시보드와 연결할 때 가장 많이 쓰이는 커넥터입니다.
+
+```sql
+WITH (
+    'connector' = 'jdbc',
+    'url' = 'jdbc:postgresql://postgres:5432/my_database',  -- 1. DB 주소
+    'table-name' = 'sales_aggregation',                     -- 2. 대상 테이블명
+    'username' = 'my_user',                                 -- 3. DB 접속 계정
+    'password' = 'my_password',                             -- 4. DB 비밀번호
+    'driver' = 'org.postgresql.Driver'                      -- 5. DB 통역사(드라이버) 지정
+)
+```
+
+- **`'url'`**: 연결할 DB의 주소입니다. 사용하는 DB 종류에 따라 형식이 다릅니다.
+	- PostgreSQL 예시: `jdbc:postgresql://호스트:포트/데이터베이스명` > 데이터베이스명은 내가 원하는 걸로 정의 
+	- MySQL 예시: `jdbc:mysql://호스트:포트/데이터베이스명`
+
+- **`'table-name'`**: 데이터를 집어넣거나 읽어올 실제 DB 속 **테이블 이름**입니다. 
+	- (주의: Flink가 테이블을 대신 만들어주지 않으므로, DB에 미리 테이블을 생성해 두어야 합니다.)
+
+- **`'username'` / `'password'`**: 데이터베이스에 접근하기 위한 아이디와 비밀번호입니다.
+- **`'driver'`**: (선택이지만 권장) Flink가 해당 DB와 통신할 때 사용할 자바 클래스 이름입니다. 명시해 주는 것이 안전합니다.
+	- PostgreSQL: `org.postgresql.Driver`
+	- MySQL: `com.mysql.cj.jdbc.Driver`
 
 
+**필수 준비물 (매우 중요!)** JDBC 커넥터를 사용하려면 반드시 **2개의 JAR 파일**을 Flink의 `lib` 폴더에 넣거나 파이썬 코드에서 로드해야 합니다.
 
+1. **Flink JDBC 커넥터 JAR** (예: `flink-connector-jdbc-*.jar`)
+2. **해당 DB의 JDBC 드라이버 JAR** (예: `postgresql-*.jar` 또는 `mysql-connector-java-*.jar`)
 
+```bash
+# JobManager에 다운로드
+docker exec -it -u root project-jobmanager-1 curl -fL -o /opt/flink/lib/flink-connector-jdbc-3.1.2-1.18.jar https://repo1.maven.org/maven2/org/apache/flink/flink-connector-jdbc/3.1.2-1.18/flink-connector-jdbc-3.1.2-1.18.jar
+docker exec -it -u root project-jobmanager-1 curl -fL -o /opt/flink/lib/postgresql-42.6.0.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
+
+# TaskManager(실제 일꾼)에 다운로드
+docker exec -it -u root project-taskmanager-1 curl -fL -o /opt/flink/lib/flink-connector-jdbc-3.1.2-1.18.jar https://repo1.maven.org/maven2/org/apache/flink/flink-connector-jdbc/3.1.2-1.18/flink-connector-jdbc-3.1.2-1.18.jar
+docker exec -it -u root project-taskmanager-1 curl -fL -o /opt/flink/lib/postgresql-42.6.0.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
+
+# 설치된 JAR 파일을 인식하도록 Flink 컨테이너 재시작
+docker restart project-jobmanager-1 project-taskmanager-1
+```
+
+_(주의: `docker-compose down`을 하면 파일이 날아가므로 반드시 `restart`만 해야 합니다.)_

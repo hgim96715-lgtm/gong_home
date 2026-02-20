@@ -32,7 +32,7 @@ st.dataframe(df)
 ```
 
 ---
-## 핵심 파라미터 분석 (`use_container_width`) 
+## 핵심 파라미터 분석 (`use_container_width`,`hide_index`) 
 
 ```python
 category_table_slot.dataframe(df_summary, use_container_width=True)

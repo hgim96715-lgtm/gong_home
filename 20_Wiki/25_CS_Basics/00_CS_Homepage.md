@@ -27,6 +27,7 @@
 - **[[Concept_Cluster]]** : 컴퓨터 여러 대를 한 팀으로 만드는 원리 (Master & Worker, 이사 팀 비유)
 - **[[Concept_Node_Scaling]]** : "더 큰 컴퓨터를 살까(Scale-up), 컴퓨터를 더 살까(Scale-out)?"
 - **[[Load_Balancing]]** : 들어오는 요청을 여러 서버에 골고루 나눠주기 (교통 정리)
+- **[[Throttling_RateLimiting]] : "서버가 안 터지게 신호등 설치하기 (속도 조절과 백프레셔)"**
 
 
 

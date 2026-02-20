@@ -37,15 +37,15 @@ related:
 
 **데이터 엔지니어링 상황별 접속 공식:**
 
-1.  **내 맥북(Host)에서 실행할 때:** (예: `fake_log_producer.py`, DBeaver, Web Browser,DataGrip,Postgre에 넣을때 )
+1.  **내 맥북(Host)에서 실행할 때:** (예: Streamlit 대시보드 실행, `fake_log_producer.py`, DBeaver/DataGrip 등 DB 툴 접속)
     - 우리는 도커라는 아파트 단지 **"외부인"** 이다.
     - 무조건 **`localhost`** 와 **`외부 포트(External Port)`** 를 써야 한다.
-    - 예: `localhost:29092` (Kafka), `localhost:8080` (Airflow Web)
+    - 예: `localhost:29092` (Kafka), `localhost:5433` (PostgreSQL), `localhost:8080` (Airflow Web)
 
-2.  **도커 컨테이너 안에서 실행할 때:** (예: Flink Job, Spark Worker, Airflow DAG)
+2.  **도커 컨테이너 안에서 실행할 때:** (예: Flink Job, Spark Worker, Airflow DAG 내부 로직)
     - 우리는 이미 아파트 단지 **"입주민"** 이다.
     - **`서비스 이름(Service Name)`** 과 **`내부 포트(Internal Port)`** 를 써야 한다.
-    - 예: `kafka:9092`, `spark-master:7077`, `postgres:5432`
+    - 예: `kafka:9092` (Kafka), `spark-master:7077` (Spark), `postgres:5432` (PostgreSQL)
 
 ---
 
