@@ -130,6 +130,49 @@ JOIN (
 
 - **핵심:** `ON` 절은 단순 연결 고리가 아니라, **복합 필터링 조건**으로 사용할 수 있다.
 
+### 패턴 C: 체인 JOIN (다중 테이블 연결)
+
+**"JOIN은 2개 테이블만 하는 게 아니다. 연결고리가 있으면 계속 이어붙일 수 있다."**
+
+- **상황:** "배우별 총 매출을 구하고 싶다."
+- **문제:** `payment`(결제) ↔ `actor`(배우) 사이에 직접 연결고리가 없다.
+- **해결:** 중간 테이블들을 **다리 삼아** 체인처럼 연결한다.
+
+
+```sql
+-- payment → rental → inventory → film_actor → actor
+-- 결제      임대      재고         영화-배우      배우
+SELECT
+    a.first_name,
+    a.last_name,
+    SUM(p.amount) AS total_revenue
+FROM payment p
+JOIN rental r     ON p.rental_id = r.rental_id        -- 결제 ↔ 임대
+JOIN inventory i  ON r.inventory_id = i.inventory_id  -- 임대 ↔ 재고
+JOIN film_actor fa ON i.film_id = fa.film_id           -- 재고 ↔ 영화-배우
+JOIN actor a      ON fa.actor_id = a.actor_id          -- 영화-배우 ↔ 배우
+GROUP BY a.actor_id, a.first_name, a.last_name
+ORDER BY total_revenue DESC
+LIMIT 5;
+```
+
+- **핵심 사고법:** JOIN을 쓰기 전에 **"어떤 테이블이 다리 역할을 하는가?"** 를 먼저 그려보자.
+
+payment → rental → inventory → film_actor → actor
+  결제  →  임대  →    재고   →  영화-배우  →  배우
+
+### 📋 복잡한 JOIN 문제 풀이 전략
+
+```mermaid
+flowchart TD
+    A[🎯 1단계: 원하는 결과물 확인<br/>무엇을 보고 싶어?]
+    --> B[💰 2단계: 핵심 수치가 있는 테이블에서 시작<br/>FROM 핵심테이블]
+    --> C{목적지 테이블에 도착했어?}
+    C -->|아직 없어| D[연결고리 컬럼 찾기<br/>JOIN 다음테이블 ON 연결고리]
+    D --> C
+    C -->|도착!| E[🏁 3단계: 쿼리 조립<br/>GROUP BY / ORDER BY / LIMIT]
+```
+
 ---
 ## 초보자가 자주 하는 실수 (Misconceptions)
 
@@ -152,3 +195,8 @@ JOIN (
 ### ⑤ "최댓값이 여러 개면 한 명만 나오나요?" (X)
 
 - **현실:** 위 **패턴 B** 쿼리에서 최고 기록(50불)을 낸 사람이 2명이면, **2명 다 출력**됩니다. (공동 1등). 딱 한 명만 뽑으려면 `ROW_NUMBER()` 윈도우 함수를 써야 합니다.
+
+### ⑥ "JOIN은 두 테이블끼리만 하는 거 아닌가요?" (X)
+
+- **현실:** 연결고리(Key)가 있으면 몇 개든 이어붙일 수 있습니다.
+- 단, JOIN이 많아질수록 **성능이 느려질 수 있으니** 필요한 테이블만 연결하세요.
