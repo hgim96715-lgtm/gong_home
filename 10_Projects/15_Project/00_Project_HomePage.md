@@ -117,7 +117,7 @@ project/
 ### 4. MinIO (S3 스토리지)
 
 - **URL:** [http://localhost:9001](https://www.google.com/search?q=http://localhost:9001)
-- **ID / PW:** `minioadmin` / `minioadmin`
+- **ID / PW:** `ROOTNAME` / `CHANGEME123`
 
 
 ---
@@ -167,5 +167,5 @@ docker-compose down --volumes --rmi all
 5.  [x] **Spark로 대용량 배치 분석하기** [[04_Spark_Batch]] 적재된 데이터를 Spark로 읽어서 종합 리포트 생성 + Dashboard에 시각화
 6. [x] **Airflow로 워크플로우 자동화** [[05_Airflow_DAG]]
 7. [x] [Flink] Kafka 데이터 실시간 집계하기 (Window Processing) [[06_Flink_job]]
-8. [ ] "Flink 결과를 DB에 넣고 Streamlit에 붙이는 작업 
-9. [ ] [아키텍처 확장] Data Lake (MinIO) 도입하기
+8. [x] "Flink 결과를 DB에 넣고 Streamlit에 붙이는 작업 
+9. [x] Data Lake (MinIO) 도입하기 [[07_minIO]]
