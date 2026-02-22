@@ -7,7 +7,7 @@ tags:
   - Airflow
   - Spark
 related:
-  - "[[Spark_MinIO_Integration]]"
+  - "[[MinIO_Integration]]"
   - "[[Apache_Spark_Setup]]"
 ---
 ## 개념 한 줄 요약

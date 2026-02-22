@@ -83,6 +83,6 @@
 
 - [[Apache_Spark_Concept]] : 하둡보다 100배 빠른 분산 처리 엔진 
 - [[Apache_Spark_Setup]] : Docker로 내 컴퓨터에 Spark 클러스터 구축하기 (설치)
-- [[Spark_MinIO_Integration]] : Spark(연산)와 MinIO(저장)를 S3 프로토콜로 연결하기
+- [[MinIO_Integration]] : Spark(연산)와 MinIO(저장)를 S3 프로토콜로 연결하기
 - [[Airflow_Spark_Integration]] : Airflow로 Spark 작업 자동화하기 (SparkSubmitOperator) 
 - [[Airflow_Spark_MinIO_Pipeline_Build]]: 이번에 겪은 에러 로그와 해결 과정을 담은 **"실전 문제 해결서"** (나중에 에러 나면 보는 곳)

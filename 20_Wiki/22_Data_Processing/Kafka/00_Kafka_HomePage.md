@@ -23,3 +23,9 @@
 
 - [[PyFlink_Kafka_Source_Sink]] : Flink와 Kafka 연결하기
 - [[Flink_Kafka_SerializationSchema]] : Flink에서의 데이터 스키마 정의
+
+## 5. Data Lake Integration (데이터 레이크 연동)
+
+> "카프카의 실시간 데이터를 모아서 영구 보존용 창고(MinIO/S3)에 쌓아보자"
+
+- [[Kafka_to_MinIO_DataLake]] : Kafka Consumer와 Pandas를 이용한 Parquet 배치 저장 (s3fs 통역사 설정)

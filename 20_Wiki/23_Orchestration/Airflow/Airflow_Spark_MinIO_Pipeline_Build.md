@@ -8,7 +8,7 @@ tags:
   - MinIO
   - Troubleshooting
 related:
-  - "[[Spark_MinIO_Integration]]"
+  - "[[MinIO_Integration]]"
   - "[[Airflow_Spark_Integration]]"
 ---
 # Airflow + Spark + MinIO 로컬 파이프라인 구축 성공기

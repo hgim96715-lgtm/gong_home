@@ -9,6 +9,7 @@ aliases:
   - read_json
   - 파일입출력
   - IO
+  - storage_options
 tags:
   - Pandas
   - FileIO
@@ -19,6 +20,8 @@ related:
   - "[[Pandas_DataStructures]]"
   - "[[Python_File_IO]]"
   - "[[Python_Database_Connect]]"
+  - "[[00_Pandas_HomePage]]"
+  - "[[Kafka_Python_Consumer_Basic]]"
 ---
 
 ## 1. 개념 한 줄 요약 
@@ -186,6 +189,78 @@ df.to_sql(
 | **동작 시점** | **즉시 실행 (Eager)**<br><br>함수 실행하자마자 메모리에 다 올림. | **지연 실행 (Lazy)**<br><br>"파일 위치만 기억해둠." (Action 전까지 안 읽음) |
 | **메모리**   | 파일 크기가 RAM보다 크면 **터짐 (Memory Error).**        | RAM보다 커도 **나눠서 처리 가능.**                                  |
 | **분산 처리** | 파일 1개를 CPU 1개가 읽음.                            | 파일 1개를 여러 조각내서 CPU 여러 개가 읽음.                             |
+
+
+---
+##  클라우드 스토리지 (S3 / MinIO) 연동하기
+
+"Pandas는 기본적으로 내 컴퓨터(로컬) 하드디스크만 볼 수 있습니다. 
+바다 건너 클라우드 창고(S3/MinIO)에 파일을 저장하거나 읽으려면 전용 출입증(`storage_options`)이 필요합니다."
+
+### ① S3 / MinIO 출입증(통역사) 세팅하기
+
+- **필수 라이브러리:** `pip3 install s3fs pyarrow`
+
+```python
+# 1. 창고 주소와 열쇠 설정 (AWS S3를 쓸 때는 endpoint_url 생략 가능)
+MINIO_ENDPOINT = "http://localhost:9000" 
+MINIO_ACCESS_KEY = "ROOTNAME"
+MINIO_SECRET_KEY = "CHANGEME123"
+
+# 2. Pandas를 위한 '통역사/출입증' (s3fs 라이브러리가 뒤에서 사용함)
+storage_options = {
+    "key": MINIO_ACCESS_KEY,
+    "secret": MINIO_SECRET_KEY,
+    "client_kwargs": {"endpoint_url": MINIO_ENDPOINT}
+}
+```
+
+**`storage_options` 핵심 요약 (MinIO vs AWS S3)**
+andas가 S3 프로토콜과 통신할 때(`s3fs` 사용) 넘겨주는 출입증 딕셔너리입니다.
+
+| **옵션명 (Key)**                                            | **역할 (비유)**                 | **🐳 로컬 MinIO (현재 세팅)**                           | **☁️ 실제 AWS S3 (실무)**    | **💡 핵심 포인트**                                                    |
+| -------------------------------------------------------- | --------------------------- | ------------------------------------------------- | ------------------------ | ---------------------------------------------------------------- |
+| **`key`**                                                | 접속 ID (사원증)                 | `MINIO_ROOT_USER` 값<br><br>_(예: ROOTNAME)_        | 발급받은 `Access Key ID`     | "나 누구누구야!" 신분 밝히기                                                |
+| **`secret`**                                             | 비밀번호                        | `MINIO_ROOT_PASSWORD` 값<br><br>_(예: CHANGEME123)_ | 발급받은 `Secret Access Key` | 아이디가 진짜인지 증명                                                     |
+| **`client_kwargs`**<br><br>  <br>`{'endpoint_url': ...}` | 목적지 주소<br><br>  <br>(내비게이션) | **`http://localhost:9000`**                       | **작성 안 함 (코드 줄 삭제)**     | ⭐️ **MinIO 쓸 땐 필수!**<br>  <br>(생략하면 무조건 미국 AWS 본사 서버로 데이터를 들고 감) |
+
+>**포인트:** 나중에 진짜 AWS S3를 쓸 때는 `endpoint_url`을 지우고, `key`와 `secret`만 실제 AWS에서 발급받은 키로 쏙 바꿔주면 코드 수정 없이 바로 작동합니다!
+
+### ② 클라우드에 파일 저장하기 / 읽어오기
+
+- 로컬에 저장할 때 쓰던 함수(`to_parquet`, `read_csv` 등)에 **`storage_options` 파라미터만 추가**해주면 마법처럼 클라우드로 날아갑니다.\
+- `{python}file_path = "s3://{창고이름(Bucket)}/{폴더명...}/{파일명}"`
+
+```python
+# [저장하기] 데이터프레임(df)을 MinIO의 'raw-data' 버킷에 Parquet로 쏘기!
+file_path = "s3://raw-data/my_data.parquet"
+
+df.to_parquet(
+    file_path, 
+    engine="pyarrow", 
+    compression="snappy", 
+    index=False, 
+    storage_options=storage_options  # 👈 핵심: 출입증 제시!
+)
+
+# [읽어오기] MinIO에 있는 Parquet 파일을 판다스로 불러오기
+df_cloud = pd.read_parquet(
+    "s3://raw-data/my_data.parquet", 
+    storage_options=storage_options  # 👈 읽을 때도 출입증 필수!
+)
+```
+
+#### `to_parquet` 함수의 핵심 옵션 뜯어보기
+
+Pandas 데이터프레임을 클라우드(MinIO)에 Parquet로 저장할 때 사용하는 필수 옵션들입니다.
+
+| **파라미터(옵션명)**         | **의미 (역할)**                                 | **주로 쓰는 설정값 (선택지)**                                                 | **실무 꿀팁 (왜 이걸 쓸까?)**                                                           |
+| --------------------- | ------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **`engine`**          | Parquet 파일을 만들어주는 **'엔진(작업자)'**             | **`"pyarrow"` (추천)**<br><br>`"fastparquet"`                         | `pyarrow`가 빅데이터 생태계(Spark 등)와 호환성이 가장 좋고 속도도 빠릅니다.                             |
+| **`compression`**     | 파일 용량을 줄여주는 **'압축 방식'**                     | **`"snappy"` (추천)**<br><br>`"gzip"` (용량 최소화)<br><br>`None` (압축 안 함) | `"snappy"`는 구글이 만든 압축 방식으로, **'적당히 압축하면서 풀리는 속도가 엄청나게 빠름'**이 특징이라 빅데이터의 표준입니다. |
+| **`index`**           | Pandas 특유의 **'맨 앞 행 번호(0, 1, 2...)'** 저장 여부 | **`False` (추천!)**<br><br>  <br>`True` (기본값)                         | DB나 파일로 내보낼 때는 쓸데없는 행 번호가 용량만 차지하므로 **무조건 `False`**로 꺼버리는 것이 데이터 엔지니어링 국룰입니다!  |
+| **`storage_options`** | 클라우드(S3/MinIO)에 접근하기 위한 **'출입증'**           | **`storage_options`**<br><br>(위에서 만든 딕셔너리 변수)                       | 이 옵션이 없으면 `s3://` 주소를 보고 통역사가 "열쇠가 없는데요?" 하고 에러를 뱉습니다.                         |
+
 
 
 ---

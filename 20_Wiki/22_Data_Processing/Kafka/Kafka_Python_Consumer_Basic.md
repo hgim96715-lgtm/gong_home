@@ -10,6 +10,9 @@ related:
   - "[[Kafka_Python_Producer_Basic]]"
   - "[[00_Kafka_HomePage]]"
   - "[[Docker_Host_vs_Internal_Network]]"
+  - "[[MinIO_Concept]]"
+  - "[[Buffering_vs_Batching]]"
+  - "[[Pandas_Read_Write]]"
 ---
 ## Concept Summary
 
@@ -167,5 +170,25 @@ except NoBrokersAvailable:
     # 연결 실패 병명 사용 (NoBrokersAvailable 사용)
     # "이 에러가 나면 프로그램 죽이지 말고 여기로 와!"
     print("지금 방송국(Broker)이 문을 닫았습니다. 잠시 대기합니다...")
+```
+
+## 💡  버퍼링과 배치 처리 (Buffering & Batching)
+
+> "데이터가 올 때마다 하나씩 DB나 파일에 저장하면 시스템이 뻗습니다. 바구니에 모았다가 한 번에 처리하세요!"
+
+실무에서는 Consumer로 들어오는 데이터를 건건이 처리(I/O)하지 않고, 메모리(`buffer`)에 일정량을 모았다가 한 번에(`Batch`) 처리합니다.
+이를 통해 **속도를 극대화하고 저장소의 부하를 막을 수 있습니다.**
+
+```python
+buffer = [] # 데이터를 임시로 모아둘 빈 바구니 (메모리 공간)
+BATCH_SIZE = 100 # 100개가 모이면 한 번에 묶어서(Batch) 저장하겠다는 규칙!
+
+for message in consumer: 
+	buffer.append(message.value) # 데이터가 들어올 때마다 바구니에 쏙 넣음 
+	
+	# 100개가 차면 모아서 처리하고 바구니 비우기! 
+	if len(buffer) >= BATCH_SIZE: 
+		# DB에 넣거나 Parquet로 저장하는 로직 작성... 
+		buffer.clear() # 다음 데이터를 위해 바구니 비우기
 ```
 

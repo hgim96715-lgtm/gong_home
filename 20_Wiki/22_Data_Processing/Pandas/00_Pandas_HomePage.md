@@ -4,7 +4,7 @@
 > "일단 데이터를 불러와야 요리를 하죠."
 > 
 - [[Pandas_DataStructures]] : Series와 DataFrame의 차이(1차원 vs 2차원), Schema란?(설계도) 
-- [[Pandas_Read_Write]] : 파일 읽고 쓰기 (`read_csv`, `to_parquet`, `read_json`)
+- [[Pandas_Read_Write]] : 파일 읽고 쓰기 (`read_csv`, `to_parquet`, `read_json`,`storage_options`)
 
 ## Level 2. 데이터 훑어보기 (Inspection)
 
