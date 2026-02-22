@@ -36,7 +36,7 @@
 - [[Database_Transactions_TCL]] : 트랜잭션 (ACID, Commit, Rollback)
 - [[Basic_Structure_and_Alias]] : 컬럼/로우 용어 정리와 별칭(AS) 짓기
 - [[SQL_Understanding_NULL]] : (NULL의 모든 것)
--  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE, IS NULL)
+-  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE,ILIKE, IS NULL)
 -  [[SQL_ORDER_BY]] : 데이터 줄 세우기
 -  [[Data_Types]] : 문자, 숫자, 날짜 타입의 이해
 
