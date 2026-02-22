@@ -7,6 +7,7 @@ aliases:
   - HashMap
   - Key-Value
   - JSON객체
+  - fromkeys
 tags:
   - Python
 related:
@@ -103,6 +104,33 @@ config = {"env": "prod"}
 # "retries"가 없으면 에러 내지 말고, 기본값(3)을 줘라.
 retry_count = config.get("retries", 3)
 print(retry_count) # 결과: 3
+```
+
+---
+## 딕셔너리 한 방에 만들기: `fromkeys()`
+
+키 목록으로 딕셔너리를 빠르게 초기화할 때 씁니다.
+
+```python
+# 기본값 없이 -> None으로 채워짐
+keys = ['name', 'age', 'email']
+user = dict.fromkeys(keys)
+# {'name': None, 'age': None, 'email': None}
+
+# 기본값 지정
+user = dict.fromkeys(keys, '미입력')
+# {'name': '미입력', 'age': '미입력', 'email': '미입력'}
+```
+
+> ⚠️ **주의:** 기본값으로 리스트를 쓰면 모든 키가 **같은 리스트 객체를 공유**해서
+> 하나를 바꾸면 전부 바뀝니다. 기본값엔 `0`, `''`, `None` 같은 단순 값을 쓰세요!
+
+ **❌ 위험**
+ 
+```python
+d = dict.fromkeys(['a', 'b'], [])
+d['a'].append(1)
+print(d)  # {'a': [1], 'b': [1]}  <- b도 같이 바뀜! (같은 객체 공유)
 ```
 
 ---

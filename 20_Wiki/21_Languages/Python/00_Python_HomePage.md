@@ -13,7 +13,7 @@
 - [[Python_String_Search]] : 문자열 검색,위치 찾기(`find`,`index`,`rfind`,`rindex`)
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `lower`, `replace` vs `re.sub`)
 - [[Python_Sorting_Logic]] : 정렬의 미학 (`sort` vs `sorted`, key lambda)
-- [[Python_Builtin_Functions]] : 코드를 줄여주는 마법 (`max`, `min`, `sum`, `len`, `abs`, `ord`, `chr`)
+- [[Python_Builtin_Functions]] : 코드를 줄여주는 마법 (`max`, `min`, `sum`, `len`, `abs`, `ord`, `chr`,`pow`,`bit_length()`)
 - [[Python_Math_Module]] : 정밀한 수학 연산 (`math.prod`, `ceil`, `floor`, `gcd`)
 - [[Python_Statistics_Module]] : 데이터 요약 통계 (`mean`, `median`, `stdev`)
 - [[Python_Collections_Counter]] : 빈도 분석의 강자 (`Counter`, `most_common`)
@@ -27,7 +27,7 @@
 
 - [[Python_Lists_Tuples]] : 순서가 있는 데이터 (`[]`, `()`, Mutable vs Immutable)
 - [[Python_List_Comprehension]] : 리스트 컴프리헨션 심화 (한 줄로 리스트 만들기)
-- [[Python_Dictionaries]] : 키-값 쌍 데이터 (`{}`, `.get()`, `.items()`, `.keys()`, `.values()`)
+- [[Python_Dictionaries]] : 키-값 쌍 데이터 (`{}`, `.get()`, `.items()`, `.keys()`, `.values()`,`dict`,`fromkeys` )
 - [[Python_JSON]] : 딕셔너리와 문자열 변환 (`json.loads`, `json.dumps`)
 - [[Python_Sets]] : 중복 제거하기 (`set`, 교집합, 합집합)
 
