@@ -1,7 +1,7 @@
 
 >[!source]
 >페이지 [Streamlit 공식 홈페이지](https://streamlit.io/)
->내 폴더 위치 : [streamlit](file:///Users/gong/gong_study_de/streamlit/)
+
 
 
 >Streamlit에서 실시간으로 숫자가 바뀌는 원리는 **"빈 의자(Placeholder)를 먼저 놓고, 나중에 사람(데이터)을 앉히는 방식"** 
@@ -12,9 +12,10 @@
 
 - [[Streamlit_Concept]] : Streamlit의 특징과 Vibe Coding, 빈의자 전략 (`placeholder`)
 - **[[Streamlit_QuickStart]]** :  설치(`pip`) 및 실행(`python3 -m`) 완벽 가이드
-- **[[Streamlit_Status_Text]]** : 제목, 본문, 그리고 알림창 (`success`, `error`, `info`, `markdown`)
+- **[[Streamlit_Status_Text]]** : 제목, 본문, 그리고 알림창 (`success`, `error`, `info`, `markdown`,`spinner`)
 - [[Streamlit_Widgets]] : 버튼, 슬라이더, 텍스트 입력 등 기본 입출력
 - **[[Streamlit_Layout]]** : 컬럼(`col`), 탭(`tab`), 사이드바(`sidebar`)로 화면 배치하기
+- [[Streamlit_Dynamic_UI]] : 파이썬으로 HTML/Markdown 붕어빵 찍어내기
 
 ## 데이터 그리기 (Visualization) 
 
@@ -37,15 +38,25 @@
 > **"앱이 멍청하게 깜빡거리지 않고, 똑똑하게 기억하게 만들자." **
 
 - [[Streamlit_Forms]] : 입력을 모아서 한 번에 전송 (최적화)
-- **[[Streamlit_Session_State]]** : 새로고침 되어도 데이터 기억하기 (메모리)
+- [[Streamlit_Session_State]] : 새로고침 되어도 데이터 기억하기 (메모리) **+ 안전한 상태 조회(`.get`)와 Active UI 패턴**
 
 
 ## 보안 및 설정 (Security & Config) 
 
 > **"비밀번호, API 키를 코드에 적지 마세요! 해킹 당합니다."** 
 
-
 - **[[Streamlit_Secrets]]** : `secrets.toml`로 민감한 정보 안전하게 숨기기
+
+
+## 스타일 및 서버 설정 (Configuration)
+
+> **"내 앱의 테마와 서버 설정을 내 입맛대로! 옷을 입히고 집 주소를 정하자."**
+
+- **[[Streamlit_Config]]** : `.streamlit/config.toml` 파일의 위치와 설정 우선순위 이해하기
+- **[[Streamlit_Theming]]** : 브랜드 컬러 입히기 (`primaryColor`, `backgroundColor`, `font` 설정)
+- [[Streamlit_Advanced_CSS]] : CSS 주입 및 외부 아이콘(CDN) 연동(font-awesome), UI 강제 덮어쓰기 (`data-testid`),`st.html`,`st.markdown`,`mailto:`
+- **[[Streamlit_Server_Browser_Config]]** : 서버 접속(`port`, `address`), 보안(`CORS`, `headless`) 및 브라우저 최적화(`gatherUsageStats`) 설정
+
 
 
 ## 앱 확장하기 (Architecture)
@@ -59,6 +70,11 @@
 
 > **"매번 로딩하지 말고 기억하자! 속도 10배 높이기."** 
 
-- **[[Streamlit_Cache]]** : `@st.cache_data`와 `@st.cache_resource`로 중복 연산 방지
+- **[[Streamlit_Cache]]** : `@st.cache_data`와 `@st.cache_resource`로 중복 연산 방지,`ttl`
+- **[[Streamlit_Fragment]] : 전체 새로고침 방지! 딱 이 구역만 다시 그리기 (`@st.fragment`)**
 
+## 실무 치트키 (Cheat Codes)
 
+> **"Streamlit의 한계를 부수는 파이썬 외부 라이브러리 3대장"**
+
+- **[[Streamlit_External_Libs]]** : 외부 데이터와 고급 UI를 위한 필수 모듈 (`requests`, `base64`, `re`)

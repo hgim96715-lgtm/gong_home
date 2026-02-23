@@ -5,6 +5,17 @@
 - [[01_SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
 -  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 
 
+## Level -1. 데이터베이스 세계관 입문 (Fundamentals)
+
+>"엑셀 놔두고 왜 굳이 DB를 쓸까요? SQLD 자격증 1과목의 단골 문제이자, 데이터 엔지니어의 상식입니다."
+
+- **[[Concept_Database]]** : 데이터베이스(DB)란 무엇인가? (통합/저장/운영/공유 데이터의 특징)
+- **[[Concept_RDBMS]]** : 관계형 데이터베이스(RDBMS)의 정체 (데이터를 2차원 표 형태로 저장하고, 릴레이션으로 연결하기)
+- **[[Concept_Table_Anatomy]]** : 테이블 구조 해부 완벽 정리 (행/Row/Tuple vs 열/Column/Attribute/Field 용어 매칭 )
+- **[[Concept_What_is_SQL]]** : SQL의 본질 (비절차적 데이터 조작 언어, 집합적 사고방식의 이해)
+- [[SQL_Concepts_View]] : 뷰(View)란 무엇인가? (가상 테이블과 보안)
+
+
 ## Level 0. 밑그림 그리기 (Data Modeling)
 
 > "건물을 짓기 전에 설계도부터 봐야죠. 테이블이 왜 이렇게 생겨먹었는지 이해하는 단계입니다."
@@ -24,6 +35,7 @@
 - **[[SQL_DDL_Create]]** : 테이블 생성과 삭제의 모든 것 (`CREATE`, `DROP`, `TRUNCATE`, `ALTER`)
 - **[[SQL_DML_CRUD]]** : 데이터 넣고, 수정하고, 지우기 (`INSERT`, `UPDATE`, `DELETE`)
 - **[[SQL_Constraints]]** : 이상한 데이터가 못 들어오게 막는 문지기 (`PRIMARY KEY`, `NOT NULL`, `UNIQUE`, `DEFAULT`)
+- [[Database_Transactions_TCL]] : 트랜잭션 (ACID, Commit, Rollback)
 - **[[SQL_Auto_Increment]]** : 번호표 자동 발급기 (`SERIAL`, `AUTO_INCREMENT`, `SEQUENCE`)
 
 
@@ -32,9 +44,6 @@
 > 데이터 조회와 필터링의 기본기
 
 - [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
-- [[SQL_Concepts_View]] : 뷰(View)란 무엇인가? (가상 테이블과 보안)
-- [[Database_Transactions_TCL]] : 트랜잭션 (ACID, Commit, Rollback)
-- [[Basic_Structure_and_Alias]] : 컬럼/로우 용어 정리와 별칭(AS) 짓기
 - [[SQL_Understanding_NULL]] : (NULL의 모든 것)
 -  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE,ILIKE, IS NULL)
 -  [[SQL_ORDER_BY]] : 데이터 줄 세우기

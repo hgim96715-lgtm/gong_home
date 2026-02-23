@@ -4,11 +4,14 @@ aliases:
   - 스트림릿 위젯
   - Input
   - Interactive
+  - st.radio
+  - 입력 위젯
 tags:
   - Streamlit
 related:
   - "[[00_Streamlit_HomePage]]"
   - "[[Streamlit_Layout]]"
+  - "[[Streamlit_Status_Text]]"
 linked:
   - file:///Users/gong/gong_study_de/streamlit/widget.py
 ---
@@ -32,11 +35,29 @@ HTML/JS 없이 파이썬 함수 하나로 텍스트 상자, 슬라이더, 버튼
 사용자가 문자열을 타이핑할 수 있는 입력창입니다. 
 입력한 값은 바로 변수에 저장되어 코드에서 쓸 수 있습니다. 
 
+#### **A. 기본 사용법**
+
 ```python
 name = st.text_input("이름을 입력하세요:")
 st.write("반갑습니다,", name)
 ```
 
+#### **B. 실무 고급 파라미터 (`placeholder`, `key`, `type`)** 
+
+단순한 입력창을 넘어, 사용자 경험(UX)을 올리고 버그를 막기 위해 실무에서는 아래 파라미터들을 적극적으로 활용합니다.
+
+```python
+search = st.text_input(
+    label="🔍 노트 검색", 
+    placeholder="파일명 검색...",    # 💡 꿀팁 1
+    key=folder_path,               # 💡 꿀팁 2 (가장 중요!)
+    type="password"                 # 💡 꿀팁 3 (비밀번호 가리기)
+)
+```
+
+- **`key=folder_path` ( Streamlit의 핵심!):** 이 위젯의 **고유한 주민등록번호**를 부여합니다.
+- **`type="password"` : 만약 이 옵션을 넣으면, 사용자가 타이핑하는 글자가 `****` 처럼 까맣게 가려집니다. 로그인 화면이나 API 키를 입력받을 때 필수
+- **`placeholder="파일명 검색..."`**: '가이드 문구'입니다. 사용자가 클릭해서 타이핑을 시작하면 스르륵 사라집니다
 
 ### 슬라이더 (`st.slider`)
 
@@ -48,20 +69,6 @@ st.write("반갑습니다,", name)
 ```python
 # 0부터 100까지 중 선택 (기본값 25)
 age = st.slider("나이 선택", 0, 100, 25)
-```
-
-### 선택 박스 (`st.selectbox`)
-
-미리 정의된 리스트 중 하나를 고르는 드롭다운 메뉴입니다.
-
-- 사용자의 입력을 특정 옵션으로 **제한(Restrict)** 하고 싶을 때 유용합니다.
-
-```python
-option = st.selectbox(
-    "가장 좋아하는 언어는?",
-    ["Python", "Java", "JavaScript"]
-)
-st.write("선택:", option)
 ```
 
 ### 버튼 (`st.button`)
@@ -76,8 +83,50 @@ if st.button("Submit"):
 	st.write(f"Hello {name}, you are {age}years old and love {language}!")
 ```
 
+### 선택 박스 (`st.selectbox`)
+
+미리 정의된 리스트 중 하나를 고르는 드롭다운 메뉴입니다.
+
+- 사용자의 입력을 특정 옵션으로 **제한(Restrict)** 하고 싶을 때 유용합니다. (오타 방지)
+
+```python
+option = st.selectbox(
+    "가장 좋아하는 언어는?",
+    ["Python", "Java", "JavaScript"]
+)
+```
+
 ---
-## 추가 입력 위젯 (More Inputs)
+## 심화 입력 위젯 & UI 최적화 (Advanced Inputs)
+
+### 라디오 버튼 (`st.radio`) : 한눈에 보이는 단일 선택
+
+`selectbox`와 비슷하지만, 선택지가 2~5개 정도로 적어서 **사용자가 옵션을 한눈에 파악해야 할 때** 직관적입니다.
+
+**💡 실무 꿀팁: `format_func`와 `label_visibility` 활용하기** 딕셔너리의 '진짜 주소(Key)'는 숨기고 '예쁜 이름(Label)'만 화면에 띄우는 고급 기술입니다.
+
+```python
+CATEGORIES = {
+    "20_Wiki/21": {"label": "Python"},
+    "20_Wiki/22": {"label": "SQL"}
+}
+
+selected_key = st.radio(
+	# `label="카테고리"`: 라디오 버튼 그룹의 제목(이름표)입니다.
+    label="카테고리 선택", 
+    options=list(CATEGORIES.keys()),
+    #  핵심 치트키: 화면에는 예쁜 이름(label)만 띄워줍니다!
+    format_func=lambda k: CATEGORIES[k]['label'], 
+    #  UI 최적화: 제목 글자를 숨기고 여백까지 완전히 없애버립니다!("collapsed")
+    # `"visible"` (기본값): 제목이 정상적으로 보입니다.
+    # `"hidden"`: 제목 글자만 투명하게 숨기고, **그 글자가 차지하던 공간(여백)은 텅 빈 채로 남겨둡니다.** (줄 맞춤할 때 유용)
+    label_visibility='collapsed',
+    #  가로 배치 모드 , 기본적으로 세로
+    horizontal=True 
+)
+# 사용자는 'Python'을 누르지만, 변수에는 '20_Wiki/21'이 저장됩니다.
+```
+
 
 ### 체크박스 (`st.checkbox`)
 
@@ -128,13 +177,13 @@ year = st.sidebar.selectbox("연도 선택", [2023, 2024, 2025])
 st.write(f"메인 화면: {year}년 데이터를 보여줍니다.")
 ```
 
-### 텍스트 꾸미기 (`st.markdown`, `st.caption`)
+### 텍스트 꾸미기 (`st.markdown`, `st.caption`,`st.html`,`st.divider`)
 
 단순한 글자(`write`)보다 더 예쁘게 정보를 표시할 때 씁니다.
 
-- **`st.markdown`:** 굵게, 기울임, 링크 등 **마크다운 문법**을 쓸 수 있습니다. 가로선(`---`)을 그을 때도 씁니다.
- >가로선 **`st.divider()`** 로도 가능 
+- **`st.markdown`:** 굵게, 기울임, 링크 등 마크다운 문법을 완벽 지원합니다. > `st.html` 도가능 [[Streamlit_Advanced_CSS#최신 CSS 주입 스킬과 실무 황금 공식 (`st.html` vs `st.markdown`)|st.html& st.markdown]] 참고 
 - **`st.caption`:** 회색의 **작은 글씨**로 부연 설명을 달 때 사용합니다.
+- **`st.divider()`:** 화면을 가로지르는 깔끔한 가로선(`---`)을 긋습니다.
 
 ```python
 st.sidebar.markdown("---") # 구분선 긋기
@@ -144,15 +193,7 @@ st.sidebar.caption("Designed by Data Team") # 하단 저작권 표시 등에 활
 
 ---
 
-## 추가 입력 위젯 (More Inputs)
 
-### 체크박스 (`st.checkbox`)
-
-ON/OFF 스위치처럼 동작합니다.
-
-- **반환값:** 체크하면 `True`, 해제하면 `False` (Boolean).
-    
-- **용도:** 특정 차트를 숨기거나 보일 때, 옵션을 켤 때 사용합니다.
 
 ---
 ## 실전 활용 (Practical Context)

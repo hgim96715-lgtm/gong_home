@@ -81,6 +81,21 @@ st.balloons()  # 풍선 효과import streamlit as st
 streamlit run Home.py
 ```
 
+> 가상방법 (venu)활용
+
+```bash
+# 1. 가상환경 생성 (최초 1회)
+python3 -m venv venv
+
+# 2. 가상환경 활성화 (프로젝트 시작할 때마다)
+source venv/bin/activate
+
+# 3. 이제 그냥 사용 가능!
+pip3 install streamlit
+streamlit run portfolio.py
+```
+
+
 ### 방법 B: 절대 실패하지 않는 명령어 (Robust)
 
 `streamlit` 명령어를 못 찾을 때(`zsh: command not found`), 파이썬 모듈(`-m`)로 직접 호출하는 확실한 방법입니다.

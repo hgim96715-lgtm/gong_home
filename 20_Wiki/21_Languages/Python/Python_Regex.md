@@ -142,6 +142,37 @@ print(masked_text)
 # 결과: "010-1234-****"
 ```
 
+### ③ 고급 치환: 함수(Lambda)와 그룹핑(Group) 활용하기 (Advanced)
+
+"조건에 따라 알아서 다르게 바꿔줘!" (예: Obsidian 링크 `[[문서|별명]]` 껍데기 벗기기)
+
+`re.sub`의 두 번째 인자 자리에 고정된 문자열 대신 **함수(Lambda)** 를 넣으면, 정규식으로 찾아낸 결과물(`Match` 객체)을 입맛대로 가공해서 반환할 수 있습니다.
+
+```python
+import re
+
+text_a = "이것은 [[Python]] 문서입니다."
+text_b = "이것은 [[Python|파이썬 기초]] 문서입니다."
+
+# [패턴] [[ ]] 안의 내용을 두 그룹으로 쪼갭니다.
+# 그룹 1 (m.group(1)): | 앞의 진짜 문서 이름 ("Python")
+# 그룹 2 (m.group(2)): | 뒤의 별명 ("파이썬 기초"), 없으면 None
+pattern = r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]'
+
+# [핵심 로직] lambda m: m.group(2) or m.group(1)
+# 해석: 파이썬의 `A or B` 문법을 활용하여, 별명(group 2)이 존재하면 그걸 남기고, 
+# 비어있으면 진짜 이름(group 1)을 남겨라!
+clean_a = re.sub(pattern, lambda m: m.group(2) or m.group(1), text_a)
+clean_b = re.sub(pattern, lambda m: m.group(2) or m.group(1), text_b)
+
+print(clean_a) 
+# 결과: "이것은 Python 문서입니다." (대괄호만 날아감)
+
+print(clean_b) 
+# 결과: "이것은 파이썬 기초 문서입니다." (진짜 이름은 숨기고 별명만 남음)
+```
+
+
 ----
 ##  결과 꺼내기 : `group()`과 Match Object 이해하기 
 
