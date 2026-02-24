@@ -7,13 +7,12 @@ aliases:
   - HAVING
 tags:
   - SQL
-  - Database
-  - DataAnalysis
-  - Backend
 related:
   - "[[SQL_SELECT_FROM]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_NULL_Functions]]"
+  - "[[SQL_Understanding_NULL]]"
 ---
 ## 개념 한 줄 요약
 
@@ -174,6 +173,7 @@ GROUP BY city, gender, age_group;  -- 그냥 콤마 찍고 추가하면 끝!
 > **💡 AVG의 함정:**
 > 만약 `NULL`을 `0`으로 쳐서 평균을 내고 싶다면? (예: 매출 없는 날도 포함해서 일평균 구할 때)
 > 👉 **`AVG(COALESCE(amount, 0))`** 처럼 NULL을 0으로 바꿔주는 함수를 씌워야 해!
+> [[SQL_NULL_Functions#② `AVG()` 함수와 NULL의 환장할 콜라보| NULL AVG 주의사항]] 참고 
 
 ---
 ## Detailed Analysis (상황별 함수 선택 가이드)

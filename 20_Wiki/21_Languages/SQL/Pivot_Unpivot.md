@@ -9,7 +9,7 @@ tags:
   - SQL
 related:
   - "[[SQL_CASE_WHEN]]"
-  - "[[Aggregation_GROUP_BY]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약

@@ -6,7 +6,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Aggregation_GROUP_BY]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[SQL_SELECT_FROM]]"
 ---
 ## 개념 한 줄 요약 ️

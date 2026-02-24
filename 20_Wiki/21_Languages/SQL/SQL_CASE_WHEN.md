@@ -8,12 +8,14 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Aggregation_GROUP_BY]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[Pivot_Unpivot]]"
   - "[[SQL_SELECT_FROM]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[00_SQL_HomePage]]"
 ---
+# 쿼리 속의 IF-ELSE 분기점
+
 ## 개념 한 줄 요약
 
 SQL에서 **"만약(IF) ~라면 A, 아니면(ELSE) B"** 라는 논리를 구현하는 문법이야.
@@ -38,9 +40,57 @@ SELECT
     CASE 
         WHEN score >= 90 THEN 'A학점'   -- 90점 이상이면 A
         WHEN score >= 80 THEN 'B학점'   -- 80점 이상이면 B
-        ELSE 'C학점'                    -- 나머지 전부
+        ELSE 'C학점'                    -- 나머지 전부 [핵심] ELSE 뒤의 값이 '기본값'이 됨!
     END AS grade                        -- [문법 끝] 컬럼 별명(AS) 필수!
 FROM exams;
+```
+
+**ELSE와 NULL의 관계**
+
+- `CASE` 문에서 `ELSE` 뒤에 지정한 값이 해당 컬럼의 **기본값(Default)** 이 됩니다.
+- 만약 쿼리에서 별도의 `ELSE` 구문을 작성하지 않으면, 조건에 맞지 않는 모든 데이터는 **무조건 `NULL` 값이 기본값**으로 반환됩니다. (데이터 빵꾸의 주범이 되므로 주의!)
+
+---
+## DB 별 전용 문법
+
+표준 SQL인 `CASE WHEN`은 조금 길기 때문에, 각 DB마다 이를 압축한 전용 함수나 구문을 지원합니다.
+
+### Oracle 전용: `DECODE` 함수 
+
+Oracle에는 `CASE WHEN`의 조상 격인 `DECODE` 함수가 있습니다.
+
+- **문법:** `DECODE(컬럼, 조건1, 결과1, 조건2, 결과2, ..., 기본값)`
+- **치명적 단점:** `CASE WHEN`처럼 대소 비교(`>`, `<`)는 불가능하고, 오직 **정확히 일치(`{text}=`)** 할 때만 사용할 수 있습니다.
+
+```sql
+-- 성별 코드를 변환하는 예시 (CASE WHEN과 완벽히 동일한 결과)
+SELECT
+    student_name,
+    DECODE(gender, 'M', 'Male', 'F', 'Female', 'Unknown') AS gender_name
+FROM students;
+```
+
+### PostgreSQL 전용: `FILTER` 구문
+
+"조건부 집계"를 위해 태어난 최신 문법입니다. 코드가 훨씬 직관적입니다.
+
+```sql
+SELECT
+    -- "COUNT를 하긴 할 건데(COUNT*), 이 조건일 때만(FILTER) 세어줘"
+    COUNT(*) FILTER (WHERE credit ILIKE '%gift%') AS gift_count,
+    COUNT(*) AS total_count
+FROM payments;
+```
+
+### BigQuery 전용: `COUNTIF` 함수
+
+구글이 만든 초단축 함수입니다. "조건(IF)에 맞는 것만 세라(COUNT)"는 뜻입니다.
+
+```sql
+SELECT
+    COUNTIF(credit LIKE '%gift%') AS gift_count,
+    COUNTIF(credit LIKE '%gift%') / COUNT(*) AS gift_ratio -- 비율 계산이 압도적으로 깔끔함
+FROM payments;
 ```
 
 ---
@@ -152,37 +202,6 @@ FROM payments;
 **WHERE**: 데이터를 **잘라내고 버림**. (남은 것끼리만 계산)
 **CASE WHEN**: 데이터를 **버리지 않고 표시만 함**. (전체 대비 비율 계산 가능)
 **공식:** **"비율(Ratio)을 구할 땐 절대로 WHERE를 쓰지 마라."**
-
-----
-## DB별 전용 문법 (더 우아하게 쓰기)
-
-표준 SQL은 길지만, 최신 DB들은 단축 문법을 지원합니다.
-
-### PostgreSQL: `FILTER` 구문
-
-"조건부 집계"를 위해 태어난 문법입니다. 코드가 훨씬 직관적입니다.
-
-```sql
-SELECT
-    -- "COUNT를 하긴 할 건데(COUNT*), 이 조건일 때만(FILTER) 세어줘"
-    COUNT(*) FILTER (WHERE credit ILIKE '%gift%') AS gift_count,
-    COUNT(*) AS total_count
-FROM payments;
-```
-
-### BigQuery: `COUNTIF` 함수
-
-구글이 만든 초단축 함수입니다. "조건(IF)에 맞는 것만 세라(COUNT)"는 뜻입니다.
-
-```sql
-SELECT
-    -- 문법: COUNTIF(조건)
-    COUNTIF(credit LIKE '%gift%') AS gift_count,
-    
-    -- 비율 계산할 때도 훨씬 깔끔함
-    COUNTIF(credit LIKE '%gift%') / COUNT(*) AS gift_ratio
-FROM `project.dataset.table`
-```
 
 ---
 ## 초보자가 자주 하는 실수 (Misconceptions)

@@ -1,83 +1,107 @@
-##  핵심 사고력 (Data Engineer's Brain)
 
+
+### Level 0. 핵심 사고력 (Data Engineer's Mindset)
+
+> **"쿼리를 짜기 전에 뇌를 먼저 SQL 모드로 세팅합니다."**
+
+- [[01_SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
 - [[SQL_Execution_Order]] : 작성 순서 vs 실행 순서 완벽 정리 (치트시트)
 - [[SQL_Main_Table_Strategy]] : 쿼리의 주인공(FROM)을 정하는 절대 원칙
-- [[01_SQL_Thinking_Roadmap]] : 🚨 쿼리 짜기 전 필독! (실행 순서 & 전략)
--  [[Query_Optimization]] : 쿼리 속도를 빠르게 하는 튜닝 원칙 
 
-## Level -1. 데이터베이스 세계관 입문 (Fundamentals)
+### Level 1. [SQLD 과목 1] 데이터 모델링의 이해
 
->"엑셀 놔두고 왜 굳이 DB를 쓸까요? SQLD 자격증 1과목의 단골 문제이자, 데이터 엔지니어의 상식입니다."
+> **"데이터베이스의 기초 개념과 집을 짓는 설계도(ERD)를 배웁니다."**
 
-- **[[Concept_Database]]** : 데이터베이스(DB)란 무엇인가? (통합/저장/운영/공유 데이터의 특징)
-- **[[Concept_RDBMS]]** : 관계형 데이터베이스(RDBMS)의 정체 (데이터를 2차원 표 형태로 저장하고, 릴레이션으로 연결하기)
-- **[[Concept_Table_Anatomy]]** : 테이블 구조 해부 완벽 정리 (행/Row/Tuple vs 열/Column/Attribute/Field 용어 매칭 )
-- **[[Concept_What_is_SQL]]** : SQL의 본질 (비절차적 데이터 조작 언어, 집합적 사고방식의 이해)
-- [[SQL_Concepts_View]] : 뷰(View)란 무엇인가? (가상 테이블과 보안)
+- **1장. 데이터 모델링의 이해**
+    
+    - [[Concept_Database]] : DB란 무엇인가?
+    - [[Concept_RDBMS]] : 관계형 데이터베이스(RDBMS)의 정체
+    - [[Data_Modeling_Overview]] : 모델링의 3단계와 관점 (개념/논리/물리)
+    - [[ERD_Components]] : 엔터티(Entity), 속성(Attribute), 관계(Relationship)
+    - [[Keys_and_Identifiers]] : PK와 FK의 관계 (본질식별자, 인조식별자)
 
-
-## Level 0. 밑그림 그리기 (Data Modeling)
-
-> "건물을 짓기 전에 설계도부터 봐야죠. 테이블이 왜 이렇게 생겨먹었는지 이해하는 단계입니다."
-
-- **[[Data_Modeling_Overview]]** : 모델링의 3단계와 관점 (개념/논리/물리)
-- **[[ERD_Components]]** : 엔터티(Entity), 속성(Attribute), 관계(Relationship)의 정체
-- **[[Keys_and_Identifiers]]** : PK(주민번호)와 FK(참조)의 관계 완벽 정리(본질식별자, 인조식별자 )
-- **[[Normalization_Theory]]** : 테이블을 쪼개는 기술, 정규화(1NF, 2NF, 3NF)
-- **[[De_Normalization]]** : 성능을 위해 다시 합치는 기술, 반정규화 (중복 허용, 파생 컬럼)
-- [[SQL_Denormalization_Deep_Dive]] 반정규화 SQLD 내용추가 
+- **2장. 데이터 모델과 성능**
+    
+    - [[Normalization_Theory]] : 테이블을 쪼개는 기술, 정규화 (1NF, 2NF, 3NF)
+    - [[De_Normalization]] : 성능을 위해 다시 합치는 기술, 반정규화
+    - [[SQL_Denormalization_Deep_Dive]] : 반정규화 SQLD 빈출 개념 심화 파헤치기
 
 
-## Level 0.5. 집 짓기와 가구 채우기 (DDL & DML) 
+### Level 2. [SQLD 과목 2 - 제1장] SQL 기본 (Basic)
 
-> "설계도(모델링)가 나왔으니 이제 실제로 테이블을 생성하고(`CREATE`), 데이터를 넣어봅시다(`INSERT`)."
+> **"데이터를 조회하고, 가공하고, 테이블끼리 연결하는 필수 기술입니다."** (조인 편입!)
 
-- **[[SQL_DDL_Create]]** : 테이블 생성과 삭제의 모든 것 (`CREATE`, `DROP`, `TRUNCATE`, `ALTER`)
-- **[[SQL_DML_CRUD]]** : 데이터 넣고, 수정하고, 지우기 (`INSERT`, `UPDATE`, `DELETE`)
-- **[[SQL_Constraints]]** : 이상한 데이터가 못 들어오게 막는 문지기 (`PRIMARY KEY`, `NOT NULL`, `UNIQUE`, `DEFAULT`)
-- [[Database_Transactions_TCL]] : 트랜잭션 (ACID, Commit, Rollback)
-- **[[SQL_Auto_Increment]]** : 번호표 자동 발급기 (`SERIAL`, `AUTO_INCREMENT`, `SEQUENCE`)
+- **기초 조회 및 필터링**
+    
+    - [[Concept_What_is_SQL]] : SQL의 본질 (집합적 사고방식)
+    - [[Concept_Table_Anatomy]] : 테이블 구조 해부 완벽 정리
+    - [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
+    - [[SQL_Data_Types]] : 문자, 숫자, 날짜 타입의 이해
+    - [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기
+    - [[SQL_ORDER_BY]] : 데이터 줄 세우기 (ASC, DESC)
+
+- **함수와 NULL의 이해**
+    
+    - [[SQL_Understanding_NULL]] : SQL의 영원한 골칫거리, NULL의 모든 것
+    - [[SQL_Numeric_Functions]] : 숫자형 함수 완벽 정리
+    - [[SQL_String_Functions]] : 문자열 자르고 붙이기
+    - [[SQL_Date_Functions]] : 날짜 다루기 (최신 트렌드 위주)
+    - [[SQL_Type_Casting]] : 명시적/암시적 형변환
+    - [[SQL_NULL_Functions]] : 텅 빈 데이터(NULL) 심폐소생술 (`COALESCE` 등)
+
+- **그룹화 및 집계**
+    
+    - [[SQL_Aggregate_GROUP_BY]] : 그룹별 통계 내기
+    - [[SQL_DISTINCT_vs_GROUP_BY]] : 중복 제거 vs 묶어서 계산
+    - [[HAVING_vs_WHERE]] : 필터링 시점의 차이
+    - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기
+
+- **조인 (JOIN)**
+
+    - [[SQL_JOIN_Concept]] : 데이터 연결의 본질과 원리 (어떻게 연결할 것인가?)(`EQUI JOIN`,`NON EQUI JOIN`,`3개 이상의 다중 테이블 조인`)
+    - [[SQL_Standard_JOIN]] : ANSI 표준 조인 문법 (어떤 형태로 결합할 것인가?)(`INNER JOIN`,`OUTER JOIN (LEFT, RIGHT, FULL)`,`CROSS JOIN`,`NATURAL JOIN`)
 
 
-## 1. 기초 문법 (Basics)
+### Level 3. [SQLD 과목 2 - 제2장] SQL 활용 (Advanced)
 
-> 데이터 조회와 필터링의 기본기
+> **"복잡한 로직을 구현하고, 데이터를 입체적으로 분석하는 고급 기술입니다."**
 
-- [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조
-- [[SQL_Understanding_NULL]] : (NULL의 모든 것)
--  [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (AND, OR, IN, LIKE,ILIKE, IS NULL)
--  [[SQL_ORDER_BY]] : 데이터 줄 세우기
--  [[Data_Types]] : 문자, 숫자, 날짜 타입의 이해
+- **서브쿼리 및 집합 연산**
+    
+    - [[SubQuery_CTE]] : 복잡한 쿼리 관리 (인라인 뷰, 스칼라, `WITH` 절 최신 문법)
+    - [[Union_vs_Join]] : 집합 연산자 (위아래로 합치기 `UNION`, `INTERSECT`, `EXCEPT/MINUS`)
 
-## 2. 데이터 가공과 집계 (Aggregation)
+- **분석 및 고급 집계**
+    
+    - [[Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `PARTITION BY`)
+    - [[Group_Functions]] : 소계와 총계 내기 (`ROLLUP`, `CUBE`, `GROUPING SETS`) 
+    - [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 (데이터 형태 변환)
+    - [[Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM` 등) _(추가 추천)_
 
-> 엑셀의 피벗 테이블을 SQL로 구현하기
 
-- [[Aggregation_GROUP_BY]] : 그룹별 통계 내기 (COUNT, SUM, AVG) 
-- [[SQL_DISTINCT_vs_GROUP_BY]] : 중복만 제거할까(`DISTINCT`) vs 묶어서 계산할까(`GROUP BY`)?
-- [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (가장 많이 헷갈림!) 
-- [[Numeric_Functions]] : 소수점 반올림, 버림, 절댓값 완벽 정리  (ROUND,TRUNC,FLOOR,CEIL )
-- [[String_Functions]] : 문자열 자르고 붙이기 (SUBSTR, CONCAT) 
-- [[SQL_Date_Functions]] : 날짜 더하고 빼기 (DATE_ADD, DATEDIFF)
+### Level 4. [SQLD 과목 2 - 제3장] 관리 구문 (Management)
 
-## 3. 테이블 연결 (Joins) 
+> **"데이터베이스의 구조를 만들고, 데이터를 삽입/수정하며, 권한을 통제합니다."** (신설 챕터!)
 
-> 흩어진 데이터를 하나로 모으기
+- **DML (데이터 조작어)**
 
-- [[SQL_JOIN_Concept]] : Inner, Left, Outer 조인의 벤다이어그램 이해 
-- [[Union_vs_Join]] : 위아래로 합치기(UNION) vs 옆으로 붙이기(JOIN)
+    - [[SQL_DML_CRUD]] : 데이터 넣고, 수정하고, 지우기 (`INSERT`, `UPDATE`, `DELETE`)
 
-## 4. 고급 분석 (Advanced) 
+- **TCL (트랜잭션 제어어)**
 
-> 현업에서 "오, 쿼리 좀 짜시네요?" 소리 듣는 구간
+    - [[Database_Transactions_TCL]] : 트랜잭션의 생명선 (`COMMIT`, `ROLLBACK`)
 
-- [[Window_Functions]] : 순위, 누적합, 이동평균 (RANK, LEAD, LAG) 
-- [[SubQuery_CTE]] : 복잡한 쿼리를 레고 블록처럼 관리하기 (WITH 절) 
-- [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 바꾸기
-- [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (CASE WHEN,`FILTER`,비율,조건별집계)
+- **DDL (데이터 정의어)**
+    
+    - [[SQL_DDL_Create]] : 테이블 생성과 삭제 (`CREATE`, `DROP`, `ALTER`)
+    - [[SQL_Constraints]] : 이상한 데이터 차단하는 문지기 (`PK`, `FK`, `NOT NULL`)
+    - [[SQL_Auto_Increment]] : 번호표 자동 발급기
+    - [[SQL_Concepts_View]] : 뷰(View) - 가상 테이블과 보안
 
-##  실전 연습 (Projects)
+- **DCL (데이터 제어어)**
 
-- [[00_SQL_Challenge_DashBoard|🏆 매일 SQL 챌린지 대시보드]] 
-- [[Error_Log]] : 자주 만나는 에러 해결책 모음 (오답노트)
+    - [[SQL_DCL_Grant_Revoke]] : 유저 권한 부여 및 회수 (`GRANT`, `REVOKE`, `ROLE`)
 
+### 실전 연습 (Projects)
+
+- [[00_SQL_Challenge_DashBoard|🏆 매일 SQL 챌린지 대시보드]]

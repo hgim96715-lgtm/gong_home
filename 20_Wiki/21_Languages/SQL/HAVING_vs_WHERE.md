@@ -9,7 +9,7 @@ tags:
   - Database
 related:
   - "[[SQL_Filtering_WHERE]]"
-  - "[[Aggregation_GROUP_BY]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
 ---
 ## 초보자가 자주 착각하는 포인트
 

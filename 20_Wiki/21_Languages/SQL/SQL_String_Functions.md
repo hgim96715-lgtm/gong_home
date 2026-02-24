@@ -9,9 +9,10 @@ tags:
   - SQL
 related:
   - "[[00_SQL_HomePage]]"
-  - "[[Numeric_Functions]]"
+  - "[[SQL_Numeric_Functions]]"
   - "[[SQL_Date_Functions]]"
   - "[[SQL_SELECT_FROM]]"
+  - "[[SQL_Type_Casting]]"
 ---
 # 문자열 자르고 붙이고 청소하기
 

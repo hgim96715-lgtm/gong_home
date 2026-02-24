@@ -8,10 +8,11 @@ aliases:
   - 커스텀 정렬
 tags:
   - SQL
-  - Sorting
 related:
   - "[[SQL_SELECT_FROM]]"
   - "[[SQL_Filtering_WHERE]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
+  - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약
 
@@ -34,7 +35,7 @@ related:
 
 ### A. 오름차순 vs 내림차순
 
-* **`ASC` (Ascending):** 작은 것 ➡ 큰 것 (1, 2, 3... / A, B, C... / 옛날 ➡ 최신)
+* **`ASC` (Ascending):** 작은 것 ➡ 큰 것 (1, 2, 3... / A, B, C... / 옛날 ➡ 최신,사전순)
     * **기본값(Default)** 이라 생략 가능하지만, 명시해주는 게 가독성에 좋아.
 
 * **`DESC` (Descending):** 큰 것 ➡ 작은 것 (3, 2, 1... / Z, Y, X... / 최신 ➡ 옛날)
@@ -45,15 +46,22 @@ SELECT * FROM Sales
 ORDER BY amount DESC;
 ```
 
-### B. 다중 정렬 (Multi-level Sorting)
+### 다중 정렬 (Multi-level Sorting) ⭐️ (서열의 법칙)
 
-기준이 여러 개일 때, **앞에 쓴 컬럼이 우선순위**를 가져.
+기준이 여러 개일 때, **앞에 쓴 컬럼이 절대적인 우선순위**를 가집니다.
+뒤에 있는 컬럼은 앞 컬럼의 값이 **'동점(Tie)'일 때만** 나섭니다.
 
 ```sql
--- 1차: 부서 이름 순(ASC)으로 줄 세우고,
--- 2차: 같은 부서라면 월급 높은 순(DESC)으로 정렬
-ORDER BY department ASC, salary DESC;
+-- 1차: 부서 이름 역순(DESC)으로 줄 세우고,
+-- 2차: 같은 부서라면 월급 순(ASC)으로 정렬하고,
+-- 3차: 부서와 월급까지 똑같다면 보너스(DESC)로 정렬해라!
+ORDER BY department DESC, salary ASC, bonus DESC;
 ```
+
+> **[심화 질문] "Oracle은 NULL이 최댓값이라면서요? 그럼 3차 기준인 `bonus DESC`에 있는 NULL 값은 전체 결과의 맨 위로 뚫고 올라가나요?"**
+>**절대 아닙니다!** 
+>1차(`department`)와 2차(`salary`) 정렬이 이미 끝난 상태에서, **부서와 월급이 완벽하게 똑같은 사람들 그룹 안에서만** NULL이 1등으로 올라갑니다.
+>즉, 아무리 `NULL`이어도 자기보다 앞선 정렬 기준의 서열을 하극상(?)해서 전체 1등이 될 수는 없습니다. 철저하게 **그룹 내 부분 정렬**을 따릅니다.
 
 ---
 ## Advanced Techniques (심화)
@@ -119,6 +127,8 @@ ORDER BY
     ELSE 4 
   END ASC;
 ```
+
+>[[SQL_CASE_WHEN]] 참조
 
 ---
 ## 초보자가 자주 착각하는 포인트

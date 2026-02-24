@@ -8,7 +8,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Aggregation_GROUP_BY]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[00_SQL_HomePage]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[SQL_Constraints]]"

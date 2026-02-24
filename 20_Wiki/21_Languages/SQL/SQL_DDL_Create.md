@@ -9,7 +9,7 @@ tags:
   - Python
 related:
   - "[[Python_Database_Connect]]"
-  - "[[Data_Types]]"
+  - "[[SQL_Data_Types]]"
   - "[[SQL_Constraints]]"
   - "[[00_SQL_HomePage]]"
   - "[[SQL_DML_CRUD]]"
