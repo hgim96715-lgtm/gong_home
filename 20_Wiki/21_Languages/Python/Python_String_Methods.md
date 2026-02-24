@@ -93,18 +93,41 @@ print(arrow)
 ```
 
 ---
-## 청소하기: `strip()`
+## 공백 및 특정 문자 제거 (`strip`, `lstrip`, `rstrip`)
 
-사용자 입력이나 파일 읽을 때 **앞뒤 공백(엔터 포함)** 을 제거합니다. 
+파일을 읽어오거나 API에서 데이터를 받아오면, 눈에 보이지 않는 공백이나 줄바꿈 문자(`\n`)가 섞여 있어 에러를 유발하는 경우가 매우 많습니다. 
 `split` 하기 전에 무조건 해주는 게 좋습니다.
 
-```python
-raw_data = "  Hello Python  \n"
+### ① 기본 사용법 (공백과 줄바꿈 제거)
 
-clean_data = raw_data.strip()
-print(clean_data)
-# 결과: "Hello Python" (깔끔!)
+아무 인자도 넣지 않으면 **공백(Space)**, **탭(`\t`)**, **줄바꿈(`\n`)** 을 알아서 싹 지워줍니다.
+
+```python
+text = "   \n\t  Hello, Airflow!  \n  "
+
+print(f"원본: [{text}]")
+print(f"strip: [{text.strip()}]")   # 결과: [Hello, Airflow!] (양쪽 싹 제거)
+print(f"lstrip: [{text.lstrip()}]") # 결과: [Hello, Airflow!  \n  ] (왼쪽만 제거)
+print(f"rstrip: [{text.rstrip()}]") # 결과: [   \n\t  Hello, Airflow!] (오른쪽만 제거)
 ```
+
+### **② 실무 활용: 특정 문자 타겟팅해서 깎아내기** 
+
+괄호 안에 문자를 넣으면, 그 문자들이 **양끝에서 나타나지 않을 때까지** 계속 깎아냅니다. (데이터 파싱할 때 엄청난 꿀팁입니다!)
+
+```python
+# 파일 경로나 쓰레기 값이 붙어있는 경우
+dirty_data = "000000Data_Pipeline_001.csv.bak"
+
+# 왼쪽에서 '0' 지우고, 오른쪽에서 '.bak' 지우기
+clean_data = dirty_data.lstrip("0").rstrip(".bak")
+print(clean_data) 
+# 결과: "Data_Pipeline_001.csv"
+```
+
+> **데이터 엔지니어 필수 패턴:** 텍스트 파일(`txt`, `csv`)을 파이썬의 `open()`이나 `readlines()`로 한 줄씩 읽어올 때, 항상 문장 맨 끝에 보이지 않는 줄바꿈(`\n`)이 붙어옵니다.
+>  이때 **`line.rstrip('\n')`**을 해주면 깔끔한 순수 데이터만 얻을 수 있습니다!
+
 
 ---
 ## 대소문자 변환 (`upper`, `lower`)
