@@ -24,6 +24,7 @@
 - **[[Streamlit_Metrics]]** : 핵심 지표(KPI)와 변화량(Delta) 보여주기 (`st.metric`,`delta_color`,`delta`)
 - **[[Streamlit_Charts]]** :  내장 차트(Simple) vs 외부 라이브러리(Powerful)
 - **[[Streamlit_Data_Display]] : 웹 화면에 데이터프레임 출력하기 (`st.dataframe`,`use_container_width`,`hide_index`)** 
+- **[[Streamlit_Mermaid]] : 마크다운 속 다이어그램을 웹에 그리기 (`streamlit-mermaid`와 파싱 기법)** 
 
 
 ## 데이터 주고받기 (Data I/O) 
