@@ -4,7 +4,7 @@ tags:
 status: 🟩 해결
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
-  - "[[Data_Statistics]]"
+  - "[[Linux_Data_Statistics]]"
 source: HackerRank
 difficulty:
   - Easy

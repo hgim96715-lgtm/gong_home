@@ -9,7 +9,7 @@ tags:
   - Linux
   - Shell
 related:
-  - "[[Data_Statistics]]"
+  - "[[Linux_Data_Statistics]]"
   - "[[Filtering_Text]]"
   - "[[00_Linux_HomePage]]"
   - "[[File_Management]]"
