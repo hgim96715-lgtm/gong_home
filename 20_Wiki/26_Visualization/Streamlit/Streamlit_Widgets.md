@@ -85,16 +85,80 @@ if st.button("Submit"):
 
 ### 선택 박스 (`st.selectbox`)
 
-미리 정의된 리스트 중 하나를 고르는 드롭다운 메뉴입니다.
+사용자가 미리 정의된 리스트 중 단 하나를 고를 수 있게 해주는 **드롭다운(Dropdown) 메뉴**입니다. 
+사용자의 입력을 엄격하게 통제하여 오타나 예외 값을 원천 차단합니다.
 
-- 사용자의 입력을 특정 옵션으로 **제한(Restrict)** 하고 싶을 때 유용합니다. (오타 방지)
+#### A. 기본 사용법 (`label`, `options`, `index`)
+
+- `index` 파라미터로 앱이 켜졌을 때 처음 선택되어 있을 항목의 순번(0부터 시작)을 지정할 수 있습니다.
 
 ```python
 option = st.selectbox(
-    "가장 좋아하는 언어는?",
-    ["Python", "Java", "JavaScript"]
+    label="가장 좋아하는 언어는?",
+    options=["Python", "Java", "JavaScript"],
+    index=0 
 )
 ```
+
+#### B. 화면 노출값 변환 ⭐️ 실무 필수 (`format_func`)
+
+내부적으로 컴퓨터가 쓰는 실제 값(DB Key 등)은 그대로 유지하면서, **화면에 그려지는 글씨(Display Label)만 예쁘게 포장**해 주는 강력한 기능입니다.
+
+```python
+CHALLENGES = {
+    "ch_01": {"label": "파이썬 기초 챌린지", "difficulty": "Easy"},
+    "ch_02": {"label": "데이터 분석 챌린지", "difficulty": "Hard"}
+}
+
+selected_key = st.selectbox(
+    label="참여할 챌린지를 선택하세요",
+    # options에는 'ch_01', 'ch_02' (Key 값)만 들어감
+    options=list(CHALLENGES.keys()), 
+    # 💡 핵심: 화면에 그릴 때는 딕셔너리의 "label" 값을 찾아와서 출력해라!
+    format_func=lambda k: CHALLENGES[k]["label"]
+)
+
+# 🚨 선택된 값은 "파이썬 기초 챌린지"가 아니라 내부 Key인 "ch_01" 입니다!
+st.write(f"내부적으로 선택된 데이터(Key): {selected_key}")
+```
+
+#### C. 미선택 상태 만들기 (`index=None`, `placeholder`)
+
+처음에는 아무것도 선택되지 않은 빈칸(`None`) 상태를 만들고, 안내 문구를 띄웁니다.
+
+```python
+fruit = st.selectbox(
+    label="과일을 고르세요",
+    options=["사과", "바나나"],
+    index=None,           # 처음엔 아무것도 선택 안 함
+    placeholder="과일을 하나 골라주세요..." 
+)
+```
+
+#### D. 인덱스(Index) 기반 선택 패턴 (`range` 활용)
+
+`options`에는 리스트뿐만 아니라 `range()` 객체도 들어갈 수 있습니다. 
+**문자열 자체가 아니라 리스트 내의 '위치 번호(인덱스)'를 결과값으로 반환받고 싶을 때** 아주 강력한 패턴입니다.
+
+**원리:** `options`에 `0, 1, 2...` 같은 숫자를 넣고, 화면에 그릴 때만 `format_func`으로 리스트의 해당 인덱스 문자를 찾아와서 화장을 입히는 방식입니다.
+
+```python
+month_labels = ["1월", "2월", "3월", "4월"]
+
+# 화면에는 "1월, 2월..."이 보이지만, 변수에 저장되는 값은 0, 1, 2, 3 이 됩니다.
+selected_month_idx = st.selectbox(
+    label="월 선택",
+    # 💡 핵심: 0부터 3까지의 정수 범위를 옵션으로 제공
+    options=range(len(month_labels)), 
+    # 💡 화면에 그릴 때는 정수(i)를 받아서 리스트의 문자로 변환
+    format_func=lambda i: month_labels[i]
+)
+
+# 선택된 값은 문자가 아니라 '숫자(인덱스)'이므로, 다른 리스트의 값을 찾을 때 유용합니다.
+st.write(f"선택한 인덱스 번호: {selected_month_idx}")
+st.write(f"실제 선택된 월: {month_labels[selected_month_idx]}")
+```
+
 
 ---
 ## 심화 입력 위젯 & UI 최적화 (Advanced Inputs)

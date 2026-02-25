@@ -39,6 +39,7 @@
 
 - [[Streamlit_Forms]] : 입력을 모아서 한 번에 전송 (최적화)
 - [[Streamlit_Session_State]] : 새로고침 되어도 데이터 기억하기 (메모리) **+ 안전한 상태 조회(`.get`)와 Active UI 패턴**
+- **[[Streamlit_Control_Flow]] :  밑으로 내려가지 마! 실행 흐름 강제 차단하기 (`st.stop`, `st.rerun`)** 
 
 
 ## 보안 및 설정 (Security & Config) 

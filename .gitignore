@@ -65,3 +65,7 @@ venv/
 # Misc
 Thumbs.db
 .DS_Store
+
+# streamlit
+.streamlit/config.toml
+.streamlit/secrets.toml

@@ -6,7 +6,7 @@
 
 - [[Python_Variables_Types]] : 변수와 자료형 (`str`, `int`, `bool`, `float`)
 - **[[Python_Membership_In]]** :  있다? 없다? 멤버십 연산자 (`in`, `not in`,`{text} 완전일치 ==`)
-- [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice, `[::-1]`)
+- [[Python_String_Indexing_Slicing]] : 문자열 조각내기 (Index, Slice, `[:​:-1]`)
 - [[Python_Control_Flow]] : 흐름 제어하기 (`if`, `for`, `while`, `for-else`)
 - [[Python_Looping_Helpers]] : 반복문의 3대장 (`range`, `enumerate`, `zip`)
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `join`, `strip`, `startswith`, `endswith`, `isdigit`, `isalpha`,`lower`,`translate`,`maketrans`)
@@ -69,10 +69,11 @@
 - [[Python_Iterables_Iterators]] : 반복 가능한 객체의 원리 (`iter`, `next`)
 - [[Python_Generators_Yield]] : 메모리를 아끼는 반복문 (`yield`, `generator`)
 - [[Python_Lambda_Map]] : 익명 함수와 고속 처리 (`lambda`, `map`, `filter`)
-- [[Python_DateTime]] : 날짜 계산과 스케줄링 (`datetime`, `timedelta`, `strptime`, `strftime`,`isoformat`)
+- [[Python_DateTime]] : 날짜 계산과 스케줄링 (`datetime`, `timedelta`, `strptime`, `strftime`,`isoformat`,`date`,`isocalendar`,`today`,`weekday`)
 - [[Python_Random_Seed]] : 랜덤 시드 고정 (`random`, `seed`, `randint`,`choice`,`uniform`)
 - [[Python_Random_Sampling]] : 랜덤 추출과 가중치 (`weight`,`k`,`choices`,`choice`)
 - [[Python_AST_Structure_Analysis]] : 코드 구조 분석 (`ast`, `literal_eval`)
+- **[[Python_Calendar_Module]] : 달력 규칙과 윤년 계산의 마법사 (`calendar`, `monthrange`, `isleap`)**
 
 ## Level 7. 실전 시뮬레이션 (Simulation & Utils) 
 
