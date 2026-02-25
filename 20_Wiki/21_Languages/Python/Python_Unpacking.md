@@ -10,6 +10,7 @@ tags:
   - Python
 related:
   - "[[Python_Lists_Tuples]]"
+  - "[[00_Python_HomePage]]"
 ---
 ## 개념 한 줄 요약 (Concept Summary)
 
