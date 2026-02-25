@@ -58,8 +58,8 @@ search = st.text_input(
 - **`key=folder_path` ( Streamlit의 핵심!):** 이 위젯의 **고유한 주민등록번호**를 부여합니다.
 - **`type="password"` : 만약 이 옵션을 넣으면, 사용자가 타이핑하는 글자가 `****` 처럼 까맣게 가려집니다. 로그인 화면이나 API 키를 입력받을 때 필수
 - **`placeholder="파일명 검색..."`**: '가이드 문구'입니다. 사용자가 클릭해서 타이핑을 시작하면 스르륵 사라집니다
-
-### 슬라이더 (`st.slider`)
+---
+## 슬라이더 (`st.slider`)
 
 숫자(정수/실수)를 선택하거나 범위를 지정할 때 드래그해서 사용합니다.
 
@@ -70,20 +70,44 @@ search = st.text_input(
 # 0부터 100까지 중 선택 (기본값 25)
 age = st.slider("나이 선택", 0, 100, 25)
 ```
-
-### 버튼 (`st.button`)
+---
+## 버튼 (`st.button`)
 
 클릭하면 특정 동작(Action)을 실행하는 트리거입니다.
 
 - 주로 폼을 제출하거나 계산을 시작할 때 사용합니다.
 - `if` 문과 함께 사용하여 "클릭되었을 때만" 코드가 실행되게 합니다.
 
+### A. 기본 사용법
+
 ```python
 if st.button("Submit"):
 	st.write(f"Hello {name}, you are {age}years old and love {language}!")
 ```
 
-### 선택 박스 (`st.selectbox`)
+### B. 실무 고급 파라미터 (`key`, `type`, `use_container_width`)
+
+단순한 클릭을 넘어, UI를 예쁘게 정렬하고 상태에 따라 버튼의 색상을 바꾸는 고급 기법입니다. 
+포트폴리오의 사이드바나 그리드 메뉴를 만들 때 필수적입니다.
+
+
+- **`type` ("primary" | "secondary"):** 버튼의 디자인(색상)을 결정합니다.
+- **`use_container_width=True`:** 버튼의 기본 가로 길이는 글자 수에 맞춰지지만, 이 옵션을 켜면 **버튼이 속한 기둥(Column)이나 화면의 너비에 맞춰 100% 쫙 늘어납니다**.  여러 개의 버튼을 삐뚤빼뚤하지 않고 바둑판처럼 깔끔하게 정렬할 때 절대 빠지면 안 되는 필수 옵션입니다.
+
+```python
+is_active = True # 현재 선택된 상태라고 가정
+
+if st.button(
+    label="📄 파이썬 기초 노트",
+    key="note_python_01",                         # 💡 고유 ID (버튼이 여러 개일 때 필수)
+    type="primary" if is_active else "secondary", # 💡 상태에 따른 색상 강조
+    use_container_width=True                      # 💡 가로 너비 100% 꽉 채우기
+):
+    st.write("노트를 엽니다!")
+```
+
+---
+## 선택 박스 (`st.selectbox`)
 
 사용자가 미리 정의된 리스트 중 단 하나를 고를 수 있게 해주는 **드롭다운(Dropdown) 메뉴**입니다. 
 사용자의 입력을 엄격하게 통제하여 오타나 예외 값을 원천 차단합니다.

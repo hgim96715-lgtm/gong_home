@@ -10,7 +10,7 @@ satatus:
 
 ## 프로젝트 개요
 
-**[Airflow + Kafka + Flink + Spark + Cassandra + MinIO]** 기반의 대용량 데이터 처리 파이프라인 구축 프로젝트입니다. 
+**[Airflow + Kafka + Flink + Spark + MinIO]** 기반의 대용량 데이터 처리 파이프라인 구축 프로젝트입니다. 
 배치(Batch) 처리와 스트리밍(Streaming) 처리를 모두 아우르는 실습을 목표로 하며, 모든 환경은 Docker Compose를 통해 로컬에서 실행됩니다.
 
 ---
@@ -47,14 +47,13 @@ graph LR
 
 ## 구성 요소
 
-|**컴포넌트**|**역할**|**포트 (External)**|**비고**|
-|---|---|---|---|
-|**Airflow**|워크플로우 관리 및 스케줄링|`8080`|Executor: Celery|
-|**Kafka**|실시간 메시지 브로커|`29092`|Internal: 9092|
-|**Flink**|실시간 스트리밍 처리|`8081`|Job Manager|
-|**Spark**|대용량 배치 처리|`9090`|Master UI (포트 변경됨)|
-|**Cassandra**|분산 NoSQL 저장소|`9042`|CQL|
-|**MinIO**|S3 호환 오브젝트 스토리지|`9001`|Console|
+| **컴포넌트**      | **역할**          | **포트 (External)** | **비고**             |
+| ------------- | --------------- | ----------------- | ------------------ |
+| **Airflow**   | 워크플로우 관리 및 스케줄링 | `8080`            | Executor: Celery   |
+| **Kafka**     | 실시간 메시지 브로커     | `29092`           | Internal: 9092     |
+| **Flink**     | 실시간 스트리밍 처리     | `8081`            | Job Manager        |
+| **Spark**     | 대용량 배치 처리       | `9090`            | Master UI (포트 변경됨) |
+| **MinIO**     | S3 호환 오브젝트 스토리지 | `9001`            | Console            |
 
 ---
 

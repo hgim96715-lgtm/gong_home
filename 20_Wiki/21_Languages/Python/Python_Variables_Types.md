@@ -12,6 +12,7 @@ tags:
 related:
   - "[[Python_Control_Flow]]"
   - "[[Python_String_Methods]]"
+  - "[[00_Python_HomePage]]"
 ---
 ## 개념 한 줄 요약
 

@@ -14,6 +14,7 @@
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `lower`, `replace` vs `re.sub`)
 - [[Python_Sorting_Logic]] : 정렬의 미학 (`sort` vs `sorted`, key lambda)
 - [[Python_Builtin_Functions]] : 코드를 줄여주는 마법 (`max`, `min`, `sum`, `len`, `abs`, `ord`, `chr`,`pow`,`bit_length()`)
+- **[[Python_Type_Checking]] : 확실하게 자료형 검사하기 (`type` vs `isinstance`)**
 - [[Python_Math_Module]] : 정밀한 수학 연산 (`math.prod`, `ceil`, `floor`, `gcd`)
 - [[Python_Statistics_Module]] : 데이터 요약 통계 (`mean`, `median`, `stdev`)
 - [[Python_Collections_Counter]] : 빈도 분석의 강자 (`Counter`, `most_common`)
