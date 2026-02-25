@@ -72,7 +72,7 @@
 - [[Text_Slicing_cut]] : 칼로 자르듯 원하는 열만 쏙! (`cut`)
 - [[Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`)
 - [[JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`)
-- [[Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`)
+- [[Linux_Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`)
 - [[File_Comparison]] : 파일 내용 비교 및 검증 (`diff`, `cmp`)
 
 ## Level 6. 자동화 스크립트 (Automation)
