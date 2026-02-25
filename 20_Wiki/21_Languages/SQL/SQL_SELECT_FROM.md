@@ -14,6 +14,7 @@ related:
   - "[[Basic_Structure_and_Alias]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[SQL_Understanding_NULL]]"
+  - "[[SQL_DISTINCT_vs_GROUP_BY]]"
 ---
 ## 개념 한 줄 요약
 
