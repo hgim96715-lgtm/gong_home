@@ -68,15 +68,17 @@
 
 - **서브쿼리 및 집합 연산**
     
-    - [[SubQuery_CTE]] : 복잡한 쿼리 관리 (인라인 뷰, 스칼라, `WITH` 절 최신 문법)
-    - [[Union_vs_Join]] : 집합 연산자 (위아래로 합치기 `UNION`, `INTERSECT`, `EXCEPT/MINUS`)
+    - [[SQL_SubQuery]] : 복잡한 쿼리 관리 (인라인 뷰, 스칼라, 중첩 서브쿼리, 연관/비연관)
+    - **[[SQL_View]] : 쿼리를 저장하는 마법의 거울 (가상 테이블과 보안 통제- 보안성,독립성,편리성)**
+    - [[SQL_WITH_CTE]] : 쿼리를 변수처럼 조립하는 1회용 임시 테이블 (Top-Down 가독성 모듈화)
+    - **[[SQL_UNION]] : 집합 연산자 (결과를 위아래로 이어 붙이기: UNION, INTERSECT, MINUS/EXCEPT)**
 
 - **분석 및 고급 집계**
     
     - [[Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `PARTITION BY`)
     - [[Group_Functions]] : 소계와 총계 내기 (`ROLLUP`, `CUBE`, `GROUPING SETS`) 
     - [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 (데이터 형태 변환)
-    - [[Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM` 등) _(추가 추천)_
+    - [[Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM` 등) 
 
 
 ### Level 4. [SQLD 과목 2 - 제3장] 관리 구문 (Management)
