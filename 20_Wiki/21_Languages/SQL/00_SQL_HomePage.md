@@ -44,8 +44,8 @@
     
     - [[SQL_Understanding_NULL]] : SQL의 영원한 골칫거리, NULL의 모든 것
     - [[SQL_Numeric_Functions]] : 숫자형 함수 완벽 정리
-    - [[SQL_String_Functions]] : 문자열 자르고 붙이기
-    - [[SQL_Date_Functions]] : 날짜 다루기 (최신 트렌드 위주)
+    - [[SQL_String_Functions]] : 문자열 자르고 붙이기(`LTRIM`,`RTRIM`,`REPLACE`,`SPLIT`,`TRIM`)
+    - [[SQL_Date_Functions]] : 날짜 다루기 (`NOW`,`CURRENT_DATE`,`INTERVAL`)
     - [[SQL_Type_Casting]] : 명시적/암시적 형변환
     - [[SQL_NULL_Functions]] : 텅 빈 데이터(NULL) 심폐소생술 (`COALESCE` 등)
 
