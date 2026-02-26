@@ -36,21 +36,56 @@ related:
 * **필요성:** 이 차이를 모르면 간단한 대소문자 변환 로직을 짤 때 `for`문과 `if`문을 남발하여 코드가 10줄 이상 길어집니다.
 
 ---
-## 대소문자 변환 3대장 (Case Conversion) 
+## Code Core Points (대소문자 변환 5대장 + 상태 확인)
 
-`if char.isupper():` 처럼 하나하나 검사하지 마세요. 
-통째로 바꾸는 게 빠릅니다.
+`for`문을 돌며 `if char.isupper():` 처럼 하나하나 검사하지 않고, 통째로 바꾸는 것이 훨씬 빠르고 효율적이다.
 
-| 메서드               | 설명                | 예시 (`s = "PyThon"`)    |
-| :---------------- | :---------------- | :--------------------- |
-| **`.upper()`**    | 싹 다 대문자로          | `"PYTHON"`             |
-| **`.lower()`**    | 싹 다 소문자로          | `"python"`             |
-| **`.swapcase()`** | **대↔소 뒤집기** (기억!) | `"pYtHON"`             |
-| `.capitalize()`   | 문장 맨 앞만 대문자       | `"Python"`             |
-| `.title()`        | 단어마다 앞글자 대문자      | `"Python Programming"` |
+### `.upper()`와 `.lower()` : 전체 일괄 변환
 
-> **💡 상태 확인용 (True/False)**
-> * `.isupper()`, `.islower()`
+문자열 전체를 싹 다 대문자 혹은 소문자로 한 번에 바꾼다.
+
+```python
+s = "PyThon"
+
+print(s.upper()) # 결과: "PYTHON" (싹 다 대문자로)
+print(s.lower()) # 결과: "python" (싹 다 소문자로)
+```
+
+### `.swapcase()` : 대소문자 뒤집기
+
+대문자는 소문자로, 소문자는 대문자로 반전시킨다.
+
+```python
+print(s.swapcase()) # 결과: "pYtHON"
+```
+
+### `.capitalize()`와 `.title()` : 앞글자만 대문자로
+
+문장의 첫 글자만 대문자로 바꿀지, 아니면 띄어쓰기를 기준으로 각 단어의 첫 글자를 모두 대문자로 바꿀지 결정한다.
+
+- `.capitalize()` : 문장 맨 앞 글자만 대문자로
+- `.title()` : 각 단어마다 앞글자를 대문자로
+
+```python
+text = "hello python programming"
+
+print(text.capitalize()) 
+# 결과: "Hello python programming" (문장 맨 앞 글자만 대문자로)
+
+print(text.title())      
+# 결과: "Hello Python Programming" (각 단어마다 앞글자를 대문자로)
+```
+
+
+### `.isupper()`와 `.islower()` : 상태 확인용 (True/False)
+
+해당 문자(또는 문자열 전체)가 대문자인지 소문자인지 판별하여 불리언(Boolean) 값을 반환
+
+```python
+print("A".isupper()) # 결과: True
+print("a".islower()) # 결과: True
+```
+
 
 ---
 ##  치환의 두 가지 세계 (`replace` vs `re.sub`) 
@@ -71,6 +106,22 @@ text = "Hello World"
 new_text = text.replace("World", "Python") 
 # 결과: "Hello Python"
 ```
+
+#### `.replace()` 응용 : 반복문 없는 가로 확장 (문자열 곱셈)
+
+문자열 곱셈(`*`)과 메서드 체이닝(Chaining)을 결합하면, `for`문을 쓰지 않고도 특정 문자를 원하는 배수만큼 가로로 확장시킬 수 있다.
+
+```python
+# '.'과 'x'를 각각 k배(여기서는 2배)로 늘리기
+k = 2
+row = ".x."
+
+# '.'을 '..'으로, 'x'를 'xx'로 연달아 치환한다.
+expanded_row = row.replace('.', '.' * k).replace('x', 'x' * k)
+
+# 결과: "..xx.."
+```
+
 
 ### ② 패턴(정규식) 치환: `re.sub()`
 
