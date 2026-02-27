@@ -9,7 +9,7 @@ tags:
   - SQL
 related:
   - "[[SQL_Aggregate_GROUP_BY]]"
-  - "[[Pivot_Unpivot]]"
+  - "[[SQL_Pivot_Unpivot]]"
   - "[[SQL_SELECT_FROM]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[00_SQL_HomePage]]"

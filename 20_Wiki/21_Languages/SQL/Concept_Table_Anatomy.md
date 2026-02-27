@@ -10,7 +10,7 @@ tags:
   - SQL
 related:
   - "[[Concept_RDBMS]]"
-  - "[[Keys_and_Identifiers]]"
+  - "[[SQL_Keys_and_Identifiers]]"
   - "[[00_SQL_HomePage]]"
   - "[[Data_Modeling_Overview]]"
 ---

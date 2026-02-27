@@ -10,7 +10,7 @@ related:
   - "[[SQL_Execution_Order]]"
   - "[[SQL_DDL_Create]]"
   - "[[SQL_DML_CRUD]]"
-  - "[[Database_Transactions_TCL]]"
+  - "[[SQL_Database_Transactions_TCL]]"
   - "[[00_SQL_HomePage]]"
 ---
 # SQL의 본질

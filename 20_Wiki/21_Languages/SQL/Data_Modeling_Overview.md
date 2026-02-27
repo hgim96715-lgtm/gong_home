@@ -9,7 +9,7 @@ tags:
 related:
   - "[[ERD_Components]]"
   - "[[Normalization_Theory]]"
-  - "[[Keys_and_Identifiers]]"
+  - "[[SQL_Keys_and_Identifiers]]"
 ---
 ## 한줄 요약 
 

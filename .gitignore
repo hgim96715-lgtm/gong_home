@@ -30,6 +30,7 @@
 *.temp
 *.bak
 *.backup
+*.pdf
 
 # Logs and envs
 *.log

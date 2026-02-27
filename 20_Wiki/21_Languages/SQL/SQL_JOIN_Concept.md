@@ -8,7 +8,7 @@ tags:
 related:
   - "[[SQL_Standard_JOIN]]"
   - "[[ERD_Components]]"
-  - "[[Keys_and_Identifiers]]"
+  - "[[SQL_Keys_and_Identifiers]]"
   - "[[00_SQL_HomePage]]"
 ---
 # JOIN 이란

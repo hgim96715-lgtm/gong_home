@@ -9,7 +9,7 @@ related:
   - "[[00_SQL_HomePage]]"
   - "[[Concept_Table_Anatomy]]"
   - "[[Concept_Database]]"
-  - "[[Keys_and_Identifiers]]"
+  - "[[SQL_Keys_and_Identifiers]]"
 ---
 # 관계형 데이터베이스(RDBMS)의 정체
 

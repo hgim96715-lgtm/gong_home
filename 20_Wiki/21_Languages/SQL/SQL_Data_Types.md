@@ -13,6 +13,7 @@ tags:
 related:
   - "[[SQL_Window_Functions]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_DDL_Create]]"
 ---
 ## 개념 한 줄 요약
 
@@ -39,6 +40,26 @@ related:
 3.  **날짜형 (Date/Time):** 가입일, 결제 시간, 생년월일.
 4.  **논리형 (Boolean):** 탈퇴 여부(True/False), SMS 수신 동의 여부.
 
+---
+## 📌 SQLD vs PostgreSQL 타입 비교
+
+> SQLD 시험은 **Oracle 기준**으로 출제된다. 시험엔 `VARCHAR2`, `NUMBER`를,
+> 실무 PostgreSQL엔 `VARCHAR`, `INTEGER`, `TEXT`, `TIMESTAMP`를 쓴다.
+
+| 종류 | SQLD / Oracle | PostgreSQL | 설명 |
+|------|--------------|------------|------|
+| 고정 문자 | `CHAR(n)` | `CHAR(n)` | n자리 고정. 남으면 공백으로 채움 |
+| 가변 문자 | `VARCHAR2(n)` | `VARCHAR(n)` | 입력한 만큼만 저장 |
+| 제한없는 문자 | `CLOB` | `TEXT` | PostgreSQL TEXT는 크기 제한 없음 ⭐ |
+| 정수 | `NUMBER(n)` | `INTEGER` / `BIGINT` | PostgreSQL은 정수 전용 타입 있음 |
+| 소수 | `NUMBER(p, s)` | `NUMERIC(p, s)` | p: 전체 자릿수, s: 소수점 자릿수 |
+| 날짜만 | `DATE` | `DATE` | 년-월-일만 저장 |
+| 날짜+시간 | `TIMESTAMP` | `TIMESTAMP` | 시간까지 저장 |
+| 날짜+시간+타임존 | 없음 | `TIMESTAMPTZ` | 글로벌 서비스라면 무조건 이거 ⭐ |
+| 고유 식별자 | 없음 | `UUID` | 분산환경 PK로 최적 ⭐ |
+| 논리형 | 없음 | `BOOLEAN` | TRUE / FALSE |
+
+> 📎 테이블 생성 문법과 제약조건이 궁금하다면 → [[SQL_DDL_Create|CREATE 테이블 생성 더 알아보기]]
 ---
 
 ##  Code Core Points: PostgreSQL 필수 타입 4대장

@@ -9,7 +9,8 @@ tags:
   - SQL
 related:
   - "[[Data_Modeling_Overview]]"
-  - "[[Keys_and_Identifiers]]"
+  - "[[SQL_Keys_and_Identifiers]]"
+  - "[[00_SQL_HomePage]]"
 ---
 #  ERD의 3대 요소: 엔터티, 속성, 관계
 
