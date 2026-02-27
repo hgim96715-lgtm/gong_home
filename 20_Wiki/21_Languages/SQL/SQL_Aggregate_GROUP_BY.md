@@ -13,6 +13,7 @@ related:
   - "[[00_SQL_HomePage]]"
   - "[[SQL_NULL_Functions]]"
   - "[[SQL_Understanding_NULL]]"
+  - "[[SQL_CASE_WHEN]]"
 ---
 ## 개념 한 줄 요약
 

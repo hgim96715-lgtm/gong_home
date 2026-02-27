@@ -94,46 +94,60 @@ FROM payments;
 ```
 
 ---
-## 조건부 집계 (Conditional Aggregation) 
+## Code Core Points (조건부 집계와 피벗)
 
-초보자는 `WHERE`를 쓰고, 고수는 `CASE WHEN`을 씁니다. 
-특히 **"전체 중에 특정 조건의 비율(%)"** 을 구할 때 이 기술이 필수입니다.
+초보자는 필터링할 때 `WHERE`를 쓰고, 고수는 `CASE WHEN`(또는 `FILTER`)을 쓴다. 
+데이터를 세로에서 가로로 펼치는 피벗(Pivot) 작업의 핵심 원리이다.
 
-### ❌ 초보자의 고민 (WHERE의 한계)
+### 조건부 카운트 (1과 0 더하기)
 
-> "남자의 숫자도 세고 싶고, 여자의 숫자도 세고 싶은데... `WHERE gender = 'M'`을 하면 여자가 사라지고, `WHERE gender = 'F'`를 하면 남자가 사라져요!
-
-
-### ⭕️ 해결책: `SUM` + `CASE WHEN` (피벗)
-
-데이터를 버리지(`WHERE`) 말고, **살려둔 채로 표시만 다르게** 하는 겁니다.
-
-- **원리:** 조건에 맞으면 **1**, 아니면 **0**을 부여하고 다 더해버림(`SUM`).
+특정 조건에 맞으면 1, 아니면 0을 부여하고 전체를 `SUM` 해버리는 테크닉이다.
 
 ```sql
-SELECT
+SELECT 
     product_name,
-    
-    -- [2023년 컬럼] 2023년 데이터만 골라서 합계
+    -- 데이터를 2023년과 2024년 가로 컬럼으로 각각 분리하여 합계(Pivot)
     SUM(CASE WHEN year = 2023 THEN amount ELSE 0 END) AS sales_2023,
-    
-    -- [2024년 컬럼] 2024년 데이터만 골라서 합계
     SUM(CASE WHEN year = 2024 THEN amount ELSE 0 END) AS sales_2024,
     
-    -- [증감율 계산 가능] 이제 컬럼이 옆에 있으니까 바로 계산 가능!
+    -- 💡 장점: 두 컬럼이 나란히 생성되므로 아래처럼 즉시 증감 계산이 가능하다!
     (SUM(CASE WHEN year = 2024 THEN amount ELSE 0 END) - 
      SUM(CASE WHEN year = 2023 THEN amount ELSE 0 END)) AS diff
-     
 FROM yearly_sales
-GROUP BY product_name; -- 연도(year)로는 묶지 않음!
+GROUP BY product_name;
 ```
 
-**결과 비교:**
+**결과 형태 비교 (단순 GROUP BY vs 피벗 변환)**
 
 |**방식**|**결과 형태**|**비고**|
 |---|---|---|
 |**GROUP BY year**|세로로 2줄 나옴 (2023, 2024)|뺄셈 계산 불가능|
 |**CASE WHEN (Pivot)**|**가로로 1줄 나옴 (2023컬럼, 2024컬럼)**|**바로 뺄셈 가능**|
+
+### 조건부 실제 값 연산 (평균 내기) 
+
+개수(1, 0)만 세는 것이 아니라, 특정 조건일 때 **실제 데이터의 값**을 가져와서 합계나 평균(`AVG`)을 낼 수도 있다.
+
+```sql
+-- 목표: 2011년도 게임들의 비평가 평점 평균만 따로 구하고 싶다!
+
+-- ✅ [PostgreSQL 방식] FILTER를 사용한 우아한 조건부 평균 연산
+SELECT
+    ROUND(AVG(ga.critic_score) FILTER (WHERE ga.year = 2011), 2) AS score_2011
+FROM game_analytics ga;
+
+-- ✅ [표준 SQL 방식] CASE WHEN을 사용한 조건부 평균 연산
+SELECT
+    ROUND(AVG(CASE WHEN year = 2011 THEN critic_score ELSE NULL END), 2) AS score_2011
+FROM game_analytics;
+
+-- ⚠️ 매우 주의할 점 (AVG 사용 시): 
+-- 개수를 더할 때(SUM)는 ELSE 0을 썼지만, 평균(AVG)을 낼 때는 반드시 'ELSE NULL'을 써야 한다. (또는 ELSE 자체를 생략)
+-- 만약 ELSE 0을 쓰면, 조건에 안 맞는 데이터가 0점으로 평균 계산(분모)에 포함되어 평균 점수가 대폭락하는 대참사가 발생한다!
+```
+
+
+
 
 ----
 ## 클릭률(CTR)과 비율 계산하기 
