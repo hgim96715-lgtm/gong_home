@@ -7,7 +7,7 @@ aliases:
 tags:
   - PyFlink
 related:
-  - "[[Window_Functions]]"
+  - "[[SQL_Window_Functions]]"
   - "[[PyFlink_Windows]]"
   - "[[00_Apache Flink_HomePage]]"
   - "[[PyFlink_Kafka_코드해부_Common ⭐️]]"

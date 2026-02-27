@@ -76,9 +76,9 @@
 - **분석 및 고급 집계**
 
 	- [[SQL_Group_Functions]] : 소계와 총계 내기 (`ROLLUP`, `CUBE`, `GROUPING SETS`) 
-    - [[Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `PARTITION BY`)
-    - [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 (데이터 형태 변환)
+    - [[SQL_Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `PARTITION BY`)
     - [[Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM` 등) 
+    -  [[Pivot_Unpivot]] : 행을 열로, 열을 행으로 (데이터 형태 변환)
 
 
 ### Level 4. [SQLD 과목 2 - 제3장] 관리 구문 (Management)

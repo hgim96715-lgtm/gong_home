@@ -11,7 +11,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Window_Functions]]"
+  - "[[SQL_Window_Functions]]"
   - "[[00_SQL_HomePage]]"
 ---
 ## 개념 한 줄 요약

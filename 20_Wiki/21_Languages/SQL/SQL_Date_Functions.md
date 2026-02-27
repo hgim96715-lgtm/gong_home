@@ -10,7 +10,7 @@ tags:
   - SQL
 related:
   - "[[SQL_Data_Types]]"
-  - "[[Window_Functions]]"
+  - "[[SQL_Window_Functions]]"
   - "[[SQL_String_Functions]]"
   - "[[SQL_Numeric_Functions]]"
   - "[[00_SQL_HomePage]]"

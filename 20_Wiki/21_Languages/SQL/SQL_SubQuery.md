@@ -8,7 +8,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[Window_Functions]]"
+  - "[[SQL_Window_Functions]]"
   - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[SQL_DISTINCT_vs_GROUP_BY]]"
   - "[[SQL_JOIN_Concept]]"
