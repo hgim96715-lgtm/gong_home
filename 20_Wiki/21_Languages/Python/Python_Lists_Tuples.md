@@ -298,6 +298,10 @@ print(locations)
 # 결과: [0, 3, 5] (0번째, 3번째, 5번째에 있다!)
 ```
 
+---
+>코드를 한 줄로 압축하는 마법 (List Comprehension)가 궁금하다면
+>  👉 [[Python_List_Comprehension]] (리스트 컴프리헨션) 참고해서 더 심화 보기 
+
 
 ---
 ## Tuple (튜플): 안전 금고 
@@ -517,67 +521,6 @@ def solution(my_string, s, e):
     answer = my_string[:s] + my_string[s:e+1][::-1] + my_string[e+1:]
     return answer
 ```
-
----
-## List Comprehension (리스트 컴프리헨션) 
-
- `for` 문과 `append`를 **한 줄**로 줄여쓰는 파이썬만의 강력한 문법입니다.
-
-> 리스트에 담긴 데이터를 한 줄로 필터링하거나 변환하고 싶다면? 다중 필터링을 하고 싶다면?
->  👉 [[Python_List_Comprehension]] (리스트 컴프리헨션 심화) 참고해서 더 심화 보기 
-
-- 문법 : `{python}[ 변환식 for 변수 in 리스트 ]`
-
-### ① 기본 문법
-
-- **일반 방식 (3줄)**
-
-```python
-nums = [1, 2, 3]
-new_nums = []
-for n in nums:
-    new_nums.append(n * 10)
-```
-
-- **컴프리헨션 (1줄)**
-
-```python
-# [ 변환식 for 변수 in 리스트 ]
-new_nums = [n * 10 for n in nums] 
-# 결과: [10, 20, 30]
-```
-
-### ② 조건 걸기 (Filter)
-
-- **상황:** 짝수만 뽑아서 리스트로 만들고 싶다.
-- 문법 : `{python}[ 변환식 for 변수 in 리스트 if 조건 ]`
-
-```python
-# [ 변환식 for 변수 in 리스트 if 조건 ]
-evens = [n for n in range(10) if n % 2 == 0]
-# 결과: [0, 2, 4, 6, 8]
-```
-
-### ③ 조건에 따라 값 바꾸기 (If - Else) 
-
-**"이거 아니면 저거를 넣겠다"** -> `if-else`가 **맨 앞**에 옵니다.
-- 문법 :`{python}[ (참일때 값) if 조건 else (거짓일때 값) for 변수 in 리스트 ]`
-
-```python
-# [ (참일때 값) if 조건 else (거짓일때 값) for 변수 in 리스트 ]
-
-# 짝수면 "even", 홀수면 "odd"를 채워라
-results = ["even" if k % 2 == 0 else "odd" for k in range(5)]
-# 결과: ['even', 'odd', 'even', 'odd', 'even']
-```
-
-#### [주의] `if` 위치가 헷갈려요!
-
-- **뽑을까 말까 고민할 때 (Filter):** `if`는 **뒤**에! (`else` 못 씀)
-	- `[x for x in data if x > 0]` (O)
-	
-- **A로 할까 B로 할까 고민할 때 (Choose):** `if-else`는 **앞**에!
-	- `["양수" if x > 0 else "음수" for x in data]` (O)
 
 
 

@@ -9,11 +9,11 @@ aliases:
   - 붕어빵
 tags:
   - Python
-  - OOP
 related:
   - "[[Python_Inheritance]]"
   - "[[Python_Dictionaries]]"
   - "[[Spark_Core_Broadcast]]"
+  - "[[00_Python_HomePage]]"
 ---
 ## 개념 한 줄 요약 
 
@@ -101,7 +101,7 @@ fish2 = Bungeoppang("슈크림", 1500)  # 슈크림 붕어빵 탄생
 - 스파크의 `Broadcast` 클래스를 뜯어보면 내부에 `self.value` 라는 변수가 숨어있습니다. 우리는 점(`.`)을 찍어서 그 변수를 꺼내 쓰는 겁니다.
 
 ---
-## 실전 예제 (Data Engineering Context) 
+## Code Core Points : 실전 예제 (Data Engineering Context)
 
 우리가 맨날 쓰는 **Airflow Operator**도 사실 다 클래스입니다.
 
@@ -120,5 +120,30 @@ print(t1.task_id)      # 결과: 'print_date'
 print(t1.bash_command) # 결과: 'date'
 ```
 
+---
+## Detailed Analysis: 파이썬의 숨겨진 마법 (매직 메서드와 일급 객체)
+
+우리가 흔히 쓰는 덧셈(`+`)이나 몫 구하기(`//`) 기호는 사실, 파이썬 내부 **정수(`int`) 클래스 안에 숨겨진 특수 메서드(매직 메서드)** 를 호출하는 단축키일 뿐이다!
+
+```python
+# 1. 우리가 아는 일반적인 연산
+print(10 // 3)  
+
+# 2. 💡 파이썬 엔진이 실제로 해석하는 코드 (클래스의 매직 메서드 호출)
+# 앞뒤로 언더바(__)가 두 개씩 붙은 걸 '매직 메서드(Dunder Method)'라고 부른다.
+print(int.__floordiv__(10, 3))
+```
+
+### **[코딩 테스트 실전 응용]** 
+
+프로그래머스에서 "두 수를 나눈 몫을 구하는 함수를 짜시오"라는 문제가 나왔을 때, 고인물들은 `def`로 함수를 새로 만들지 않고 내장 클래스의 메서드를 뜯어와서 변수처럼 바로 붙여버린다. (파이썬에서는 함수도 변수처럼 담을 수 있는 **'일급 객체'** 이기 때문!)
+
+```python
+# "새로 함수 안 만들래. 그냥 int 클래스의 몫 구하기 기능 이름표만 바꿔 달게!"
+solution = int.__floordiv__
+
+# 동작 확인 (완벽하게 몫을 구해냄)
+print(solution(10, 3))  # 출력: 3
+```
 
 
