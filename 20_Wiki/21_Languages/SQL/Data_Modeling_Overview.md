@@ -8,7 +8,7 @@ tags:
   - SQL
 related:
   - "[[ERD_Components]]"
-  - "[[Normalization_Theory]]"
+  - "[[SQL_Normalization_정규화]]"
   - "[[SQL_Keys_and_Identifiers]]"
 ---
 ## 한줄 요약 
@@ -145,22 +145,6 @@ related:
     - _비유:_ 식재료 창고 위치(내부)를 지하 1층에서 2층으로 옮겨도, 주방(개념) 요리 방식은 안 바뀜.
 
 ----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ##  Common Beginner Misconceptions (주의사항)
