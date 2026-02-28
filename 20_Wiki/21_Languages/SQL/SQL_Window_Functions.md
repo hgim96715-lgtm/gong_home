@@ -88,6 +88,68 @@ FROM 사원;
 |200|3|**2**|**2**|
 |100|4|**4**|**3**|
 
+### 언제 뭘 써야 하나? 실무 선택 기준
+
+| 상황                        | 추천 함수          | 이유                |
+| ------------------------- | -------------- | ----------------- |
+| 무조건 1명만 뽑아야 할 때 (중복 허용 X) | `ROW_NUMBER()` | 동점이어도 1명만 나옴      |
+| 동점자도 같은 등수로 인정해야 할 때      | `RANK()`       | 올림픽처럼 공동 2위 인정    |
+| 등수 번호가 연속이어야 할 때          | `DENSE_RANK()` | 빈 등수 없이 1,2,3 연속  |
+| 상위 N명 자르되 동점자 모두 포함       | `RANK()`       | 공동 3위 2명이면 둘 다 포함 |
+| 페이지네이션 / 행 번호 매기기         | `ROW_NUMBER()` | 고유 번호가 필요하니까      |
+
+### PARTITION BY vs GROUP BY — 가장 많이 헷갈리는 포인트
+
+```sql
+-- GROUP BY: 그룹을 "합쳐서" 1줄로 만든다 (원본 행이 사라짐)
+SELECT 부서, AVG(급여)
+FROM 사원
+GROUP BY 부서;
+-- 결과: 부서별로 딱 1줄씩만 나옴
+
+-- PARTITION BY: 그룹 내에서 계산하되 "원본 행을 유지"한다
+SELECT 사원명, 부서, 급여,
+       AVG(급여) OVER(PARTITION BY 부서) AS 부서평균
+FROM 사원;
+-- 결과: 원본 행 수 그대로 유지되면서 옆에 부서평균이 붙어서 나옴
+```
+
+>**암기법:** `GROUP BY` → **줄이는** 것 (합쳐서 요약) `PARTITION BY` → **나란히 붙이는** 것 (원본 유지하면서 계산값 추가)
+
+### ❗ RANK vs COUNT — 어떤 도구를 꺼낼까?
+
+```sql
+"순위 번호(1등, 2등...)" 가 결과에 필요한가?
+        ↓ YES                        ↓ NO
+     RANK 써라               COUNT(*) + GROUP BY + HAVING
+```
+
+| 문제에 이 단어가 보이면           | 꺼낼 도구                      |
+| ----------------------- | -------------------------- |
+| "1위", "상위 N위", "순위"     | `RANK` / `DENSE_RANK`      |
+| "횟수", "몇 번", "등재", "건수" | `COUNT(*)`                 |
+| "중복 없이 한 명만"            | `ROW_NUMBER()`             |
+| "각 그룹에서 최고값"            | `RANK()` + `WHERE rnk = 1` |
+
+```sql
+-- ✅ "상위 50위 이내 2회 이상 등재" → COUNT로 충분
+SELECT title, COUNT(*) AS cnt
+FROM bestseller_top50
+GROUP BY title
+HAVING COUNT(*) >= 2
+ORDER BY cnt DESC;
+
+-- ✅ "각 부서에서 급여 1위만 뽑기" → RANK가 필요
+WITH ranked AS (
+    SELECT *, RANK() OVER(PARTITION BY 부서 ORDER BY 급여 DESC) AS rnk
+    FROM 사원
+)
+SELECT * FROM ranked WHERE rnk = 1;
+```
+
+>📎더 자세한 내용은 [[SQL_Aggregate_GROUP_BY#① COUNT 삼형제 (가장 많이 헷갈림)|count 삼형제]] 참고
+> COUNT 삼형제(`COUNT(*)` / `COUNT(컬럼)` / `COUNT(DISTINCT)`) 차이가 헷갈릴 때 확인.
+
 ---
 ## Code Core Points (2. 집계 함수)
 
