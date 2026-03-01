@@ -116,6 +116,26 @@ LEFT JOIN Orders B
     ON A.id = B.customer_id;
 ```
 
+>자주 하는 실수 — "없는 걸 찾아야 하는데 INNER JOIN을 쓰는 실수"
+>"작품이 없는 작가를 찾아라" 같은 문제에서 반사적으로 `INNER JOIN`을 쓰는 실수를 자주 한다
+>`INNER JOIN`은 두 테이블 모두에 매칭되는 행만 살아남기 때문에, 조인하는 순간 작품이 없는 작가는 결과에서 이미 사라져버린다. 
+>나중에 `COUNT(...) = 0`이나 `IS NULL`을 붙여도 이미 날아간 데이터는 되살릴 수 없다.
+
+```sql
+-- ❌ 잘못된 접근: 작품 없는 작가가 조인 시점에 이미 제거됨
+SELECT a.author_name
+FROM Authors a
+INNER JOIN Books b ON a.id = b.author_id
+WHERE COUNT(b.id) = 0;  -- 소용없다. 데이터가 이미 없다.
+
+-- ✅ 올바른 접근: LEFT JOIN으로 작가를 먼저 다 살린 뒤 NULL로 필터링
+SELECT a.author_name
+FROM Authors a
+LEFT JOIN Books b ON a.id = b.author_id
+WHERE b.id IS NULL;  -- 매칭된 책이 없는 작가만 걸러낸다.
+```
+
+
 ### ③ RIGHT (OUTER) JOIN (오른쪽 기준 다 살리기)
 
 >"오른쪽 테이블은 무조건 다 살리고, 왼쪽은 없으면 빈칸(NULL)으로 둔다."
