@@ -49,6 +49,28 @@ total_efficiency = math.prod(rates)
 - **`math.gcd(a, b)`**: 최대공약수 (Greatest Common Divisor)
 - **`math.lcm(a, b)`**: 최소공배수 (Least Common Multiple, Python 3.9+)
 
+>**활용: 분수 덧셈 직접 구현** 분수끼리 더할 때 공통 분모를 구하는 데 `lcm`을, 결과를 약분할 때 `gcd`를 씁니다.
+
+```python
+import math
+
+def add_fractions(a_num, a_den, b_num, b_den):
+    # ① 공통 분모 = 두 분모의 최소공배수
+    common_den = math.lcm(a_den, b_den)
+    
+    # ② 분자를 공통 분모 기준으로 변환 후 합산
+    total_num = (a_num * (common_den // a_den)) + (b_num * (common_den // b_den))
+    
+    # ③ 결과 약분: 분자·분모의 최대공약수로 나눔
+    g = math.gcd(total_num, common_den)
+    return total_num // g, common_den // g
+
+result = add_fractions(1, 3, 1, 4)  # 1/3 + 1/4
+print(result)  # → (7, 12)  즉 7/12
+```
+
+>💡 **`fractions.Fraction`을 쓰면 이 과정을 자동으로 처리**해 주지만, `math.gcd` / `math.lcm`으로 직접 구현하면 내부 동작 원리를 이해하고 성능을 제어할 수 있습니다. `fractions` 모듈은 별도 문서에서 다룹니다. [[Python_Fractions_Module]] 참고 
+
 ---
 ## 요약 표 (Cheat Sheet)
 

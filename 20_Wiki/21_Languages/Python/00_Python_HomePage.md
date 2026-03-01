@@ -35,6 +35,7 @@
 - [[Python_Builtin_Functions]] : 코드를 줄여주는 마법 (`max`, `min`, `sum`, `len`, `abs`, `ord`, `chr`, `pow`)
 - [[Python_Sorting_Logic]] : 정렬의 미학 (`sort`, `sorted`, `key`, `lambda`, `reverse`, `다중 정렬`)
 - [[Python_Math_Module]] : 정밀한 수학 연산 (`math.prod`, `ceil`, `floor`, `gcd`, `sqrt`, `pi`)
+- [[Python_Fractions_Module]] : 정확한 분수 연산 (`Fraction`, `분수 덧셈/뺄셈`, `자동 약분`, `부동소수점 오차 방지`)
 - [[Python_Statistics_Module]] : 데이터 요약 통계 (`mean`, `median`, `stdev`, `variance`)
 - [[Python_Collections_Counter]] : 빈도 분석의 강자 (`Counter`, `most_common`, `딕셔너리 연산`)
 
