@@ -6,6 +6,8 @@ aliases:
   - LTRIM
   - REPLACE
   - SPLIT
+  - STRING_AGG
+  - GROUP_CONCAT
 tags:
   - SQL
 related:
@@ -19,6 +21,19 @@ related:
 
 >"사용자가 입력한 데이터는 생각보다 훨씬 더럽습니다. 
 >띄어쓰기 오류, 대소문자 혼용 등을 깔끔하게 정제(Cleansing)하는 데이터 엔지니어의 필수 도구들입니다."
+
+
+----
+## **왜 필요한가?** 
+
+현업의 Raw 데이터는 완벽하지 않다. 회원가입 이메일의 대소문자가 섞여 있거나, 쉼표(,)로 뭉쳐 있는 등 데이터 포맷이 파편화되어 있기 때문에, 이를 정제해야 정확한 데이터 분석과 JOIN이 가능하다.
+
+---
+## **실무에서 언제 쓰는가?**
+
+- **데이터 정제 (Cleansing):** 공백 제거나 특수문자 제거 (`TRIM`, `REPLACE`).
+- **데이터 추출:** 주민번호나 전화번호에서 특정 자리만 뽑아낼 때 (`SUBSTR`).
+- **데이터 분할 및 병합:** 하나의 컬럼을 여러 행/열로 쪼개거나 (`SPLIT`), 반대로 여러 행을 한 줄로 예쁘게 말아올릴 때 (`STRING_AGG`).
 
 ---
 ## 대소문자 통일하기 (검색의 기본)
@@ -190,6 +205,63 @@ FROM 사원테이블
 */
 ```
 
+---
+## String Aggregation (여러 행을 하나의 문자열로 합치기) `STRING_AGG`,`GROUP_CONCAT`
+
+`SPLIT`의 정확히 반대되는 개념이다. 
+`GROUP BY`로 묶인 여러 행(Row)의 데이터를 쉼표(,) 등의 구분자를 넣어 하나의 문자열(Column)로 예쁘게 말아올린다. 부서별 사원 목록이나, 유저별 구매 상품 목록을 한 줄로 뽑아낼 때 필수적이다.
+
+### 문법 및 내부 구조
+
+- **PostgreSQL:** 함수 괄호 **안에** 전부 넣는다. 
+	- `{sql}STRING_AGG([DISTINCT] 합칠컬럼, '구분자' [ORDER BY 정렬컬럼 ASC|DESC])`
+- **MySQL:** 함수 괄호 **안에** 전부 넣되, 구분자는 `SEPARATOR` 키워드를 쓴다. 
+	- `GROUP_CONCAT([DISTINCT] 합칠컬럼 [ORDER BY 정렬컬럼] [SEPARATOR '구분자'])`
+-  **Oracle:** 함수 괄호 **밖에서** `WITHIN GROUP`으로 정렬한다. (DISTINCT는 정규식 등 별도 처리 필요) 
+	- `LISTAGG(합칠컬럼, '구분자') WITHIN GROUP (ORDER BY 정렬컬럼)`
+- **SQL Server:** Oracle처럼 함수 괄호 **밖에서** `WITHIN GROUP`으로 정렬한다.
+	- `STRING_AGG(합칠컬럼, '구분자') WITHIN GROUP (ORDER BY 정렬컬럼)`
+
+```sql
+-- 💡 1. [PostgreSQL] STRING_AGG 사용법
+-- 괄호 안에서 중복(DISTINCT)도 제거하고, 이름순(ORDER BY)으로 정렬까지 한 번에 처리한다.
+SELECT 
+    부서명, 
+    STRING_AGG(DISTINCT 사원명, ', ' ORDER BY 사원명 ASC) AS 부서원_목록
+FROM 사원테이블
+GROUP BY 부서명;
+-- 결과: 영업부 | '김철수, 이영희, 홍길동'
+
+
+-- 💡 2. [MySQL] GROUP_CONCAT 사용법 
+-- PostgreSQL과 비슷하지만 SEPARATOR 키워드를 명시해야 한다.
+SELECT 
+    부서명, 
+    GROUP_CONCAT(DISTINCT 사원명 ORDER BY 사원명 ASC SEPARATOR ', ') AS 부서원_목록
+FROM 사원테이블
+GROUP BY 부서명;
+
+
+-- ⚠️ 3. [Oracle] LISTAGG 사용법
+-- WITHIN GROUP을 사용하여 그룹 내 정렬 방식을 함수 바깥에서 지정한다.
+SELECT 
+    부서명, 
+    LISTAGG(사원명, ', ') WITHIN GROUP (ORDER BY 사원명 ASC) AS 부서원_목록
+FROM 사원테이블
+GROUP BY 부서명;
+
+
+-- ⚠️ 4. [SQL Server] STRING_AGG 사용법 (2017 버전 이상)
+-- Oracle과 동일하게 WITHIN GROUP을 사용해 정렬한다.
+SELECT 
+    부서명, 
+    STRING_AGG(사원명, ', ') WITHIN GROUP (ORDER BY 사원명 ASC) AS 부서원_목록
+FROM 사원테이블
+GROUP BY 부서명;
+```
+
+>`GROUP BY`로 묶인 그룹 내의 지정된 컬럼 값들을 차례대로 순회하며, 지정한 구분자를 사이에 끼워 넣어 하나의 긴 문자열로 반환한다.
+>`ORDER BY`를 쓰면 A-Z, 가-나-다 순 등으로 예쁘게 정렬된 문자열을 얻을 수 있다.
 
 ---
 ## 컴퓨터의 언어로 변환 (ASCII)
