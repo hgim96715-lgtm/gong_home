@@ -7,7 +7,7 @@ tags:
   - SQL
 related:
   - "[[SQL_Standard_JOIN]]"
-  - "[[ERD_Components]]"
+  - "[[SQL_ERD_Components]]"
   - "[[SQL_Keys_and_Identifiers]]"
   - "[[00_SQL_HomePage]]"
 ---

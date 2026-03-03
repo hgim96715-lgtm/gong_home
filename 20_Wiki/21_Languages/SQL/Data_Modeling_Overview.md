@@ -7,7 +7,7 @@ aliases:
 tags:
   - SQL
 related:
-  - "[[ERD_Components]]"
+  - "[[SQL_ERD_Components]]"
   - "[[SQL_Normalization_정규화]]"
   - "[[SQL_Keys_and_Identifiers]]"
 ---

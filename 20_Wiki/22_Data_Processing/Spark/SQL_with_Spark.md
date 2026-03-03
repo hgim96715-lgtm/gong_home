@@ -6,8 +6,8 @@ aliases:
   - TempView
   - 스파크SQL사용법
 tags:
-  - Spark
   - SQL
+  - Spark
 related:
   - "[[Spark_DataFrame_SQL_Intro]]"
   - "[[PySpark_Session_Context]]"

@@ -15,6 +15,7 @@ related:
   - "[[Python_Database_Connect]]"
   - "[[SQL_Keys_and_Identifiers]]"
   - "[[SQL_Database_Transactions_TCL]]"
+  - "[[SQL_DCL_Grant_Revoke]]"
 ---
 # 데이터 넣고, 고치고, 지우고, 엎어치기 DML(Data Manipulation Language)
 

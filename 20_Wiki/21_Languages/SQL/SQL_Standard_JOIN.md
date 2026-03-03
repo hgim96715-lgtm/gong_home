@@ -52,22 +52,39 @@ related:
 
 표준 문법의 핵심은 레거시 문법(Oracle `(+)`)이 가진 '직관성 부족'을 완벽히 해결했다는 점입니다.
 
+### ⭐ **SQLD 빈출 — 레거시 → ANSI 변환 시 주의사항**
+
+Oracle `(+)` 문법을 ANSI 표준으로 변환할 때,
+**INNER 쪽 테이블(NULL이 될 수 있는 쪽)의 조건은 반드시 `ON` 절에 위치**시켜야 합니다.
+`WHERE` 절에 두면 OUTER JOIN이 INNER JOIN으로 바뀌어버립니다!
+
 ```sql
--- 🚨 [과거 레거시 방식] Oracle 고유의 OUTER JOIN 문법
--- 데이터가 '비워질 쪽(부족한 쪽)'에 (+) 기호를 붙입니다. 직관성이 떨어집니다. 
+-- 🚨 [레거시] Oracle (+) 방식
 -- LEFT JOIN 일경우 오른쪽(+), RIGHT JOIN 일 경우 왼쪽(+)
--- 좌변이나 우변 한 곳에서만 사용가능 !!
 SELECT A.customer_name, B.order_date
 FROM Customer A, Orders B
-WHERE A.id = B.customer_id(+); -- "A는 다 살리고, B는 없으면 억지로(+) 붙여라"
+WHERE A.id = B.customer_id(+)
+  AND B.status(+) = 'DONE';   -- INNER 쪽(B) 조건에도 (+) 붙임
 
--- ✅ [최신 표준 방식] ANSI Standard LEFT OUTER JOIN
--- 결합의 주체(LEFT)와 연결 고리(ON)가 명확하게 분리되어 가독성이 압도적입니다.
+-- ✅ [ANSI 변환] INNER 쪽 조건 → ON 절로 이동!
 SELECT A.customer_name, B.order_date
 FROM Customer A
-LEFT JOIN Orders B 
-    ON A.id = B.customer_id;
+LEFT JOIN Orders B
+    ON A.id = B.customer_id
+   AND B.status = 'DONE';     -- ✅ ON 절에 위치 (A 데이터 보존됨)
+
+-- ❌ [잘못된 변환] WHERE 절에 두면 INNER JOIN과 동일해짐!
+SELECT A.customer_name, B.order_date
+FROM Customer A
+LEFT JOIN Orders B
+    ON A.id = B.customer_id
+WHERE B.status = 'DONE';      -- ❌ B가 NULL인 행 전부 제거 → LEFT JOIN 의미 없어짐
 ```
+
+| 조건 위치                      | 결과                           |
+| :------------------------- | :--------------------------- |
+| INNER 쪽 조건 → **`ON` 절**    | ✅ A 데이터 보존, B 없으면 NULL 유지    |
+| INNER 쪽 조건 → **`WHERE` 절** | ❌ NULL 행 제거 → 사실상 INNER JOIN |
 
 ---
 ## 상세 분석: 벤다이어그램으로 이해하기 (Detailed Analysis)
@@ -277,6 +294,30 @@ flowchart TD
     D --> C
     C -->|도착!| E[🏁 3단계: 쿼리 조립<br/>GROUP BY / ORDER BY / LIMIT]
 ```
+---
+> [!tip] ⭐ SQLD 빈출 — 최소 JOIN 조건 개수 공식
+>
+> **N개의 테이블을 조인하려면 최소 N-1개의 JOIN 조건이 필요합니다.**
+>
+> | 테이블 수 | 최소 JOIN 조건 수 | 예시 |
+> |:--|:--|:--|
+> | 2개 | **1개** | A JOIN B → ON 조건 1개 |
+> | 3개 | **2개** | A JOIN B JOIN C → ON 조건 2개 |
+> | 4개 | **3개** | A JOIN B JOIN C JOIN D → ON 조건 3개 |
+> | N개 | **N-1개** | — |
+>
+> 💡 **이유:** 테이블을 연결하는 건 다리(Bridge)를 놓는 것과 같습니다.
+> 섬이 4개면 다리는 최소 3개만 있어도 모두 연결됩니다.
+>
+> ```
+> A ─── B ─── C ─── D
+>   (1)   (2)   (3)
+> 4개 테이블 → 다리 3개(N-1) 로 전부 연결 가능!
+> ```
+>
+> ⚠️ JOIN 조건이 N-1개보다 **적으면** → 연결되지 않은 테이블이 **CROSS JOIN** 되어
+> 데이터가 기하급수적으로 **뻥튀기**되는 대참사가 발생합니다!
+
 
 ---
 ## 초보자가 자주 하는 실수 (Misconceptions)

@@ -49,6 +49,52 @@ FROM exams;
 
 - `CASE` 문에서 `ELSE` 뒤에 지정한 값이 해당 컬럼의 **기본값(Default)** 이 됩니다.
 - 만약 쿼리에서 별도의 `ELSE` 구문을 작성하지 않으면, 조건에 맞지 않는 모든 데이터는 **무조건 `NULL` 값이 기본값**으로 반환됩니다. (데이터 빵꾸의 주범이 되므로 주의!)
+---
+## CASE 문법의 두 가지 형태
+
+> 💡 CASE 문법은 두 가지가 있습니다!
+
+### ① SEARCHED_CASE — 조건식 전체를 씀 (일반적으로 아는 그것)
+
+```sql
+SELECT LOC,
+    CASE WHEN LOC = 'NEW YORK' THEN 'EAST'
+         ELSE 'ETC'
+    END AS AREA
+FROM DEPT;
+```
+
+### ② SIMPLE_CASE — 비교할 컬럼을 CASE 바로 뒤에 선언
+
+```sql
+SELECT LOC,
+    CASE LOC WHEN 'NEW YORK' THEN 'EAST'
+             ELSE 'ETC'
+    END AS AREA
+FROM DEPT;
+```
+
+> [!info] 두 형태 비교
+>
+> | 구분 | 구조 | WHEN 뒤에 오는 것 |
+> |:--|:--|:--|
+> | **SEARCHED_CASE** | `CASE WHEN 조건식 THEN` | `LOC = 'NEW YORK'` 처럼 **조건식 전체** |
+> | **SIMPLE_CASE** | `CASE 컬럼 WHEN 값 THEN` | `'NEW YORK'` 처럼 **값만** |
+
+> [!warning] SIMPLE_CASE의 치명적 한계
+> SIMPLE_CASE는 **정확히 일치(`=`)** 비교만 가능합니다.
+> 대소 비교(`>`, `<`, `>=`)가 필요하면 반드시 **SEARCHED_CASE** 를 써야 합니다.
+>
+> ```sql
+> -- ❌ SIMPLE_CASE로 범위 비교 불가
+> CASE score WHEN >= 90 THEN 'A'  -- 문법 에러!
+>
+> -- ✅ 범위 비교는 SEARCHED_CASE만 가능
+> CASE WHEN score >= 90 THEN 'A'
+>      WHEN score >= 80 THEN 'B'
+> ```
+>
+> Oracle의 `DECODE` 함수도 같은 이유로 정확히 일치할 때만 쓸 수 있습니다.
 
 ---
 ## DB 별 전용 문법
