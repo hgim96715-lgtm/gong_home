@@ -39,6 +39,7 @@ related:
 
 ---
 
+---
 
 #  핵심 개념 — `ON` 절 vs `WHERE` 절
 
@@ -195,30 +196,83 @@ SELECT BOY_NAME, GIRL_NAME FROM GIRL CROSS JOIN BOY;
 
 > "DB가 이름 같은 컬럼을 알아서 찾아 엮어준다." — `ON` 절 사용 불가
 
-**NATURAL JOIN:** 두 테이블에서 이름이 동일한 컬럼을 자동으로 조인. 단, 이름이 같은 **모든** 컬럼의 값이 100% 일치해야 결과에 나온다.
+---
+
+### NATURAL JOIN
+
+두 테이블에서 **이름이 동일한 컬럼을 자동으로 전부 찾아** 조인한다. 단, 이름이 같은 **모든** 컬럼의 값이 **100% 동일한 행** 만 결과에 나온다.
+
+```sql
+SELECT * FROM 사원 NATURAL JOIN 부서;
+-- 이름이 같은 컬럼(예: dept_id, status, updated_at 등)을 DB가 알아서 전부 조인 기준으로 사용
+```
+
+**NATURAL JOIN 이 작동하는 조건:**
 
 ```
-⚠️ 시한폭탄: 나중에 누군가 같은 이름의 컬럼(updated_at, status 등)을
-   추가하는 순간 기존 쿼리가 소리소문없이 망가진다.
-   → 실무에서는 절대 사용 금지
+테이블 A: dept_id = 10,  name = '홍길동', status = 'active'
+테이블 B: dept_id = 10,  name = '개발팀', status = 'active'
+
+→ dept_id, status 이름이 같고 값도 모두 일치 → 조인 성공
+→ 만약 status 값이 하나라도 다르면 → 해당 행은 결과에서 통째로 제외
 ```
 
-**USING(컬럼명):** 조인할 컬럼을 직접 지정하는 명시적 축약형.
+> ⚠️ **시한폭탄:** 나중에 누군가 같은 이름의 컬럼(`updated_at`, `status` 등)을 추가하는 순간 기존 쿼리가 소리소문없이 망가진다. **→ 실무에서는 절대 사용 금지**
+
+---
+
+### NATURAL JOIN · USING — 테이블명·별칭 표기 금지 ⭐️
+
+> **NATURAL JOIN 과 USING 으로 조인한 컬럼은 SELECT 에서 테이블명이나 별칭을 붙이면 에러가 난다.**
+
+이유: DB 가 두 테이블의 해당 컬럼을 **하나로 합쳐서 단일 컬럼으로 처리** 하기 때문에, 어느 테이블 소속인지 구분이 없어진다.
+
+```sql
+-- NATURAL JOIN 예시
+SELECT A.dept_id  -- ❌ 에러! dept_id 는 A·B 합쳐진 단일 컬럼
+FROM 사원 A NATURAL JOIN 부서 B;
+
+SELECT dept_id    -- ✅ 테이블명 없이 그냥 써야 한다
+FROM 사원 A NATURAL JOIN 부서 B;
+
+-- USING 예시
+SELECT A.id       -- ❌ 에러! USING 으로 지정된 컬럼에 별칭 금지
+FROM Orders A
+JOIN Payments B USING(id);
+
+SELECT id         -- ✅ 테이블명·별칭 없이 컬럼명만
+FROM Orders A
+JOIN Payments B USING(id);
+
+SELECT A.amount   -- ✅ USING 으로 지정되지 않은 컬럼은 별칭 가능
+FROM Orders A
+JOIN Payments B USING(id);
+```
+
+---
+
+### USING(컬럼명) — ON 절의 명시적 축약형
+
+조인할 컬럼을 직접 지정하므로 NATURAL JOIN 보다 안전하다. 단, 조인 기준 컬럼의 이름이 **양쪽 테이블에서 동일** 해야 사용 가능하다.
 
 ```sql
 -- ON 절 방식
 JOIN Orders B ON A.id = B.id
 
--- USING 축약 방식 (컬럼명이 양쪽 동일할 때)
+-- USING 축약 방식
 JOIN Orders B USING(id)
--- ⚠️ USING 절로 지정된 컬럼 앞에는 테이블명·별칭 표기 불가
+-- 의미: A.id = B.id 와 완전히 동일하지만, id 컬럼이 결과에 하나만 나온다
 ```
 
-|구분|조인 기준|안전성|
-|---|---|---|
-|NATURAL JOIN|이름 같은 컬럼 **전부**|❌ 위험 (의도치 않은 유실)|
-|USING(id)|내가 **지정한 컬럼만**|✅ 안전|
-|ON A.id = B.id|명시적|✅ 가장 안전|
+---
+
+### 세 방식 비교
+
+|구분|조인 기준|별칭 사용|안전성|
+|---|---|---|---|
+|`NATURAL JOIN`|이름 같은 컬럼 **전부 자동**|❌ 조인 컬럼에 별칭 불가|❌ 위험|
+|`USING(id)`|내가 **지정한 컬럼만**|❌ 조인 컬럼에 별칭 불가|✅ 안전|
+|`ON A.id = B.id`|명시적 지정|✅ 모든 컬럼 별칭 가능|✅ 가장 안전|
 
 ---
 

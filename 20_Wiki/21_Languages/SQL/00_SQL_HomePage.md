@@ -13,6 +13,7 @@
 - **1장. 데이터 모델링의 이해**
     - [[Concept_Database]] : DB란 무엇인가? (`DBMS`, `스키마`, `인스턴스`)
     - [[Concept_RDBMS]] : 관계형 데이터베이스(RDBMS)의 정체 (`테이블`, `행`, `열`, `무결성`)
+    - [[SQL_Relational_Operators]] : 순수관계 연산자(`SELECT(σ)`, `PROJECT(π)`, `JOIN(⋈)`, `DIVIDE(÷)`)
     - [[Data_Modeling_Overview]] : 모델링의 3단계와 관점 (`개념 모델링`, `논리 모델링`, `물리 모델링`)
     - [[SQL_ERD_Components]] : 엔터티(Entity), 속성(Attribute), 관계(Relationship) (`카디널리티`, `식별/비식별`)
     - [[SQL_Keys_and_Identifiers]] : PK와 FK의 관계 (`본질식별자`, `인조식별자`, `주식별자`, `복합식별자`)
@@ -95,35 +96,6 @@
     - [[SQL_DCL_Grant_Revoke]] : 유저 권한 부여 및 회수 (`GRANT`, `REVOKE`, `ROLE`, `WITH GRANT OPTION`, `CASCADE`)
 
 ---
-
-## Level 5. [SQLD 과목 3] SQL 고급활용 및 튜닝
-
-> **"SQL이 내부에서 어떻게 돌아가는지 이해하고, 느린 쿼리를 빠르게 고치는 기술입니다."**
-
-* 1장. SQL 수행 구조
-    * [[SQL_Execution_Structure]] : DB 엔진이 SQL을 처리하는 방법
-      (`파싱`, `최적화`, `실행`, `메모리 구조`, `버퍼 캐시`, `Sequential/Random I/O`)
-
-    * [[SQL_Storage_Structure]] : 데이터가 디스크에 저장되는 방식
-      (`블록(Block)`, `익스텐트(Extent)`, `세그먼트(Segment)`, `테이블스페이스`, `로우 체이닝/마이그레이션`)
-
-- **2장. SQL 분석 도구**
-    - [[SQL_Analysis_Tools]] : 느린 쿼리 진단하기 (`실행계획`, `EXPLAIN PLAN`, `AUTOTRACE`, `통계정보 읽는 법`)
-
-- **3장. SQL 옵티마이저**    
-    - [[SQL_Optimizer]] : 최적 실행계획을 결정하는 DB의 두뇌 (`RBO vs CBO`, `소프트/하드 파싱`, `바인드 변수`, `힌트(HINT)`)
-
-- **4장. 인덱스 튜닝**
-    - [[SQL_Index_Tuning]] : 조회 속도를 10배 올리는 핵심 기술 (`B-Tree 구조`, `인덱스 스캔 종류`, `손익분기점`, `결합 인덱스`, `인덱스 설계 원칙`)
-
-- **5장. 조인 튜닝**
-    - [[SQL_Join_Tuning]] : 조인 방식에 따른 성능 차이 (`Nested Loop Join`, `Hash Join`, `Sort Merge Join`, `드라이빙 테이블`, `조인 순서`)
-
-- **6장. 고급 SQL 튜닝**
-    - [[SQL_Advanced_Tuning]] : 소트와 DML 성능 최적화 (`불필요한 소트 제거`, `DISTINCT vs GROUP BY`, `DML 튜닝`, `파티셔닝 활용`)
-
-- **7장. Lock과 트랜잭션 동시성 제어**
-    - [[SQL_Lock_Concurrency]] : 동시에 접근할 때 데이터를 지키는 방법 (`Lock 종류`, `Deadlock`, `트랜잭션 격리 수준`, `낙관적/비관적 잠금`)
 
 ---
 

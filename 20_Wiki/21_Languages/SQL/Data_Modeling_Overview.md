@@ -10,6 +10,7 @@ related:
   - "[[SQL_ERD_Components]]"
   - "[[SQL_Normalization_정규화]]"
   - "[[SQL_Keys_and_Identifiers]]"
+  - "[[00_SQL_HomePage]]"
 ---
 # Data Modeling: 데이터 모델링의 모든 것
 

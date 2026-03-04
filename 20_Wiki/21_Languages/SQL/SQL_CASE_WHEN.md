@@ -14,277 +14,298 @@ related:
   - "[[SQL_Filtering_WHERE]]"
   - "[[00_SQL_HomePage]]"
 ---
-# 쿼리 속의 IF-ELSE 분기점
+# SQL CASE WHEN — 쿼리 속의 IF-ELSE 분기점
 
 ## 개념 한 줄 요약
 
-SQL에서 **"만약(IF) ~라면 A, 아니면(ELSE) B"** 라는 논리를 구현하는 문법이야.
-엑셀의 `IF` 함수나 프로그래밍의 `if-else` 문과 똑같아.
+> **"만약(IF) ~라면 A, 아니면(ELSE) B" 라는 논리를 SQL 에서 구현하는 문법.** 엑셀의 `IF` 함수, 프로그래밍의 `if-else` 문과 똑같다.
 
 ---
-## 왜 필요한가 (Why)
 
-1.  **데이터 범주화 (Categorization):** 점수(85점)를 등급('A학점')으로 바꿀 때.
-2.  **데이터 정제 (Cleaning):** `M`, `F`로 된 성별을 `Male`, `Female`로 바꿀 때.
-3. **피벗 테이블(Pivot):** "월별 매출 추이"를 한 눈에 보고 싶을 때 (1월, 2월, 3월 컬럼 생성).
-4.  **조건부 집계 (Conditional Aggregation):** (핵심🔥) 전체 매출 중 '전자제품' 매출만 따로 컬럼으로 뽑고 싶을 때.
+## 언제 쓰나?
+
+|사용 목적|예시|
+|---|---|
+|데이터 범주화|점수(85점) → 등급('B학점') 으로 변환|
+|데이터 정제|`'M'` · `'F'` → `'Male'` · `'Female'` 로 변환|
+|피벗 테이블|세로 데이터를 월별 컬럼(1월, 2월, 3월)으로 가로로 펼치기|
+|조건부 집계|전체 매출 중 '전자제품' 매출만 별도 컬럼으로 추출|
+|비율 계산|전체 건수 대비 특정 조건 건수 비율 구하기|
 
 ---
-##  Basic Syntax (기본 문법)
+
+---
+
+# ① 기본 문법
+
+## SEARCHED CASE — 조건식 전체를 쓰는 일반적인 형태
 
 ```sql
 SELECT
     student_name,
     score,
-    -- [문법 시작]
-    CASE 
-        WHEN score >= 90 THEN 'A학점'   -- 90점 이상이면 A
-        WHEN score >= 80 THEN 'B학점'   -- 80점 이상이면 B
-        ELSE 'C학점'                    -- 나머지 전부 [핵심] ELSE 뒤의 값이 '기본값'이 됨!
-    END AS grade                        -- [문법 끝] 컬럼 별명(AS) 필수!
+    CASE
+        WHEN score >= 90 THEN 'A학점'
+        WHEN score >= 80 THEN 'B학점'
+        WHEN score >= 70 THEN 'C학점'
+        ELSE 'F학점'          -- 나머지 전부. ELSE 생략 시 → NULL 반환
+    END AS grade              -- END 로 반드시 닫아야 한다
 FROM exams;
 ```
 
-**ELSE와 NULL의 관계**
-
-- `CASE` 문에서 `ELSE` 뒤에 지정한 값이 해당 컬럼의 **기본값(Default)** 이 됩니다.
-- 만약 쿼리에서 별도의 `ELSE` 구문을 작성하지 않으면, 조건에 맞지 않는 모든 데이터는 **무조건 `NULL` 값이 기본값**으로 반환됩니다. (데이터 빵꾸의 주범이 되므로 주의!)
----
-## CASE 문법의 두 가지 형태
-
-> 💡 CASE 문법은 두 가지가 있습니다!
-
-### ① SEARCHED_CASE — 조건식 전체를 씀 (일반적으로 아는 그것)
+## SIMPLE CASE — 비교할 컬럼을 CASE 바로 뒤에 선언
 
 ```sql
 SELECT LOC,
-    CASE WHEN LOC = 'NEW YORK' THEN 'EAST'
-         ELSE 'ETC'
+    CASE LOC
+        WHEN 'NEW YORK' THEN 'EAST'
+        WHEN 'CHICAGO'  THEN 'MIDWEST'
+        ELSE 'ETC'
     END AS AREA
 FROM DEPT;
 ```
 
-### ② SIMPLE_CASE — 비교할 컬럼을 CASE 바로 뒤에 선언
+## 두 형태 비교
+
+|구분|구조|WHEN 뒤에 오는 것|범위 비교 가능?|
+|---|---|---|---|
+|SEARCHED CASE|`CASE WHEN 조건식 THEN`|`score >= 90` 같은 **조건식 전체**|✅ 가능|
+|SIMPLE CASE|`CASE 컬럼 WHEN 값 THEN`|`'NEW YORK'` 같은 **값만**|❌ `=` 비교만 가능|
+
+> **SIMPLE CASE 치명적 한계:** 정확히 일치(`{text}=`) 비교만 가능하다. 대소 비교(`>`, `<`, `>=`) 가 필요하면 반드시 **SEARCHED CASE** 를 써야 한다.
 
 ```sql
-SELECT LOC,
-    CASE LOC WHEN 'NEW YORK' THEN 'EAST'
-             ELSE 'ETC'
-    END AS AREA
-FROM DEPT;
+-- ❌ SIMPLE CASE 로 범위 비교 불가
+CASE score WHEN >= 90 THEN 'A'  -- 문법 에러!
+ 
+-- ✅ 범위 비교는 SEARCHED CASE 만 가능
+CASE WHEN score >= 90 THEN 'A'
 ```
 
-> [!info] 두 형태 비교
->
-> | 구분 | 구조 | WHEN 뒤에 오는 것 |
-> |:--|:--|:--|
-> | **SEARCHED_CASE** | `CASE WHEN 조건식 THEN` | `LOC = 'NEW YORK'` 처럼 **조건식 전체** |
-> | **SIMPLE_CASE** | `CASE 컬럼 WHEN 값 THEN` | `'NEW YORK'` 처럼 **값만** |
+---
 
-> [!warning] SIMPLE_CASE의 치명적 한계
-> SIMPLE_CASE는 **정확히 일치(`=`)** 비교만 가능합니다.
-> 대소 비교(`>`, `<`, `>=`)가 필요하면 반드시 **SEARCHED_CASE** 를 써야 합니다.
->
-> ```sql
-> -- ❌ SIMPLE_CASE로 범위 비교 불가
-> CASE score WHEN >= 90 THEN 'A'  -- 문법 에러!
->
-> -- ✅ 범위 비교는 SEARCHED_CASE만 가능
-> CASE WHEN score >= 90 THEN 'A'
->      WHEN score >= 80 THEN 'B'
-> ```
->
-> Oracle의 `DECODE` 함수도 같은 이유로 정확히 일치할 때만 쓸 수 있습니다.
+## ELSE 와 NULL 의 관계
+
+|상황|결과|
+|---|---|
+|`ELSE 값` 명시|조건에 안 맞는 행은 그 값으로 채워짐|
+|`ELSE` 생략|조건에 안 맞는 행은 **자동으로 NULL**|
+|`ELSE ''` 명시|NULL 이 아닌 **빈 문자열(공백)** 이 들어감|
+
+> `ELSE` 를 생략하면 데이터 빵꾸(NULL)의 주범이 된다. 항상 명시하는 습관을 들이자.
 
 ---
-## DB 별 전용 문법
 
-표준 SQL인 `CASE WHEN`은 조금 길기 때문에, 각 DB마다 이를 압축한 전용 함수나 구문을 지원합니다.
+---
 
-### Oracle 전용: `DECODE` 함수 
+# ② DB 별 전용 문법
 
-Oracle에는 `CASE WHEN`의 조상 격인 `DECODE` 함수가 있습니다.
+## Oracle — DECODE 함수
 
-- **문법:** `DECODE(컬럼, 조건1, 결과1, 조건2, 결과2, ..., 기본값)`
-- **치명적 단점:** `CASE WHEN`처럼 대소 비교(`>`, `<`)는 불가능하고, 오직 **정확히 일치(`{text}=`)** 할 때만 사용할 수 있습니다.
+`CASE WHEN` 의 조상 격인 Oracle 전용 함수다.
+
+### 기본 문법
+
+```
+DECODE(컬럼, 조건1, 결과1, 조건2, 결과2, ..., 기본값)
+```
 
 ```sql
--- 성별 코드를 변환하는 예시 (CASE WHEN과 완벽히 동일한 결과)
+-- 성별 코드 변환 (CASE WHEN 과 동일한 결과)
 SELECT
     student_name,
     DECODE(gender, 'M', 'Male', 'F', 'Female', 'Unknown') AS gender_name
 FROM students;
 ```
 
-### PostgreSQL 전용: `FILTER` 구문
+### DECODE 인수 개수와 DEFAULT 값 ⭐️
 
-"조건부 집계"를 위해 태어난 최신 문법입니다. 코드가 훨씬 직관적입니다.
+> **인수 개수가 홀수면 마지막 값이 DEFAULT 가 된다.** 짝수면 DEFAULT 없이 조건쌍만 있는 것이므로, 조건에 맞지 않으면 **NULL 반환**.
+
+```sql
+-- ✅ 홀수 (마지막 'Unknown' 이 DEFAULT)
+DECODE(gender, 'M', 'Male', 'F', 'Female', 'Unknown')
+--              ↑     ↑      ↑     ↑         ↑
+--              조건1  결과1  조건2  결과2    DEFAULT
+
+-- ⚠️ 짝수 (DEFAULT 없음 → 매칭 안 되면 NULL 반환)
+DECODE(gender, 'M', 'Male', 'F', 'Female')
+-- gender 가 'M' 도 'F' 도 아니면 → NULL
+
+-- ✅ 짝수이지만 마지막에 '' (빈 문자열) 로 DEFAULT 지정
+DECODE(gender, 'M', 'Male', 'F', 'Female', '')
+-- gender 가 'M' 도 'F' 도 아니면 → NULL 이 아닌 빈 문자열(공백) 출력
+--                                          ↑
+--                                      '' 는 NULL 이 아니라 빈 문자열이다!
+```
+
+> **치명적 단점:** `CASE WHEN` 처럼 대소 비교(`>`, `<`) 는 불가능. 오직 **정확히 일치(`{text}=`)** 할 때만 사용할 수 있다.
+
+---
+
+## PostgreSQL — FILTER 구문
+
+조건부 집계를 위해 태어난 최신 문법. 코드가 훨씬 직관적이다.
 
 ```sql
 SELECT
-    -- "COUNT를 하긴 할 건데(COUNT*), 이 조건일 때만(FILTER) 세어줘"
     COUNT(*) FILTER (WHERE credit ILIKE '%gift%') AS gift_count,
     COUNT(*) AS total_count
 FROM payments;
+-- "COUNT 는 하되, 이 조건일 때만 세어줘"
 ```
 
-### BigQuery 전용: `COUNTIF` 함수
+---
 
-구글이 만든 초단축 함수입니다. "조건(IF)에 맞는 것만 세라(COUNT)"는 뜻입니다.
+## BigQuery — COUNTIF 함수
 
 ```sql
 SELECT
     COUNTIF(credit LIKE '%gift%') AS gift_count,
-    COUNTIF(credit LIKE '%gift%') / COUNT(*) AS gift_ratio -- 비율 계산이 압도적으로 깔끔함
+    COUNTIF(credit LIKE '%gift%') / COUNT(*) AS gift_ratio
 FROM payments;
 ```
 
 ---
-## Code Core Points (조건부 집계와 피벗)
 
-초보자는 필터링할 때 `WHERE`를 쓰고, 고수는 `CASE WHEN`(또는 `FILTER`)을 쓴다. 
-데이터를 세로에서 가로로 펼치는 피벗(Pivot) 작업의 핵심 원리이다.
+---
 
-### 조건부 카운트 (1과 0 더하기)
+# ③ 조건부 집계 — CASE WHEN 의 진짜 파괴력
 
-특정 조건에 맞으면 1, 아니면 0을 부여하고 전체를 `SUM` 해버리는 테크닉이다.
+> **초보자는 필터링할 때 `WHERE` 를 쓰고, 고수는 `CASE WHEN` 을 쓴다.**
+
+## A. 조건부 카운트 — 1과 0 더하기
+
+특정 조건에 맞으면 1, 아니면 0을 부여하고 `SUM` 해버리는 테크닉이다.
 
 ```sql
-SELECT 
+SELECT
     product_name,
-    -- 데이터를 2023년과 2024년 가로 컬럼으로 각각 분리하여 합계(Pivot)
     SUM(CASE WHEN year = 2023 THEN amount ELSE 0 END) AS sales_2023,
     SUM(CASE WHEN year = 2024 THEN amount ELSE 0 END) AS sales_2024,
-    
-    -- 💡 장점: 두 컬럼이 나란히 생성되므로 아래처럼 즉시 증감 계산이 가능하다!
-    (SUM(CASE WHEN year = 2024 THEN amount ELSE 0 END) - 
-     SUM(CASE WHEN year = 2023 THEN amount ELSE 0 END)) AS diff
+    -- 두 컬럼이 나란히 생성되므로 즉시 증감 계산 가능!
+    SUM(CASE WHEN year = 2024 THEN amount ELSE 0 END) -
+    SUM(CASE WHEN year = 2023 THEN amount ELSE 0 END) AS diff
 FROM yearly_sales
 GROUP BY product_name;
 ```
 
-**결과 형태 비교 (단순 GROUP BY vs 피벗 변환)**
+**GROUP BY 방식 vs CASE WHEN 피벗 비교:**
 
-|**방식**|**결과 형태**|**비고**|
+|방식|결과 형태|뺄셈 계산|
 |---|---|---|
-|**GROUP BY year**|세로로 2줄 나옴 (2023, 2024)|뺄셈 계산 불가능|
-|**CASE WHEN (Pivot)**|**가로로 1줄 나옴 (2023컬럼, 2024컬럼)**|**바로 뺄셈 가능**|
+|`GROUP BY year`|세로로 2줄 (2023행, 2024행)|❌ 불가능|
+|`CASE WHEN` (피벗)|가로로 1줄 (2023컬럼, 2024컬럼)|✅ 바로 가능|
 
-### 조건부 실제 값 연산 (평균 내기) 
+---
 
-개수(1, 0)만 세는 것이 아니라, 특정 조건일 때 **실제 데이터의 값**을 가져와서 합계나 평균(`AVG`)을 낼 수도 있다.
+## B. 조건부 평균 — ELSE NULL 주의 ⚠️
 
 ```sql
--- 목표: 2011년도 게임들의 비평가 평점 평균만 따로 구하고 싶다!
-
--- ✅ [PostgreSQL 방식] FILTER를 사용한 우아한 조건부 평균 연산
+-- ✅ PostgreSQL: FILTER 사용
 SELECT
-    ROUND(AVG(ga.critic_score) FILTER (WHERE ga.year = 2011), 2) AS score_2011
-FROM game_analytics ga;
+    ROUND(AVG(critic_score) FILTER (WHERE year = 2011), 2) AS score_2011
+FROM game_analytics;
 
--- ✅ [표준 SQL 방식] CASE WHEN을 사용한 조건부 평균 연산
+-- ✅ 표준 SQL: CASE WHEN + ELSE NULL
 SELECT
     ROUND(AVG(CASE WHEN year = 2011 THEN critic_score ELSE NULL END), 2) AS score_2011
 FROM game_analytics;
 
--- ⚠️ 매우 주의할 점 (AVG 사용 시): 
--- 개수를 더할 때(SUM)는 ELSE 0을 썼지만, 평균(AVG)을 낼 때는 반드시 'ELSE NULL'을 써야 한다. (또는 ELSE 자체를 생략)
--- 만약 ELSE 0을 쓰면, 조건에 안 맞는 데이터가 0점으로 평균 계산(분모)에 포함되어 평균 점수가 대폭락하는 대참사가 발생한다!
+-- ❌ 절대 금지: AVG 에서 ELSE 0 사용
+SELECT
+    AVG(CASE WHEN year = 2011 THEN critic_score ELSE 0 END) AS score_2011
+FROM game_analytics;
+-- 조건 안 맞는 데이터가 0점으로 평균 계산(분모)에 포함 → 평균이 대폭락!
 ```
 
+> **SUM 에서는 `ELSE 0`, AVG 에서는 `ELSE NULL` (또는 ELSE 생략)** 
+> AVG 는 NULL 은 계산에서 제외하지만 0 은 포함해서 나누기 때문이다.
 
+---
 
+---
 
-----
-## 클릭률(CTR)과 비율 계산하기 
+# ④ 비율 계산 — WHERE 를 쓰면 안 되는 이유 ⭐️
 
-**"비율 계산은 WHERE 대신 조건부 집계로 처리한다"** 는 말이 바로 이 뜻입니다.
+> **"비율(Ratio) 을 구할 땐 절대로 WHERE 를 쓰지 마라."**
 
-**Q. 광고를 본 사람 대비 클릭한 사람의 비율(CTR)은?**
+## 왜 WHERE 가 틀리는가?
 
-- **분모:** 전체 노출 수 (`COUNT(*)`)
-- **분자:** 클릭한 수 (`status = 'click'`)
+```sql
+-- ❌ 잘못된 쿼리: WHERE 로 필터링
+SELECT
+    COUNT(*) AS gift_count,   -- 기프트카드 건수
+    COUNT(*) AS total_count   -- 전체 건수라고 착각!
+FROM payments
+WHERE credit ILIKE '%gift%';  -- ⚠️ 여기서 기프트카드 아닌 행이 전부 날아감
+
+-- WHERE 가 먼저 실행 → 기프트카드만 남음
+-- → 분자(gift) = 분모(total) → 비율이 항상 100% !
+```
+
+## 올바른 비율 계산 — CASE WHEN 으로 분모 살리기
+
+```sql
+SELECT
+    -- 분자: 조건에 맞는 것만 1로 바꿔서 합산
+    SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END) AS gift_count,
+
+    -- 분모: 전체 데이터 (아무것도 버리지 않음)
+    COUNT(*) AS total_count,
+
+    -- 비율 계산
+    (SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END)::float
+     / COUNT(*)) * 100 AS ratio
+FROM payments;
+```
+
+## 클릭률(CTR) 계산 예제
 
 ```sql
 SELECT
     ad_name,
-    
-    -- 1. 클릭 수 구하기 (분자)
-    SUM(CASE WHEN action = 'click' THEN 1 ELSE 0 END) AS click_count,
-    
-    -- 2. 전체 노출 수 구하기 (분모)
-    COUNT(*) AS total_view,
-    
-    -- 3. 클릭률(%) 계산 (분자 / 분모)
-    -- 1.0을 곱하는 이유는 소수점을 만들기 위해서임 (안 하면 0으로 나옴)
-    SUM(CASE WHEN action = 'click' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS ctr
-    
+    SUM(CASE WHEN action = 'click' THEN 1 ELSE 0 END)          AS click_count,
+    COUNT(*)                                                     AS total_view,
+    SUM(CASE WHEN action = 'click' THEN 1 ELSE 0 END) * 1.0
+        / COUNT(*)                                               AS ctr
 FROM ad_logs
 GROUP BY ad_name;
+-- * 1.0 을 곱하는 이유: 정수 / 정수 = 0 이 되는 걸 막기 위해 소수점 강제 생성
 ```
 
+|방식|동작|
+|---|---|
+|`WHERE`|데이터를 **잘라내고 버림** (분모가 사라짐)|
+|`CASE WHEN`|데이터를 **버리지 않고 표시만 함** (분모 유지)|
+
 ---
-## 🚫 치명적인 실수: WHERE로 필터링하면 '분모'가 사라진다!
 
-많은 분들이 **"기프트카드(gift) 결제 비율을 구해라"** 라는 질문을 받으면 무의식적으로 `WHERE`를 씁니다. 하지만 이건 **오답**입니다.
+---
 
-### ❌ 잘못된 쿼리 (WHERE 사용)
+# 초보자가 자주 하는 실수
+
+## ① ELSE 를 안 쓰면?
+
+조건에 안 맞는 데이터는 자동으로 **`NULL`** 이 된다. 빈 값이 싫다면 `ELSE 'Unknown'` 처럼 기본값을 반드시 넣자.
+
+## ② END 를 까먹으면?
+
+`CASE` 를 열었으면 무조건 `END` 로 닫아야 한다. 에러 메시지에 `syntax error at or near...` 가 뜨면 90% 는 `END` 누락이다.
+
+## ③ 비율 계산했는데 0이 나오면?
 
 ```sql
-SELECT 
-    COUNT(*) AS gift_count,   -- 기프트카드 건수
-    COUNT(*) AS total_count   -- 전체 건수 (라고 착각함)
-FROM payments
-WHERE credit ILIKE '%gift%'; -- ⚠️ 여기서 이미 전체 데이터가 날아감!
+-- ❌ 정수 / 정수 = 정수 (소수점 버림)
+2 / 5 = 0
+
+-- ✅ 해결 방법
+2 * 1.0 / 5   -- * 1.0 으로 실수 변환 (PostgreSQL · Oracle)
+2::float / 5  -- ::float 로 형변환 (PostgreSQL)
 ```
 
-**결과:** `WHERE`가 먼저 실행되어 '기프트카드'가 아닌 행을 다 지워버렸습니다.
-남은 건 기프트카드 뿐이라, **분자(gift)와 분모(total)가 같아져서 비율이 항상 100%** 가 나옵니다.
+## ④ AVG 에서 ELSE 0 을 쓰면?
 
-
-### ⭕️ 올바른 쿼리 (CASE WHEN 사용)
-
-전체 데이터(분모)를 **살려둔 채로**, 원하는 것만 **콕 집어서(CASE WHEN)** 세야 합니다.
-
-```sql
-SELECT 
-    -- 1. 분자: 조건에 맞는 것만 1로 바꿔서 셈 (ILIKE 사용 가능)
-    SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END) AS gift_count,
-
-    -- 2. 분모: 아무 조건 없이 다 셈 (전체 데이터 생존)
-    COUNT(*) AS total_count,
-
-    -- 3. 비율 계산 가능
-    (SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END)::float / COUNT(*)) * 100 AS ratio
-FROM payments;
-```
-
-**WHERE**: 데이터를 **잘라내고 버림**. (남은 것끼리만 계산)
-**CASE WHEN**: 데이터를 **버리지 않고 표시만 함**. (전체 대비 비율 계산 가능)
-**공식:** **"비율(Ratio)을 구할 땐 절대로 WHERE를 쓰지 마라."**
+조건에 안 맞는 값이 0으로 평균 계산에 포함되어 **평균이 대폭락** 한다. AVG 에서는 반드시 `ELSE NULL` 또는 ELSE 를 생략해야 한다.
 
 ---
-## 초보자가 자주 하는 실수 (Misconceptions)
-
-### ① "ELSE를 안 쓰면 어떻게 되나요?"
-
-- 조건에 안 맞는 데이터는 자동으로 **`NULL`** 이 됩니다.
-- `CASE WHEN score > 90 THEN 'A'` 만 쓰면, 80점은 `NULL`이 됩니다. 빈 값이 싫다면 `ELSE 'Unknown'` 처럼 기본값을 꼭 넣어주세요.
-
-### ② "END를 자꾸 까먹어요."
-
-- SQL에서 `CASE`를 열었으면 무조건 **`END`** 로 닫아줘야 합니다. 괄호를 닫는 것(`)`)과 같은 이치입니다.
-- 에러 메시지에 `syntax error at or near...`가 뜨면 90%는 `END` 누락입니다.
-
-### ③ "비율 계산했는데 0이 나와요!"
-
-- SQL(특히 Postgres)에서 `정수 / 정수 = 정수`입니다. (예: `2 / 5 = 0`)
-- 분자나 분모 중 하나에 **`* 1.0`** 을 곱하거나 `::float`로 형변환을 해야 소수점이 나옵니다.
-
----
-## 요약
-
-1. 단순 변환: **"점수 ➔ 등급"** 바꿀 때 쓴다.
-2. 조건부 집계: **`SUM(CASE WHEN 조건 THEN 1 ELSE 0 END)`** 공식을 외우자.
-3. 비율 계산: **"특정 조건 수 / 전체 수"** 를 구할 때 `WHERE` 쓰지 말고 위 공식을 쓴다.
-

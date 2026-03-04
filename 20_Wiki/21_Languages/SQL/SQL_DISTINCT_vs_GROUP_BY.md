@@ -11,80 +11,166 @@ related:
   - "[[SQL_SELECT_FROM]]"
   - "[[00_SQL_HomePage]]"
 ---
-# SQL DISTINCT vs GROUP BY (중복 제거와 그룹화)
+# SQL DISTINCT vs GROUP BY
 
-## Summary (개념 한 줄 요약)
+## 개념 한 줄 요약
 
-단순히 '종류(목록)'만 알고 싶으면 `SELECT DISTINCT`를, 데이터를 묶어서 통계를 내려면 `GROUP BY`를, 그룹 내에서 '서로 다른 고유한 종류의 개수'를 세려면 `COUNT(DISTINCT)`를 사용한다.
-
----
-## Why it is needed (왜 필요한가?)
-
-집계(숫자 계산)가 필요 없고 단순히 "어떤 조합이 있는지(Unique Combination)"만 궁금할 때 `GROUP BY`를 쓰면 쿼리 목적이 불분명해진다. 
-단순히 목록만 추출할 때는 `DISTINCT`가 훨씬 직관적이고 빠르다. 반대로 그룹화된 통계가 필요할 때는 `GROUP BY`를 써야 한다.
-
----
-## When to use in practice (실무 적용 시점)
-
-* **목록(Catalog)이나 메뉴판 만들기:** "우리 쇼핑몰에 등록된 대분류/소분류 카테고리 목록만 중복 없이 뽑아주세요." (`SELECT DISTINCT`)
-* **DAU(일일 활성 사용자 수) 계산:** 오늘 하루 쇼핑몰에 접속한 총 횟수가 아니라, '순수 방문자 수'를 구할 때. 철수가 10번 접속해도 1명으로 셈. (`COUNT(DISTINCT user_id)`)
+> **"종류(목록)만 알고 싶으면 `DISTINCT`, 묶어서 통계를 내려면 `GROUP BY`, 그룹 안에서 고유한 개수를 세려면 `COUNT(DISTINCT)` 를 쓴다."**
 
 ---
 
-## Core Mechanism (핵심 동작 원리)
+## 언제 무엇을 쓰나?
 
-### 3가지 핵심 문법 비교표
+|상황|사용|
+|---|---|
+|"어떤 카테고리가 있지?" — 목록만 뽑기|`SELECT DISTINCT`|
+|"카테고리별로 몇 개씩이지?" — 통계 내기|`GROUP BY`|
+|"오늘 방문자 수(중복 제거)" — 순수 건수 세기|`COUNT(DISTINCT)`|
 
-| 구분 | SELECT DISTINCT | GROUP BY | COUNT(DISTINCT) |
-| :--- | :--- | :--- | :--- |
-| **목적** | 목록 / 메뉴판 만들기 | 데이터 묶기 (통계용) | 고유값 개수 세기 |
-| **사용 위치** | `SELECT` 바로 뒤 | `FROM` / `WHERE` 뒤 | `SELECT`나 `HAVING` 절 내부 |
-| **작동 원리** | 조회된 행 전체의 중복을 가림 | 지정된 기준으로 데이터를 파티셔닝 | 그룹 내에서 중복을 뺀 개수만 셈 |
+**실무 예시:**
 
-###  DISTINCT (A||B) 메커니즘 (문자열 결합)
-
-`||`는 오라클과 PostgreSQL 등에서 사용하는 '문자열 결합' 연산자다. 두 컬럼을 하나의 문자열로 합친 뒤 중복을 제거하는 테크닉이다.
-* 작동 방식: A 컬럼('홍')과 B 컬럼('길동')을 합쳐서 하나의 임시 컬럼('홍길동')으로 만든 뒤, 그 덩어리의 중복을 제거하거나 카운트한다.
-* 예: `COUNT(DISTINCT colA || colB)`
+- 쇼핑몰 대분류·소분류 목록 만들기 → `SELECT DISTINCT`
+- DAU(일일 활성 사용자) 계산: 철수가 10번 접속해도 1명으로 셈 → `COUNT(DISTINCT user_id)`
 
 ---
-## Core Code Explanation (핵심 코드 설명)
 
-### 1. 단순 목록 추출 (SELECT DISTINCT)
+## 3가지 문법 비교표
 
-집계 함수 없이 펭귄의 종(species)과 서식지(island)의 조합 목록만 뽑아낸다.
+|구분|`SELECT DISTINCT`|`GROUP BY`|`COUNT(DISTINCT)`|
+|---|---|---|---|
+|목적|목록·메뉴판 만들기|데이터 묶기 (통계용)|고유값 개수 세기|
+|사용 위치|`SELECT` 바로 뒤|`FROM` / `WHERE` 뒤|`SELECT` · `HAVING` 절 내부|
+|작동 원리|조회된 행 전체의 중복을 제거|지정 기준으로 데이터를 파티셔닝|그룹 내 중복 뺀 개수만 셈|
+
+---
+
+---
+
+# ① SELECT DISTINCT — 목록 추출
+
+## 기본 사용
 
 ```sql
--- 지난달 주문 내역에서 배송이 갔던 '시/도'와 '구/군' 목록만 중복 없이 확인
+-- 배송이 갔던 시/도 · 구/군 목록을 중복 없이 확인
 SELECT DISTINCT city, district
 FROM orders
 ORDER BY city, district;
 ```
 
-### 2. 고유 개수 조건 필터링 (HAVING + COUNT DISTINCT)
+---
 
-"DISTINCT는 단순히 목록을 뽑을 때도 쓰지만, 집계 함수(`COUNT`) 안에 쏙 들어갈 때 진짜 파괴력이 살아난다."
+## ⭐ 핵심 원리 — 여러 컬럼일 때 중복 판단 기준
+
+> **DISTINCT 는 뒤에 나열된 컬럼 값이 `모두` 동일한 행만 중복으로 처리한다.**
+
+컬럼 하나하나가 아니라 **나열된 컬럼 전체를 하나의 세트** 로 묶어서 중복 여부를 판단한다.
 
 ```sql
--- 서로 다른 종류의 펭귄 종(species)을 2개 이상 보유한 섬(island)만 찾아라!
+SELECT DISTINCT name, city FROM members;
+```
+
+|name|city|결과|
+|---|---|---|
+|철수|서울|✅ 출력|
+|철수|부산|✅ 출력 — name은 같지만 city가 다름 → **다른 행으로 취급**|
+|철수|서울|❌ 제거 — name·city 모두 동일 → **중복으로 제거**|
+|영희|서울|✅ 출력|
+
+> **결론:** `(철수, 서울)` 과 `(철수, 부산)` 은 name 은 같지만 city 가 다르므로 서로 다른 행이다. 
+> **A 컬럼만 완벽하게 중복 제거하고 싶다면** 뒤에 B 컬럼을 같이 SELECT 하면 안 된다.
+
+```sql
+SELECT DISTINCT name FROM members;        -- name 기준으로만 중복 제거 ✅
+SELECT DISTINCT name, city FROM members;  -- (name + city) 세트 기준으로 중복 제거
+```
+
+---
+
+## DISTINCT 문법 O/X 체크리스트
+
+```sql
+-- ✅ 올바른 위치: SELECT 바로 뒤에 한 번만
+SELECT DISTINCT col1, col2 FROM table;
+
+-- ✅ 올바른 위치: 집계함수 안에
+SELECT COUNT(DISTINCT col) FROM table;
+
+-- ❌ 절대 불가: 특정 컬럼 하나에만 씌우기
+SELECT col1, DISTINCT(col2) FROM table;
+-- DISTINCT는 엑셀 함수처럼 컬럼 하나에만 붙일 수 없다.
+-- SELECT 절에서는 무조건 맨 앞에 한 번만!
+```
+
+---
+
+## DISTINCT (A || B) — 문자열 결합 중복 제거
+
+`||` 는 Oracle·PostgreSQL 에서 쓰는 문자열 결합 연산자다. 두 컬럼을 하나로 합친 뒤 중복을 제거하는 테크닉이다.
+
+```sql
+-- 작동 방식: '홍' + '길동' → '홍길동' 으로 합친 뒤 그 덩어리의 중복을 제거
+COUNT(DISTINCT colA || colB)
+```
+
+---
+
+---
+
+# ② GROUP BY — 그룹화 후 통계
+
+집계가 필요 없고 단순히 "어떤 조합이 있는지"만 궁금할 때는 `DISTINCT` 가 더 직관적이다. `GROUP BY` 는 **그룹화된 통계** 가 필요할 때 써야 한다.
+
+```sql
+-- 지역별 주문 건수 집계
+SELECT city, COUNT(*) AS order_cnt
+FROM orders
+GROUP BY city
+ORDER BY order_cnt DESC;
+```
+
+---
+
+---
+
+# ③ COUNT(DISTINCT) — 고유 개수 세기
+
+> **"DISTINCT 가 집계 함수 안에 들어갈 때 진짜 파괴력이 살아난다."**
+
+```sql
+-- 서로 다른 펭귄 종을 2종 이상 보유한 섬만 찾아라
 SELECT island, COUNT(DISTINCT species) AS species_cnt
 FROM penguins
 GROUP BY island
 HAVING COUNT(DISTINCT species) >= 2;
 ```
 
->섬(island)별로 데이터를 묶은 뒤, 그 섬에 사는 펭귄 데이터 중 이름이 같은 종은 1번만 카운트하여 그 고유 개수가 2 이상인 곳만 필터링한다.
+**동작 흐름:**
+
+```
+1. island 별로 데이터를 묶는다 (GROUP BY)
+2. 그 섬에 사는 펭귄 중 이름이 같은 종은 1번만 카운트 (DISTINCT)
+3. 고유 종 수가 2 이상인 섬만 필터링 (HAVING)
+```
 
 ---
-## Memory / Exam Points (복습 메모 & 주의사항)
 
-- 💡 **DISTINCT 문법 O/X 체크리스트 (위치를 정확히 기억할 것!)**
-	- ✅ `SELECT DISTINCT col1, col2` **(O)** : 올바른 문법. 전체 조회 결과에서 행(Row) 단위로 중복을 제거한다.
-	- ✅ `COUNT(DISTINCT col)` **(O)** : 올바른 문법. 괄호 안의 특정 컬럼만 중복을 제거한 뒤 개수를 센다.
-	- ❌ `SELECT col1, DISTINCT(col2)` **(X)** : 절대 불가! DISTINCT는 엑셀 함수처럼 특정 일반 컬럼 하나에만 씌울 수 없다. SELECT 절에서는 무조건 맨 앞에 한 번만 적어야 한다.
+---
 
-- **핵심 주의사항: 중복 판단의 기준은 "Row 전체"다.**
-	- `SELECT DISTINCT`를 쓸 때, 뒤에 적힌 컬럼들을 "하나의 세트"로 묶어서 본다.
-	- (철수, 서울) vs (철수, 부산) 👉 이름은 같지만 도시가 다르므로 "다른 데이터" 취급 (둘 다 출력)
-	- (철수, 서울) vs (철수, 서울) 👉 완전히 동일하므로 하나만 출력
-	- **결론:** 만약 A 컬럼의 중복만 완벽하게 없애고 싶다면, 뒤에 B 컬럼을 같이 SELECT 하면 안 된다! (`SELECT DISTINCT A`만 써야 함)
+# 핵심 정리 — 언제 뭘 쓸지 한눈에
+
+```
+단순 목록이 필요해?
+  └── YES → SELECT DISTINCT
+
+집계(합계·평균·개수)가 필요해?
+  └── YES → GROUP BY
+
+그룹 안에서 중복 제거한 개수가 필요해?
+  └── YES → COUNT(DISTINCT col)
+
+특정 컬럼 하나만 중복 제거하고 싶어?
+  └── 뒤에 다른 컬럼 붙이지 말고 SELECT DISTINCT 해당컬럼 만 쓸 것
+```
+
+---
+
