@@ -4,7 +4,7 @@ tags:
 status: 🟩 해결
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
-  - "[[Text_Slicing_cut]]"
+  - "[[Linux_Text_Slicing_cut]]"
 source: HackerRank
 difficulty:
   - Easy

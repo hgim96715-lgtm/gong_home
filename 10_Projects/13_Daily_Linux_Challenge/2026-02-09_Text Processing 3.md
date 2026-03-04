@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 status: 🟩 해결
 related:
-  - "[[Stream_Editor]]"
+  - "[[Linux_Stream_Editor]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:

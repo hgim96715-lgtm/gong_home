@@ -9,7 +9,7 @@ tags:
 related:
   - "[[Shell_Scripting_Basics]]"
   - "[[Environment_Variables]]"
-  - "[[Text_Transformation_tr]]"
+  - "[[Linux_Text_Transformation_tr]]"
   - "[[Shell_Scripting_Basics]]"
   - "[[00_Linux_HomePage]]"
 ---

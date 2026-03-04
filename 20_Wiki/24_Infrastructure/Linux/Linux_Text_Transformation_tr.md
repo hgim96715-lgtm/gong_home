@@ -6,7 +6,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Stream_Editor]]"
+  - "[[Linux_Stream_Editor]]"
   - "[[Redirection_Pipe]]"
   - "[[00_Linux_HomePage]]"
 ---

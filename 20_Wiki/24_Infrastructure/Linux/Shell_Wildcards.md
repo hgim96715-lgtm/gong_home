@@ -10,7 +10,7 @@ tags:
   - Shell
 related:
   - "[[File_Management]]"
-  - "[[Filtering_Text]]"
+  - "[[Linux_Filtering_Text]]"
 ---
 ## 개념 한 줄 요약
 

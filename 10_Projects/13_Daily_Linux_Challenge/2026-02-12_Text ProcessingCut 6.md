@@ -3,8 +3,8 @@ tags:
   - Linux_Test
 status: 🟩 해결
 related:
-  - "[[Text_Slicing_cut]]"
-  - "[[Stream_Editor]]"
+  - "[[Linux_Text_Slicing_cut]]"
+  - "[[Linux_Stream_Editor]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 ---

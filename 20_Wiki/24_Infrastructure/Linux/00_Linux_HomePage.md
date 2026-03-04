@@ -78,13 +78,13 @@
 
 > "수만 줄의 로그에서 원하는 정보만 딱! 골라내요."
 
-- [[Filtering_Text]] : 원하는 글자 찾기 (`grep`, `-i`, `-r`, `-n`, `-v`, `정규식`)
-- [[Text_Transformation_tr]] : 문자 치환 및 삭제의 기본 (`tr`, `대소문자 변환`, `특수문자 삭제`)
-- [[Text_Slicing_cut]] : 칼로 자르듯 원하는 열만 쏙! (`cut`, `-d 구분자`, `-f 필드번호`, `CSV 처리`)
-- [[Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`, `$1 $2 필드`, `s/찾기/바꾸기/`, `NR`)
-- [[JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`, `.key`, `[]`, `파이프`, `API 응답 처리`)
+- [[Linux_Filtering_Text]] : 원하는 글자 찾기 (`grep`, `-i`, `-r`, `-n`, `-v`, `정규식`)
+- [[Linux_Text_Transformation_tr]] : 문자 치환 및 삭제의 기본 (`tr`, `대소문자 변환`, `특수문자 삭제`)
+- [[Linux_Text_Slicing_cut]] : 칼로 자르듯 원하는 열만 쏙! (`cut`, `-d 구분자`, `-f 필드번호`, `CSV 처리`)
+- [[Linux_Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`, `$1 $2 필드`, `s/찾기/바꾸기/`, `NR`)
+- [[Linux_JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`, `.key`, `[]`, `파이프`, `API 응답 처리`)
 - [[Linux_Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`, `-l 줄수`, `-c 빈도`)
-- [[File_Comparison]] : 파일 내용 비교 및 검증 (`diff`, `cmp`, `patch`, `변경점 추적`)
+- [[Linux_File_Comparison]] : 파일 내용 비교 및 검증 (`diff`, `cmp`, `patch`, `변경점 추적`)
 
 ---
 

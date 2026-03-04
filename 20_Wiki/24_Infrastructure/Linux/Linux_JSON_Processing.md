@@ -9,7 +9,7 @@ tags:
   - Linux
   - API
 related:
-  - "[[Filtering_Text]]"
+  - "[[Linux_Filtering_Text]]"
   - "[[File_Transfer]]"
   - "[[Pandas_Json_Normalize]]"
   - "[[Python_JSON]]"

@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 status: 🟧 복습
 related:
-  - "[[Text_Transformation_tr]]"
+  - "[[Linux_Text_Transformation_tr]]"
   - "[[Shell_Parameter_Expansion]]"
   - "[[Shell_Scripting_Basics]]"
   - "[[00_Linux_Challenge_DashBoard]]"

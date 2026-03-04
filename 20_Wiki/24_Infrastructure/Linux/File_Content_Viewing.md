@@ -14,7 +14,7 @@ related:
   - "[[File_Management]]"
   - "[[Redirection_Pipe]]"
   - "[[00_Linux_HomePage]]"
-  - "[[Stream_Editor]]"
+  - "[[Linux_Stream_Editor]]"
 ---
 ## 개념 한 줄 요약
 

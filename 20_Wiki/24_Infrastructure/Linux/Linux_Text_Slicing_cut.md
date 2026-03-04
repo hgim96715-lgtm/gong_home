@@ -5,8 +5,8 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Stream_Editor]]"
-  - "[[Filtering_Text]]"
+  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Filtering_Text]]"
   - "[[00_Linux_HomePage]]"
 ---
 ## Concept Summary
