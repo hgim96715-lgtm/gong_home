@@ -21,391 +21,385 @@ related:
   - "[[Spark_General_Transformations]]"
   - "[[Python_String_Indexing_Slicing]]"
   - "[[Python_Membership_In]]"
+  - "[[SQL_Regular_Expression]]"
 ---
+
+# Python 문자열 메서드 (String Methods)
+
 ## 개념 한 줄 요약
 
-**"긴 문장을 쪼개서(Split) 리스트로 만들거나, 리스트를 다시 문장으로 붙이는(Join) 기술."**
+> **"긴 문장을 쪼개서(split) 리스트로 만들거나, 리스트를 다시 문장으로 붙이는(join) 기술."**
 
-- **데이터 엔지니어링의 일상:** "콤마(`,`)로 구분된 CSV 파일을 읽어서 리스트로 바꿔라."
-- **핵심 도구:** `split` (칼), `join` (풀), `replace` (수정테이프), `isdigit` (감별사)
+|핵심 도구|역할|
+|---|---|
+|`split()`|칼 — 문자열을 쪼개서 리스트로|
+|`join()`|풀 — 리스트를 문자열로 합치기|
+|`replace()`|수정테이프 — 특정 문자 찾아서 교체|
+|`strip()`|지우개 — 양끝 공백·쓰레기 제거|
+|`isdigit()`|감별사 — 숫자인지 문자인지 확인|
 
 ---
-## 쪼개기: `split()` 
 
-문자열을 특정 기준(구분자)으로 잘라서 **리스트(List)** 로 반환합니다.
+---
 
-### ① 기본 사용법 (공백 기준)
+# ① split() — 쪼개기
 
-괄호 안에 아무것도 안 넣으면 **스페이스, 탭, 엔터**를 기준으로 자릅니다.
+> **문자열을 특정 기준(구분자)으로 잘라서 리스트로 반환한다.**
+
+## 기본 사용법 — 공백 기준
+
+괄호 안에 아무것도 안 넣으면 스페이스·탭·엔터를 기준으로 자른다.
 
 ```python
 text = "Spark is   very    fast"
 
-# 공백이 여러 개여도 알아서 예쁘게 잘라줌 (스마트함!)
 words = text.split()
 print(words)
-# 결과: ['Spark', 'is', 'very', 'fast']
+# ['Spark', 'is', 'very', 'fast']
+# 공백이 여러 개여도 알아서 예쁘게 처리 (스마트!)
 ```
 
-
-### ② 특정 문자로 자르기 (CSV 파싱)
+## 특정 문자로 자르기 — CSV 파싱
 
 ```python
 data = "apple,banana,grape"
 
-# 쉼표(,)를 기준으로 자름
 fruits = data.split(",")
 print(fruits)
-# 결과: ['apple', 'banana', 'grape']
+# ['apple', 'banana', 'grape']
 ```
 
-### ③ 딱 n번만 자르기 (`maxsplit`)
+## maxsplit — 딱 n번만 자르기
 
 ```python
 log = "ERROR 2026-01-27 서버가 터졌습니다 긴급 상황"
 
-# 앞에서부터 딱 1번만 자르고, 나머지는 덩어리로 둠
-parts = log.split(" ", 1)
+parts = log.split(" ", 1)   # 앞에서 딱 1번만 자름
 print(parts)
-# 결과: ['ERROR', '2026-01-27 서버가 터졌습니다 긴급 상황']
+# ['ERROR', '2026-01-27 서버가 터졌습니다 긴급 상황']
+# 로그 레벨과 나머지 내용을 분리할 때 유용
 ```
 
----
-## 반대 기술: `join()`
+## rsplit() — 오른쪽에서 자르기 (파일명·확장자 분리)
 
-은근히 모르는 꿀기능입니다. `split`으로 쪼갠 리스트를 다시 **문자열 하나로 합칠 때** 씁니다.
-
-- **문법:** `"구분자".join(리스트)`
-
-```python
-words = ['Spark', 'is', 'cool']
-
-# 문법: "구분자".join(리스트)
-# "스페이스를 사이에 끼워넣으면서 합쳐라"
-sentence = " ".join(words)
-print(sentence)
-# 결과: "Spark is cool"
-
-# "화살표를 끼워넣어라"
-arrow = " -> ".join(words)
-print(arrow)
-# 결과: "Spark -> is -> cool"
-```
-
----
-## 공백 및 특정 문자 제거 (`strip`, `lstrip`, `rstrip`)
-
-파일을 읽어오거나 API에서 데이터를 받아오면, 눈에 보이지 않는 공백이나 줄바꿈 문자(`\n`)가 섞여 있어 에러를 유발하는 경우가 매우 많습니다. 
-`split` 하기 전에 무조건 해주는 게 좋습니다.
-
-### ① 기본 사용법 (공백과 줄바꿈 제거)
-
-아무 인자도 넣지 않으면 **공백(Space)**, **탭(`\t`)**, **줄바꿈(`\n`)** 을 알아서 싹 지워줍니다.
-
-```python
-text = "   \n\t  Hello, Airflow!  \n  "
-
-print(f"원본: [{text}]")
-print(f"strip: [{text.strip()}]")   # 결과: [Hello, Airflow!] (양쪽 싹 제거)
-print(f"lstrip: [{text.lstrip()}]") # 결과: [Hello, Airflow!  \n  ] (왼쪽만 제거)
-print(f"rstrip: [{text.rstrip()}]") # 결과: [   \n\t  Hello, Airflow!] (오른쪽만 제거)
-```
-
-### **② 실무 활용: 특정 문자 타겟팅해서 깎아내기** 
-
-괄호 안에 문자를 넣으면, 그 문자들이 **양끝에서 나타나지 않을 때까지** 계속 깎아냅니다. (데이터 파싱할 때 엄청난 꿀팁입니다!)
-
-```python
-# 파일 경로나 쓰레기 값이 붙어있는 경우
-dirty_data = "000000Data_Pipeline_001.csv.bak"
-
-# 왼쪽에서 '0' 지우고, 오른쪽에서 '.bak' 지우기
-clean_data = dirty_data.lstrip("0").rstrip(".bak")
-print(clean_data) 
-# 결과: "Data_Pipeline_001.csv"
-```
-
-> **데이터 엔지니어 필수 패턴:** 텍스트 파일(`txt`, `csv`)을 파이썬의 `open()`이나 `readlines()`로 한 줄씩 읽어올 때, 항상 문장 맨 끝에 보이지 않는 줄바꿈(`\n`)이 붙어옵니다.
->  이때 **`line.rstrip('\n')`**을 해주면 깔끔한 순수 데이터만 얻을 수 있습니다!
-
-
----
-## 대소문자 변환 (`upper`, `lower`)
-
-**가장 많이 하는 실수!** `lower(변수)`가 아니라 **`변수.lower()`** 입니다. 
-파이썬에서 문자열 함수들은 대부분 **메서드(Method)** 라서 주어(변수) 뒤에 점을 찍어야 합니다.
-
-### ① 기본 사용법
-
-- **`.upper()`**: 전부 대문자로 ("shout" -> "SHOUT")
-- **`.lower()`**: 전부 소문자로 ("Quiet" -> "quiet")
-
-```python
-text = "Python Is Easy"
-
-# (X) 이렇게 쓰면 에러납니다!
-# print(lower(text)) -> NameError: name 'lower' is not defined
-
-# (O) 변수 뒤에 점(.)을 찍으세요!
-print(text.upper()) # "PYTHON IS EASY"
-print(text.lower()) # "python is easy"
-```
-
-### ② 실무 활용: 대소문자 무시하고 비교하기 (Normalization)
-
-사용자가 "Yes", "yes", "YES" 중 뭘 입력할지 모를 때, **무조건 소문자로 바꿔서 비교**하는 게 국룰입니다.
-
-```python
-user_input = "Yes"
-
-# 그냥 비교하면 틀림 ("Yes" != "yes")
-if user_input == "yes":
-    print("통과") # 실행 안 됨
-
-# 소문자로 변환 후 비교 (정규화)
-if user_input.lower() == "yes":
-    print("통과!") # 실행 됨!
-```
-
-
----
-## 갈아끼우기: `replace()`
-
-특정 글자를 찾아서 다른 글자로 바꿔줍니다. 오타 수정이나 불필요한 기호 삭제할 때 씁니다.
-
-> **"위치(Index)"가 아니라 "값(Value)"** 을 찾아서 바꾼다!!!!!!
-
-### ① 기본 사용법
-
-```python
-text = "I like Java. Java is heavy."
-
-# "Java"를 찾아서 "Python"으로 바꿔라
-new_text = text.replace("Java", "Python")
-
-print(new_text)
-# 결과: "I like Python. Python is heavy." (모두 다 바뀜)
-```
-
-### ② 글자 삭제하기
-
-"바꿀 글자"에 **빈 문자열(`""`)** 을 넣으면 삭제 효과가 납니다.
-
-```python
-money = "1,000,000원"
-
-# 쉼표(,)랑 "원"을 없애고 싶을 때
-clean_money = money.replace(",", "").replace("원", "")
-
-print(clean_money)
-# 결과: "1000000" (이제 숫자로 변환 가능!)
-```
-
-
-### ⚠️ 주의: 원본은 안 바뀐다! (Immutability)
-
-파이썬의 문자열은 **'불변(Immutable)'** 입니다. 
-`replace`를 했다고 원본 변수가 바뀌지 않습니다. 반드시 변수에 다시 담아줘야 합니다.
-
-```python
-s = "Hello"
-s.replace("H", "J") # 이렇게만 쓰면 아무 일도 안 일어난 것처럼 보임!
-
-print(s) # 여전히 "Hello"
-
-# (O) 이렇게 변수에 담아야 함
-s = s.replace("H", "J") 
-print(s) # "Jello"
-```
-
----
-## 한 번에 여러 개 바꾸기 (`translate` + `maketrans`)
-
-`replace`는 한 번에 하나씩만 바꿉니다. 만약 **"A를 B로 바꾸고, B를 A로 바꾸라"** 는 미션이 있다면?
-
-```python
-text = "AB"
-
-# 1. replace 두 번 쓰면 망함 (순차 실행의 함정)
-# A -> B 로 바뀜 ("BB") -> 그 다음 B -> A 로 바뀜 ("AA")
-broken = text.replace("A", "B").replace("B", "A")
-print(broken) # 결과: "AA" (원래 의도는 "BA"였는데!)
-```
-
-**해결책: 
-`translate` (사전 대조표 만들기)** 1:1 교환이 필요할 때는 **변환 테이블(Table)** 을 만들어서 **한 번에** 적용해야 합니다.
-
-- **`str.maketrans("찾을거", "바꿀거")`**: 변환 규칙이 담긴 사전(Dictionary)을 만듭니다.
-- **`text.translate(규칙)`**: 사전을 보고 문자를 싹 갈아끼웁니다.
-
-```python
-text = "Hello Python World"
-
-# 규칙: "A"는 "B"로, "B"는 "A"로, "o"는 "0"으로 바꿔라
-# 길이가 똑같아야 함! (A->B, B->A, o->0)
-table = str.maketrans("ABo", "BA0")
-
-result = text.translate(table)
-print(result)
-# 결과: "Hell0 Pyth0n W0rld" (A, B가 없어서 o만 바뀜)
-
-# 실전 예제: 암호 해독 (Caesar Cipher)
-# a->z, b->y ... 처럼 서로 맞바꿀 때 필수!
-code = str.maketrans("abcde", "12345")
-print("apple".translate(code)) # "1ppl5"
-```
-
->**Tip:** `replace`는 **단어(문자열)** 를 통째로 바꿀 때 쓰고, `translate`는 **글자(Character)** 를 1:1로 매핑할 때 씁니다.
-
----
-## 특정 파일만 골라내기 (`endswith`, `startswith`)
-
-`split`으로 쪼개거나 인덱싱(`[:4]`)으로 비교하지 마세요! 가독성이 떨어집니다.
-
-### ① 기본: 접두사(Prefix) / 접미사(Suffix) 검사
-
-문자열이 특정 패턴으로 시작하거나 끝나는지 검사하여 **참/거짓**을 알려줍니다.
-
-- **`startswith()`**: 접두사 검사 ("이걸로 시작하니?")
-- **`endswith()`**: 접미사 검사 ("이걸로 끝나니?")
-
-```python
-filename = "data_2024.csv"
-# 결과는 무조건 True 또는 False
-print(filename.startswith("data_")) # True
-print(filename.endswith(".txt")) # False
-```
-
-### ② 실무 활용: 리스트 컴프리헨션과 찰떡궁합
-
-파일 목록에서 원하는 것만 쏙쏙 뽑아낼 때 가장 많이 씁니다.
-
-```python
-files = ["data.csv", "README.md", "data_backup.txt", "result.csv"]
-
-# 1. 확장자가 .csv인 것만 (접미사)
-csv_files = [f for f in files if f.endswith(".csv")]
-
-# 2. 이름이 data_로 시작하는 것만 (접두사)
-data_files = [f for f in files if f.startswith("data_")]
-```
-
-### 불리언의 마법: 조건문(`if`) 없애기
-
-파이썬에서 **`True`는 `1`, `False`는 `0`** 으로 취급된다는 점을 이용하면 코드가 엄청나게 짧아집니다.
-
-#### `int()` 형변환으로 한 방에 해결
-
-조건문 없이 불리언 결과를 바로 정수로 바꿔버리세요.
-
-```python
-def check_prefix(my_string, is_prefix):
-    # startswith의 결과는 True/False
-    # int(True) -> 1
-    # int(False) -> 0
-    return int(my_string.startswith(is_prefix))
-```
-
-- 데이터 분석에서 "조건을 만족하는 행의 개수"를 셀 때 `sum()`을 바로 때려버리는 것도 이 원리입니다.
-
-**여러 조건 한 번에 검사하기 (튜플)** `endswith`나 `startswith`에 **튜플(Tuple)** 을 넣으면 `OR` 조건처럼 동작합니다
-
-```python
-# .jpg 혹은 .png로 끝나는지 확인
-if file.endswith((".jpg", ".png")): 
-    pass
-```
-
-### **대소문자 무시하고 싶다면?**
-
-먼저 소문자로 변환(`lower()`)한 뒤 검사하세요.
-
-```python
-# "Data.CSV" 처럼 대소문자가 섞여 있을 때
-# 소문자로 바꾼 뒤(.lower()) 검사하세요!
-if file.lower().endswith(".csv"):
-    pass
-```
-
----
-## 데이터 검증 (`isdigit`, `isalpha`)
-
-사용자 입력이나 파일 데이터가 **"숫자로만 되어있는지"**, **"글자로만 되어있는지"** 검사할 때 씁니다. 
-결과는 무조건 `True` 아니면 `False`입니다.
-
-### ① 주요 함수 3대장
-
-- **`.isdigit()`**: "전부 숫자니?" (0~9)
-- **`.isalpha()`**: "전부 문자니?" (한글, 영어 포함 / 공백, 특수문자 X)
-- **`.isalnum()`**: "숫자랑 문자가 섞여 있니?" (특수문자만 없으면 OK)
-
-### ② 실전 예제
-
-```python
-age = "25"
-name = "Alice"
-trash = "1000원"
-
-print(age.isdigit())   # True
-print(name.isalpha())  # True
-
-# 사람이 보기엔 숫자 같지만 '원' 때문에 False
-print(trash.isdigit()) # False
-```
-
-### ⚠️ 주의사항 (실수하기 쉬운 점)
-
-`isdigit()`은 **"모양이 숫자인가?"** 를 봅니다.
-`-5`(음수 기호)나 `3.14`(소수점)는 문자로 취급되어 `False`가 나옵니다. 
-실수는 `try-except`로 `float()` 변환을 시도하는 것이 정석입니다.
-
-
-```python
-def is_number(s):
-    try:
-        float(s) # 숫자로 변환 시도
-        return True # 성공하면 숫자임
-    except ValueError:
-        return False # 에러나면 글자임
-
-print(is_number("3.14"))  # True
-print(is_number("-10"))   # True
-print(is_number("1,000")) # False (쉼표 때문에)
-```
-
-
----
-## 파일명과 확장자 분리 (`rsplit`)
-
-`data.v1.final.csv` 처럼 점(`.`)이 많은 파일은 앞에서 자르면 엉망이 됩니다. 
-**오른쪽(Right) 끝에서** 잘라야 합니다.
+`data.v1.final.csv` 처럼 점(`.`) 이 여러 개면 앞에서 자르면 엉망이 된다.
 
 ```python
 filename = "data.v1.final.csv"
 
-# rsplit(".", 1) -> 오른쪽에서 점을 기준으로 딱 1번만 잘라라
-name, ext = filename.rsplit(".", 1)
-
-print(name) # data.v1.final
-print(ext)  # csv
+name, ext = filename.rsplit(".", 1)   # 오른쪽에서 1번만 자름
+print(name)   # data.v1.final
+print(ext)    # csv
 ```
 
----
-## Spark에서의 활용 (코드 복습)
+## ⚠️ 빈 문자열 함정
 
 ```python
-# RDD Transformation
-# "문장 하나(line)를 받아서 스페이스(" ") 기준으로 쪼개라"
-rdd.flatMap(lambda line: line.split(" "))
+"".split(",")
+# 결과: ['']  ← 빈 리스트 [] 가 아님!
+
+len("".split(","))   # 1  ← 0이 아니라 1이 나와서 버그 유발
 ```
 
-- **데이터:** `"Hello World"` (String)
-- **`split(" ")` 적용 후:** `["Hello", "World"]` (List)
-- **`flatMap` 적용:** 리스트가 벗겨지고 `Hello`, `World`가 낱개로 퍼짐.
+> 빈 문자열에 split 하면 `['']` (빈 문자열이 담긴 리스트) 가 나온다. 개수 셀 때 1개로 잘못 세는 버그가 자주 생기니 주의.
 
 ---
-### 주의사항 (버그 예방)
 
-**1. 빈 문자열의 함정** "데이터 파일(CSV, 로그)을 다룰 때 `text.split(",")`을 많이 쓰는데, 만약 `text`가 텅 빈 문자열(`""`)이라면? 빈 리스트(`[]`)가 나올 것 같지? 아니야! **`['']` (빈 문자열이 하나 들어있는 리스트)** 가 나와. 이것 때문에 개수 셀 때 1개라고 잘못 세는 버그가 진짜 많이 생기니까 조심해!"
+---
 
-**2. 변수 재할당 필수** "초보자들이 제일 많이 하는 실수 1위! `text.replace('a', 'b')` 라고만 써놓고 **'어? 왜 안 바뀌지?'** 하고 밤새 고민해. 문자열 함수들은 원본을 건드리지 못해. 항상 **`변수 = 변수.함수()`** 형태로 써야 한다는 거 잊지 마!"
+# ② join() — 합치기
+
+> **문법: `"구분자".join(리스트)`** 리스트의 각 요소 사이에 구분자를 끼워 넣으며 하나의 문자열로 합친다.
+
+## 기본 사용법
+
+```python
+words = ['Spark', 'is', 'cool']
+
+# 스페이스로 합치기
+sentence = " ".join(words)
+print(sentence)
+# 'Spark is cool'
+
+# 화살표로 합치기
+arrow = " -> ".join(words)
+print(arrow)
+# 'Spark -> is -> cool'
+
+# 구분자 없이 붙이기
+concat = "".join(words)
+print(concat)
+# 'Sparkiscool'
+```
+
+## 이스케이프 문자를 구분자로 — 줄바꿈·탭 삽입
+
+```python
+answer = ['apple', 'banana', 'grape']
+
+# 각 항목을 줄바꿈으로 구분해서 출력
+print('\n'.join(answer))
+# apple
+# banana
+# grape
+
+# 탭으로 구분
+print('\t'.join(answer))
+# apple    banana    grape
+
+# 실전: 여러 줄 텍스트를 파일로 저장할 때
+lines = ['1번 줄', '2번 줄', '3번 줄']
+content = '\n'.join(lines)
+with open('output.txt', 'w') as f:
+    f.write(content)
+```
+
+## Spark 활용
+
+```python
+# RDD: 문장을 단어 단위로 쪼개기
+rdd.flatMap(lambda line: line.split(" "))
+
+# "Hello World" → split → ["Hello", "World"] → flatMap → Hello, World (낱개)
+```
+
+---
+
+---
+
+# ③ strip() / lstrip() / rstrip() — 공백·쓰레기 제거
+
+> **파일을 읽어오면 눈에 보이지 않는 공백·줄바꿈이 섞여 에러를 유발한다.** split 하기 전에 무조건 strip 을 습관화한다.
+
+## 기본 사용법 — 공백·탭·줄바꿈 제거
+
+```python
+text = "   \n\t  Hello, Airflow!  \n  "
+
+print(text.strip())    # 'Hello, Airflow!'   ← 양쪽 전부 제거
+print(text.lstrip())   # 'Hello, Airflow!  \n  '  ← 왼쪽만
+print(text.rstrip())   # '   \n\t  Hello, Airflow!'  ← 오른쪽만
+```
+
+## 특정 문자 타겟팅 — 양끝에서 지정 문자 깎아내기
+
+```python
+dirty = "000000Data_Pipeline_001.csv.bak"
+
+clean = dirty.lstrip("0").rstrip(".bak")
+print(clean)
+# 'Data_Pipeline_001.csv'
+```
+
+> **실무 필수 패턴:** 텍스트 파일을 `readlines()` 로 읽으면 줄 끝에 `\n` 이 붙는다.
+
+```python
+ for line in open('file.txt').readlines():
+     line = line.rstrip('\n')   # 줄바꿈 제거 후 처리
+```
+
+---
+
+---
+
+# ④ replace() — 갈아끼우기
+
+> **"위치(Index)" 가 아니라 "값(Value)" 을 찾아서 바꾼다.**
+
+## 기본 사용법
+
+```python
+text = "I like Java. Java is heavy."
+
+new_text = text.replace("Java", "Python")
+print(new_text)
+# 'I like Python. Python is heavy.'  (모두 다 바뀜)
+```
+
+## 삭제 — 빈 문자열로 교체
+
+```python
+money = "1,000,000원"
+
+clean = money.replace(",", "").replace("원", "")
+print(clean)
+# '1000000'  ← 이제 int() 변환 가능
+```
+
+## ⚠️ 원본은 안 바뀐다 — 반드시 변수에 다시 담아야 함
+
+```python
+s = "Hello"
+s.replace("H", "J")   # 이렇게만 쓰면 아무 일도 안 일어남!
+
+print(s)   # 여전히 'Hello'
+
+# ✅ 변수에 다시 담아야 함
+s = s.replace("H", "J")
+print(s)   # 'Jello'
+```
+
+---
+
+---
+
+# ⑤ translate() + maketrans() — 한 번에 여러 개 바꾸기
+
+> **replace 는 순차 실행이라 A→B, B→A 를 동시에 못 한다.** 변환 테이블을 만들어서 한 번에 적용해야 한다.
+
+## replace 두 번의 함정
+
+```python
+text = "AB"
+
+# A → B 로 바뀜 ("BB") → 그 다음 B → A 로 바뀜 ("AA")
+broken = text.replace("A", "B").replace("B", "A")
+print(broken)   # 'AA'  (원래 의도는 'BA' 였는데!)
+```
+
+## translate 로 해결 — 한 번에 적용
+
+```python
+text = "Hello Python World"
+
+# maketrans("찾을거", "바꿀거") — 길이가 같아야 함
+table = str.maketrans("ABo", "BA0")
+
+result = text.translate(table)
+print(result)
+# 'Hell0 Pyth0n W0rld'
+
+# 실전: 암호화 (Caesar Cipher)
+code = str.maketrans("abcde", "12345")
+print("apple".translate(code))   # '1ppl5'
+```
+
+|함수|용도|
+|---|---|
+|`replace()`|단어(문자열) 를 통째로 교체|
+|`translate()`|글자(Character) 를 1:1 매핑으로 교체|
+
+---
+
+---
+
+# ⑥ upper() / lower() — 대소문자 변환
+
+> **`lower(변수)` ❌ → `변수.lower()` ✅** 파이썬 문자열 함수는 메서드라서 변수 뒤에 점을 찍어야 한다.
+
+```python
+text = "Python Is Easy"
+
+print(text.upper())   # 'PYTHON IS EASY'
+print(text.lower())   # 'python is easy'
+```
+
+## 실무 활용 — 대소문자 무시하고 비교 (정규화)
+
+```python
+user_input = "Yes"
+
+# ❌ 그냥 비교: 'Yes' != 'yes' → 조건 불만족
+if user_input == "yes":
+    print("통과")   # 실행 안 됨
+
+# ✅ 소문자 변환 후 비교
+if user_input.lower() == "yes":
+    print("통과!")  # 실행 됨
+```
+
+---
+
+---
+
+# ⑦ startswith() / endswith() — 접두사·접미사 검사
+
+> **파일 목록에서 원하는 것만 필터링할 때 가장 많이 쓴다.**
+
+## 기본 사용법
+
+```python
+filename = "data_2024.csv"
+
+print(filename.startswith("data_"))   # True
+print(filename.endswith(".txt"))      # False
+```
+
+## 리스트 컴프리헨션과 결합
+
+```python
+files = ["data.csv", "README.md", "data_backup.txt", "result.csv"]
+
+csv_files  = [f for f in files if f.endswith(".csv")]
+data_files = [f for f in files if f.startswith("data_")]
+```
+
+## 튜플로 여러 조건 한 번에 — OR 처럼 동작
+
+```python
+# .jpg 또는 .png 로 끝나는지 확인
+if file.endswith((".jpg", ".png")):
+    pass
+```
+
+## 대소문자 무시하고 검사
+
+```python
+# "Data.CSV" 처럼 대소문자 섞인 경우
+if file.lower().endswith(".csv"):
+    pass
+```
+
+## 불리언 → 정수 변환 (조건문 없애기)
+
+```python
+# True=1, False=0 이므로 int() 로 바로 변환 가능
+def check_prefix(my_string, prefix):
+    return int(my_string.startswith(prefix))
+
+# 리스트에서 조건 만족 개수 세기
+count = sum(f.endswith(".csv") for f in files)
+```
+
+---
+
+---
+
+# ⑧ isdigit() / isalpha() / isalnum() — 데이터 검증
+
+> **사용자 입력이나 파일 데이터가 숫자인지 문자인지 검사할 때 사용.**
+
+## 주요 함수 3대장
+
+|함수|질문|True 조건|
+|---|---|---|
+|`.isdigit()`|전부 숫자니?|`0~9` 만 있을 때|
+|`.isalpha()`|전부 문자니?|한글·영어만 있을 때|
+|`.isalnum()`|숫자+문자 조합이니?|특수문자·공백 없을 때|
+
+```python
+print("25".isdigit())     # True
+print("Alice".isalpha())  # True
+print("1000원".isdigit()) # False  ← '원' 때문에
+print("-5".isdigit())     # False  ← '-' 때문에
+print("3.14".isdigit())   # False  ← '.' 때문에
+```
+
+## ⚠️ 음수·소수점은 False — float 변환으로 우회
+
+```python
+def is_number(s):
+    try:
+        float(s)    # 변환 시도
+        return True
+    except ValueError:
+        return False
+
+print(is_number("3.14"))   # True
+print(is_number("-10"))    # True
+print(is_number("1,000"))  # False  ← 쉼표 때문에
+```
+
+---
+
+---
