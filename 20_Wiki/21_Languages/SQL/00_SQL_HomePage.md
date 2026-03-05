@@ -33,22 +33,22 @@
     - [[Concept_Table_Anatomy]] : 테이블 구조 해부 완벽 정리 (`행(Row)`, `열(Column)`, `도메인`)
     - [[SQL_SELECT_FROM]] : 데이터를 가져오는 가장 기본적인 구조 (`SELECT`, `FROM`, `별칭(AS)`, `*`)
     - [[SQL_Data_Types]] : 문자, 숫자, 날짜 타입의 이해 (`VARCHAR`, `NUMBER`, `DATE`, `BOOLEAN`, `NULL`)
-    - [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (`BETWEEN`, `IN`, `LIKE`, `IS NULL`, `AND/OR`)
+    - [[SQL_Filtering_WHERE]] : 원하는 데이터만 쏙 골라내기 (`BETWEEN`, `IN`, `LIKE`,`ILIKE`, `IS NULL`, `AND/OR`)
     - [[SQL_ORDER_BY]] : 데이터 줄 세우기 (`ASC`, `DESC`, `NULL 정렬`, `다중 정렬`)
 
 - **함수와 NULL의 이해**
-    - [[SQL_Understanding_NULL]] : SQL의 영원한 골칫거리, NULL의 모든 것 (`3값 논리`, `NULL 연산`, `IS NULL`)
     - [[SQL_Numeric_Functions]] : 숫자형 함수 완벽 정리 (`ROUND`, `TRUNC`, `MOD`, `CEIL`, `FLOOR`)
     - [[SQL_String_Functions]] : 문자열 자르고 붙이기 (`LTRIM`, `RTRIM`, `REPLACE`, `SPLIT`, `TRIM`, `SUBSTR`)
     - [[SQL_Date_Functions]] : 날짜 다루기 (`NOW`, `CURRENT_DATE`, `INTERVAL`, `DATE_TRUNC`, `EXTRACT`)
     - [[SQL_Type_Casting]] : 명시적/암시적 형변환(`CAST`, `TO_CHAR`, `TO_DATE`)
+    -  [[SQL_Understanding_NULL]] : SQL의 영원한 골칫거리, NULL의 모든 것 (`3값 논리`, `NULL 연산`, `IS NULL`)
     - [[SQL_NULL_Functions]] : 텅 빈 데이터(NULL) 심폐소생술 (`COALESCE`, `NVL`, `NULLIF`, `NVL2`)
 
 - **그룹화 및 집계**
     - [[SQL_Aggregate_GROUP_BY]] : 그룹별 통계 내기 (`COUNT`, `SUM`, `AVG`, `MAX`, `MIN`, `GROUP BY`)
     - [[SQL_DISTINCT_vs_GROUP_BY]] : 중복 제거 vs 묶어서 계산 (`DISTINCT`, `GROUP BY`)
     - [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (`WHERE → 집계 전`, `HAVING → 집계 후`)
-    - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (`CASE WHEN`, `THEN`, `ELSE`, `END`,`FILTER`)
+    - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (`CASE WHEN`, `THEN`, `ELSE`, `END`,`FILTER`,`DECODE`)
 
 - **조인 (JOIN)**
     - [[SQL_JOIN_Concept]] : 데이터 연결의 본질과 원리 (`EQUI JOIN`, `NON EQUI JOIN`, `3개 이상 다중 조인`)
@@ -71,7 +71,7 @@
     - [[SQL_Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `DENSE_RANK`, `ROW_NUMBER`, `PARTITION BY`, `OVER`, `LAG`, `LEAD`)
     - [[SQL_Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM`, `ROW_NUMBER`, `RANK`, `DENSE_RANK`)
     - [[SQL_Self_Join]] : 하나의 테이블을 두 개인 것처럼 엮기 (`Self Join`, `사원-매니저`, `계층 비교`)
-    - [[SQL_Hierarchical_Query]] : 꼬리에 꼬리를 무는 트리 구조 탐색 (`START WITH`, `CONNECT BY`, `WITH RECURSIVE`, `LEVEL`)
+    - [[SQL_Hierarchical_Query]] : 꼬리에 꼬리를 무는 트리 구조 탐색-계층형쿼리 (`START WITH`, `CONNECT BY`, `WITH RECURSIVE`, `LEVEL`)
     - [[SQL_Pivot_Unpivot]] : 행을 열로, 열을 행으로 (`PIVOT`, `UNPIVOT`, `FILTER`, `UNION ALL`)
 
 - **고급 문자열 처리 (전처리)**

@@ -14,137 +14,231 @@ related:
   - "[[SQL_Window_Functions]]"
   - "[[00_SQL_HomePage]]"
   - "[[SQL_DDL_Create]]"
+  - "[[SQL_Type_Casting]]"
 ---
+
+# SQL 데이터 타입 (Data Types)
+
 ## 개념 한 줄 요약
 
-**"데이터를 담는 '그릇의 모양'을 정하는 규칙."**
-숫자는 계산기 그릇(Number)에, 글자는 편지지 그릇(String)에, 날짜는 달력 그릇(Date)에 담아야만 컴퓨터가 오해하지 않고 일을 처리한다.
-
----
-## 왜 필요한가? (Why)
-
-**문제점:**
-- **'100' + '200'** 을 시켰는데 **'100200'** 이라고 대답한다. (숫자가 아니라 글자로 인식해서 이어 붙임)
-- 날짜(`2024-01-01`)에서 하루를 빼려고 했는데, "글자에서 숫자를 어떻게 빼냐?"며 에러가 난다.
-
-**해결책:**
-- 처음 테이블을 만들 때부터 **"이 컬럼은 무조건 숫자만 들어와!"** 라고 타입을 못 박아둔다.
-- 이미 글자로 저장된 데이터라면 **"잠깐만 숫자로 변신해(Casting)!"** 라고 명령한다.
+> **"데이터를 담는 그릇의 모양을 정하는 규칙."** 숫자는 Number 그릇, 글자는 String 그릇, 날짜는 Date 그릇에 담아야 컴퓨터가 오해 없이 처리한다.
 
 ---
 
-## 실무 적용 사례 (Practical Context)
+## 왜 필요한가?
 
-1.  **문자형 (String):** 이름, 주소, **전화번호** (010은 숫자로 저장하면 10이 되어버리므로 문자로 저장함!)
-2.  **숫자형 (Number):** 가격, 재고량, 점수, 나이, 등수.
-3.  **날짜형 (Date/Time):** 가입일, 결제 시간, 생년월일.
-4.  **논리형 (Boolean):** 탈퇴 여부(True/False), SMS 수신 동의 여부.
+```
+문제 ①: '100' + '200' = '100200'  (숫자가 아닌 글자로 인식 → 이어붙임)
+문제 ②: '2024-01-01' - 1일 = 에러  (글자에서 숫자를 뺄 수 없음)
 
----
-## 📌 SQLD vs PostgreSQL 타입 비교
-
-> SQLD 시험은 **Oracle 기준**으로 출제된다. 시험엔 `VARCHAR2`, `NUMBER`를,
-> 실무 PostgreSQL엔 `VARCHAR`, `INTEGER`, `TEXT`, `TIMESTAMP`를 쓴다.
-
-| 종류 | SQLD / Oracle | PostgreSQL | 설명 |
-|------|--------------|------------|------|
-| 고정 문자 | `CHAR(n)` | `CHAR(n)` | n자리 고정. 남으면 공백으로 채움 |
-| 가변 문자 | `VARCHAR2(n)` | `VARCHAR(n)` | 입력한 만큼만 저장 |
-| 제한없는 문자 | `CLOB` | `TEXT` | PostgreSQL TEXT는 크기 제한 없음 ⭐ |
-| 정수 | `NUMBER(n)` | `INTEGER` / `BIGINT` | PostgreSQL은 정수 전용 타입 있음 |
-| 소수 | `NUMBER(p, s)` | `NUMERIC(p, s)` | p: 전체 자릿수, s: 소수점 자릿수 |
-| 날짜만 | `DATE` | `DATE` | 년-월-일만 저장 |
-| 날짜+시간 | `TIMESTAMP` | `TIMESTAMP` | 시간까지 저장 |
-| 날짜+시간+타임존 | 없음 | `TIMESTAMPTZ` | 글로벌 서비스라면 무조건 이거 ⭐ |
-| 고유 식별자 | 없음 | `UUID` | 분산환경 PK로 최적 ⭐ |
-| 논리형 | 없음 | `BOOLEAN` | TRUE / FALSE |
-
-> 📎 테이블 생성 문법과 제약조건이 궁금하다면 → [[SQL_DDL_Create|CREATE 테이블 생성 더 알아보기]]
----
-
-##  Code Core Points: PostgreSQL 필수 타입 4대장
-
-### ① 문자형 (Character)
-
-* **`VARCHAR(n)`**: 최대 n글자까지 저장. (가장 많이 씀)
-* **`TEXT`**: 길이 제한 없음. (PostgreSQL에서는 `VARCHAR`와 성능 차이가 없어서 실무에서 `TEXT`를 아주 애용함 ⭐️)
-* **`CHAR(n)`**: 무조건 n글자를 채움. (남는 공간은 공백으로 메꿈. 잘 안 씀)
-
-### ② 숫자형 (Numeric)
-
-* **`INTEGER` (INT)**: 정수 (소수점 없음). 개수, 등수 등에 사용.
-* **`NUMERIC` / `DECIMAL`**: 소수점 있는 정확한 숫자. **돈(Money)** 계산할 때 필수! ⭐️
-* **`FLOAT` / `REAL`**: 과학적 계산용 근사치. (금융 데이터에는 쓰면 안 됨, 오차 발생 가능)
-
-### ③ 날짜형 (Date/Time)
-
-* **`DATE`**: '2024-01-27' (년-월-일만 있음)
-* **`TIMESTAMP`**: '2024-01-27 10:30:00' (시간까지 있음)
-* **`TIMESTAMPTZ`**: '... 10:30:00+09' (**타임존 포함**. 글로벌 서비스라면 무조건 이거 써야 함 ⭐️)
-
-### ④ 논리형 (Boolean)
-
-* **`BOOLEAN`**: `TRUE` (1, 'yes', 'on') 또는 `FALSE` (0, 'no', 'off')
-
-### ⑤ 특수 식별자 (Special Types) 
-
-- **`UUID`**: 128비트의 전 세계 유일한 식별자. (`aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee`)
-    - **장점:** `VARCHAR(36)`으로 저장하는 것보다 **저장 공간을 절반 이하(16 byte)로 쓰고, 검색 속도가 훨씬 빠름.** 
-    - **활용:** 분산 환경(MSA, Kafka)에서 PK로 쓸 때 최고의 선택! (PostgreSQL만의 특권)
-
----
-
-## 상세 분석: 형변환 (Casting) 
-
-**"데이터의 타입을 강제로 바꾸는 기술."**
-윈도우 함수에서 에러 났던 상황을 해결하는 핵심 열쇠다.
-
-### A. 표준 문법 (`CAST`)
-
-모든 SQL(MySQL, Oracle 등)에서 통하는 정석 방법.
-
-```sql
--- 문자를 숫자로 바꾸기
-SELECT CAST('123' AS INTEGER);
-
--- 문자를 날짜로 바꾸기
-SELECT CAST('2024-01-27' AS DATE);
+해결: 컬럼 생성 시 타입을 못 박아두거나, 필요할 때 형변환(Casting) 으로 해결
 ```
 
-### B. PostgreSQL 전용 문법 (`::`) ⭐️ 실무용
+## 실무 타입 선택 기준
 
-PostgreSQL에서는 **`::`** 기호로 아주 짧게 쓸 수 있다. (타이핑 속도 2배!)
+|데이터 종류|타입|이유|
+|---|---|---|
+|이름, 주소|`VARCHAR`|길이가 다양함|
+|**전화번호**|`VARCHAR` ⭐️|010 → 숫자로 저장하면 10이 되어버림|
+|가격, 수량, 나이|`INTEGER` / `NUMERIC`|계산이 필요한 숫자|
+|가입일, 결제시간|`TIMESTAMP`|시간까지 기록 필요|
+|탈퇴 여부|`BOOLEAN`|TRUE / FALSE|
+
+---
+
+---
+
+# ① SQLD vs PostgreSQL 타입 비교
+
+> **SQLD 시험은 Oracle 기준.** 시험엔 `VARCHAR2`, `NUMBER` 를, 실무엔 `VARCHAR`, `INTEGER`, `TEXT` 를 쓴다.
+
+|종류|SQLD / Oracle|PostgreSQL|설명|
+|---|---|---|---|
+|고정 문자|`CHAR(n)`|`CHAR(n)`|n자리 고정. 남으면 공백으로 채움|
+|가변 문자|`VARCHAR2(n)`|`VARCHAR(n)`|입력한 만큼만 저장|
+|제한없는 문자|`CLOB`|`TEXT`|PostgreSQL TEXT 는 크기 제한 없음 ⭐️|
+|정수|`NUMBER(n)`|`INTEGER` / `BIGINT`|PostgreSQL 은 정수 전용 타입 있음|
+|소수|`NUMBER(p,s)`|`NUMERIC(p,s)`|p: 전체 자릿수, s: 소수점 자릿수|
+|날짜만|`DATE`|`DATE`|년-월-일만 저장|
+|날짜+시간|`TIMESTAMP`|`TIMESTAMP`|시간까지 저장|
+|날짜+시간+타임존|없음|`TIMESTAMPTZ`|글로벌 서비스라면 무조건 이거 ⭐️|
+|고유 식별자|없음|`UUID`|분산환경 PK 로 최적 ⭐️|
+|논리형|없음|`BOOLEAN`|TRUE / FALSE|
+
+---
+
+---
+
+# ② PostgreSQL 필수 타입 4대장
+
+## 문자형 (Character)
+
+|타입|특징|언제 쓰나|
+|---|---|---|
+|`VARCHAR(n)`|최대 n글자, 입력한 만큼만 저장|대부분의 문자 데이터|
+|`TEXT`|길이 제한 없음, VARCHAR 과 성능 차이 없음 ⭐️|긴 텍스트, 실무 애용|
+|`CHAR(n)`|무조건 n글자, 남는 공간 공백으로 채움|코드값 등 길이 고정된 데이터|
+
+### VARCHAR vs CHAR — 공백 비교 방식 차이 ⭐️
 
 ```sql
--- '123'을 숫자로 바꿔서 1 더하기
-SELECT '123'::INTEGER + 1;  -- 결과: 124
+-- CHAR(10) 에 'ABC' 저장 → 내부적으로 'ABC       ' (7칸 공백 자동 채움)
 
--- '2024-01-27'을 날짜로 바꿔서 하루 빼기
-SELECT '2024-01-27'::DATE - 1; -- 결과: 2024-01-26
+-- CHAR 비교: 공백 무시 → 같은 값으로 인정
+WHERE char_col = 'ABC'        -- 'ABC       ' = 'ABC'  → TRUE  ✅
+WHERE char_col = 'ABC       ' -- 'ABC       ' = 'ABC  ' → TRUE  ✅
 
--- 소수점을 정수로 바꾸기 (반올림됨)
-SELECT 99.9::INTEGER; -- 결과: 100
+-- VARCHAR 비교: 공백 포함 → 다른 값으로 취급
+WHERE varchar_col = 'ABC'     -- 'ABC ' != 'ABC'   → FALSE ❌
+WHERE varchar_col = 'ABC '    -- 'ABC ' = 'ABC '   → TRUE  ✅
+```
+
+|타입|`'ABC'` vs `'ABC '`|이유|
+|---|:-:|---|
+|`CHAR`|**같음** ✅|공백으로 채우는 구조라 비교 시 공백 무시|
+|`VARCHAR`|**다름** ❌|있는 그대로 저장 → 공백도 데이터|
+
+> **SQLD 오답 유형:** `CHAR(10)` 에 `'A'` 저장 후
+>  `WHERE col = 'A'` → **TRUE (정답)** `WHERE col = 'A '` 도 → **TRUE (정답)** 
+>  `VARCHAR(10)` 에 `'A '` 저장 후 `WHERE col = 'A'` → **FALSE (공백 다름)**
+
+---
+
+## 숫자형 (Numeric)
+
+|타입|특징|언제 쓰나|
+|---|---|---|
+|`INTEGER` (INT)|정수, 소수점 없음|개수, 나이, 등수|
+|`NUMERIC` / `DECIMAL`|소수점 있는 **정확한** 숫자 ⭐️|**돈(Money) 계산 필수**|
+|`FLOAT` / `REAL`|소수점 있는 **근사치**|과학 계산용 (금융 데이터 ❌)|
+
+> **`FLOAT` 을 금융 데이터에 쓰면 안 되는 이유:** 부동소수점 특성상 `0.1 + 0.2 = 0.30000000000000004` 같은 미세한 오차가 발생한다. 돈 계산은 반드시 `NUMERIC` 사용.
+
+---
+
+## 날짜형 (Date/Time)
+
+|타입|저장 형태|특징|
+|---|---|---|
+|`DATE`|`2024-01-27`|년-월-일만|
+|`TIMESTAMP`|`2024-01-27 10:30:00`|시간까지|
+|`TIMESTAMPTZ`|`2024-01-27 10:30:00+09`|타임존 포함 ⭐️ 글로벌 서비스 필수|
+
+```sql
+-- DATE 끼리 빼면 → Integer (일수)
+SELECT '2024-01-27'::DATE - '2024-01-24'::DATE;  -- 결과: 3
+
+-- TIMESTAMP 끼리 빼면 → Interval (시간 간격)
+SELECT NOW() - '2024-01-01'::TIMESTAMP;  -- 결과: '26 days 10:30:00'
+
+-- D-Day 구할 때는 ::date 로 변환 후 빼야 깔끔한 숫자
+SELECT '2024-12-31'::DATE - NOW()::DATE AS d_day;
 ```
 
 ---
-## 초보자가 자주 하는 실수 (Misconceptions)
 
-### ① "전화번호는 숫자니까 `INTEGER`로 하면 되죠?"
+## 논리형 (Boolean)
 
-- **절대 안 됨 (X).**
-- `01012345678`을 숫자로 저장하면 맨 앞의 `0`이 사라져서 `1012345678`이 됨.
-- 전화번호, 주민번호, 우편번호처럼 **"계산(더하기/빼기)을 안 하는 숫자"는 무조건 문자(`VARCHAR`)** 로 저장해야 함.
+```sql
+-- TRUE 로 인식되는 값
+TRUE, 1, 'yes', 'on', 't'
 
-### ② "NULL이랑 빈 문자('')랑 같은 거 아니에요?"
+-- FALSE 로 인식되는 값
+FALSE, 0, 'no', 'off', 'f'
+```
 
-- **완전 다름.**
-- **`NULL`**: "아직 모름", "데이터가 없음" (부재중)
-- **`''` (Empty String)**: "내용이 비어있음" (빈 상자가 있음)
-- `IS NULL`로 찾을 때 `''`는 검색되지 않으니 주의!
+---
 
-### ③ "날짜 계산이 이상해요."
+## 특수 식별자 — UUID
 
-- `TIMESTAMP`끼리 빼면 `Interval`(시간 간격, 예: '2 days 04:00:00')이 나오고,
-- `DATE`끼리 빼면 `Integer`(일수, 예: 2)가 나옴.
-- **D-Day** 구할 때는 꼭 `::date`로 바꿔서 빼야 깔끔한 숫자가 나옴.
+> 128비트의 전 세계 유일한 식별자. 형식: `aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee`
+
+```
+VARCHAR(36) 로 저장하는 것보다:
+저장 공간 절반 이하 (16 byte)
+검색 속도 빠름
+분산 환경(MSA, Kafka) PK 로 최적 ← PostgreSQL 만의 특권
+```
+
+---
+
+---
+
+# ③ 형변환 (Casting)
+
+> **"데이터의 타입을 강제로 바꾸는 기술."**
+
+## 표준 문법 — CAST (모든 DB 공통)
+
+```sql
+SELECT CAST('123' AS INTEGER);        -- 문자 → 숫자
+SELECT CAST('2024-01-27' AS DATE);    -- 문자 → 날짜
+SELECT CAST(99.9 AS INTEGER);         -- 소수 → 정수 (반올림)
+```
+
+## PostgreSQL 전용 — `::` (실무 애용) ⭐️
+
+```sql
+SELECT '123'::INTEGER + 1;            -- 결과: 124
+SELECT '2024-01-27'::DATE - 1;        -- 결과: 2024-01-26
+SELECT 99.9::INTEGER;                 -- 결과: 100 (반올림)
+SELECT NOW()::DATE;                   -- 결과: 오늘 날짜만 (시간 제거)
+```
+
+> `CAST('123' AS INTEGER)` = `'123'::INTEGER` → 완전히 동일한 동작. PostgreSQL 실무에서는 `::` 가 훨씬 짧아서 선호.
+
+---
+
+---
+
+# 초보자 실수 체크리스트
+
+## "전화번호는 숫자니까 INTEGER 로 해야지"
+
+```
+❌ 절대 안 됨
+01012345678 → INTEGER 로 저장 → 1012345678 (앞 0 사라짐!)
+
+계산을 안 하는 숫자 = 문자로 저장
+전화번호, 주민번호, 우편번호, 카드번호 → 전부 VARCHAR
+```
+
+## "NULL 이랑 빈 문자('') 는 같은 거 아닌가요?"
+
+```
+NULL  = "데이터가 없음" (부재중)
+''    = "내용이 비어있음" (빈 상자가 있음)
+
+IS NULL 로 조회할 때 '' 는 검색되지 않음
+```
+
+```sql
+WHERE col IS NULL     -- NULL 만 검색 ('' 는 안 나옴)
+WHERE col = ''        -- 빈 문자열만 검색 (NULL 은 안 나옴)
+WHERE col IS NULL OR col = ''  -- 둘 다 잡으려면 OR 사용
+```
+
+## "날짜 계산 결과가 이상해요"
+
+```sql
+-- DATE - DATE  → 정수 (일수)
+'2024-01-27'::DATE - '2024-01-24'::DATE   -- 결과: 3
+
+-- TIMESTAMP - TIMESTAMP  → Interval
+NOW() - '2024-01-01'::TIMESTAMP           -- 결과: '26 days 10:30:00'
+
+-- D-Day 구할 때 타입 통일 필수
+'2024-12-31'::DATE - NOW()::DATE          -- 결과: 정수 (일수)
+```
+
+## "FLOAT 으로 금융 계산했더니 값이 이상해요"
+
+```sql
+SELECT 0.1::FLOAT + 0.2::FLOAT;   -- 결과: 0.30000000000000004 💥
+SELECT 0.1::NUMERIC + 0.2::NUMERIC; -- 결과: 0.3 ✅
+
+-- 금융 데이터는 무조건 NUMERIC / DECIMAL
+```
+
+---
 

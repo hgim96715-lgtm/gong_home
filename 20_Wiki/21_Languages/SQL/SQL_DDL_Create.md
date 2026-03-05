@@ -168,21 +168,55 @@ FOREIGN KEY (부서코드) REFERENCES 부서(부서코드)
 ON DELETE CASCADE;  -- ← 여기에 옵션을 붙인다
 ```
 
-|옵션|동작|비유|
-|---|---|---|
-|`CASCADE`|부모 삭제 시 자식도 **같이 삭제**|부서 삭제 → 소속 사원도 삭제|
-|`SET NULL`|부모 삭제 시 자식 FK 를 **NULL 로**|부서 삭제 → 사원의 부서코드 = NULL|
-|`SET DEFAULT`|부모 삭제 시 자식 FK 를 **DEFAULT 값으로**|부서 삭제 → 사원을 '미배정팀' 으로|
-|`RESTRICT`|자식이 참조 중이면 부모 삭제 **즉시 거부**|사원 있으면 부서 삭제 불가|
-|`NO ACTION`|`RESTRICT` 와 동일하나 **트랜잭션 종료 시점** 에 체크|SQLD 시험에서 개념 구분 주의!|
-|`DEPENDENT`|부모 테이블에 **PK 가 없는 경우** 자식 데이터 입력 자체를 허용하지 않음|PK 없는 부모 → 자식 INSERT 차단|
+| 옵션            | 동작                                           | 비유                      |
+| ------------- | -------------------------------------------- | ----------------------- |
+| `CASCADE`     | 부모 삭제 시 자식도 **같이 삭제**                        | 부서 삭제 → 소속 사원도 삭제       |
+| `SET NULL`    | 부모 삭제 시 자식 FK 를 **NULL 로**                   | 부서 삭제 → 사원의 부서코드 = NULL |
+| `SET DEFAULT` | 부모 삭제 시 자식 FK 를 **DEFAULT 값으로**              | 부서 삭제 → 사원을 '미배정팀' 으로   |
+| `RESTRICT`    | 자식이 참조 중이면 부모 삭제 **즉시 거부**                   | 사원 있으면 부서 삭제 불가         |
+| `NO ACTION`   | `RESTRICT` 와 동일하나 **트랜잭션 종료 시점** 에 체크        | SQLD 시험에서 개념 구분 주의!     |
+| `DEPENDENT`   | 부모 테이블에 **PK 가 없는 경우** 자식 데이터 입력 자체를 허용하지 않음 | PK 없는 부모 → 자식 INSERT 차단 |
 
 > **RESTRICT vs NO ACTION** `RESTRICT` 는 SQL 실행 **즉시** 에러, `NO ACTION` 은 트랜잭션 **종료 시점** 에 에러. PostgreSQL 에서는 사실상 동일하게 동작하지만, SQLD 시험에서 개념 구분이 나올 수 있다.
 
 > **DEPENDENT 추가 설명** 일반적인 FK 는 "부모 PK 에 존재하는 값만 자식에 넣을 수 있다" 는 규칙이다. DEPENDENT 는 한 발 더 나아가 "부모 테이블 자체에 PK 가 없으면 자식 INSERT 를 아예 막는다" 는 옵션이다. SQLD 시험 개념 문제로 종종 출제된다.
 
 ---
+## CASCADE vs CASCADE CONSTRAINTS — 헷갈리는 이름, 완전히 다른 개념
 
+| **구분**        | **CASCADE (FK 옵션)**                      | **CASCADE CONSTRAINTS (DDL 옵션)**                   |
+| ------------- | ---------------------------------------- | -------------------------------------------------- |
+| **사용 위치**     | `CREATE TABLE` 시 FK 정의 부분                | `DROP TABLE` 또는 `ALTER TABLE` 문                    |
+| **대상**        | **데이터 (행)**                              | **제약 조건 (구조)**                                     |
+| **주요 동작**     | 부모 테이블의 행 삭제 시, 이를 참조하는 자식 테이블의 행도 함께 삭제 | 테이블 삭제 시, 해당 테이블을 참조하고 있는 모든 외래 키(FK) 제약 조건을 먼저 삭제 |
+| **자식 데이터 상태** | 함께 삭제됨                                   | 그대로 유지됨 (제약 조건만 사라짐)                               |
+| **주요 목적**     | 참조 무결성 유지를 위한 자동 삭제                      | 제약 조건으로 인해 테이블 삭제가 안 되는 상황 해결                      |
+
+```sql
+-- CASCADE (FK 옵션): 데이터(행) 를 지울 때의 동작 규칙
+FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+ON DELETE CASCADE;
+-- departments 의 행 삭제 → employees 의 해당 행도 같이 삭제
+
+-- CASCADE CONSTRAINTS (DDL 옵션): 테이블 구조를 날릴 때 사용
+DROP TABLE departments CASCADE CONSTRAINTS;  -- Oracle
+DROP TABLE departments CASCADE;              -- PostgreSQL
+-- departments 테이블 삭제
+-- + employees 의 FK 제약조건도 자동 삭제
+-- (employees 테이블과 데이터는 그대로 살아있음)
+```
+
+```text
+CASCADE CONSTRAINTS 없이 DROP TABLE departments
+→ ❌ 에러: employees 가 참조 중이라 삭제 불가
+
+CASCADE CONSTRAINTS 붙이고 DROP TABLE departments
+→ ✅ departments 테이블 삭제
+   + employees 의 FK 제약조건(구조)도 삭제
+   (employees 의 데이터는 그대로)
+```
+
+---
 ---
 
 # ③ CTAS — 기존 테이블 복사해서 만들기

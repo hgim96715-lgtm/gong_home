@@ -347,7 +347,41 @@ GROUP BY ㉠;
 
 > **정답: ② ROLLUP(grade, job)** `ROLLUP(grade, job)` 은 전체 총계 행(GRADE=NULL, JOB=NULL) 이 추가로 생성되어 주어진 결과와 다르다.
 
----
 
 ---
 
+## ORDER BY 사용
+
+> **ROLLUP · CUBE · GROUPING SETS 결과에 정렬이 필요한 경우 ORDER BY 절을 사용할 수 있다.**
+
+```sql
+-- ROLLUP 후 정렬
+SELECT 지역, 상품, SUM(매출) AS 총매출
+FROM 판매
+GROUP BY ROLLUP(지역, 상품)
+ORDER BY 지역, 상품;
+
+-- CUBE 후 정렬
+SELECT 지역, 상품, SUM(매출) AS 총매출
+FROM 판매
+GROUP BY CUBE(지역, 상품)
+ORDER BY 지역 NULLS LAST, 상품 NULLS LAST;
+-- NULLS LAST: 소계·총계 행(NULL)을 맨 아래로 밀기
+
+-- GROUPING SETS 후 정렬
+SELECT 지역, 상품, SUM(매출) AS 총매출
+FROM 판매
+GROUP BY GROUPING SETS(지역, 상품)
+ORDER BY 총매출 DESC;
+```
+
+> **`NULLS LAST` 활용 팁:** ROLLUP · CUBE 가 만드는 소계·총계 행은 그룹 컬럼이 NULL 이라서 기본 정렬 시 NULL 이 맨 위로 올라올 수 있다. `ORDER BY 컬럼 NULLS LAST` 를 쓰면 소계·총계 행을 맨 아래에 배치할 수 있다.
+
+---
+
+## 관련 노트
+
+- [[SQL_GROUP_BY_HAVING]] — GROUP BY · HAVING 기본
+- [[SQL_Aggregate_Functions]] — COUNT · SUM · AVG · MAX · MIN
+- [[SQL_CASE_WHEN]] — GROUPING 함수와 CASE WHEN 조합
+- [[SQL_Window_Functions]] — ROW_NUMBER · RANK · DENSE_RANK

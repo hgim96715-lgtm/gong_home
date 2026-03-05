@@ -10,117 +10,191 @@ related:
   - "[[SQL_ERD_Components]]"
   - "[[SQL_Keys_and_Identifiers]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_Self_Join]]"
 ---
-# JOIN 이란
 
-## 한줄 요약 
 
-JOIN은 정규화로 인해 여러 테이블에 흩어져 있는 데이터를 공통된 컬럼(연결고리)을 기준으로 엮어내는 기술로, 
-물리적인 연결 고리(PK-FK 제약조건)가 없더라도 **데이터의 '의미(Domain)'만 같다면 어떤 컬럼으로든 테이블을 엮어낼 수 있는** 유연하고 강력한 집합 결합 원리입니다.
+# SQL JOIN 개념
 
----
-## 왜 필요 한가?
+## 개념 한 줄 요약
 
-JOIN이 없다면 서버(Python, Node.js 등)에서 `users` 데이터를 몽땅 다 가져오고, `orders` 데이터를 몽땅 다 가져와서 메모리 위에서 직접 짝을 맞춰야 합니다. 데이터가 몇천만 건이면 macOS 환경의 로컬 노트북은 물론이고 웬만한 서버도 뻗어버리겠죠? DB 엔진 내부에서 가장 빠르고 효율적으로 데이터를 합쳐서 결과만 쏙 빼오는 기술, 그게 바로 JOIN이 필요한 이유입니다.
-
+> **"여러 테이블에 흩어진 데이터를 공통 컬럼을 기준으로 엮어내는 기술."** PK-FK 제약조건이 없어도 데이터의 의미(Domain)만 같으면 어떤 컬럼으로든 조인할 수 있다.
 
 ---
-## Code Core Points
 
-조인은 반드시 PK/FK나 ID 값으로만 하는 것이 아니며, 한 쿼리 안에서 EQUI와 NON EQUI 방식을 자유롭게 섞어 쓸 수 있습니다. 
-조인의 원리를 이해할 때 가장 중요한 것은 **"어떤 연산자를 기준으로 두 테이블을 엮을 것인가"** 이며, 
-최신 ANSI 표준 문법에서는 `ON` 절에 이 연결 논리를 명시합니다.
+---
+
+# ① JOIN 의 기본 원리 — 카테시안 곱
+
+> **JOIN 은 두 테이블의 모든 행을 한 번씩 곱해보는 것(CROSS JOIN) 에서 출발한다.** 그 중에서 `ON` 조건에 맞는 행만 필터링해서 남긴다.
+
+```
+A 테이블 10줄 × B 테이블 10줄 = 100줄 (카테시안 곱)
+                ↓ ON 조건 필터링
+            조건에 맞는 행만 남김
+```
 
 ```sql
--- 🚨 에러 발생 쿼리: 양쪽 테이블에 모두 존재하는 컬럼(dept_id)의 소속을 안 밝힘
--- 에러 메시지: "column reference 'dept_id' is ambiguous"
-/*
-SELECT dept_id, emp_name, dept_name 
-FROM employees e
+-- Ambiguous 에러: dept_id 가 어느 테이블 소속인지 불명확
+SELECT dept_id, emp_name FROM employees e
 INNER JOIN departments d ON e.dept_id = d.dept_id;
-*/
 
--- ✅ 올바른 최신 문법 쿼리: 완벽한 Alias 명시 + 다양한 조인 혼용
-SELECT 
-    e.dept_id AS employee_dept_id, -- ⭐️ 양쪽에 존재하는 컬럼은 무조건 '별칭.컬럼명'으로 소속 명시!
-    e.emp_name, 
-    e.job_title,
-    d.dept_name,
-    e.salary,
-    s.grade -- 🚨 주의: NON EQUI JOIN에서는 e.salary와 s.min_salary의 값이 다르므로 대체 불가!
+-- ✅ 정상: 테이블 별칭으로 소속 명시
+SELECT e.dept_id, e.emp_name, d.dept_name FROM employees e
+INNER JOIN departments d ON e.dept_id = d.dept_id;
+```
+
+> **조인 쿼리에서는 모든 컬럼에 테이블 별칭을 붙이는 것을 강력히 권장한다.**
+
+---
+
+---
+
+# ② EQUI JOIN — 등가 조인
+
+> **조인 조건에 `{text}=` 연산자를 사용하는 방식.** 실무 조인 쿼리의 95% 이상이 EQUI JOIN 이다.
+
+```sql
+SELECT e.emp_name, e.dept_id, d.dept_name
 FROM employees e
+INNER JOIN departments d
+    ON e.dept_id = d.dept_id;  -- = 연산자: 정확히 일치할 때 연결
+```
 
--- 1. [의미 기반 조인] PK/FK(id)가 아니어도, 데이터 의미(문자열 직무명)가 같으면 조인 가능
-INNER JOIN job_history j 
-    ON e.job_title = j.job_title 
+```
+사원 테이블의 dept_id = 부서 테이블의 dept_id
+→ 값이 정확히 일치하는 행끼리 연결
+```
 
--- 2. [EQUI JOIN] 부서 ID가 정확히 일치 (= 연산자)
-INNER JOIN departments d 
-    ON e.dept_id = d.dept_id 
+## SELECT 절 대체 가능
 
--- 3. [NON EQUI JOIN] 급여가 특정 범위에 포함됨 (BETWEEN 연산자) -> 하나의 쿼리 안에서 혼용 가능!
-INNER JOIN salary_grades s 
+```sql
+-- EQUI JOIN 은 ON 조건의 양쪽 컬럼 값이 동일
+-- → SELECT 절에서 e.dept_id 를 써도 d.dept_id 를 써도 결과 같음
+SELECT e.dept_id   -- 또는 d.dept_id 둘 다 동일한 값
+```
+
+---
+
+---
+
+# ③ NON EQUI JOIN — 비등가 조인
+
+> **조인 조건에 `{text}=` 이외의 연산자 (`>` `<` `BETWEEN` 등) 를 사용하는 방식.** 값이 정확히 일치하지 않고 **범위 안에 포함될 때** 사용한다.
+
+```sql
+SELECT e.emp_name, e.salary, s.grade
+FROM employees e
+INNER JOIN salary_grades s
+    ON e.salary BETWEEN s.min_salary AND s.max_salary;
+-- 급여가 등급표의 범위 안에 포함될 때 연결
+```
+
+```
+사원 급여: 350만원
+등급표:  min_salary=300 ~ max_salary=400  →  B등급
+
+350만원 ≠ 300만원 (정확히 일치하지 않음)
+350만원 이 300~400 범위 안에 포함됨  →  BETWEEN 사용
+```
+
+## ⚠️ SELECT 절 대체 불가
+
+```sql
+-- EQUI JOIN: e.id = d.id → 값이 같으므로 어느 쪽 써도 무관
+-- NON EQUI JOIN: e.salary ≠ s.min_salary → 값이 다름!
+
+SELECT s.grade       -- ✅ 등급은 salary_grades 테이블에서
+SELECT e.salary      -- ✅ 실제 급여는 employees 테이블에서
+SELECT s.min_salary  -- ❌ 최소 급여와 실제 급여는 다른 값
+```
+
+> NON EQUI JOIN 에서는 ON 조건에 쓰인 컬럼이라도 서로 값이 다르다. 어느 테이블의 컬럼을 SELECT 할지 반드시 명확히 구분해야 한다.
+
+---
+
+---
+
+# ④ EQUI vs NON EQUI 비교
+
+|구분|연산자|예시|특징|
+|---|---|---|---|
+|**EQUI JOIN**|`=`|`e.dept_id = d.dept_id`|값이 정확히 일치|
+|**NON EQUI JOIN**|`>` `<` `BETWEEN` 등|`sal BETWEEN min AND max`|범위 안에 포함|
+
+---
+
+---
+
+# ⑤ 다중 테이블 조인 — 항상 2개씩 처리
+
+> **테이블이 3개 이상이어도 DB 는 항상 2개씩 순서대로 처리한다.**
+
+```
+① A JOIN B → 중간 결과 AB
+② AB JOIN C → 최종 결과 ABC
+```
+
+```sql
+SELECT e.emp_name, d.dept_name, s.grade
+FROM employees e
+INNER JOIN departments d ON e.dept_id = d.dept_id      -- ① A + B
+INNER JOIN salary_grades s                              -- ② AB + C
     ON e.salary BETWEEN s.min_salary AND s.max_salary;
 ```
 
 ---
-## 코드 분석
-
-### 조인 제1원칙: 테이블 Alias(별칭)와 소속 명시 의무
-
-- 조인되는 두 테이블에 이름이 동일한 컬럼이 존재할 경우, `SELECT` 절이나 `WHERE` 절에서 해당 컬럼을 부를 때 반드시 앞에 `테이블명.` 또는 `Alias명.`을 붙여야 합니다.
-- 생략할 경우 DB는 해당 컬럼이 어느 테이블에서 온 것인지 알 수 없어 **'Ambiguous column name(애매한/모호한 컬럼명)' 에러**를 뱉어냅니다.
-- 실무에서는 버그 방지와 가독성을 위해 이름이 겹치지 않는 컬럼이더라도 **조인 쿼리 내의 모든 컬럼에 Alias를 붙이는 것을 강력히 권장**
-
-### JOIN의 기본 원리와 카테시안 곱 (Cartesian Product)
-
-본질적으로 JOIN은 두 테이블의 모든 행을 서로 한 번씩 다 곱해보는 것(CROSS JOIN)에서 출발합니다. 
-A 테이블이 10줄, B 테이블이 10줄이면 일단 100줄의 경우의 수를 다 펼쳐놓고, 그중에서 우리가 지정한 **'조인 조건(ON)'에 맞는 행들만 필터링해서 남기는 원리**입니다. 보통 PK(기본키)와 FK(외래키)가 이 연결고리 역할을 하지만, 물리적 제약조건이 필수는 아닙니다.
-
-### EQUI JOIN (등가 조인)
-
-- **원리:** 조인 조건에 `{text}=` (Equal) 연산자를 사용하는 방식입니다.
-- **특징:** 실무에서 작성하는 조인 쿼리의 95% 이상이 바로 이 EQUI JOIN입니다. 사원 테이블의 `부서 ID`와 부서 테이블의 `부서 ID`가 **"정확히 일치할 때"** 데이터를 나란히 이어 붙입니다.
-
-
-### NON EQUI JOIN (비등가 조인)
-
-**원리:** 조인 조건에 `{text}=` 이외의 연산자 (예: `>`, `<`, `>=`, `<=`, `BETWEEN`)를 사용하는 방식입니다.
-**실무 활용:** 가장 대표적인 예시가 '급여 등급표', '세금 구간표'입니다. 내 월급이 정확히 '300만 원'이라는 등급으로 떨어지는 게 아니라, '200만 원 ~ 400만 원 사이(BETWEEN)'일 때 B등급이라고 판정해야 하잖아요? 이럴 때 범위 조건을 주어 두 테이블을 결합하는 마법 같은 기능입니다.
-
-**SELECT 절 대체 불가 (치명적 주의점):**
-- EQUI JOIN은 `ON A.id = B.id`이므로 SELECT 절에서 `A.id`를 쓰든 `B.id`를 쓰든 결과가 같습니다.
-- 하지만 NON EQUI JOIN은 조건에 쓰인 컬럼이라도 **서로 가진 데이터 값이 다릅니다.**
-- 내 급여 350만 원 $\neq$ 등급표 최소 급여 300만 원). 따라서 SELECT 절에서 화면에 뿌려줘야 할 정확한 타겟 컬럼이 A 소속인지 B 소속인지 명확히 인지하고 작성해야 하며, 절대 대체해서 쓰면 안 됩니다.
-
-### 3개 이상의 다중 테이블 조인 (N-Table Join)
-
-- **원리:** 3개, 4개 테이블을 연달아 JOIN 하더라도 **데이터베이스는 무조건 한 번에 두 개의 집합(테이블)만 조인**합니다.
-- **처리 흐름:** 
-	1. 먼저 A 테이블과 B 테이블을 조건에 맞춰 조인합니다. 
-	2. 그 조인된 결과(메모리 상의 가상 집합)를 하나로 봅니다. 
-	3. 그 가상 집합과 C 테이블을 다시 조건에 맞춰 조인합니다.
-
-- **작성법:** 최신 표준 문법(Standard JOIN)을 사용하면 아래로 `INNER JOIN ... ON ...` 구문을 계속 이어 붙여 나가면 되기 때문에 논리적인 흐름을 파악하기 아주 좋습니다.
 
 ---
-## 자주 하는 실수
 
-#### "EQUI JOIN은 INNER JOIN이랑 같은 거고, NON EQUI JOIN은 OUTER JOIN이랑 같은 건가요?"
+# 자주 하는 실수
 
-- 진짜 많이 하는 오해입니다! (SQLD 단골 낚시 문제예요).
-- **EQUI / NON EQUI**는 **"조건식에 어떤 연산자(=, BETWEEN 등)를 썼느냐"** 를 나누는 기준입니다.
-- **NNER / OUTER**는 **"짝을 못 찾은 찌끄레기 데이터를 버릴 거냐, 살릴 거냐"** 를 나누는 기준입니다.
-- 즉, "EQUI 조건(=)을 사용하면서 INNER JOIN 방식을 쓴다"가 맞는 표현입니다. 서로 다른 차원의 분류체계라는 점을 꼭 기억하세요!
+## "EQUI JOIN = INNER JOIN, NON EQUI JOIN = OUTER JOIN 아닌가요?"
 
-#### "테이블 3개를 조인하면 3개가 동시에 짠! 하고 섞이는 거 맞죠?"
+```
+❌ 완전히 다른 분류 기준
 
-- 아닙니다! 
-- 인간의 눈에는 3개가 한 번에 엮이는 것처럼 보이지만, DB 옵티마이저(쿼리 실행 계획을 짜는 두뇌)는 철저하게 **"2개씩 짝지어서 엮고, 그 결과물에 다음 테이블을 엮는 연쇄 작용"** 으로 처리합니다
-- 따라서 어떤 테이블을 먼저 엮게 만드느냐(드라이빙 테이블 선택)에 따라 쿼리 성능이 천차만별로 달라질 수 있습니다
+EQUI / NON EQUI  →  조건식에 어떤 연산자를 썼느냐  (= vs BETWEEN 등)
+INNER / OUTER    →  짝 못 찾은 행을 버리냐 살리냐
 
-#### "ERD에 선이 안 그어져 있고, PK/FK가 아니면 조인하면 안 되는 거 아닌가요?"
+"EQUI 조건(=) 을 사용하면서 INNER JOIN 방식을 쓴다" 가 맞는 표현
+서로 다른 차원의 분류 체계
+```
 
-- 완전한 오해입니다! 
-- RDBMS에서 조인은 철저하게 '쿼리 작성 시점의 논리적 조건(ON)'에 의해 데이터를 매칭하는 작업입니다.
-- 값의 의미(Domain)만 같다면 물리적인 제약조건이 없어도 완벽하게 조인할 수 있습니다.
+## "PK/FK 없으면 조인 못 하나요?"
+
+```
+❌ 물리적 제약조건은 필수가 아님
+값의 의미(Domain)만 같다면 어떤 컬럼으로든 조인 가능
+ON 조건은 쿼리 작성 시점의 논리적 조건
+```
+
+## "EQUI JOIN 이랑 서브쿼리랑 헷갈려요"
+
+```text
+둘 다 두 테이블의 데이터를 엮는 것처럼 보이지만 완전히 다른 개념
+
+JOIN       →  두 테이블을 옆으로 붙여서 컬럼을 늘린다 (가로 확장)
+SubQuery   →  쿼리 안에 쿼리를 넣어서 조건이나 값으로 활용한다
+```
+
+```sql
+-- JOIN: 사원 + 부서를 붙여서 부서명 컬럼을 함께 출력
+SELECT e.emp_name, d.dept_name
+FROM employees e
+INNER JOIN departments d ON e.dept_id = d.dept_id;
+
+-- SubQuery: 부서 테이블을 조건 검색에만 활용 (결과에 부서 컬럼 없음)
+SELECT emp_name
+FROM employees
+WHERE dept_id IN (SELECT dept_id FROM departments WHERE dept_name = '개발팀');
+```
+
+|구분|목적|결과|
+|---|---|---|
+|**JOIN**|두 테이블 컬럼을 함께 보고 싶을 때|컬럼이 늘어남 (가로 확장)|
+|**SubQuery**|다른 테이블을 조건·값으로만 활용할 때|컬럼 수 그대로|
+
+>EQUI / NON EQUI 는 JOIN 안에서 `{text}=` 을 쓰냐 `BETWEEN` 을 쓰냐의 차이일 뿐, 서브쿼리와는 아예 다른 개념이다.
+
+---
