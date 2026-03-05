@@ -147,13 +147,58 @@ DECODE(gender, 'M', 'Male', 'F', 'Female', '')
 
 조건부 집계를 위해 태어난 최신 문법. 코드가 훨씬 직관적이다.
 
+### 문법 구조
+
+```text
+집계함수(*) FILTER (WHERE 조건)
+    ↑                    ↑
+  평소처럼 집계       이 조건일 때만 집계
+```
+
+### COUNT + FILTER
+
 ```sql
 SELECT
-    COUNT(*) FILTER (WHERE credit ILIKE '%gift%') AS gift_count,
-    COUNT(*) AS total_count
+    COUNT(*) FILTER (WHERE credit ILIKE '%gift%')     AS gift_count,
+    COUNT(*) FILTER (WHERE credit NOT ILIKE '%gift%') AS non_gift_count,
+    COUNT(*)                                           AS total_count
 FROM payments;
 -- "COUNT 는 하되, 이 조건일 때만 세어줘"
 ```
+
+```text
+ILIKE     → 대소문자 무시하고 패턴 매칭  ('Gift', 'GIFT', 'gift' 모두 잡음)
+NOT ILIKE → 패턴에 해당하지 않는 것만   ('gift' 가 포함되지 않은 행만)
+```
+
+### SUM + FILTER
+
+```sql
+SELECT
+    SUM(amount) FILTER (WHERE credit ILIKE '%gift%')     AS gift_총액,
+    SUM(amount) FILTER (WHERE credit NOT ILIKE '%gift%') AS 일반_총액,
+    SUM(amount)                                           AS 전체_총액
+FROM payments;
+-- "금액을 더하되, 기프트카드 결제만 / 일반 결제만 / 전체 따로따로 집계"
+```
+
+### FILTER vs CASE WHEN 비교
+
+```sql
+-- ✅ FILTER (PostgreSQL 전용, 직관적)
+COUNT(*) FILTER (WHERE credit ILIKE '%gift%')
+
+-- ✅ CASE WHEN (표준 SQL, 모든 DB 호환)
+SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END)
+```
+
+|방식|가독성|DB 호환|
+|---|---|---|
+|`FILTER`|✅ 직관적|PostgreSQL 전용|
+|`CASE WHEN`|조금 길다|모든 DB ✅|
+
+> **SQLD 시험은 Oracle 기준 → CASE WHEN 으로 써야 한다.**
+>  **PostgreSQL 실무 → FILTER 가 훨씬 간결하다.**
 
 ---
 

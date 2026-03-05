@@ -48,7 +48,7 @@
     - [[SQL_Aggregate_GROUP_BY]] : 그룹별 통계 내기 (`COUNT`, `SUM`, `AVG`, `MAX`, `MIN`, `GROUP BY`)
     - [[SQL_DISTINCT_vs_GROUP_BY]] : 중복 제거 vs 묶어서 계산 (`DISTINCT`, `GROUP BY`)
     - [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (`WHERE → 집계 전`, `HAVING → 집계 후`)
-    - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (`CASE WHEN`, `THEN`, `ELSE`, `END`)
+    - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (`CASE WHEN`, `THEN`, `ELSE`, `END`,`FILTER`)
 
 - **조인 (JOIN)**
     - [[SQL_JOIN_Concept]] : 데이터 연결의 본질과 원리 (`EQUI JOIN`, `NON EQUI JOIN`, `3개 이상 다중 조인`)
