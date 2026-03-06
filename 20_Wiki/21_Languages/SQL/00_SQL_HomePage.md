@@ -1,6 +1,3 @@
-
-[[note]]
-
 ### Level 0. 핵심 사고력 (Data Engineer's Mindset)
 
 > **"쿼리를 짜기 전에 뇌를 먼저 SQL 모드로 세팅합니다."**

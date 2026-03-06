@@ -13,184 +13,214 @@ related:
   - "[[SQL_DDL_Create]]"
   - "[[SQL_DML_CRUD]]"
 ---
-# DCL : 유저 권한 부여 및 회수 (GRANT, REVOKE)
+# SQL_DCL_Grant_Revoke
 
-## 한 줄 요약
+## 개념 한 줄 요약
 
-DCL(Data Control Language)은 데이터베이스 유저(User)를 만들고, 특정 테이블을 보거나 수정할 수 있도록 권한을 주거나(`GRANT`), 줬던 권한을 다시 뺏는(`REVOKE`) **보안 및 접근 제어 명령어**다.
-
----
-
-## 왜 필요한가?
-
-데이터베이스에는 회사의 명운이 걸린 민감한 고객 정보나 매출 데이터가 모두 들어있다. 만약 갓 입사한 인턴에게 `DELETE`나 `DROP` 권한이 있는 마스터 계정을 줬다가, 실수로 운영 DB를 싹 다 날려버리면 진짜 회사 문 닫아야 한다.
-
-그래서 "데이터 분석팀은 조회(`SELECT`)만!", "백엔드 개발팀은 삽입(`INSERT`)까지!" 처럼 사람마다, 역할마다 철저하게 선을 긋고 안전망을 치기 위해 반드시 필요하다.
+> **"누가 무엇을 할 수 있는지 권한을 부여하고 회수하는 명령어."** DCL(Data Control Language) 은 데이터베이스의 보안과 접근 제어를 담당한다.
 
 ---
 
-## 실무 맥락
+---
 
-실무에서는 백엔드 서버(Spring, Node.js)가 DB에 접근할 전용 계정을 만들거나, 데이터 시각화 툴(Tableau, Metabase)을 연결할 때 '읽기 전용' 유저를 세팅할 때 숨 쉬듯이 쓴다. **SQLD 시험**에서는 유저 삭제 시 연쇄 작용(`CASCADE`)과 비밀번호 설정 문법(`IDENTIFIED BY`)을 묻는 문제가 간혹 출제된다.
+# ① 권한의 2가지 종류
+
+```
+시스템 권한 (System Privilege)
+  → DB 전체 구조에 영향을 주는 권한
+  → 예) CREATE SESSION (접속), CREATE TABLE (테이블 생성), CREATE USER
+
+객체 권한 (Object Privilege)
+  → 특정 테이블/뷰 등 개별 객체에 대한 권한
+  → 예) SELECT, INSERT, UPDATE, DELETE ON 특정테이블
+```
 
 ---
-## 계정 관리 3대장
 
-> ⚠️ **SQLD(Oracle)와 실무(PostgreSQL)의 비밀번호 지정 문법이 다르니 주의!**
+---
 
-### 유저 생성 (`CREATE USER`)
+# ② GRANT — 권한 부여
 
 ```sql
--- [SQLD / Oracle] IDENTIFIED BY
-CREATE USER 신입사원 IDENTIFIED BY '비밀번호123';
-
--- [실무 / PostgreSQL] WITH PASSWORD
-CREATE USER 신입사원 WITH PASSWORD '비밀번호123';
-```
-
----
-
-### 유저 수정 (`ALTER USER`) — 비밀번호 변경 & 계정 잠금/해제
-
-```sql
--- 비밀번호 변경
-ALTER USER 신입사원 IDENTIFIED BY '새로운비번456';   -- Oracle
-ALTER USER 신입사원 WITH PASSWORD '새로운비번456';   -- PostgreSQL
-
--- 계정 잠그기 / 풀기 (Oracle 기준)
-ALTER USER 신입사원 ACCOUNT LOCK;    -- 잠금
-ALTER USER 신입사원 ACCOUNT UNLOCK;  -- 잠금 해제
-```
-
----
-
-### 유저 삭제 (`DROP USER`)
-
-퇴사한 직원의 계정을 DB에서 완전히 삭제한다.
-
-```sql
--- 기본: 소유한 객체가 없을 때만 가능
-DROP USER 신입사원;
-
--- [SQLD / Oracle] CASCADE: 유저 + 소유 객체 전부 삭제
-DROP USER 신입사원 CASCADE;
-
--- [실무 / PostgreSQL] 2단계로 나눠서 삭제
-DROP OWNED BY 신입사원;  -- 1단계: 소유 테이블 먼저 삭제
-DROP USER 신입사원;      -- 2단계: 유저 삭제
-```
-
-#### ⚠️ 유저 삭제 시 치명적 함정
-
-유저가 테이블을 만들어놓은 상태에서 그냥 `DROP USER`를 치면?
-
-```
-❌ "이 유저가 소유한 객체가 있어서 삭제할 수 없습니다!" 에러 발생
-```
-
-|상황|Oracle|PostgreSQL|
-|---|---|---|
-|소유 객체 없을 때|`DROP USER 유저명`|`DROP USER 유저명`|
-|소유 객체 있을 때|`DROP USER 유저명 CASCADE`|`DROP OWNED BY 유저명` → `DROP USER 유저명`|
-|CASCADE 의미|유저 + 테이블 + 데이터 **한 번에 폭파**|PostgreSQL은 2단계로 나눠서 처리|
-
-> 💡 Oracle `CASCADE`는 강력한 만큼 위험하다.  
-> PostgreSQL이 2단계로 나눈 이유도 실수로 전부 날리는 걸 방지하기 위해서다.
-
----
-
-##  DCL 3대장 (`GRANT`, `REVOKE`, `ROLE`)
-
-### 권한의 종류부터 구분하고 가자
-
-|권한 종류|설명|예시|
-|---|---|---|
-|**시스템 권한**|DB 자체를 건드리는 굵직한 권한|로그인, 테이블 생성|
-|**객체 권한**|특정 테이블에 대한 권한|특정 테이블 조회, 수정|
-
----
-
-### 권한 부여 (`GRANT`)
-
-```sql
--- [시스템 권한] DB 접속 권한 부여
+-- 시스템 권한: DB 접속 권한 부여
 GRANT CREATE SESSION TO 신입사원;
 
--- [객체 권한] 특정 테이블 조회 권한 부여
+-- 객체 권한: 특정 테이블 조회 권한 부여
 GRANT SELECT ON 사원 TO 신입사원;
 
--- [킬러 옵션] WITH GRANT OPTION ← SQLD 단골 기출!
--- 권한을 받으면서, 그 권한을 남에게 나눠줄 수 있는 권한까지 받음
+-- 여러 권한을 한 번에 부여
+GRANT SELECT, INSERT, UPDATE ON 사원 TO 신입사원;
+```
+
+---
+
+---
+
+# ③ WITH GRANT OPTION ⭐ (객체 권한 전용)
+
+## 뭔가요?
+
+> 권한을 받을 때 **"이 권한을 다른 사람에게 다시 줄 수 있는 능력"** 까지 함께 받는 옵션. 
+> 객체 권한(SELECT, INSERT 등)에만 사용 가능.
+
+```sql
+-- 일반 GRANT
+GRANT SELECT ON 사원 TO 신입사원;
+
+-- WITH GRANT OPTION
 GRANT SELECT ON 사원 TO 신입사원 WITH GRANT OPTION;
 ```
 
-> ⚠️ **WITH GRANT OPTION 주의!**  
-> 신입사원이 `WITH GRANT OPTION`으로 받은 권한을 다른 사람에게 줬을 때,  
-> 신입사원의 권한을 `REVOKE`하면 신입사원이 나눠준 권한도 **연쇄적으로 회수**된다.
+## 차이
+
+```
+일반 GRANT:
+  관리자 ──▷ 신입사원 (SELECT 가능)
+  신입사원 ──▷ 인턴에게 줄 수 없음 ❌
+
+WITH GRANT OPTION:
+  관리자 ──▷ 신입사원 (SELECT 가능 + 다른 사람에게 줄 수도 있음)
+  신입사원 ──▷ 인턴 (SELECT 줄 수 있음 ✅)
+```
+
+## ⚠️ REVOKE 하면 연쇄 회수된다
+
+```
+부여 흐름:
+  관리자 ──(WITH GRANT OPTION)──▷ 신입사원 ──▷ 인턴
+
+관리자가 신입사원 권한을 REVOKE 하면:
+  신입사원 권한 회수 ✅
+  인턴 권한도 자동 연쇄 회수 ✅  ← 핵심 포인트!
+```
 
 ---
 
-### 권한 회수 (`REVOKE`)
+---
+
+# ④ WITH ADMIN OPTION ⭐ (시스템 권한 전용)
+
+## 뭔가요?
+
+> WITH GRANT OPTION 과 같은 개념이지만 **시스템 권한 전용** 옵션. 
+> 시스템 권한을 받으면서 **"이 권한을 다른 사람에게 다시 줄 수 있는 능력"** 까지 함께 받는다.
 
 ```sql
--- 문법 구조
-REVOKE 권한 ON 객체 FROM 유저;
-
--- 사원 테이블 조회 권한 회수
-REVOKE SELECT ON 사원 FROM 신입사원;
+-- WITH ADMIN OPTION
+GRANT CREATE SESSION TO 신입사원 WITH ADMIN OPTION;
 ```
 
-#### GRANT vs REVOKE 방향 키워드 비교
+```
+WITH ADMIN OPTION:
+  관리자 ──(WITH ADMIN OPTION)──▷ 신입사원 (CREATE SESSION 가능 + 다른 사람에게 줄 수도 있음)
+  신입사원 ──▷ 인턴 (CREATE SESSION 줄 수 있음 ✅)
+```
 
-|구분|방향 키워드|예문|
-|---|:-:|---|
-|`GRANT` (줄 때)|**`TO`**|`GRANT SELECT ON 사원 TO 신입사원`|
-|`REVOKE` (뺏을 때)|**`FROM`**|`REVOKE SELECT ON 사원 FROM 신입사원`|
+## ⚠️ REVOKE 해도 연쇄 회수 안 된다
 
 ```
-GRANT  → TO    (건네준다 → 받는 사람 TO)
-REVOKE → FROM  (빼앗는다 → 뺏어오는 대상 FROM)
+부여 흐름:
+  관리자 ──(WITH ADMIN OPTION)──▷ 신입사원 ──▷ 인턴
+
+관리자가 신입사원 권한을 REVOKE 하면:
+  신입사원 권한 회수 ✅
+  인턴 권한은 그대로 남음 ❌  ← GRANT OPTION 과 다른 핵심 포인트!
 ```
 
 ---
 
-### 롤 (`ROLE`) — 권한 바구니
-
-100명에게 10개씩 권한을 `GRANT`하면 1,000번을 쳐야 한다. ROLE은 이걸 한 번에 해결한다.
-
-```
-권한들 → ROLE(바구니)에 담기 → 유저에게 바구니째로 전달
-```
-
-```sql
--- 1단계: 빈 바구니(ROLE) 생성
-CREATE ROLE 데이터분석가;
-
--- 2단계: 바구니 안에 권한 담기
-GRANT SELECT ON 사원 TO 데이터분석가;
-GRANT SELECT ON 매출 TO 데이터분석가;
-GRANT SELECT ON 고객 TO 데이터분석가;
-
--- 3단계: 유저에게 바구니째로 전달
-GRANT 데이터분석가 TO 신입사원A;
-GRANT 데이터분석가 TO 신입사원B;
--- 앞으로 신입사원이 100명 와도 마지막 줄 한 번만 추가하면 끝!
-```
-
-|방식|필요한 GRANT 횟수|
-|---|:-:|
-|직접 부여 (100명 × 10개 권한)|1,000번|
-|ROLE 사용 (100명 × 바구니 1개)|~110번|
-
 ---
 
-## Oracle vs PostgreSQL 문법 차이 한눈에 보기
+# ⑤ WITH GRANT OPTION vs WITH ADMIN OPTION ⭐ SQLD 단골 비교
 
-|작업|Oracle (SQLD)|PostgreSQL (실무)|
+|구분|WITH GRANT OPTION|WITH ADMIN OPTION|
 |---|:-:|:-:|
-|유저 생성 비밀번호|`IDENTIFIED BY '비번'`|`WITH PASSWORD '비번'`|
-|유저 수정 비밀번호|`IDENTIFIED BY '비번'`|`WITH PASSWORD '비번'`|
-|소유 객체 있는 유저 삭제|`DROP USER 유저명 CASCADE`|`DROP OWNED BY 유저명` → `DROP USER 유저명`|
-|계정 잠금/해제|`ACCOUNT LOCK` / `ACCOUNT UNLOCK`|별도 문법 없음 (슈퍼유저가 처리)|
+|**적용 대상**|객체 권한 (SELECT, INSERT ...)|시스템 권한 (CREATE SESSION ...)|
+|**재부여 가능**|✅|✅|
+|**REVOKE 시 연쇄 회수**|✅ 연쇄 회수됨|❌ 연쇄 회수 안 됨|
+
+```
+암기 포인트:
+GRANT OPTION  →  객체 권한  →  연쇄 회수 O (엄격)
+ADMIN OPTION  →  시스템 권한  →  연쇄 회수 X (느슨)
+```
+
+---
+
+---
+
+# ⑥ REVOKE — 권한 회수
+
+```sql
+-- 객체 권한 회수
+REVOKE SELECT ON 사원 FROM 신입사원;
+
+-- 시스템 권한 회수
+REVOKE CREATE SESSION FROM 신입사원;
+
+-- CASCADE: 연쇄 회수 (WITH GRANT OPTION 으로 퍼진 권한까지 전부)
+REVOKE SELECT ON 사원 FROM 신입사원 CASCADE;
+```
+
+---
+
+---
+
+# ⑦ ROLE — 권한 묶음
+
+> 여러 권한을 하나의 ROLE 로 묶어서 한 번에 부여/회수한다. 사용자가 많을수록 관리가 훨씬 편해진다.
+
+```sql
+-- ROLE 생성
+CREATE ROLE 신입사원_ROLE;
+
+-- ROLE 에 권한 담기
+GRANT CREATE SESSION TO 신입사원_ROLE;
+GRANT SELECT ON 사원 TO 신입사원_ROLE;
+GRANT SELECT ON 부서 TO 신입사원_ROLE;
+
+-- 사용자에게 ROLE 한 방에 부여
+GRANT 신입사원_ROLE TO 홍길동;
+GRANT 신입사원_ROLE TO 김철수;
+
+-- ROLE 회수
+REVOKE 신입사원_ROLE FROM 홍길동;
+```
+
+```
+ROLE 장점:
+사용자 100명에게 권한 10개를 부여할 때
+→ 직접 부여: 100 × 10 = 1000번
+→ ROLE 사용: ROLE 에 10개 + 100명에게 1번씩 = 110번
+```
+
+---
+
+---
+
+# 전체 흐름 정리
+
+```
+           시스템 권한                      객체 권한
+           (CREATE SESSION 등)             (SELECT ON 테이블 등)
+                │                                │
+         WITH ADMIN OPTION               WITH GRANT OPTION
+                │                                │
+         재부여 가능 ✅                    재부여 가능 ✅
+                │                                │
+         연쇄 회수 안 됨 ❌                연쇄 회수 됨 ✅
+```
+
+---
+
+---
+
+# SQLD 시험 출제 패턴
+
+**패턴 ① "WITH GRANT OPTION 으로 부여된 권한을 REVOKE 하면?"** → 중간 사용자가 다른 사람에게 준 권한도 **연쇄 회수**된다.
+
+**패턴 ② "WITH ADMIN OPTION 으로 부여된 권한을 REVOKE 하면?"** → 중간 사용자 권한만 회수, 이미 퍼진 권한은 **회수되지 않는다**.
+
+**패턴 ③ "다음 중 객체 권한에 해당하는 것은?"** → `SELECT ON 테이블` → 객체 권한 ✅ → `CREATE SESSION` → 시스템 권한 ✅
 
 ---

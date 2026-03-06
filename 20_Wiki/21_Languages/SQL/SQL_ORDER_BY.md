@@ -140,4 +140,3 @@ ORDER BY
 2.  성능 문제 (Performance):
 	- 정렬은 컴퓨터한테 굉장히 힘든 작업(비용이 큼)이야.
 	- 데이터가 수백만 건인데 인덱스(Index) 없이 `ORDER BY`를 하면 쿼리가 엄청 느려질 수 있어. 
-	- 나중에[[Query_Optimization]]에서 다룰 예정!
