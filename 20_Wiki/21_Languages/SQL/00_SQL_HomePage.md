@@ -1,3 +1,6 @@
+
+[[note]]
+
 ### Level 0. 핵심 사고력 (Data Engineer's Mindset)
 
 > **"쿼리를 짜기 전에 뇌를 먼저 SQL 모드로 세팅합니다."**
@@ -6,7 +9,7 @@
 - [[SQL_Execution_Order]] : 작성 순서 vs 실행 순서 완벽 정리 (치트시트)
 - [[SQL_Main_Table_Strategy]] : 쿼리의 주인공(FROM)을 정하는 절대 원칙
 
-### Level 1. [SQLD 과목 1] 데이터 모델링의 이해
+### Level 1.  데이터 모델링의 이해
 
 > **"데이터베이스의 기초 개념과 집을 짓는 설계도(ERD)를 배웁니다."**
 
@@ -24,7 +27,7 @@
 
 ---
 
-### Level 2. [SQLD 과목 2 - 제1장] SQL 기본 (Basic)
+### Level 2.  SQL 기본 (Basic)
 
 > **"데이터를 조회하고, 가공하고, 테이블끼리 연결하는 필수 기술입니다."**
 
@@ -56,7 +59,7 @@
 
 ---
 
-### Level 3. [SQLD 과목 2 - 제2장] SQL 활용 (Advanced)
+### Level 3.  SQL 활용 (Advanced)
 
 > **"복잡한 로직을 구현하고, 데이터를 입체적으로 분석하는 고급 기술입니다."**
 
@@ -69,7 +72,7 @@
 - **분석 및 고급 집계**
     - [[SQL_Group_Functions]] : 소계와 총계 내기 (`ROLLUP`, `CUBE`, `GROUPING SETS`, `GROUPING`)
     - [[SQL_Window_Functions]] : 순위, 누적합, 이동평균의 마법 (`RANK`, `DENSE_RANK`, `ROW_NUMBER`, `PARTITION BY`, `OVER`, `LAG`, `LEAD`)
-    - [[SQL_Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM`, `ROW_NUMBER`, `RANK`, `DENSE_RANK`)
+    - [[SQL_Top_N_Query]] : 상위 N개 데이터 추출하기 (`LIMIT`, `ROWNUM`, `ROW_NUMBER`, `RANK`, `DENSE_RANK`,`FETCH FIRST N ROWS ONLY`)
     - [[SQL_Self_Join]] : 하나의 테이블을 두 개인 것처럼 엮기 (`Self Join`, `사원-매니저`, `계층 비교`)
     - [[SQL_Hierarchical_Query]] : 꼬리에 꼬리를 무는 트리 구조 탐색-계층형쿼리 (`START WITH`, `CONNECT BY`, `WITH RECURSIVE`, `LEVEL`)
     - [[SQL_Pivot_Unpivot]] : 행을 열로, 열을 행으로 (`PIVOT`, `UNPIVOT`, `FILTER`, `UNION ALL`)
@@ -79,7 +82,7 @@
 
 ---
 
-### Level 4. [SQLD 과목 2 - 제3장] 관리 구문 (Management)
+### Level 4. 관리 구문 (Management)
 
 > **"데이터베이스의 구조를 만들고, 데이터를 삽입/수정하며, 권한을 통제합니다."**
 
@@ -96,6 +99,11 @@
     - [[SQL_DCL_Grant_Revoke]] : 유저 권한 부여 및 회수 (`GRANT`, `REVOKE`, `ROLE`, `WITH GRANT OPTION`, `CASCADE`)
 
 ---
+## PostgreSQL  Docker _ Setup
+
+- [[PostgreSQL_Setup]] : PostgreSQL + Docker 환경 세팅 & DataGrip 연결
+
+
 
 ---
 

@@ -31,12 +31,12 @@ related:
 
 ## DB별 Top-N 방법 한눈에 비교
 
-|방법|DB|특징|
-|---|---|---|
-|`LIMIT`|PostgreSQL · MySQL|직관적. 쿼리 맨 끝에 붙이면 끝|
-|`ROWNUM`|Oracle (구버전)|번호가 부여되는 시점 때문에 인라인 뷰 필수|
-|`FETCH FIRST N ROWS ONLY`|Oracle 12c+|표준 문법. LIMIT 처럼 사용 가능|
-|`ROW_NUMBER()` / `RANK()` / `DENSE_RANK()`|모든 DB|파티션별 Top-N, 동점자 처리에 강력|
+| 방법                                         | DB                 | 특징                       |
+| ------------------------------------------ | ------------------ | ------------------------ |
+| `LIMIT`                                    | PostgreSQL · MySQL | 직관적. 쿼리 맨 끝에 붙이면 끝       |
+| `ROWNUM`                                   | Oracle (구버전)       | 번호가 부여되는 시점 때문에 인라인 뷰 필수 |
+| `FETCH FIRST N ROWS ONLY`                  | Oracle 12c+        | 표준 문법. LIMIT 처럼 사용 가능    |
+| `ROW_NUMBER()` / `RANK()` / `DENSE_RANK()` | 모든 DB              | 파티션별 Top-N, 동점자 처리에 강력   |
 
 ---
 

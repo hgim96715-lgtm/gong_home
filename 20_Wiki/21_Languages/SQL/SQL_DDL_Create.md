@@ -413,7 +413,7 @@ ALTER TABLE 사원 DROP CONSTRAINT fk_부서;
 
 > ADD 할 때 이름을 지어두는 이유: DROP 할 때 이 이름으로 지목하기 위해서다. 이름이 없으면 DB 내부 자동 생성 이름을 찾아야 해서 번거롭다.
 
-> ALTER TABLE 상세 → [[SQL_ALTER_TABLE]] 참고
+> ALTER TABLE 상세 → [[SQL_DDL_Create#④ ALTER TABLE — 뼈대 뜯어고치기|ALTER TABLE]] 참고
 
 ---
 
@@ -513,34 +513,3 @@ ALTER TABLE 사원 RENAME TO 직원;
 |DROP + FK 강제 삭제|`CASCADE CONSTRAINTS`|`CASCADE`|
 
 ---
-
-# 핵심 요약 카드
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  CREATE   → 🏗️  뼈대 세우기                               │
-│  ALTER    → 🔧  뼈대 뜯어고치기                            │
-│  DROP     → 💣  뼈대 + 데이터 모두 폭파 (복구 불가)         │
-│  TRUNCATE → 🪣  데이터만 전부 비우기 (뼈대 유지, 롤백 불가) │
-│  RENAME   → 🏷️  테이블 이름 바꾸기                         │
-│                                                          │
-│  DELETE (WHERE 없음) vs TRUNCATE                         │
-│  → 결과는 같지만 롤백·속도·트리거·AUTO INCREMENT 가 다름!  │
-│                                                          │
-│  CTAS: 구조·데이터 복사 ✅  /  PK·FK·CHECK·DEFAULT ❌     │
-│                                                          │
-│  UNIQUE + NOT NULL = 후보키 (Candidate Key)              │
-│                                                          │
-│  Oracle DDL = 암시적 COMMIT 발동 → 앞 DML 도 확정됨!      │
-└──────────────────────────────────────────────────────────┘
-```
-
----
-
-## 관련 노트
-
-- [[SQL_ALTER_TABLE]] — 컬럼·제약조건 추가·변경·삭제
-- [[SQL_Constraints]] — PK, FK, UNIQUE, CHECK, NOT NULL 상세
-- [[SQL_Type_Casting]] — 명시적·암시적 형변환
-- [[SQL_DML_INSERT]] — INSERT 상세 문법
-- [[SQL_Database_Transactions_TCL]] — DDL 실행 시 암시적 COMMIT 발동 (Oracle), ROLLBACK 불가 이유
