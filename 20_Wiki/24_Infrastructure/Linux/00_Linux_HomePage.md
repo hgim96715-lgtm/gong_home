@@ -96,3 +96,4 @@
 - [[Shell_Input_Output]] : 사용자와 대화하기 (`read`, `$1 위치인자`, `stdin`, `echo`, `-p 프롬프트`)
 - [[Shell_Arithmetic]] : 쉘에서의 산술 연산 (`$(())`, `expr`, `bc`, `소수점 계산`)
 - [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`, `-e`, `* * * * *`, `분/시/일/월/요일`)
+- [[Linux_Shell_Arrays]] : 배열로 데이터 묶어서 처리하기 (`배열 선언`, `인덱스 접근`, `@/*`, `for 루프`, `배열 길이`, `슬라이싱`)
