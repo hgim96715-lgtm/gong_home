@@ -49,6 +49,7 @@
     - [[SQL_DISTINCT_vs_GROUP_BY]] : 중복 제거 vs 묶어서 계산 (`DISTINCT`, `GROUP BY`)
     - [[HAVING_vs_WHERE]] : 필터링 시점의 차이 (`WHERE → 집계 전`, `HAVING → 집계 후`)
     - [[SQL_CASE_WHEN]] : IF-ELSE 로직 구현하기 (`CASE WHEN`, `THEN`, `ELSE`, `END`,`FILTER`,`DECODE`)
+    -  [[SQL_Statistical_Functions]] : 평균으로는 부족할 때 — 통계 함수 (`PERCENTILE_CONT`, `PERCENTILE_DISC`, `STDDEV`, `VARIANCE`, `CORR`)
 
 - **조인 (JOIN)**
     - [[SQL_JOIN_Concept]] : 데이터 연결의 본질과 원리 (`EQUI JOIN`, `NON EQUI JOIN`, `3개 이상 다중 조인`)

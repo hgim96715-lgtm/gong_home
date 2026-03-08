@@ -300,12 +300,12 @@ SELECT SUM(bonus) + 1000 FROM employees;  -- SUM = NULL 이면 결과도 NULL
 
 # ④ WHERE vs HAVING — 가장 중요한 차이
 
-|구분|WHERE|HAVING|
-|---|---|---|
-|**시점**|그룹핑 **전**|그룹핑 **후**|
-|**대상**|원본 데이터 (Raw Data)|집계된 데이터|
-|**집계함수**|❌ 사용 불가|✅ 사용 가능|
-|**예시**|"서울 사는 사람만 뽑아서"|"평균 매출 100만 이상인 팀만"|
+| 구분       | WHERE             | HAVING              |
+| -------- | ----------------- | ------------------- |
+| **시점**   | 그룹핑 **전**         | 그룹핑 **후**           |
+| **대상**   | 원본 데이터 (Raw Data) | 집계된 데이터             |
+| **집계함수** | ❌ 사용 불가           | ✅ 사용 가능             |
+| **예시**   | "서울 사는 사람만 뽑아서"   | "평균 매출 100만 이상인 팀만" |
 
 ```sql
 SELECT user_id, AVG(amount) AS avg_spent
@@ -316,6 +316,26 @@ HAVING AVG(amount) >= 100000; -- 그룹핑 후: 평균 10만 이상인 고객만
 ```
 
 > **한 줄 요약:** "원본을 거를 땐 WHERE, 계산된 결과를 거를 땐 HAVING"
+
+## HAVING 안에 쓸 수 있는 것들
+
+```sql
+HAVING COUNT(*)          >= 10          -- 집계함수 + 비교 연산자
+HAVING SUM(amount)       >= 100000
+HAVING AVG(score)        >= 80
+HAVING MAX(price)        < 50000
+HAVING MIN(rating)       >= 4.0
+
+HAVING COUNT(DISTINCT category) >= 2    -- DISTINCT 조합
+
+HAVING COUNT(DISTINCT                   -- CASE WHEN 조합 ⭐
+    CASE WHEN 조건 THEN 값 END
+) >= 2
+
+HAVING SUM(amount) >= AVG(amount) * 2   -- 집계함수끼리 계산도 가능
+```
+
+>[[SQL_CASE_WHEN#⑤ HAVING 안에서 CASE WHEN ⭐️|HAVING 안에서 CASE WHEN ]] 참고 
 
 ---
 

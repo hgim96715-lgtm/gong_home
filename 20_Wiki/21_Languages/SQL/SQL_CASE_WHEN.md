@@ -325,6 +325,57 @@ GROUP BY ad_name;
 |`CASE WHEN`|데이터를 **버리지 않고 표시만 함** (분모 유지)|
 
 ---
+# ⑤ HAVING 안에서 CASE WHEN ⭐️
+
+>**CASE WHEN 은 HAVING 안에서도 쓸 수 있다.** 
+>특히 `COUNT(DISTINCT CASE WHEN ... END)` 패턴은 "특정 조건을 N개 이상 만족하는 그룹만 걸러낼 때" 강력하다.
+
+## 패턴 공식
+
+```sql
+GROUP BY 기준컬럼
+HAVING COUNT(DISTINCT CASE WHEN 조건 THEN 그룹값 END) >= N
+```
+
+```text
+동작 원리:
+① CASE WHEN 으로 조건에 맞는 행에만 값(그룹값)을 부여
+② 조건에 안 맞으면 ELSE 없으니 NULL → COUNT 에서 자동 제외
+③ DISTINCT 로 중복 제거
+④ 그 결과가 N 개 이상인 그룹만 남김
+```
+
+## 실전 예시 — 2개 이상 플랫폼 제조사가 있는 게임만 조회
+
+```sql
+SELECT
+    game_name
+FROM platforms p
+GROUP BY game_name
+HAVING COUNT(DISTINCT
+    CASE
+        WHEN p.name IN ('PS3','PS4','PSP','PSV') THEN 'Sony'
+        WHEN p.name IN ('Wii','WiiU','DS','3DS') THEN 'Nintendo'
+        WHEN p.name IN ('X360','XONE')           THEN 'Microsoft'
+    END
+) >= 2;
+```
+
+## 언제 이 패턴을 쓰는가
+
+```text
+"최소 N개 이상의 카테고리에 속하는 그룹만 추출"
+
+예시:
+- 3개 이상 지역에서 판매된 상품
+- 2개 이상 장르를 보유한 감독
+- 2개 이상 제조사 플랫폼에 출시된 게임
+```
+
+>⚠️ **CTE 없이도 해결 가능하다.** 
+>HAVING 안에 CASE WHEN 을 바로 넣으면 되기 때문에 서브쿼리나 CTE 로 먼저 분류한 뒤 다시 집계할 필요가 없다.
+
+
 
 ---
 
