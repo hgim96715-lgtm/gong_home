@@ -5,172 +5,317 @@ aliases:
   - Python 응답 객체
 tags:
   - Python
-  - Requests
-  - HTTP
 related:
   - "[[Python_JSON]]"
   - "[[Pandas_Json_Normalize]]"
   - "[[Airflow_Hooks]]"
   - "[[Python_Requests_Methods]]"
+  - "[[00_Python_HomePage]]"
+  - "[[Encoding_Decoding_Concept]]"
 ---
-##  개념 한 줄 요약
+# Python_Requests_Response
 
-**Requests Response 객체**는 우리가 서버에 요청(Request)을 보낸 뒤, "서버가 편지 봉투에 담아서 돌려준 답장 그 자체"라고 보면 돼.
+## 개념 한 줄 요약
 
-**Content-Type**은 서버가 우리에게 데이터를 보낼 때 "내가 지금 보낸 데이터는 이런 형식(타입)이니까 거기에 맞춰서 해석해!"라고 알려주는 **데이터의 신분증** 같은 거야.
-
----
-## 왜 필요한가 (Why)
-
-**문제점 (Without It):**
-* 초보 때는 그냥 `response.json()`이나 `response.text`만 외워서 쓰곤 해. 
-* 근데 이러면 서버가 404 에러(페이지 없음)나 500 에러(서버 터짐)를 보냈을 때도 무작정 데이터를 꺼내려다가 프로그램이 죽어버려. 
-* "편지가 왔는데 내용물도 안 보고 봉투부터 찢는 격"이지.
-
-**해결책:** 
-- Response 객체는 단순히 데이터만 들고 있는 게 아니라, **상태 코드(Status Code), 인코딩 방식, 헤더 정보** 같은 "배송 정보"를 다 갖고 있어. 
-- 이걸 알면 에러 처리를 튼튼하게 할 수 있고, 글자가 깨지는(인코딩) 문제도 해결할 수 있어.
-
-**문제점 (Without It):** 
-* 서버가 주는 데이터는 그냥 0과 1로 된 이진 데이터(Binary)일 뿐이야. 
-* 이게 텍스트인지, 이미지인지, 아니면 JSON인지 모르면 파이썬은 이걸 어떻게 처리해야 할지 몰라 헤매게 돼.
-
-**해결책:**
-- `Content-Type`을 확인하면 우리가 `.json()`을 써야 할지, 아니면 파일로 저장해야 할지 등을 명확하게 결정할 수 있어. 
-- 잘못된 방식으로 파싱하다가 에러(Runtime Error)가 나는 걸 방지해 주지.
+> **`requests.get()` 이 반환하는 `Response` 객체 = 서버가 편지 봉투에 담아 돌려준 답장 그 자체** 데이터만 들어있는 게 아니라 상태 코드, 헤더, 인코딩 정보까지 다 갖고 있다.
 
 ---
-## Practical Context (실무 활용)
-
-현업 데이터 엔지니어링에서 데이터를 수집(크롤링/API 호출)할 때 가장 많이 마주치는 객체야.
-
-* **언제 쓰나:** `requests.get()`이나 `requests.post()`를 실행하고 나면 반환되는 게 바로 Response 객체야.
-* **어떻게 쓰나:**
-    1.  먼저 `status_code`를 확인해서 통신이 성공했는지 본다.
-    2.  성공했으면 `.json()`이나 `.text`로 알맹이를 꺼낸다.
-    3.  가끔 이미지가 필요하면 `.content`로 바이너리 데이터를 꺼낸다.
-
-**`application/json`**: API 응답의 표준. 파이썬 딕셔너리로 바꿀 수 있는 데이터야. (json 데이터)
-**`text/html`**: 일반적인 웹 페이지. 크롤링(BeautifulSoup 등)이 필요할 때 보여.
-**`image/jpeg` 또는 `image/png`**: 이미지 데이터. `.text`가 아니라 `.content`로 받아야 해.
-
-> "응답(Response)을 받기 전에 요청(Request)을 보내는 방법(GET/POST)이 헷갈린다면 [[Python_Requests_Methods]] 문서를 참고할 것."
 
 ---
-## Code Core Points 
 
-코드를 보기 전에 이 흐름을 먼저 머리에 넣어둬.
-
-1.  **Request 실행:** `requests.get()`을 하면 서버로 달려갔다 옴.
-2.  **객체 수신:** 결과물이 `Response` 클래스의 인스턴스로 돌아옴 (변수명은 보통 `res`, `resp`, `r` 등을 씀).
-3.  **검증:** `.ok` 혹은 `.status_code`로 봉투가 잘 도착했는지 확인.
-4.  **추출:** 내용물 형식에 맞춰 꺼냄 (`.text` vs `.json()` vs `.content`).
-5.  **딕셔너리처럼 접근:** `response.headers`는 딕셔너리와 비슷하게 생겨서 키(Key)값으로 불러와.
-6. **대소문자 무관:** `requests` 라이브러리가 똑똑해서 `Content-Type`이나 `content-type`이나 똑같이 찾아줘.
-7. **세부 정보 포함:** 단순히 타입만 주는 게 아니라 인코딩(charset) 정보도 같이 들어있는 경우가 많아.
-
----
-## Detailed Analysis
-
+# Response 객체 — 봉투를 열기 전에
 
 ```python
-import requests
+res = requests.get(url, timeout=10)
+# 여기서 res 는 Response 클래스의 인스턴스 (객체)
+# print(res) 하면 <Response [200]> 만 나옴 <- 데이터 아님!
+# 실제 내용은 .text / .json() / .content 안에 있음
+```
 
-# 1. 요청 보내기
-url = "[https://jsonplaceholder.typicode.com/todos/1](https://jsonplaceholder.typicode.com/todos/1)"
-response = requests.get(url) 
+## 꺼낼 수 있는 것들
 
-# --- 여기서부터가 Response 객체 분석 ---
+|속성/메서드|반환 타입|설명|
+|---|---|---|
+|`.status_code`|`int`|응답 코드 (200, 404, 500 ...)|
+|`.ok`|`bool`|200~299 이면 True|
+|`.text`|`str`|응답 본문 (문자열)|
+|`.json()`|`dict`/`list`|응답 본문 → 파이썬 객체 파싱|
+|`.content`|`bytes`|응답 본문 (바이너리, 이미지/파일)|
+|`.headers`|`dict`|응답 헤더|
+|`.url`|`str`|실제 요청된 최종 URL|
+|`.encoding`|`str`|인코딩 (utf-8, cp949 ...)|
 
-# 2. 통신 상태 확인 (가장 중요!)
-# 200이면 성공, 404나 500이면 실패.
-print(f"상태 코드: {response.status_code}") 
+---
 
-# 3. 성공 여부를 Boolean으로 쉽게 확인
-# status_code가 200~299 사이면 True, 아니면 False
-if response.ok:
-    print("통신 성공! 데이터를 까봅니다.")
-    
-    # 4. 헤더 확인 (메타 데이터)
-    # 서버가 보내준 데이터가 JSON인지 HTML인지, 언제 보냈는지 등이 들어있음
-    content_type = response.headers.get("Content-Type", "")
-    print(f"데이터 타입: {content_type}")
-    
-    # 5. Content-Type에 따른 처리 분기
-    if "application/json" in content_type:
-    # 데이터 추출 (JSON인 경우)
-    # .json()은 메서드(함수)임에 주의! 괄호 () 필수.
-    # Response 객체 내부의 텍스트를 파이썬 딕셔너리로 변환해줌.
-        data = response.json()
-        print("✅ JSON 데이터입니다.")
-        print(f"할 일 제목: {data['title']}")
+---
 
-    elif "text/html" in content_type:
-        print("📄 HTML 문서입니다.")
-        print(response.text[:300])  # 앞부분만 출력
+# ① status_code / .ok — 봉투 상태 확인
 
-    elif "image" in content_type:
-        print("🖼 이미지 파일입니다.")
-        with open("image.jpg", "wb") as f:
-            f.write(response.content)
-        print("image.jpg 파일로 저장했습니다.")
+```python
+res = requests.get(url, timeout=10)
 
-    else:
-        print("❓ 알 수 없는 타입입니다.")
-        print(response.text[:300])
+print(res.status_code)   # 200
 
+# .ok: 200~299 이면 True, 나머지는 False
+if res.ok:
+    print("성공!")
 else:
-    # 6. 에러 처리
-    # 에러가 났을 때 무작정 파싱하면 코드가 터짐.
-    print("문제가 생겼습니다.")
-    # 보통 여기서 재시도를 하거나 로그를 남김
-    print(f"에러 내용(본문): {response.text}")
+    print(f"실패: {res.status_code}")
+    print(res.text)  # 에러 내용 확인
+```
+
+```
+주의: 공공데이터 API 는 status_code 200 OK 로 에러를 보내기도 함
+      body 안의 resultCode 를 별도로 확인해야 함
+
+  resultCode "00"  → 정상
+  resultCode "22"  → API 키 미등록
+  resultCode "30"  → 일일 호출 한도 초과
+```
+
+> 전체 상태 코드 해석 → [[HTTP_Status_Codes]]
+
+---
+
+---
+
+# ② raise_for_status() — 에러 자동 감지 ⭐️
+
+```python
+res = requests.get(url, timeout=10)
+res.raise_for_status()   # 4xx, 5xx 이면 HTTPError 즉시 발생
+data = res.json()        # 200 이면 여기까지 도달
+```
+
+```
+호출 안 하면:
+  서버가 404, 500 을 반환해도 파이썬은 모름
+  res.json() 까지 그냥 진행하다가 엉뚱한 에러 발생
+  "편지가 왔는데 내용물도 안 보고 봉투부터 찢는 격"
+
+호출하면:
+  2xx  → 통과 (아무 일 없음)
+  4xx, 5xx → HTTPError 즉시 발생 → 어디서 에러났는지 바로 앎
+```
+
+```python
+# 실전 패턴 (02_API_Producer 에서 사용)
+try:
+    res = self.session.get(url, timeout=10)
+    res.raise_for_status()       # ← 여기서 4xx/5xx 잡힘
+
+    return res.json()
+
+except JSONDecodeError:
+    # 200 OK 인데 XML/HTML 반환 (API 키 오류, 트래픽 초과)
+    print(f"응답 내용: {res.text[:100]}")
+    return {}
+
+except RequestException as e:
+    # ConnectionError, HTTPError, Timeout 등 전부 잡힘
+    print(e)
+    return {}
 ```
 
 ---
-## 초보자가 자주 착각하는 포인트
-
-
-1. **`response`는 그냥 데이터가 아니다:**
-    - 초보자들이 `print(response)`를 하면 데이터가 출력될 줄 아는데, `<Response [200]>`이라는 객체 정보만 나와. 
-    - 실제 내용은 `.text`나 `.content` 안에 들어있어.
-
-2. **`.text` vs `.json()`:**
-    - `.text`는 **속성(변수)** 이라 괄호가 없고, 그냥 '글자 덩어리(String)'를 줘.
-    - `.json()`은 **메서드(함수)** 라 괄호 `()`가 필요하고, 파이썬의 '딕셔너리/리스트'로 변환해서 줘. 
-    - JSON 형식이 아닌데 이걸 쓰면 에러 나.
-
-3. **인코딩 문제:**
-    - 한글이 깨져서 보일 때가 있어. 그럴 땐 당황하지 말고 `response.encoding = 'utf-8'` 처럼 인코딩을 수동으로 지정해주고 나서 `.text`를 찍어보면 해결될 때가 많아.
-
-4. **`Accept`와 헷갈리지 마:**
-	- `Accept`: 우리가 서버한테 "나 JSON으로 **받고 싶어**"라고 요청하는 것 (Request Header).
-	- `Content-Type`: 서버가 우리한테 "자, 이건 JSON **데이터야**"라고 주는 것 (Response Header).
-
-5. 세미콜론(`;`) 뒷부분:
-	- `application/json; charset=utf-8` 처럼 뒤에 뭐가 붙어 있는 경우가 많아. 그래서 `{text}==`으로 비교하기보다는 `in` 연산자를 써서 키워드가 포함되어 있는지 확인하는 게 훨씬 안전해.
-
-6. **항상 믿을 수는 없다:**
-	- 간혹 서버 설정 문제로 실제 데이터는 JSON인데 `text/plain`으로 보내주는 불친절한 서버도 있어. 
-	- 이럴 땐 우리가 직접 데이터를 보고 판단해야 하는 데이터 엔지니어의 '직감'이 필요하지!
-
-7. **참고 :**
-	- `application/octet-stream`이라고 온다면, 그건 "무슨 데이터인지 정의할 수 없는 이진 데이터"라는 뜻이야.
 
 ---
-## 참고 사이트
 
-### jsonplaceholder
+# ③ Content-Type — 데이터의 신분증
 
-- https://jsonplaceholder.typicode.com/
-- API 연습용으로 가장 유명한 사이트
+> 서버가 "내가 보낸 데이터는 이런 형식이니까 이렇게 해석해!" 라고 알려주는 것
 
-### 예시 도메인
+```python
+content_type = res.headers.get("Content-Type", "")
+print(content_type)
+# application/json; charset=utf-8
+#                  ↑ 세미콜론 뒤에 인코딩 정보가 붙어서 오기도 함
+```
 
-- https://example.com
-- 크롤링 연습용 표준 사이트
+```
+주요 Content-Type 종류:
+  application/json   → .json() 으로 파싱
+  text/html          → .text 로 받아서 BeautifulSoup 등으로 파싱
+  text/plain         → .text 로 받음
+  image/jpeg, png    → .content 로 바이너리 저장
+  application/octet-stream → 알 수 없는 이진 데이터
+```
 
-### **HTTP 테스트 전용 사이트** (실무에서도 자주 씀)
+```python
+# Content-Type 에 따른 처리 분기
+if "application/json" in content_type:    # in 으로 확인 (세미콜론 뒤 문자열 방어)
+    data = res.json()
 
-- https://httpbin.org/
-- HTTP / 상태코드 / 이미지
+elif "text/html" in content_type:
+    html = res.text
+
+elif "image" in content_type:
+    with open("image.jpg", "wb") as f:
+        f.write(res.content)
+```
+
+```
+주의: 간혹 실제 JSON 데이터인데 text/plain 으로 보내는 서버도 있음
+      Content-Type 이 틀려도 .json() 으로 파싱 시도해볼 수 있음
+```
+
+---
+
+---
+
+# ④ .text vs .json() vs .content
+
+|속성|반환 타입|언제 씀|
+|---|---|---|
+|`.json()`|`dict`/`list`|JSON API 응답 파싱|
+|`.text`|`str`|XML, HTML, 에러 내용 확인|
+|`.content`|`bytes`|이미지, PDF 등 바이너리 파일|
+
+```python
+# 에러 응답 원본 확인
+except JSONDecodeError:
+    print(res.text[:200])       # XML / HTML 원본 확인
+
+# 이미지 다운로드
+img_res = requests.get(image_url)
+with open("image.jpg", "wb") as f:
+    f.write(img_res.content)
+```
+
+---
+
+---
+
+# ⑤ .url — 실제 요청된 URL 확인 (디버깅 필수)
+
+```python
+params = {"run_ymd": "20260309", "pageNo": 1}
+res = requests.get(base_url, params=params)
+
+print(res.url)
+# https://apis.data.go.kr/...?run_ymd=20260309&pageNo=1
+```
+
+```
+400 Bad Request 날 때 res.url 로 확인하면
+파라미터가 어떻게 인코딩됐는지 바로 보임
+
+cond[run_ymd::EQ] → cond%5Brun_ymd%3A%3AEQ%5D 로 깨진 것도 여기서 확인
+[[Python_URL_Parsing]] params 함정 참고
+```
+
+---
+
+---
+
+# ⑥ 인코딩 문제 — 한글이 깨질 때
+
+```python
+# 한글이 깨져서 나올 때
+res = requests.get(url)
+print(res.text)  # 깩뛟쀍... 깨진 글자
+
+# 해결: 인코딩 수동 지정 후 다시 읽기
+res.encoding = "utf-8"     # 또는 "cp949"
+print(res.text)            # 이제 정상 출력
+```
+
+```
+requests 가 Content-Type 의 charset 을 못 읽으면 잘못된 인코딩으로 해석함
+공공데이터 CSV 는 cp949 가 많음 → [[Encoding_Decoding_Concept]] 참고
+```
+
+---
+
+---
+
+# Content-Type vs Accept — 헷갈리지 말기
+
+```
+Accept        : 내가 서버한테 "나 JSON 으로 받고 싶어" 라고 요청 (Request Header)
+Content-Type  : 서버가 나한테 "이건 JSON 데이터야" 라고 알려줌 (Response Header)
+```
+
+---
+
+---
+
+# 전체 흐름 — 실전 패턴
+
+```python
+import requests
+from requests.exceptions import RequestException, JSONDecodeError
+
+def fetch(url, params):
+    try:
+        # 1. 요청 보내기
+        res = requests.get(url, params=params, timeout=10)
+
+        # 2. 상태 코드 확인 (4xx, 5xx → HTTPError)
+        res.raise_for_status()
+
+        # 3. Content-Type 확인
+        content_type = res.headers.get("Content-Type", "")
+
+        # 4. 타입에 맞게 파싱
+        if "application/json" in content_type:
+            return res.json()
+        else:
+            return res.text
+
+    except JSONDecodeError:
+        # 200 OK 인데 JSON 이 아닌 경우 (XML, HTML)
+        print(f"[JSONDecodeError] 응답 내용: {res.text[:100]}")
+        return {}
+
+    except RequestException as e:
+        # 네트워크 오류, HTTPError, Timeout 등
+        print(f"[RequestException] {res.status_code} - {e}")
+        return {}
+```
+
+---
+
+---
+
+# 초보자 착각 포인트
+
+```
+① print(res) 하면 데이터가 나올 줄 알았는데 <Response [200]> 만 나옴
+   → 실제 내용은 .text / .json() / .content 안에 있음
+
+② .text 와 .json() 혼동
+   → .text   : 속성 (괄호 없음) - 문자열 반환
+   → .json() : 메서드 (괄호 필수) - 딕셔너리/리스트 반환
+   → JSON 형식이 아닌데 .json() 쓰면 JSONDecodeError
+
+③ Content-Type 비교 시 == 사용
+   → "application/json; charset=utf-8" 처럼 세미콜론 뒤에 뭐가 붙음
+   → == 으로 비교하면 False 나옴
+   → 반드시 in 연산자로 확인
+   → "application/json" in content_type  ← 이렇게
+
+④ status_code 200 인데 에러?
+   → 공공데이터 API 는 200 OK 로 에러를 반환하기도 함
+   → body 안의 resultCode 를 별도로 확인해야 함
+```
+
+---
+
+---
+
+# 연습용 사이트
+
+```
+jsonplaceholder : https://jsonplaceholder.typicode.com/
+  API 연습용 가장 유명한 사이트. 회원가입 불필요
+
+httpbin : https://httpbin.org/
+  HTTP 상태코드, 헤더, 인코딩 등 테스트 전용
+  /status/404 → 404 반환
+  /status/500 → 500 반환
+  /get        → GET 요청 내용 그대로 돌려줌
+
+example.com : https://example.com
+  크롤링 연습용 표준 사이트
+```

@@ -77,7 +77,7 @@
 
 - **STEP 1.** Docker Compose 기초 세팅 [[01_Docker_Setup_Postgresql_Setup]]
     - Kafka + PostgreSQL 컨테이너 구성 (Kafka + PostgreSQL 먼저 Docker Set up , 나중에 하나씩 추가)
-- [ ]  **STEP 2.** 공공데이터 API 연동
+- [ ]  **STEP 2.** 공공데이터 API 연동 [[02_API_Producer]]
     - Python 으로 서울역 열차 데이터 가져오기
 - [ ]  **STEP 3.** Kafka Producer 구성
     - Python → Kafka topic 으로 데이터 발행

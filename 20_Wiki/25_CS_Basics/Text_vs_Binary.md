@@ -13,7 +13,7 @@ tags:
   - FileIO
 related:
   - "[[Data_Formats_Parquet]]"
-  - "[[Encoding_Concept]]"
+  - "[[Encoding_Decoding_Concept]]"
   - "[[Python_File_IO]]"
 ---
 ## 개념 한 줄 요약 

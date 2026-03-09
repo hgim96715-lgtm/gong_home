@@ -10,6 +10,8 @@ related:
   - "[[Python_Classes_Objects]]"
   - "[[00_Python_HomePage]]"
   - "[[Python_Variables_Types]]"
+  - "[[Python_Lists_Tuples]]"
+  - "[[Python_Dictionaries]]"
 ---
 # Type vs Instance
 

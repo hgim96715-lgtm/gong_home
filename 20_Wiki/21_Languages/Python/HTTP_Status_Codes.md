@@ -6,105 +6,157 @@ aliases:
   - 500 에러
   - 응답 코드
 tags:
-  - HTTP
-  - Status_Code
+  - Python
 related:
   - "[[Python_Requests_Response]]"
+  - "[[00_Python_HomePage]]"
+  - "[[Python_Requests_Methods]]"
 ---
-##  개념 한 줄 요약
 
-**HTTP 상태 코드**는 서버가 내 요청을 처리한 결과를 3자리 숫자로 요약해준 **"성적표"** 혹은 **"신호등"** 이야.
+# HTTP_Status_Codes
 
----
-## 왜 필요한가 (Why)
+## 개념 한 줄 요약
 
-코드를 짤 때 가장 중요한 건 "누구 잘못인지" 빨리 파악하는 거야.
-
-**문제점 (Without It):** 
-- 에러가 났는데, 내가 주소를 틀린 건지(404), 서버가 터진 건지(500), 아니면 권한이 없는 건지(403) 모르면 수정할 방향을 못 잡아.
-
- **해결책:**
- -  앞자리 숫자(2, 4, 5)만 봐도 **"내 코드 수정"** 이 필요한지, 아니면 **"잠시 대기"** 가 필요한지 1초 만에 판단할 수 있어.
+> **서버가 내 요청을 받고 "됐어/안 됐어" 를 숫자로 알려주는 코드.**
 
 ---
-##  Practical Context (실무 필수 암기)
-
-수십 개가 있지만, 데이터 엔지니어는 딱 이 3가지 그룹만 확실히 알면 돼.
-
-### 🟢 2xx: 성공 (Success) -> "잘 됐어!"
-
-* **200 (OK):** 가장 흔함. "요청 정상 처리 완료."
-* **201 (Created):** "네가 보낸 데이터로 새로 무언가를 만들었어." (POST로 데이터 저장 성공 시 자주 보임).
-
-### 🔴 4xx: 클라이언트 에러 (Client Error) -> "네 잘못이야 (내 코드 수정 필요)"
-
-* **400 (Bad Request):** "요청 자체가 이상해." (파라미터 오타, 필수 값 누락 등).
-* **401 (Unauthorized):** "누구세요?" (로그인 안 함, API 키 누락).
-* **403 (Forbidden):** "아는 사람인 건 알겠는데, 넌 이거 못 봐." (권한 부족, 관리자 페이지 접근 등).
-* **404 (Not Found):** "그런 거 없는데요." (URL 오타, 삭제된 게시물).
-* **405 (Method Not Allowed):** "그 방식은 안 돼." (GET 써야 하는데 POST 썼을 때).
-
-### 💥 5xx: 서버 에러 (Server Error) -> "서버 잘못이야 (기다리거나 연락 필요)"
-
-* **500 (Internal Server Error):** "서버 코드 어딘가가 터졌어." (보통 개발자 실수).
-* **502 (Bad Gateway):** "서버 연결 통로가 막혔어." (트래픽 폭주 등).
-* **503 (Service Unavailable):** "서버 점검 중이거나 과부하 상태야."
 
 ---
-##  Code Core Points
 
-* **`response.status_code`**: 숫자를 직접 확인하는 가장 기본 방법.
+# 코드 분류 — 첫 번째 숫자가 전부다
 
-* **`response.raise_for_status()`**: 
-	* 200번대가 아니면 **강제로 에러(Exception)를 발생**시키는 메서드. 
-	- 코드를 중단시키고 싶을 때 유용해.
----
-##  Detailed Analysis
-
-```python
-import requests
-
-url = "https://jsonplaceholder.typicode.com/todos/1)"
-response = requests.get(url)
-
-code = response.status_code
-
-# 1. 가장 기초적인 분기 처리
-if code == 200:
-    print("✅ 성공! 데이터를 처리합니다.")
-    data = response.json()
-
-elif code == 404:
-    print("❌ 실패: URL을 다시 확인하세요. 페이지가 없습니다.")
-
-elif code == 403:
-    print("⛔ 권한 없음: API 키가 맞는지 확인하세요.")
-
-elif code >= 500:
-    print("💥 서버 오류: 내 잘못 아님. 나중에 다시 시도(Retry) 하세요.")
-
-else:
-    print(f"❓ 기타 상태 코드 발생: {code}")
-
-
-# 2. 실무 꿀팁 (raise_for_status 사용)
-# 에러가 났을 때 if문으로 도배하기 싫다면?
-try:
-    response.raise_for_status() # 200번대가 아니면 여기서 즉시 에러 발생!
-    print("성공했으니 다음 로직 진행")
-except requests.exceptions.HTTPError as e:
-    print(f"치명적인 에러 발생으로 중단: {e}")
+```
+1xx  정보         (거의 안 봄)
+2xx  성공 ✅      요청 처리됨
+3xx  리다이렉트   다른 URL 로 이동
+4xx  클라이언트 오류 ❌   내가 잘못 보냄
+5xx  서버 오류 ❌         서버가 잘못함
 ```
 
 ---
-## 초보자가 자주 착각하는 포인트
 
-1.  **400번대 에러인데 재시도(Retry) 한다:**
-    - 절대 안 돼! 400번대(내 잘못)는 **코드를 고쳐서** 다시 보내야지, 똑같은 코드로 계속 보내봤자 100번 다 실패해. 
-    - 오히려 서버에서 차단당할 수도 있어.
-    - 반면, **500번대(서버 잘못)는 잠시 후 재시도**하면 될 수도 있어.
-        
-2.  **200 OK = 원하는 데이터?**
-    - 통신은 성공했지만, "검색 결과 없음(Empty List)"을 줄 수도 있어. 
-    - 200이라고 무조건 데이터가 있다고 믿으면 안 돼. 
-    - 데이터 내용물(`len(data) > 0`)도 확인해야 해.
+---
+
+# 2xx — 성공
+
+|코드|이름|설명|
+|---|---|---|
+|**200**|OK|가장 흔한 성공. GET 요청 완료|
+|**201**|Created|새로운 리소스 생성 완료 (POST 성공)|
+|**204**|No Content|성공했지만 반환할 내용 없음 (DELETE 등)|
+
+```python
+res = requests.get(url)
+print(res.status_code)  # 200
+
+# 주의: 공공데이터 API 는 200 OK 로 에러를 반환하기도 함
+# body 안의 resultCode 를 별도로 확인해야 함
+# resultCode: "00" = 정상 / "22" = 미등록 키 / "30" = 한도 초과
+```
+
+---
+
+---
+
+# 4xx — 내가 잘못 보낸 것
+
+|코드|이름|원인|해결|
+|---|---|---|---|
+|**400**|Bad Request|파라미터 오류, 인코딩 문제|`res.url` 로 요청 URL 확인|
+|**401**|Unauthorized|인증 실패 (API 키 없음/틀림)|키 재확인, Authorization 헤더 확인|
+|**403**|Forbidden|접근 권한 없음|사용 신청 여부 확인|
+|**404**|Not Found|URL 이 없음|endpoint 오타 확인|
+|**429**|Too Many Requests|호출 횟수 초과 (Rate Limit)|`time.sleep()` 추가, 내일 재시도|
+
+```python
+# 400 Bad Request 디버깅
+res = requests.get(url, params=params)
+print(res.url)   # 실제 요청 URL 확인
+# cond[run_ymd::EQ] → cond%5Brun_ymd%3A%3AEQ%5D 로 인코딩됐는지 확인
+
+# 429 Rate Limit 대응
+import time
+for i in range(100):
+    res = requests.get(url)
+    if res.status_code == 429:
+        print("호출 한도 초과, 1초 대기")
+        time.sleep(1)
+        continue
+    ...
+```
+
+---
+
+---
+
+# 5xx — 서버가 잘못한 것
+
+|코드|이름|원인|해결|
+|---|---|---|---|
+|**500**|Internal Server Error|서버 내부 버그|잠시 후 재시도|
+|**502**|Bad Gateway|프록시/게이트웨이 문제|잠시 후 재시도|
+|**503**|Service Unavailable|서버 점검 중 / 과부하|공지 확인 후 재시도|
+
+```
+5xx 는 내 코드 문제가 아님
+요청을 그대로 재시도하면 됨
+파이프라인에서는 retry 로직이 있어야 함
+```
+
+---
+
+---
+
+# raise_for_status() 와의 관계
+
+```python
+res.raise_for_status()
+# 2xx → 통과 (아무 일 없음)
+# 4xx → requests.exceptions.HTTPError 발생
+# 5xx → requests.exceptions.HTTPError 발생
+
+# 예외 처리에서 status_code 꺼내기
+try:
+    res.raise_for_status()
+except requests.exceptions.HTTPError as e:
+    print(f"에러 코드: {res.status_code}")  # 404, 500 등
+    print(f"에러 내용: {e}")
+```
+
+> 자세한 예외 처리 → [[Python_Requests_Response]]
+
+---
+
+---
+
+# 공공데이터 API resultCode (별도 주의)
+
+```
+공공데이터 API 는 HTTP 상태코드가 200 OK 여도
+body 안에 자체 에러 코드를 담아 보내는 경우가 있음
+
+{
+  "response": {
+    "header": {
+      "resultCode": "30",           <- 여기가 진짜 에러 코드
+      "resultMsg": "SERVICE ERROR"
+    }
+  }
+}
+
+resultCode 종류:
+  "00"  정상
+  "01"  어플리케이션 에러
+  "22"  API 키 미등록
+  "30"  일일 호출 한도 초과
+  "99"  기타 에러
+```
+
+```python
+# resultCode 도 함께 확인하는 패턴
+data = res.json()
+result_code = data.get("response", {}).get("header", {}).get("resultCode", "??")
+if result_code != "00":
+    print(f"API 에러: {result_code}")
+    return {}
+```

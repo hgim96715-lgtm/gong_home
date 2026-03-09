@@ -9,7 +9,7 @@ tags:
   - Streamlit
 related:
   - "[[00_Streamlit_HomePage]]"
-  - "[[Encoding_Concept]]"
+  - "[[Encoding_Decoding_Concept]]"
 ---
 ## 개념 한 줄 요약 (Concept Summary)
 

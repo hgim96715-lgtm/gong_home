@@ -91,9 +91,10 @@
 
 ### 🔹 API 요청 & 응답
 
-- [[Python_Requests_Methods]] : API 요청 보내기 (`requests.get`, `post`, `params`, `data`, `headers`, `timeout`)
+- [[Python_Requests_Methods]] : API 요청 보내기 (`requests.get`, `post`, `params`, `data`, `headers`, `timeout`,`session`)
 - [[Python_Requests_Response]] : 응답 데이터 처리 (`status_code`, `.json()`, `text`, `raise_for_status`)
 - [[HTTP_Status_Codes]] : 응답 코드 해석 (`200 OK`, `404 Not Found`, `500 Server Error`, `429 Too Many`)
+- [[Python_URL_Parsing]] : URL 조립 & 파싱
 
 ---
 
@@ -101,8 +102,7 @@
 
 > **"Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해해요."**
 
-- [[Python_Classes_Objects]] : 클래스와 인스턴스 (`class`, `self`, `__init__`, `__str__`, `__repr__`, `__floordiv__`)
-- [[Python_Inheritance]] : 상속과 오버라이딩 (`super()`, `BaseOperator 상속`, `다형성`, `메서드 오버라이딩`)
+- [[Python_Classes_Objects]] : 클래스와 인스턴스 (`class`, `self`, `__init__`, `__str__`, `__repr__`, `__floordiv__`,`@staticmethod`)
 
 ---
 

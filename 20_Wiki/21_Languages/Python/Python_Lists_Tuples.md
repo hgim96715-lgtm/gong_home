@@ -24,6 +24,7 @@ related:
   - "[[Python_Unpacking]]"
   - "[[Python_Membership_In]]"
   - "[[Python_Looping_Helpers]]"
+  - "[[Python_Type_Checking]]"
 ---
 # Python_Lists_Tuples
 
@@ -181,7 +182,7 @@ Queue 예: 프린터 대기열, 메시지 큐
 
 ---
 
-# ④ 탐색 — count / in / index / enumerate
+# ④ 탐색 — count / in / isinstance / index / enumerate
 
 ## count — 몇 개인지 세기
 
@@ -192,12 +193,57 @@ votes.count("Apple")   # 3
 votes.count("Orange")  # 0  <- 없어도 에러 없이 0 반환
 ```
 
-> 단순히 "있냐 없냐" 확인은 `in` 연산자가 더 빠름. `count` 는 끝까지 전부 훑기 때문.
+> 단순히 "있냐 없냐" 확인은 `in` 연산자가 더 빠름.
+>  `count` 는 끝까지 전부 훑기 때문.
 
 ```python
 "Apple" in votes   # True  <- 있냐 없냐만 볼 땐 이게 빠름
 ```
 
+---
+## isinstance — 타입 확인 ⭐️
+
+>`type(x) == list` 보다 `isinstance(x, list)` 를 쓰는 것이 권장된다. 
+>상속 관계까지 고려하기 때문.
+
+```python
+isinstance(대상, 타입)   # True / False 반환
+
+# 기본 사용
+isinstance([1, 2, 3], list)    # True
+isinstance("hello", str)       # True
+isinstance(3.14, float)        # True
+isinstance(42, int)            # True
+
+# 여러 타입 한 번에 확인 (튜플로 묶기)
+isinstance(42, (int, float))   # True  <- int 또는 float 이면 True
+isinstance("hi", (int, float)) # False
+```
+
+### 실전 패턴 — API 응답이 딕셔너리일 때 리스트로 통일
+
+```text
+공공데이터 API 의 함정:
+결과가 1개일 때    -> item 을 딕셔너리 하나로 반환  {"trn_no": "KTX001"}
+결과가 여러 개일 때 -> item 을 리스트로 반환        [{"trn_no": "KTX001"}, ...]
+
+코드에서 항상 리스트로 다루려면
+isinstance 로 타입 확인 후 통일해야 함
+```
+
+```python
+item = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+
+# isinstance 로 타입 확인 후 항상 리스트로 통일
+items = item if isinstance(item, list) else [item]
+# isinstance(item, list) == True  -> 이미 리스트 -> 그대로
+# isinstance(item, list) == False -> 딕셔너리 1개 -> [item] 으로 감싸기
+
+for train in items:
+    print(train["trn_no"])  # 항상 리스트로 다룰 수 있음
+```
+
+>딕셔너리 .get() 체이닝 패턴은 [[Python_Dictionaries#.get() 체이닝 — 중첩 딕셔너리 안전하게 파고들기 ⭐️|get 과 get 체이닝]] 참고
 ---
 
 ## index — 위치 찾기 (자주 까먹는 것) ⭐️

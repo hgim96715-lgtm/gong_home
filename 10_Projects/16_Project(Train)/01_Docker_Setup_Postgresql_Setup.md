@@ -288,11 +288,4 @@ $ docker compose down -v
 ```
 
 ---
-
-## 완료 체크
-
-- [ ] `docker compose ps` 에서 두 컨테이너 모두 `healthy`
-- [ ] `train-realtime` Kafka 토픽 생성 확인
-- [ ] PostgreSQL 접속 후 `\dt` 로 테이블 2개 확인
-
 ✅ 완료되면 → [[02_API_Producer]] 로 이동

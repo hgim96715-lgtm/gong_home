@@ -10,140 +10,364 @@ aliases:
 tags:
   - Python
 related:
-  - "[[Python_Inheritance]]"
   - "[[Python_Dictionaries]]"
   - "[[Spark_Core_Broadcast]]"
   - "[[00_Python_HomePage]]"
+  - "[[Python_Lists_Tuples]]"
+  - "[[Python_DateTime]]"
 ---
-## 개념 한 줄 요약 
+# Python_Classes_Objects
 
-**"관련 있는 데이터(변수)와 행동(함수)을 한 박스에 묶어놓은 것."**
+## 개념 한 줄 요약
 
-* **클래스(Class):** 제품 설계도 (붕어빵 **틀**)
-* **객체(Object/Instance):** 설계도로 찍어낸 실체 (팥 **붕어빵**, 슈크림 **붕어빵**)
-* **속성(Attribute):** 객체 안에 들어있는 **데이터** (팥, 밀가루, 가격) 👈 **`.value`의 정체!**
-* **메서드(Method):** 객체가 할 수 있는 **행동** (먹기, 굽기)
-
----
-## 왜 필요한가? (Why) 
-
-**[문제 상황]**
-똑같은 기능을 하는 로봇 100개를 만들어야 합니다.
-딕셔너리로 만들면, 로봇이 움직이는 함수(`move_robot`)를 따로 만들어서 매번 연결해줘야 합니다. (관리 지옥 🔥)
-
-**[해결책]**
-**"로봇 설계도(Class)"** 하나만 완벽하게 짜두면, `robot1 = Robot()`, `robot2 = Robot()` 처럼 한 줄로 복제할 수 있습니다.
-게다가 데이터(`name`)와 행동(`move`)이 한 뭉치로 다닙니다.
+> **"관련 있는 데이터(변수)와 행동(함수)을 한 박스에 묶어놓은 것."**
 
 ---
-## 핵심 해부 (Anatomy) 
 
-이 구조를 모르면 **"점(.)"** [초중요] 점(`.`) vs 대괄호(`[]`)을 이해할 수 없습니다.
+---
+
+# 핵심 용어
+
+|용어|비유|설명|
+|---|---|---|
+|**클래스 (Class)**|붕어빵 **틀**|설계도. 아직 실체 없음|
+|**객체 / 인스턴스 (Object)**|틀로 찍어낸 **붕어빵**|실제로 만들어진 것|
+|**속성 (Attribute)**|붕어빵 안에 들어있는 **팥**|객체 안의 데이터 (`.value` 의 정체)|
+|**메서드 (Method)**|붕어빵이 할 수 있는 **행동**|객체 안의 함수|
+
+---
+
+---
+
+# 클래스 기본 구조
 
 ```python
-# 1. 설계도(Class) 정의
+# 1. 설계도 (Class) 정의
 class Bungeoppang:
-    
-    # ① 생성자 (__init__): 태어날 때 무조건 실행되는 '초기 세팅'
-    def __init__(self, contents, price):
-        self.contents = contents  # 속성 1 (데이터)
-        self.price = price        # 속성 2 (데이터)
 
-    # ② 메서드 (Method): 이 객체의 행동
+    # ① __init__: 객체가 만들어질 때 자동으로 실행되는 초기 세팅
+    def __init__(self, contents, price):
+        self.contents = contents  # 속성 (데이터)
+        self.price    = price     # 속성 (데이터)
+
+    # ② 메서드: 이 객체가 할 수 있는 행동
     def eat(self):
         print(f"{self.contents} 맛 붕어빵을 먹어요! 냠냠.")
 
-# -------------------------------------------------
 
-# 2. 객체(Instance) 생성 -> "실체화"
-fish1 = Bungeoppang("팥", 1000)      # 팥 붕어빵 탄생
-fish2 = Bungeoppang("슈크림", 1500)  # 슈크림 붕어빵 탄생
+# 2. 객체 생성 (설계도로 실체를 만드는 것 = "인스턴스화")
+fish1 = Bungeoppang("팥", 1000)      # fish1 탄생
+fish2 = Bungeoppang("슈크림", 1500)  # fish2 탄생
+
+# 3. 속성 꺼내기 (점 사용)
+print(fish1.contents)  # 팥
+print(fish2.price)     # 1500
+
+# 4. 메서드 호출
+fish1.eat()  # 팥 맛 붕어빵을 먹어요! 냠냠.
+fish2.eat()  # 슈크림 맛 붕어빵을 먹어요! 냠냠.
 ```
 
 ---
-## [내가 헷갈려하는것 ] 점(`.`) vs 대괄호(`[]`)
 
-스파크에서 `broadcast.value` 때문에 헷갈리셨죠? 여기서 완벽하게 정리합니다.
+---
 
-|**구분**|**딕셔너리 (Dictionary)**|**객체 (Object)**|
+# **init** 이 뭐야?
+
+```
+"Initialize (초기화)" 의 약자
+
+객체가 생성되는 순간 자동으로 실행됨
+생성할 때 뭘 세팅할지 여기서 정함
+
+fish1 = Bungeoppang("팥", 1000)
+           ↑
+     여기서 __init__ 이 자동 실행됨
+     self.contents = "팥"
+     self.price    = 1000
+     이 두 줄이 실행됨
+```
+
+---
+
+---
+
+# self 는 왜 쓰나?
+
+```
+"자기 자신" 을 가리키는 손가락
+
+fish1 과 fish2 는 같은 설계도에서 나왔지만 서로 다른 존재
+컴퓨터에게 "지금 말하는 contents 는 fish1 꺼야!" 라고 알려줘야 함
+
+fish1.eat() 실행   ->  self = fish1
+fish2.eat() 실행   ->  self = fish2
+
+self 가 없으면 컴퓨터는 "누구 꺼?" 를 모름
+```
+
+---
+
+---
+
+# 점(`.`) vs 대괄호(`[]`) — 절대 규칙
+
+```
+중괄호 {} 로 만들었으면   ->  ['키'] 로 꺼낸다    (딕셔너리)
+대문자 Class() 로 만들었으면  ->  .속성 으로 꺼낸다  (객체)
+```
+
+|구분|딕셔너리|객체|
 |---|---|---|
-|**생김새**|`my_dict = {"name": "A"}`|`my_obj = ClassName()`|
-|**비유**|이름표 붙은 **서랍장**|팔다리 달린 **로봇**|
-|**데이터 꺼낼 때**|**대괄호 `['key']`**|**점 `.attribute`**|
-|**행동(함수)**|없음 (데이터만 저장)|있음 (`.method()`)|
-|**예시**|`data['price']`|`fish1.price`|
+|만드는 법|`{"name": "A"}`|`ClassName()`|
+|데이터 꺼낼 때|`data['name']`|`obj.name`|
+|행동(함수)|없음|`.method()`|
+|비유|서랍장|로봇|
 
-**절대 규칙 (Golden Rule)**
+```python
+# 딕셔너리 -> 대괄호
+data = {"name": "서울역", "code": "3900023"}
+print(data["name"])   # 서울역
 
-- **중괄호 `{}`** 로 만들었으면 ➡ **`['키']`** 로 꺼낸다.
-- **대문자 `Class()`** 로 만들었으면 ➡ **`.속성`** 으로 꺼낸다.
+# 객체 -> 점
+fish1 = Bungeoppang("팥", 1000)
+print(fish1.contents)  # 팥
+```
 
----
-## 초보자 3대 난관 (FAQ)
-
-### ① `__init__`이 뭐예요?
-
-- **"Initialize(초기화)"** 의 약자입니다.
-- 붕어빵이 틀에서 `짠!` 하고 나오는 순간, **자동으로 실행**되는 함수입니다.
-- 여기서 팥을 넣을지(`self.contents`), 가격표를 붙일지(`self.price`) 정합니다.
-
-### ② `self`는 도대체 왜 자꾸 써요? 🤬
-
-- **"자기 자신"** 을 가리키는 손가락입니다.
-- `fish1`과 `fish2`는 같은 설계도에서 나왔지만 서로 다른 존재죠?
-- 컴퓨터에게 **"지금 말하는 `contents`는 `fish1` 꺼야!"** 라고 알려주기 위해 `self`를 붙입니다.
-    - `fish1.eat()`을 실행하면 ➡ `self`는 `fish1`이 됩니다.
-    - `fish2.eat()`을 실행하면 ➡ `self`는 `fish2`가 됩니다.
-
-### ③ `.value` 같은 건 어디서 온 거예요?
-
-- **클래스 안에서 `self.value = ...` 라고 정의해뒀기 때문**입니다.
-- 스파크의 `Broadcast` 클래스를 뜯어보면 내부에 `self.value` 라는 변수가 숨어있습니다. 우리는 점(`.`)을 찍어서 그 변수를 꺼내 쓰는 겁니다.
+```
+Spark 의 broadcast.value 가 헷갈렸던 이유:
+Broadcast 클래스 안에 self.value = ... 로 정의되어 있음
+점(.) 을 찍으면 그 값을 꺼내오는 것
+```
 
 ---
-## Code Core Points : 실전 예제 (Data Engineering Context)
 
-우리가 맨날 쓰는 **Airflow Operator**도 사실 다 클래스입니다.
+---
+
+# TrainInfo 로 보는 실전 클래스
+
+```python
+# 클래스 정의 (설계도)
+class TrainInfo:
+    def __init__(self):                        # 생성될 때 자동 실행
+        self.api_key  = "..."                  # 속성: API 키
+        self.base_url = "https://..."          # 속성: base URL
+        self.session  = requests.Session()     # 속성: 세션 객체
+
+    def get_train_schedule(self, run_ymd):     # 메서드
+        ...
+
+    def get_train_realtime(self, run_ymd, trn_no):  # 메서드
+        ...
+
+
+# 객체 생성 (인스턴스화) -> __init__ 이 자동 실행됨
+train_info = TrainInfo()
+#            ↑ 이 순간 api_key, base_url, session 이 세팅됨
+
+# 메서드 호출
+schedule = train_info.get_train_schedule("20260309")
+realtime = train_info.get_train_realtime("20260309", "00051")
+```
+
+```
+왜 클래스로 만들었나?
+
+함수로만 만들면:
+  get_train_schedule(api_key, session, base_url, run_ymd)  <- 매번 다 넘겨야 함
+
+클래스로 만들면:
+  api_key, session, base_url 는 __init__ 에서 한 번만 세팅
+  get_train_schedule(run_ymd)  <- 바뀌는 값만 넘기면 됨
+  훨씬 깔끔하고 재사용하기 좋음
+```
+
+---
+
+---
+
+# if **name** == "**main**": 이게 뭐야?
+
+```python
+# main.py
+
+class TrainInfo:
+    ...
+
+if __name__ == "__main__":
+    train_info = TrainInfo()
+    schedule = train_info.get_train_schedule("20260309")
+```
+
+```
+파이썬은 파일을 실행하는 방법이 2가지야:
+
+방법 1: 직접 실행
+  $ python main.py
+  -> __name__ 이 "__main__" 이 됨
+  -> if 조건이 True -> 아래 코드 실행됨
+
+방법 2: 다른 파일에서 import
+  from main import TrainInfo  (다른 파일에서 가져다 쓸 때)
+  -> __name__ 이 "main" (파일 이름) 이 됨
+  -> if 조건이 False -> 아래 코드 실행 안 됨
+```
+
+```
+왜 이걸 쓰나?
+
+if __name__ == "__main__" 없이 그냥 쓰면:
+  다른 파일에서 import 할 때
+  train_info = TrainInfo() 가 자동으로 실행돼버림
+  -> 불필요한 API 호출, 에러 발생 가능
+
+if __name__ == "__main__" 안에 넣으면:
+  직접 실행할 때만 돌아감
+  import 해서 가져다 쓸 때는 클래스 정의만 가져오고 실행은 안 됨
+```
+
+```
+정리:
+  클래스, 함수 정의   -> 파일 본문에 작성 (어디서든 import 가능)
+  실행 코드           -> if __name__ == "__main__": 안에 작성
+```
+
+---
+
+---
+
+# Airflow Operator 도 클래스다
 
 ```python
 from airflow.operators.bash import BashOperator
 
-# 1. BashOperator 클래스(설계도)를 이용해
-# 2. t1 이라는 객체(인스턴스)를 생성함
+# BashOperator 클래스로 t1 객체 생성
 t1 = BashOperator(
     task_id='print_date',
     bash_command='date'
 )
 
-# 3. t1 안에 있는 속성(Attribute) 꺼내기 -> 점(.) 사용!
-print(t1.task_id)      # 결과: 'print_date'
-print(t1.bash_command) # 결과: 'date'
+# 속성 꺼내기 (점 사용)
+print(t1.task_id)       # print_date
+print(t1.bash_command)  # date
 ```
 
 ---
-## Detailed Analysis: 파이썬의 숨겨진 마법 (매직 메서드와 일급 객체)
 
-우리가 흔히 쓰는 덧셈(`+`)이나 몫 구하기(`//`) 기호는 사실, 파이썬 내부 **정수(`int`) 클래스 안에 숨겨진 특수 메서드(매직 메서드)** 를 호출하는 단축키일 뿐이다!
+---
+# @staticmethod / @classmethod — 메서드 종류 3가지
+
+## 메서드 종류 비교
+
+|종류|self 필요?|언제 쓰나|호출 방법|
+|---|---|---|---|
+|**일반 메서드**|✅|객체 데이터(self.xxx) 를 쓸 때|`obj.method()`|
+|**@staticmethod**|❌|클래스/객체 데이터 안 씀. 그냥 관련 함수|`ClassName.method()` 또는 `obj.method()`|
+|**@classmethod**|❌ (cls 사용)|클래스 자체를 다루거나 대안 생성자|`ClassName.method()`|
+
+---
+## @staticmethod — "클래스와 관련 있지만 self 가 필요 없는 함수"
 
 ```python
-# 1. 우리가 아는 일반적인 연산
-print(10 // 3)  
+class TrainInfo:
+    def __init__(self):
+        self.api_key = "..."
+        self.session = requests.Session()
 
-# 2. 💡 파이썬 엔진이 실제로 해석하는 코드 (클래스의 매직 메서드 호출)
-# 앞뒤로 언더바(__)가 두 개씩 붙은 걸 '매직 메서드(Dunder Method)'라고 부른다.
-print(int.__floordiv__(10, 3))
+    # 일반 메서드: self.session 을 써야 하므로 self 필요
+    def _request_api(self, endpoint, query_string):
+        res = self.session.get(...)
+        return res.json()
+
+    # @staticmethod: 날짜 문자열 변환은 self.xxx 를 전혀 안 씀
+    # 클래스 밖에 함수로 빼도 되지만 TrainInfo 와 관련 있으니까 안에 묶어둠
+    @staticmethod
+    def _format_dt(date_str: str, default_text: str) -> str:
+        if not date_str or not isinstance(date_str, str) or len(date_str) < 16:
+            return default_text
+        try:
+            dt_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S.%f")
+            return dt_obj.strftime("%H:%M")
+        except ValueError:
+            return date_str[11:16]
 ```
 
-### **[코딩 테스트 실전 응용]** 
+```
+호출 방법 2가지 모두 가능:
+  train_info._format_dt(raw, "출발 전")   # 객체로 호출
+  TrainInfo._format_dt(raw, "출발 전")    # 클래스명으로 호출 ← 더 명확
 
-프로그래머스에서 "두 수를 나눈 몫을 구하는 함수를 짜시오"라는 문제가 나왔을 때, 고인물들은 `def`로 함수를 새로 만들지 않고 내장 클래스의 메서드를 뜯어와서 변수처럼 바로 붙여버린다. (파이썬에서는 함수도 변수처럼 담을 수 있는 **'일급 객체'** 이기 때문!)
+if __name__ == "__main__" 에서 train_info 객체를 안 만들고 호출할 때
+TrainInfo._format_dt(...) 처럼 클래스명으로 바로 쓸 수 있음
+```
+
+```
+언제 @staticmethod 로 만드나?
+  → 함수 안에서 self.xxx 나 cls.xxx 를 한 번도 안 쓴다면 staticmethod
+  → "이 클래스와 관련 있는 유틸리티 함수" 를 클래스 안에 정리해두고 싶을 때
+```
+
+---
+## @classmethod — "클래스 자체를 다루는 메서드"
+
 
 ```python
-# "새로 함수 안 만들래. 그냥 int 클래스의 몫 구하기 기능 이름표만 바꿔 달게!"
+class TrainInfo:
+    default_url = "https://apis.data.go.kr/B551457/run/v2"
+
+    def __init__(self, api_key, base_url):
+        self.api_key  = api_key
+        self.base_url = base_url
+
+    # @classmethod: cls = 클래스 자체를 받음
+    # 대안 생성자 패턴: .env 에서 자동으로 api_key 읽어서 객체 생성
+    @classmethod
+    def from_env(cls):
+        api_key = os.getenv("TRAIN_API_KEY")
+        return cls(api_key, cls.default_url)  # TrainInfo(api_key, url) 와 동일
+
+# 사용
+train_info = TrainInfo.from_env()  # .env 에서 키 자동 로드
+```
+
+```
+@classmethod 는 데이터 엔지니어링에서 자주 쓰는 패턴:
+  설정 파일, 환경변수에서 자동으로 읽어서 객체 만들기
+  "대안 생성자 (Alternative Constructor)" 패턴
+```
+
+---
+## @staticmethod vs @classmethod 한 줄 정리
+
+```
+@staticmethod  : self 도 cls 도 없음. 그냥 클래스 안에 묶인 일반 함수
+@classmethod   : cls (클래스 자체) 를 받음. 클래스 변수 접근하거나 대안 생성자 만들 때
+```
+
+---
+---
+# 매직 메서드 (Dunder Method) — 심화
+
+> 앞뒤로 언더바 두 개 `__` 가 붙은 특수 메서드 우리가 쓰는 연산자(+, -, //) 는 사실 내부 클래스의 매직 메서드 단축키
+
+```python
+# 우리가 아는 연산
+print(10 // 3)  # 3
+
+# 파이썬 엔진이 실제로 하는 것
+print(int.__floordiv__(10, 3))  # 3  <- 같은 결과
+
+# 코딩테스트 고인물 패턴: 함수 새로 만들지 않고 이름만 바꿔 달기
+# 파이썬에서 함수도 변수처럼 담을 수 있음 (일급 객체)
 solution = int.__floordiv__
-
-# 동작 확인 (완벽하게 몫을 구해냄)
-print(solution(10, 3))  # 출력: 3
+print(solution(10, 3))  # 3
 ```
 
-
+```
+자주 보이는 매직 메서드들:
+  __init__   : 객체 생성 시 자동 실행
+  __str__    : print(obj) 할 때 어떻게 출력할지
+  __len__    : len(obj) 할 때 동작
+  __add__    : obj1 + obj2 할 때 동작
+  __floordiv__: obj1 // obj2 할 때 동작
+```
