@@ -5,7 +5,7 @@ status: 🟧 복습
 related:
   - "[[Linux_Text_Transformation_tr]]"
   - "[[Shell_Parameter_Expansion]]"
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:

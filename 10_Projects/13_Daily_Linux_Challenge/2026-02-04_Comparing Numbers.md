@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 status: 🟩 해결
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
 source: HackerRank
 difficulty:
   - Easy

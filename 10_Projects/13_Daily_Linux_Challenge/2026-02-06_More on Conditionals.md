@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 status: 🟩 해결
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[Redirection_Pipe]]"
   - "[[Linux_Data_Statistics]]"
   - "[[00_Linux_Challenge_DashBoard]]"

@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 status: 🟨 힌트참고
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 difficulty:

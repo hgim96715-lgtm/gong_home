@@ -8,7 +8,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[Redirection_Pipe]]"
   - "[[00_Linux_HomePage]]"
 ---

@@ -7,7 +7,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[Shell_Input_Output]]"
 ---
 ##  개념 한 줄 요약  

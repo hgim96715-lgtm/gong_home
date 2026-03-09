@@ -7,10 +7,10 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[Environment_Variables]]"
   - "[[Linux_Text_Transformation_tr]]"
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[00_Linux_HomePage]]"
 ---
 ## 한줄 요약
