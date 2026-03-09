@@ -7,7 +7,7 @@ tags:
   - Linux
 related:
   - "[[00_Linux_HomePage]]"
-  - "[[Shell_Scripting_Basics]]"
+  - "[[Linux_Shell_Script]]"
   - "[[Shell_Parameter_Expansion]]"
 ---
 
@@ -69,17 +69,25 @@ echo ${countries[@]}   # 전체 출력
 echo ${countries[0]}   # 첫 번째 줄
 ```
 
-```bash
-# 명령어 결과를 배열로 받기
-readarray -t files < <(ls *.csv)
-# -t 옵션: 각 줄 끝의 \n 제거 (거의 항상 붙임)
+### -t 옵션 — 줄바꿈(\n) 제거 ⭐️
 
-echo ${files[@]}   # data.csv result.csv
+>`readarray` 는 각 줄을 읽을 때 **줄 끝의 `\n` 까지 요소에 포함**시킨다.
+> `-t` 를 붙이면 `\n` 을 제거해준다. **거의 항상 붙인다.**
+
+```bash
+# -t 없이 읽기
+readarray countries < countries.txt
+echo "${countries[0]}"   # "Korea\n"  <- \n 이 붙어있음
+
+# -t 붙이고 읽기
+readarray -t countries < countries.txt
+echo "${countries[0]}"   # "Korea"    <- 깔끔
 ```
 
 ```text
-readarray 옵션:
--t  줄 끝의 \n 제거  (없으면 요소마다 \n 이 붙어서 출력이 지저분함)
+정리:
+readarray countries       <- 각 요소에 \n 포함  (비교/출력 시 문제 발생)
+readarray -t countries    <- \n 제거            (항상 이걸 써라)
 ```
 
 ## while read — 읽으면서 가공할 때
