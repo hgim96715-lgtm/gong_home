@@ -8,6 +8,9 @@ aliases:
   - 슬라이싱
   - 배열
   - 사전식비교
+  - insert
+  - pop
+  - append
 tags:
   - Python
 related:
@@ -61,33 +64,45 @@ len(tasks)  # 3
 
 ---
 
-# ② 추가 — append / extend / +
+# ② 추가 — append / insert / extend / +
 
 ```python
-a = [1, 2]
-b = [3, 4]
+a = [1, 2, 3]
 
-# append: b 를 통째로 넣기
-a.append(b)
-print(a)  # [1, 2, [3, 4]]  <- 리스트 안에 리스트!
+# append: 맨 뒤에 추가
+a.append(4)
+print(a)  # [1, 2, 3, 4]
 
-# extend: b 의 알맹이만 풀어서 넣기
+# append: 리스트를 넣으면 통째로 들어감
+a.append([5, 6])
+print(a)  # [1, 2, 3, 4, [5, 6]]  <- 리스트 안에 리스트!
+
+# insert: 원하는 위치에 삽입
+a = [1, 2, 3]
+a.insert(0, 99)   # 0번 자리에 99 삽입 (맨 앞에 추가)
+print(a)  # [99, 1, 2, 3]
+
+a.insert(2, 88)   # 2번 자리에 88 삽입
+print(a)  # [99, 1, 88, 2, 3]
+
+# extend: 리스트의 알맹이만 풀어서 합치기
 a = [1, 2]
-a.extend(b)
+a.extend([3, 4])
 print(a)  # [1, 2, 3, 4]
 
 # +: 원본 유지, 새 리스트 반환
 a = [1, 2]
-c = a + b
+c = a + [3, 4]
 print(a)  # [1, 2]       <- 원본 그대로
 print(c)  # [1, 2, 3, 4] <- 새 리스트
 ```
 
-|방식|동작|원본 변경|반환값|
-|---|---|:-:|---|
-|`append(b)`|b 를 통째로 맨 뒤에|O|None|
-|`extend(b)`|b 의 알맹이만 풀어서|O|None|
-|`a + b`|알맹이 합쳐서 새것 생성|X|새 리스트|
+|방식|위치|동작|원본 변경|반환값|
+|---|---|---|---|---|
+|`append(x)`|맨 뒤|x 를 통째로 추가|O|None|
+|`insert(i, x)`|i 번 자리|x 를 i 위치에 삽입|O|None|
+|`extend(b)`|맨 뒤|b 의 알맹이만 풀어서|O|None|
+|`a + b`|—|알맹이 합쳐서 새것 생성|X|새 리스트|
 
 > `mix = a.extend(b)` 하면 `mix` 는 `None` extend 는 원본을 고치는 것이지 반환하지 않는다.
 
@@ -97,36 +112,70 @@ print(c)  # [1, 2, 3, 4] <- 새 리스트
 
 # ③ 삭제 — pop / del / remove / [:-n]
 
-|구분|`pop()`|`del`|`remove()`|`[:-n]`|
-|---|---|---|---|---|
-|**기능**|꺼내고 삭제|그냥 삭제|값으로 찾아서 삭제|뒤에서 n개 제거|
-|**반환값**|꺼낸 값|없음|없음|새 리스트|
+| 구분      | `pop()` | `pop(0)` | `del`  | `remove()` | `clear()` | `[:-n]`   |
+| ------- | ------- | -------- | ------ | ---------- | --------- | --------- |
+| **기능**  | 맨 뒤 꺼내기 | 맨 앞 꺼내기  | 위치로 삭제 | 값으로 삭제     | 전체 비우기    | 뒤에서 n개 제거 |
+| **반환값** | 꺼낸 값    | 꺼낸 값     | 없음     | 없음         | 없음        | 새 리스트     |
 
 ```python
 data = ["A", "B", "C", "D"]
 
-# pop: 꺼내서 변수에 담기
-last   = data.pop()   # "D" 꺼냄  -> data = ["A", "B", "C"]
-second = data.pop(1)  # "B" 꺼냄  -> data = ["A", "C"]
+# pop(): 맨 뒤 꺼내기 (Stack 패턴)
+last = data.pop()
+print(last)  # "D"
+print(data)  # ["A", "B", "C"]
 
-# del: 그냥 삭제
-del data[0]           # -> data = ["C"]
+# pop(0): 맨 앞 꺼내기 (Queue 패턴)
+first = data.pop(0)
+print(first)  # "A"
+print(data)   # ["B", "C"]
+# 뒤 데이터가 전부 한 칸씩 당겨지므로 데이터 많을 때 느림 -> deque 권장
+
+# pop(i): 특정 위치 꺼내기
+data = ["A", "B", "C", "D"]
+mid = data.pop(1)
+print(mid)   # "B"
+print(data)  # ["A", "C", "D"]
+
+# del: 위치로 그냥 삭제 (반환값 없음)
+data = ["A", "B", "C"]
+del data[0]
+print(data)  # ["B", "C"]
+
+del data[0:2]  # 슬라이싱으로 여러 개 한 번에 삭제
+print(data)    # []
 
 # remove: 값으로 찾아서 삭제
 data = ["Red", "Green", "Blue"]
-data.remove("Green")  # -> ["Red", "Blue"]
-# 없는 값 remove 하면 ValueError 발생!
+data.remove("Green")
+print(data)  # ["Red", "Blue"]
+# 없는 값 remove 하면 ValueError 발생! -> if 로 먼저 확인
+
+# clear: 전체 비우기 (빈 리스트로 만들기)
+data = [1, 2, 3]
+data.clear()
+print(data)  # []
+# del data[:] 와 동일하지만 clear() 가 더 명확
 
 # [:-n] 슬라이싱: 뒤에서 n개 한 번에 제거
 answer = [1, 2, 3, 4, 5]
 v = 2
-answer = answer[:-v]  # -> [1, 2, 3]
-# v = 0 이면 answer[:0] = [] 가 되므로 조건 분기 필요
 if v > 0:
     answer = answer[:-v]
+print(answer)  # [1, 2, 3]
+# v = 0 이면 answer[:0] = [] 가 되므로 조건 분기 필요
 ```
 
-> `pop(0)` 은 맨 앞을 꺼내서 큐(Queue) 처럼 사용 가능. 단, 뒤 데이터가 전부 한 칸씩 당겨져서 데이터 많을 때 느림 -> `deque` 사용 권장.
+## pop 패턴 정리
+
+```text
+data.pop()   <- 맨 뒤 꺼내기 = Stack (후입선출 LIFO)
+data.pop(0)  <- 맨 앞 꺼내기 = Queue (선입선출 FIFO)
+data.pop(i)  <- i 번째 꺼내기
+
+Stack 예: 실행 취소(Undo), 괄호 짝 검사
+Queue 예: 프린터 대기열, 메시지 큐
+```
 
 ---
 
