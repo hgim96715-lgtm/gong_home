@@ -12,99 +12,212 @@ tags:
   - Storage
   - Infrastructure
 related:
-  - "[[Spark_File_IO_Basic]]"
   - "[[00_Docker_HomePage]]"
+  - "[[01_Docker_Setup_Postgresql_Setup]]"
+  - "[[Docker_Networking]]"
+  - "[[Docker_Compose_Setup]]"
 ---
+# 🐳 Docker_Volumes
+
 ## 개념 한 줄 요약
 
-**"컨테이너가 폭파(삭제)되어도 데이터는 살아남도록, 내 컴퓨터(Host)의 폴더를 컨테이너에 '연결(Mount)'하는 기술."**
+> **"컨테이너는 껐다 켜면 데이터가 사라진다. Volumes 은 그걸 막는 외장하드다."** 
+> 컨테이너 내부에 저장된 데이터는 컨테이너가 삭제되면 함께 사라진다. 
+> Volume 을 연결하면 컨테이너가 없어져도 데이터는 살아남는다.
 
-* **컨테이너의 운명:** 쓰고 버리는 일회용 컵. (삭제하면 안의 내용물도 증발)
-* **볼륨(Volume):** 컵에 꽂아둔 **빨대**. (컵을 버려도 빨대를 통해 연결된 음료수 통은 그대로 있음)
+```
+컨테이너 삭제  →  내부 데이터 사라짐  ← 문제
+컨테이너 삭제  →  Volume 은 유지됨   ← 해결
+```
 
 ---
 
-## 왜 필요한가? (Why)
+---
 
-**문제점 (Ephemerality):**
-* 도커 컨테이너는 **"상태가 없는(Stateless)"** 것이 미덕입니다.
-* `docker rm my-container`를 하는 순간, 그 안에서 `apt install`로 깐 거나 `vi`로 짠 코드가 전부 사라집니다.
+# ① Volume 의 3가지 종류
 
-**해결책:**
-* **"중요한 데이터(DB 파일, 소스 코드, 로그)는 컨테이너 안에 두지 말자!"**
-* 대신, 내 컴퓨터(Host)의 폴더를 컨테이너 안으로 **'투영(Projection)'** 시킵니다.
-* 이렇게 하면 컨테이너를 100번 지웠다 다시 만들어도 데이터는 안전합니다.
+```
+┌─────────────────────────────────────────────────┐
+│  종류              저장 위치          주요 용도   │
+├─────────────────────────────────────────────────┤
+│  Volume            Docker 관리 영역   DB, 영구 데이터  │
+│  Bind Mount        내 컴퓨터 경로     개발 중 코드 실시간 반영  │
+│  tmpfs             메모리(RAM)        민감한 임시 데이터  │
+└─────────────────────────────────────────────────┘
+```
 
 ---
-## 핵심 문법: "왼쪽이 주인, 오른쪽이 세입자" 
 
-가장 중요한 규칙입니다. 콜론(`:`)을 기준으로 나뉩니다.
+---
 
-```bash
-# 문법
-[내 컴퓨터 경로(Host)] : [컨테이너 내부 경로(Container)]
-```
+# ② Volume — Docker 가 관리하는 저장소
 
-### ① Docker Run 명령어 (`-v`)
+> **가장 권장되는 방식. Docker 가 저장 위치를 직접 관리한다.** 
+> 컨테이너가 삭제돼도 Volume 은 남는다.
 
-```bash
-# 내 컴퓨터의 현재 폴더($PWD)를 컨테이너의 /data 폴더에 연결해라
-docker run -v $PWD:/data ubuntu
-```
+## docker-compose.yml 에서 사용
 
-### ② Docker Compose (`volumes:`)
-
-```YAML
+```yaml
 services:
-  spark-worker:
-    image: ...
+  postgres:
+    image: postgres:16
     volumes:
-      # 내 컴퓨터의 ./data 폴더를 <-> 컨테이너의 /workspace/data 에 연결
-      - ./data:/workspace/data
+      - postgres_data:/var/lib/postgresql/data
+      #  ↑ Volume 이름   ↑ 컨테이너 내부 경로
+
+volumes:
+  postgres_data:    # 여기서 Volume 을 선언해야 함
+```
+
+## docker run 에서 사용
+
+```bash
+docker run -v postgres_data:/var/lib/postgresql/data postgres:16
+#              ↑ Volume 이름  ↑ 컨테이너 내부 경로
+```
+
+## Volume 명령어
+
+```bash
+# Volume 목록 확인
+$ docker volume ls
+
+# Volume 상세 정보 (실제 저장 경로 확인)
+$ docker volume inspect postgres_data
+
+# Volume 삭제
+$ docker volume rm postgres_data
+
+# 사용 안 하는 Volume 전체 삭제
+$ docker volume prune
+```
+
+```
+실제 저장 위치 (Mac/Linux):
+/var/lib/docker/volumes/postgres_data/_data
+→ Docker 가 관리하는 영역이라 직접 건드리지 않는 게 좋음
 ```
 
 ---
-## 두 가지 종류 (Bind Mount vs Named Volume)
-
-실무에서 자주 쓰는 두 가지 방식이 있습니다.
-
-
-### ① 바인드 마운트 (Bind Mount) 🔗
-
-- **방식:** 내 컴퓨터의 **특정 폴더**를 직접 지정함. (`./data:/data`)
-
-- **특징:**
-    - 내가 눈으로 파일을 확인하고 수정하기 편함.
-    - **소스 코드, 설정 파일, 데이터 파일** 공유할 때 주로 씀. (개발 환경 표준)
-
-- **비유:** "창문을 뚫어서 옆집이랑 물건 주고받기."
-
-### ② 네임드 볼륨 (Named Volume) 
-
-- **방식:** 도커가 관리하는 **전용 창고**를 씀. (`my-db-vol:/var/lib/mysql`)
-    
-- **특징:**
-    - 내 컴퓨터 어디에 저장되는지 알 필요 없음 (도커가 알아서 함).
-    - **데이터베이스(DB) 저장소**처럼 굳이 열어볼 필요 없는 데이터에 씀.
-
-- **비유:** "은행 금고에 맡기기."
 
 ---
-## 데이터 엔지니어의 실수 (Common Mistakes) 
 
-### ① "파일을 수정했는데 반영이 안 돼요!"
+# ③ Bind Mount — 내 컴퓨터 경로를 직접 연결
 
-- **원인:** 볼륨 연결을 안 하고 `COPY` 명령어로 이미지를 구워버린 경우.
-- **해결:**
-    - `COPY`: 이미지를 **만들 때(Build)** 딱 한 번 복사함. (수정 불가능)
-    - `Volume`: **실행할 때(Run)** 실시간으로 연결함. (수정 가능)
-    - **코드 개발할 때는 무조건 Volume을 써야 함!**
+> **내 컴퓨터의 특정 폴더를 컨테이너 안에 직접 연결한다.** 
+> 코드를 수정하면 컨테이너 재시작 없이 바로 반영된다. → 개발 환경에 최적.
 
-### ② "Permission Denied (권한 오류)"
+## docker-compose.yml 에서 사용
 
-- **상황:** 컨테이너가 파일을 쓰려고 하는데 "너 권한 없어!" 하고 튕김.
-- **원인:** 내 컴퓨터(Host)의 폴더 주인이 `root`인데, 컨테이너는 일반 유저로 실행될 때.
-- **해결:** `chmod 777`로 권한을 풀어주거나, 컨테이너 유저(`USER root`)를 맞춰줘야 함.
+```yaml
+services:
+  app:
+    image: python:3.11-slim
+    volumes:
+      - ./app:/app
+      # ↑ 호스트 경로  ↑ 컨테이너 내부 경로
+      # ./ = docker-compose.yml 이 있는 현재 폴더 기준
+```
 
->"스파크 실습할 때 `file:///` 경로 때문에 고생했지? 그게 다 이 **볼륨(Volume)** 개념 때문이야. 
->**'내 컴퓨터의 A폴더가 컨테이너의 B폴더가 된다'** 는 이 마법 같은 연결고리만 이해하면, 도커의 절반은 정복한 셈이야. 이제 맘 놓고 컨테이너를 지웠다 켰다 해도 돼!"
+## docker run 에서 사용
+
+```bash
+docker run -v $(pwd)/app:/app python:3.11-slim
+#           ↑ 절대경로 필수   ↑ 컨테이너 경로
+```
+
+```
+Bind Mount 특징:
+✅ 내 코드 수정 → 컨테이너 안에 즉시 반영 (개발 편의)
+✅ 내 컴퓨터에서 파일 직접 확인 가능
+⚠️  호스트 경로가 없으면 에러 발생
+⚠️  운영 환경보다는 개발 환경에서 주로 사용
+```
+
+---
+
+---
+
+# ④ tmpfs — 메모리에 저장 (휘발성)
+
+> **디스크가 아닌 RAM 에 저장한다. 컨테이너가 종료되면 무조건 사라진다.** 
+> 비밀번호, 토큰 같은 민감한 임시 데이터에 사용.
+
+```yaml
+services:
+  app:
+    image: python:3.11-slim
+    tmpfs:
+      - /tmp
+      - /run
+```
+
+```bash
+docker run --tmpfs /tmp python:3.11-slim
+```
+
+```
+tmpfs 특징:
+✅ 매우 빠름 (RAM 속도)
+✅ 컨테이너 종료 시 자동 삭제 → 민감 데이터 흔적 없음
+❌ 컨테이너 껐다 켜면 데이터 사라짐
+```
+
+---
+
+---
+
+# ⑤ 세 가지 비교
+
+| |Volume|Bind Mount|tmpfs|
+|---|---|---|---|
+|**저장 위치**|Docker 관리 영역|내 컴퓨터 지정 경로|메모리(RAM)|
+|**영구 저장**|✅|✅|❌ (재시작 시 삭제)|
+|**컨테이너 삭제 후**|유지|유지|삭제|
+|**주요 용도**|DB, 영구 데이터|개발 중 코드 반영|민감한 임시 데이터|
+|**권장 환경**|운영 + 개발|개발|보안 필요 시|
+
+---
+
+---
+
+# ⑥ 프로젝트 적용 예시
+
+```yaml
+# 이 프로젝트(seoul-train-realtime-project) 에서의 Volume 사용
+
+services:
+  postgres:
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Volume: DB 데이터 영구 저장
+
+  kafka:
+    volumes:
+      - kafka_data:/var/lib/kafka/data            # Volume: Kafka 메시지 영구 저장
+
+volumes:
+  postgres_data:
+  kafka_data:
+```
+
+```
+컨테이너를 docker compose down 해도
+postgres_data, kafka_data Volume 은 살아있음
+
+docker compose down -v  →  Volume 까지 삭제 (초기화)
+```
+
+---
+
+---
+
+# 초보자 실수 체크리스트
+
+|실수|원인|해결|
+|---|---|---|
+|`docker compose down` 후 DB 데이터 사라짐|Volume 선언 안 함|`volumes:` 섹션에 Volume 선언|
+|Bind Mount 경로 에러|상대경로 사용|절대경로 또는 `./` 기준 경로 사용|
+|`down -v` 로 실수로 데이터 삭제|Volume 까지 삭제하는 옵션|개발 중엔 `down` 만, `-v` 는 초기화 시에만|
+|Volume 이름 선언 안 함|`services` 에 쓰고 `volumes:` 에 선언 안 함|최하단 `volumes:` 섹션에 반드시 선언|
+
+---

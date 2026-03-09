@@ -92,7 +92,7 @@
 
 > "반복 작업은 컴퓨터에게 시키고 퇴근해요."
 
-- [[Shell_Scripting_Basics]] : 쉘 스크립트 기초 문법 (`if`, `for`, `while`, `var`, `#!/bin/bash`, `실행권한`)
+- [[Linux_Shell_Script]] : 쉘 스크립트 기초 문법 (`if`, `for`, `while`, `var`, `#!/bin/bash`, `실행권한`)
 - [[Shell_Input_Output]] : 사용자와 대화하기 (`read`, `$1 위치인자`, `stdin`, `echo`, `-p 프롬프트`)
 - [[Shell_Arithmetic]] : 쉘에서의 산술 연산 (`$(())`, `expr`, `bc`, `소수점 계산`)
 - [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`, `-e`, `* * * * *`, `분/시/일/월/요일`)
