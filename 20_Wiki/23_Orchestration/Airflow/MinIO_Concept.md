@@ -13,7 +13,7 @@ tags:
 related:
   - "[[00_Airflow_HomePage]]"
   - "[[00_Kafka_HomePage]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
 ---
 ## 개념 한 줄 요약
 

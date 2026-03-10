@@ -5,7 +5,7 @@ tags:
   - Project
 related:
   - "[[00_Project_HomePage]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
   - "[[MinIO_Integration]]"
   - "[[Pandas_Read_Write]]"
   - "[[MinIO_Concept]]"

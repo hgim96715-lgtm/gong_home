@@ -8,7 +8,7 @@ tags:
 related:
   - "[[00_Project_HomePage]]"
   - "[[Python_Database_Connect]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
   - "[[SQL_DDL_Create]]"
   - "[[SQL_DML_CRUD]]"
   - "[[Airflow_Providers]]"

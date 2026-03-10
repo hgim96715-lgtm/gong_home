@@ -12,7 +12,7 @@ related:
   - "[[Apache_Kafka_Concept]]"
   - "[[Python_Logging]]"
   - "[[Python_Sys_Module]]"
-  - "[[Kafka_Python_Producer_Basic]]"
+  - "[[Kafka_Python_Producer]]"
   - "[[PyFlink_KeyedProcessFunction]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-flink/playground/src/iot_producer.py

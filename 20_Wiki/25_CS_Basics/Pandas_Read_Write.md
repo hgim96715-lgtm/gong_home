@@ -21,7 +21,7 @@ related:
   - "[[Python_File_IO]]"
   - "[[Python_Database_Connect]]"
   - "[[00_Pandas_HomePage]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
 ---
 
 ## 1. 개념 한 줄 요약 

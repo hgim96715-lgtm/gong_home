@@ -6,7 +6,7 @@ tags:
 related:
   - "[[00_Project_HomePage]]"
   - "[[Python_Library_Faker]]"
-  - "[[Kafka_Python_Producer_Basic]]"
+  - "[[Kafka_Python_Producer]]"
   - "[[Python_Random_Sampling]]"
   - "[[Python_UUID]]"
   - "[[Python_DateTime]]"

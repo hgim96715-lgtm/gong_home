@@ -9,8 +9,8 @@ tags:
   - Kafka
 related:
   - "[[00_Kafka_HomePage]]"
-  - "[[Kafka_Python_Producer_Basic]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Producer]]"
+  - "[[Kafka_Python_Consumer]]"
   - "[[Spark_JDBC_Postgres_Guide]]"
 ---
 

@@ -17,8 +17,8 @@
 
 ## 3. Python Development (코딩)
 
-- [[Kafka_Python_Producer_Basic]] : 데이터 전송 기초 (`confluent_kafka`, `KafkaProducer`, `produce`, `flush`, `key/value`, `Hello World`)
-- [[Kafka_Python_Consumer_Basic]] : 데이터 수신 기초 (`KafkaConsumer`, `subscribe`, `poll`, `무한 루프`, `auto_offset_reset`, `commit`)
+- [[Kafka_Python_Producer]] : 데이터 전송 기초 (`confluent_kafka`, `KafkaProducer`, `produce`, `flush`, `key/value`, `Hello World`)
+- [[Kafka_Python_Consumer]] : 데이터 수신 기초 (`KafkaConsumer`, `subscribe`, `poll`, `무한 루프`, `auto_offset_reset`, `commit`)
 - [[Kafka_Python_Serialization]] : JSON 데이터 직렬화/역직렬화 패턴 (`json.dumps`, `json.loads`, `encode`, `decode`, `value_serializer`, `직렬화 패턴`)
 - [[Kafka_Error_Handling_Retry]] : 연결 실패 및 에러 처리 (`try/except`, `재시도`, `좀비 패턴`, `KafkaException`, `백오프`, `연결 실패 복구`)
 

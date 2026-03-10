@@ -5,7 +5,7 @@ tags:
   - Project
 related:
   - "[[00_Project_HomePage]]"
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
   - "[[Python_JSON]]"
   - "[[Python_DateTime]]"
   - "[[Streamlit_Layout]]"

@@ -5,7 +5,7 @@ aliases:
 tags:
   - CS
 related:
-  - "[[Kafka_Python_Consumer_Basic]]"
+  - "[[Kafka_Python_Consumer]]"
   - "[[00_CS_HomePage]]"
 ---
 ## 쉬운 비유로 이해하기 (개념)
