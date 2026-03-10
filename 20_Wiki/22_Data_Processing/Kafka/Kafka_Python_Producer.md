@@ -14,6 +14,8 @@ related:
   - "[[Docker_Host_vs_Internal_Network]]"
   - "[[Kafka_CLI_Cheatsheet]]"
   - "[[Kafka_Python_Consumer]]"
+  - "[[Kafka_Error_Handling_Retry]]"
+  - "[[Python_DateTime]]"
 ---
 
 
@@ -21,7 +23,8 @@ related:
 
 ## 개념 한 줄 요약
 
-> **파이썬 데이터를 Kafka 브로커(서버)로 쏘아 보내는 객체.** `NoBrokersAvailable` = "카프카 문 닫혀있는데?" — 연결 실패를 알리는 에러.
+> **파이썬 데이터를 Kafka 브로커(서버)로 쏘아 보내는 객체.** 
+> `NoBrokersAvailable` = "카프카 문 닫혀있는데?" — 연결 실패를 알리는 에러.
 
 ---
 
@@ -87,7 +90,7 @@ producer = KafkaProducer(
 
 헷갈리면 [[Docker_Compose_Setup]] 참고
 ```
-
+>[[Docker_Compose_Setup]] 
 ---
 
 ## value_serializer — 어떻게 포장할까? (직렬화)
@@ -131,42 +134,228 @@ value_serializer=lambda v: v.encode("utf-8")
 
 # ③ 데이터 전송 — send() / flush()
 
+## send() 파라미터 전체
+
 ```python
-# 토픽으로 메시지 발행
+producer.send(
+    topic,            # ① 필수: 보낼 토픽 이름
+    value=None,       # ② 실제 데이터 (value_serializer 거쳐서 bytes 변환)
+    key=None,         # ③ 메시지 키 (파티션 라우팅 / 순서 보장)
+    headers=None,     # ④ 메타데이터 헤더 (추적 ID 등)
+    partition=None,   # ⑤ 파티션 직접 지정 (보통 안 씀)
+    timestamp_ms=None # ⑥ 타임스탬프 (None 이면 Kafka 가 자동 부여)
+)
+```
+
+---
+
+## ① value — 실제 데이터
+
+```python
+# 가장 기본적인 사용법
 producer.send("train-realtime", value={"trn_no": "00051", "stn_nm": "서울"})
 
-# 버퍼에 남아있는 메시지 전부 전송 완료될 때까지 대기
-producer.flush()
+# value_serializer 설정했으면 dict 그대로 넣어도 됨
+# 내부에서 자동으로 bytes 변환
+```
+
+---
+
+## ② key — 파티션 라우팅 / 순서 보장 ⭐️
+
+```python
+# key 도 bytes 로 넣어야 함
+producer.send(
+    "train-realtime",
+    key=b"00051",                                      # 단순 bytes
+    key="00051".encode("utf-8"),                       # 문자열 → bytes
+    value={"trn_no": "00051", "stn_nm": "서울"}
+)
 ```
 
 ```
+key 의 역할:
+  같은 key → 항상 같은 파티션으로 전달 (순서 보장)
+  key=None → 라운드로빈으로 파티션에 분배
+
+실전 활용:
+  key="열차번호" → 같은 열차의 메시지가 항상 같은 파티션에 쌓임
+  → Consumer 에서 열차별 순서대로 처리 가능
+
+파티션이 1개면 key 의미 없음
+  멀티 파티션 환경에서 의미 있음
+```
+
+---
+
+## ③ headers — 메타데이터 전달
+
+```python
+# 추적 ID, 출처 정보 등 메타데이터를 함께 전송
+producer.send(
+    "train-realtime",
+    value={"trn_no": "00051"},
+    headers=[
+        ("source", b"seoul-station-api"),
+        ("version", b"1.0"),
+    ]
+)
+# headers 는 (이름, bytes) 튜플의 리스트
+```
+
+```
+Consumer 에서 꺼내기:
+  for key, val in message.headers:
+      print(key, val.decode("utf-8"))
+
+실무에서는 데이터 출처 추적, 버전 관리에 활용
+간단한 파이프라인에서는 안 써도 됨
+```
+
+---
+
+## ④ partition — 파티션 직접 지정
+
+```python
+# 특정 파티션에 강제로 넣기 (거의 안 씀)
+producer.send("train-realtime", value=data, partition=0)
+```
+
+```
+보통은 key 로 파티션을 간접 지정함
+partition 을 직접 쓰면 특정 파티션에 부하 몰릴 수 있음
+```
+
+---
+## ⑤ value 안에 수집 시각 넣기 — isoformat() ⭐️
+
+```
+Kafka 메시지에 "이 데이터를 언제 수집했는지" 를 함께 담는 패턴
+timestamp_ms 는 Kafka 내부 메타데이터 타임스탬프 (Consumer 가 꺼내기 불편)
+collected_at 을 value 안에 직접 넣는 방식이 더 실용적
+```
+
+
+```python
+from datetime import datetime
+
+data = {
+    "trn_no"      : "00051",
+    "stn_nm"      : "서울",
+    "collected_at": datetime.now().isoformat(),   # ← 여기
+}
+
+producer.send("train-realtime", value=data)
+```
+
+
+```python
+# isoformat() 결과
+datetime.now().isoformat()
+# "2026-02-24T21:06:32.123456"
+#            ↑
+#            T 가 날짜와 시간 구분자
+
+# T 를 공백으로 바꾸고 싶을 때
+datetime.now().isoformat(sep=" ")
+# "2026-02-24 21:06:32.123456"
+```
+
+```
+isoformat() 을 쓰는 이유:
+  사전순 정렬 = 시간순 정렬 (BigQuery, S3, Spark 정렬 보장)
+  마이크로초까지 포함 → 중복 없이 고유한 시각 표현
+  strftime 포맷 지정 없이 한 줄로 끝남
+
+UTC 기준 수집 시각 (글로벌 서비스, 서버 배포 시 권장)
+  from datetime import datetime, timezone
+  datetime.now(timezone.utc).isoformat()
+  # "2026-02-24T12:06:32.123456+00:00"  ← 끝에 +00:00 붙음
+```
+
+>[[Python_DateTime#방법 1 — isoformat() 국제 표준 ISO 8601|isoformat(날짜->문자열)]] 참고
+
+---
+
+---
+
+## send() vs flush() 동작 원리
+
+```scss
 send() 는 비동기 (Async)
   "보내!" 하고 바로 다음 줄로 넘어감
   내부 버퍼에 쌓아두고 백그라운드에서 전송
 
 flush() 는 동기 (Sync)
   버퍼에 남아있는 메시지를 전부 보낼 때까지 기다림
-  루프 한 바퀴 끝난 후 or 프로그램 종료 전에 반드시 호출
-  안 하면 프로그램 종료 시 버퍼 메시지 유실 가능
 ```
+
+> [!warning] 중요
+> **루프 한 바퀴 끝난 후 또는 프로그램 종료 전에 반드시 `flush()` 호출**
+> 호출하지 않으면 **버퍼 메시지 유실 가능**
+
+```python
+# 루프마다 flush
+for item in items:
+    producer.send("train-realtime", value=item)
+producer.flush()   # 루프 끝나고 한 번에 flush (루프마다 호출하면 비효율)
+```
+
+---
 
 ## future.get() — 전송 결과 확인
 
 ```python
 future = producer.send("train-realtime", value=data)
 
-# 전송 완료될 때까지 최대 10초 대기 후 결과 반환
+# .get() 파라미터
+future.get(timeout=10)
+#          ↑
+#          최대 몇 초 기다릴지 (초 단위)
+#          전송이 완료되면 그 전에 바로 반환
+#          timeout 안에 완료 못 하면 KafkaTimeoutError 발생
+#          기본값: 없음 (무한 대기) ← 반드시 넣는 습관
+```
+
+```python
+# 반환값: RecordMetadata 객체
 record_metadata = future.get(timeout=10)
 
-print(record_metadata.topic)      # train-realtime
-print(record_metadata.partition)  # 0
-print(record_metadata.offset)     # 42  ← 몇 번째 메시지인지
+print(record_metadata.topic)      # "train-realtime"  ← 전송한 토픽
+print(record_metadata.partition)  # 0                 ← 들어간 파티션 번호
+print(record_metadata.offset)     # 42                ← 파티션 내 몇 번째 메시지인지
 ```
 
 ```
-디버깅할 때 offset 확인하면 메시지가 정상적으로 들어갔는지 알 수 있음
-고성능이 필요하면 future.get() 제거 (완전 비동기)
-단, 에러 발생 여부를 즉시 알 수 없음
+timeout 을 넣어야 하는 이유:
+  넣지 않으면 → 브로커 장애 시 무한 대기
+  프로그램 전체가 멈춰버림
+  timeout=10 이면 10초 안에 안 되면 KafkaTimeoutError 발생
+  → except 로 잡아서 처리 가능
+
+offset 의 의미:
+  파티션 안에서 메시지에 순서대로 붙는 번호 (0부터 시작)
+  offset=42 → 이 파티션에 42번째로 들어간 메시지
+  Consumer 에서 "어디까지 읽었는지" 추적하는 기준이 됨
+```
+
+```python
+# 실전 패턴: 에러 잡기
+from kafka.errors import KafkaTimeoutError
+
+try:
+    future = producer.send("train-realtime", value=data)
+    meta   = future.get(timeout=10)
+    print(f"✅ offset={meta.offset}")
+except KafkaTimeoutError:     #Error는 [[Kafka_Error_Handling_Retry]] 참고 
+    print("❌ 전송 타임아웃 (10초 초과)")
+```
+
+```text
+future.get() 을 아예 쓰지 않으면:
+  완전 비동기 → 가장 빠름
+  but 에러 발생 여부를 즉시 알 수 없음
+  → 고성능 파이프라인 or 에러를 나중에 콜백으로 처리할 때
 ```
 
 ---

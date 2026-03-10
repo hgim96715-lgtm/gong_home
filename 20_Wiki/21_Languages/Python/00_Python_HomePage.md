@@ -18,6 +18,7 @@
 - [[Python_String_Methods]] : 문자열 가지고 놀기 (`split`, `join`, `strip`, `startswith`, `endswith`, `isdigit`, `isalpha`)
 - [[Python_String_Search]] : 문자열 검색, 위치 찾기 (`find`, `index`, `rfind`, `rindex`, `없으면 -1 vs 에러`)
 - [[Python_String_Case_Replace]] : 대소문자 변환과 치환 (`upper`, `lower`, `replace`, `re.sub`, `정규식 치환`)
+- [[Python_String_Formatting]] : f-string 포맷 마스터 (`:<4`, `:>`, `:^`, `멀티라인`, `소수점`, `날짜 포맷`, `천단위`)
 
 ### 🔹 흐름 제어
 
@@ -91,10 +92,10 @@
 
 ### 🔹 API 요청 & 응답
 
-- [[Python_Requests_Methods]] : API 요청 보내기 (`requests.get`, `post`, `params`, `data`, `headers`, `timeout`,`session`)
-- [[Python_Requests_Response]] : 응답 데이터 처리 (`status_code`, `.json()`, `text`, `raise_for_status`)
+- [[Python_Requests_Methods]] : API 요청 보내기 (`requests.get`, `post`, `params`, `data`, `headers`, `timeout`, `session`)
+- [[Python_Requests_Response]] : 응답 데이터 처리 (`status_code`, `.json()`, `text`, `raise_for_status`, `Content-Type`)
 - [[HTTP_Status_Codes]] : 응답 코드 해석 (`200 OK`, `404 Not Found`, `500 Server Error`, `429 Too Many`)
-- [[Python_URL_Parsing]] : URL 조립 & 파싱
+- [[Python_URL_Parsing]] : URL 조립 & 파싱 (`urlencode`, `quote`, `unquote`, `urlparse`, `urljoin`)
 
 ---
 
@@ -102,7 +103,7 @@
 
 > **"Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해해요."**
 
-- [[Python_Classes_Objects]] : 클래스와 인스턴스 (`class`, `self`, `__init__`, `__str__`, `__repr__`, `__floordiv__`,`@staticmethod`)
+- [[Python_Classes_Objects]] : 클래스와 인스턴스 (`class`, `self`, `__init__`, `__str__`, `__repr__`, `__floordiv__`, `@staticmethod`, `@classmethod`, `if __name__ == "__main__"`)
 
 ---
 

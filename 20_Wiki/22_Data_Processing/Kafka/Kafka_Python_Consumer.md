@@ -127,13 +127,14 @@ group_id 를 안 쓰면  →  Kafka 가 임의 ID 부여
 ```
 
 ```
-Streamlit 실시간 대시보드에서는 group_id 생략 or None 권장
+Superset 은 Kafka 를 직접 읽지 않고 PostgreSQL 에서 읽음
+→ Kafka Consumer 는 Spark 가 담당
+   Spark → PostgreSQL 저장 → Superset 시각화
 
-이유 ①: 브라우저 탭 3개 켜면 3개 화면 모두 동일한 데이터가 나와야 함
-         (group_id 쓰면 데이터가 3등분 돼서 차트가 끊김)
-
-이유 ②: 앱 껐다 켰을 때 과거 밀린 데이터 말고
-         지금 들어오는 최신 데이터부터 보는 게 목적
+별도로 Kafka 를 직접 읽는 모니터링/디버깅 스크립트를 만들 때:
+  group_id=None 권장
+  이유: 껐다 켰을 때 처음부터 다시 읽거나 데이터 놓칠 수 있음
+       None 이면 매번 "새로운 소비자" 로 시작해서 최신 데이터부터 읽음
 ```
 
 ---

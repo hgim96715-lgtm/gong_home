@@ -9,6 +9,7 @@ related:
   - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[00_Docker_HomePage]]"
   - "[[Kafka_CLI_Cheatsheet]]"
+  - "[[SQL_DDL_Create]]"
 ---
 # 🐳 STEP 1. Docker Compose 기초 세팅 
 
@@ -38,8 +39,13 @@ apache/kafka:3.7.0  → ✅ 완전 무료, Apache 공식, 버전 고정 가능
 ## 목표
 
 ```
+이 단계에서 띄울 컨테이너:
+
 Kafka (KRaft)   ← 메시지 큐
 PostgreSQL      ← 저장소
+
+✅ 두 개가 정상 실행되면 STEP 1 완료
+나머지 (Spark, Airflow, Superset) 는 이후 단계에서 추가
 ```
 
 ---
@@ -97,7 +103,7 @@ POSTGRES_DB=train_db
 > [한국철도공사_열차운행정보 참고](https://www.data.go.kr/data/15125762/openapi.do#)
 
 ```sql
--- 여객열차 운행계획 (예정 시각)
+-- 1. 여객열차 운행계획 (하루 1회 적재)
 CREATE TABLE IF NOT EXISTS train_schedule (
     id                  SERIAL PRIMARY KEY,
     run_ymd             VARCHAR(8),
@@ -108,25 +114,45 @@ CREATE TABLE IF NOT EXISTS train_schedule (
     arvl_stn_nm         VARCHAR(50),
     trn_plan_dptre_dt   VARCHAR(20),
     trn_plan_arvl_dt    VARCHAR(20),
+    data_type           VARCHAR(20),  -- 'schedule'
     created_at          TIMESTAMP DEFAULT NOW()
 );
 
--- 여객열차 운행정보 (실제 시각)
+-- 2. 여객열차 운행 현황 (당일 시뮬레이션 전광판용)
+-- 원본 API 필드 대신 파이썬의 run_estimated() 함수가 쏘는 필드들로 교체!
 CREATE TABLE IF NOT EXISTS train_realtime (
     id                  SERIAL PRIMARY KEY,
-    run_ymd             VARCHAR(8),
     trn_no              VARCHAR(20),
-    trn_run_sn          VARCHAR(20),
-    stn_cd              VARCHAR(10),
-    stn_nm              VARCHAR(50),
-    mrnt_cd             VARCHAR(10),
-    mrnt_nm             VARCHAR(50),
-    uppln_dn_se_cd      VARCHAR(5),
-    stop_se_cd          VARCHAR(5),
-    stop_se_nm          VARCHAR(20),
-    trn_dptre_dt        VARCHAR(20),
-    trn_arvl_dt         VARCHAR(20),
+    mrnt_nm             VARCHAR(50),  -- 노선명
+    dptre_stn_nm        VARCHAR(50),  -- 출발역
+    arvl_stn_nm         VARCHAR(50),  -- 도착역
+    plan_dep            VARCHAR(10),  -- 계획 출발 (HH:MM)
+    plan_arr            VARCHAR(10),  -- 계획 도착 (HH:MM)
+    status              VARCHAR(100), -- 현재 상태 텍스트 (예: '운행 중 (50% 진행...)')
+    progress_pct        INTEGER,      -- 진행률 (0~100)
+    data_type           VARCHAR(20),  -- 'estimated'
     created_at          TIMESTAMP DEFAULT NOW()
+);
+
+-- 3. 지연 분석 (전날 계획 vs 실제 비교) — Superset 대시보드용
+-- ENUM을 삭제하고 VARCHAR로 변경하여 "정시 (0분)" 같은 텍스트가 잘 들어가게 수정!
+CREATE TABLE IF NOT EXISTS train_delay (
+    id           SERIAL PRIMARY KEY,
+    run_ymd      VARCHAR(8),       -- 운행 날짜 (전날)
+    trn_no       VARCHAR(20),      -- 열차 번호
+    mrnt_nm      VARCHAR(50),      -- 노선명 (경부선 등)
+    dptre_stn_nm VARCHAR(50),      -- 출발역
+    arvl_stn_nm  VARCHAR(50),      -- 도착역
+    plan_dep     VARCHAR(10),      -- 계획 출발 HH:MM
+    plan_arr     VARCHAR(10),      -- 계획 도착 HH:MM
+    real_dep     VARCHAR(10),      -- 실제 출발 HH:MM
+    real_arr     VARCHAR(10),      -- 실제 도착 HH:MM
+    dep_delay    INTEGER,          -- 출발 지연 분 (양수=지연, 음수=조기)
+    arr_delay    INTEGER,          -- 도착 지연 분
+    dep_status   VARCHAR(50),      -- 상태 텍스트 (예: '정시 (0분)', '대폭지연 (+45분)')
+    arr_status   VARCHAR(50),      -- 상태 텍스트
+    data_type    VARCHAR(20),      -- 'delay_analysis'
+    created_at   TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -147,8 +173,9 @@ Password: train_password
 ```text
 연결 후 확인:
 train_db → public → Tables
-  ├── train_schedule   ← 운행계획 테이블
-  └── train_realtime   ← 운행정보 테이블
+  ├── train_schedule   ← 당일 운행계획
+  ├── train_realtime   ← 전날 실제 운행정보
+  └── train_delay      ← 지연 분석 결과 (Superset 대시보드용)
 
 테이블이 보이면 init.sql 이 정상 실행된 것
 ```
@@ -242,13 +269,18 @@ train-postgres    running (healthy)
 ```
 
 ```bash
-# Kafka 토픽 생성 (열차 데이터용)
+# Kafka 토픽 생성 (3개)
 $ docker exec train-kafka /opt/kafka/bin/kafka-topics.sh \
-    --bootstrap-server localhost:9092 \
-    --create \
-    --topic train-realtime \
-    --partitions 1 \
-    --replication-factor 1
+    --bootstrap-server localhost:9092 --create \
+    --topic train-schedule --partitions 1 --replication-factor 1
+
+$ docker exec train-kafka /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --create \
+    --topic train-realtime --partitions 1 --replication-factor 1
+
+$ docker exec train-kafka /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --create \
+    --topic train-delay --partitions 1 --replication-factor 1
 
 # 토픽 확인
 $ docker exec train-kafka /opt/kafka/bin/kafka-topics.sh \
@@ -270,20 +302,23 @@ train_db=# \dt
               List of relations
  Schema |      Name      | Type  |   Owner
 --------+----------------+-------+------------
+ public | train_delay    | table | train_user
  public | train_realtime | table | train_user
  public | train_schedule | table | train_user
-(2 rows)
+(3 rows)
 ```
 
 ---
 
 ## 종료 / 초기화
 
+>새로 init.sql에 추가한다면, 초기화 하고 다시 새로고침 해보면 나옴!
+
 ```bash
 # 컨테이너 중지 (데이터 유지)
 $ docker compose down
 
-# 컨테이너 + 볼륨 전체 삭제 (초기화)
+# 컨테이너 + 볼륨 전체 삭제 (초기화) 
 $ docker compose down -v
 ```
 

@@ -216,6 +216,173 @@ CASCADE CONSTRAINTS 붙이고 DROP TABLE departments
    (employees 의 데이터는 그대로)
 ```
 
+----
+---
+# ② - 1. CHECK 제약조건 — 값 범위 제한
+
+## 기본 문법
+
+```sql
+-- 컬럼 정의 시 인라인으로
+CREATE TABLE 사원 (
+    나이   INTEGER     CHECK (나이 >= 0 AND 나이 <= 100),
+    성별   VARCHAR(1)  CHECK (성별 IN ('M', 'F')),
+    연봉   NUMERIC     CHECK (연봉 > 0)
+);
+
+-- 제약조건 이름 붙이기 (권장 — 나중에 DROP 할 때 이름으로 지목 가능)
+CREATE TABLE 사원 (
+    나이   INTEGER  CONSTRAINT ck_나이 CHECK (나이 >= 0 AND 나이 <= 100),
+    성별   VARCHAR(1) CONSTRAINT ck_성별 CHECK (성별 IN ('M', 'F'))
+);
+```
+
+## 자주 쓰는 패턴
+
+```sql
+-- 범위 조건
+CHECK (가격 >= 0)
+CHECK (수량 BETWEEN 1 AND 9999)
+
+-- 목록 조건
+CHECK (상태 IN ('대기', '진행', '완료', '취소'))
+CHECK (등급 IN ('A', 'B', 'C', 'D', 'F'))
+
+-- 복합 조건
+CHECK (시작일 <= 종료일)
+CHECK (최소값 <= 최대값)
+```
+
+## ALTER 로 CHECK 추가 / 삭제
+
+
+```sql
+-- 추가
+ALTER TABLE 사원
+ADD CONSTRAINT ck_연봉 CHECK (연봉 > 0);
+
+-- 삭제
+ALTER TABLE 사원
+DROP CONSTRAINT ck_연봉;
+```
+
+## DB별 CHECK 지원 차이
+
+|DB|CHECK 지원|비고|
+|---|---|---|
+|PostgreSQL|✅ 완전 지원|위반 시 즉시 에러|
+|Oracle|✅ 완전 지원|위반 시 즉시 에러|
+|MySQL 8.0.16+|✅ 지원|이전 버전은 문법은 허용하지만 **무시됨** ⚠️|
+|MySQL 8.0.16 미만|❌ 무시|선언해도 실제로 동작 안 함|
+
+> MySQL 구버전에서 CHECK 가 조용히 무시되는 함정이 있다. 버전 확인 필수.
+
+---
+---
+# ② - 2. ENUM 타입 — 고정된 값 목록
+
+## CHECK vs ENUM 언제 쓰나
+
+```
+CHECK  → 모든 DB 에서 동작. 조건식이 자유로움 (범위, 복합 조건 가능)
+ENUM   → DB 마다 지원 방식이 다름. 값이 완전히 고정된 경우에 적합
+```
+
+## PostgreSQL — CREATE TYPE 으로 ENUM 정의
+
+PostgreSQL 은 ENUM 을 **별도 타입으로 먼저 선언**한 뒤 컬럼에 사용한다.
+
+```sql
+-- 1. ENUM 타입 먼저 생성
+CREATE TYPE delay_status AS ENUM ('정시', '소폭지연', '지연', '대폭지연');
+CREATE TYPE order_status  AS ENUM ('대기', '진행', '완료', '취소');
+
+-- 2. 테이블 컬럼에 사용
+CREATE TABLE train_delay (
+    dep_status  delay_status,
+    arr_status  delay_status
+);
+
+CREATE TABLE 주문 (
+    상태  order_status  DEFAULT '대기'   -- DEFAULT 도 ENUM 값으로 지정
+);
+```
+
+
+```sql
+-- 잘못된 값 INSERT 시 에러
+INSERT INTO 주문 (상태) VALUES ('환불');
+-- ❌ ERROR: invalid input value for enum order_status: "환불"
+```
+
+## ENUM 값 추가 / 삭제
+
+```sql
+-- 값 추가 (뒤에 붙이기)
+ALTER TYPE order_status ADD VALUE '보류';
+
+-- 특정 위치에 추가
+ALTER TYPE order_status ADD VALUE '보류' BEFORE '완료';
+ALTER TYPE order_status ADD VALUE '보류' AFTER '진행';
+
+-- 값 삭제 → PostgreSQL 에서 직접 삭제 불가 ⚠️
+-- 타입을 새로 만들고 교체해야 함
+```
+
+> ENUM 값 삭제가 안 되기 때문에, 값이 바뀔 가능성이 조금이라도 있으면 CHECK 를 쓰는 게 낫다.
+
+## ENUM 타입 삭제
+
+```sql
+-- 테이블에서 해당 타입을 쓰고 있으면 바로 삭제 불가
+DROP TYPE order_status;        -- ❌ 에러 (테이블이 참조 중)
+
+-- CASCADE 로 참조하는 컬럼 제약도 함께 제거
+DROP TYPE order_status CASCADE; -- ✅ (컬럼 타입도 같이 해제됨)
+
+-- 있으면 삭제, 없으면 무시
+DROP TYPE IF EXISTS order_status;
+```
+
+## MySQL — 컬럼 정의에 인라인으로
+
+MySQL 은 타입을 따로 선언하지 않고 컬럼에 바로 쓴다.
+
+```sql
+CREATE TABLE 주문 (
+    상태  ENUM('대기', '진행', '완료', '취소')  DEFAULT '대기'
+);
+
+-- 값 추가하려면 컬럼 자체를 MODIFY
+ALTER TABLE 주문
+MODIFY 상태 ENUM('대기', '진행', '완료', '취소', '보류');
+```
+
+## Oracle — ENUM 타입 없음
+
+Oracle 에는 ENUM 타입이 없다. 대신 CHECK 로 동일한 효과를 낸다.
+
+```sql
+-- Oracle 에서 ENUM 대체
+CREATE TABLE 주문 (
+    상태  VARCHAR2(10)  CONSTRAINT ck_상태 CHECK (상태 IN ('대기', '진행', '완료', '취소'))
+);
+```
+
+## CHECK vs ENUM 비교표
+
+|항목|CHECK|ENUM (PostgreSQL)|
+|---|---|---|
+|범위 조건 (`> 0`)|✅|❌|
+|복합 조건 (`A <= B`)|✅|❌|
+|목록 고정|✅|✅|
+|저장 효율|보통|좋음 (내부 정수 저장)|
+|값 추가|`DROP` + `ADD`|`ADD VALUE`|
+|값 삭제|`DROP` + `ADD`|직접 삭제 불가 ⚠️|
+|Oracle 지원|✅|❌ (CHECK 로 대체)|
+|MySQL 지원|✅ (8.0.16+)|✅ (인라인)|
+
+> **PostgreSQL 실무 기준:** 값이 4~5개로 **완전히 고정**이고 변경 가능성이 없다면 → ENUM 나중에 값이 추가될 수 있거나, 범위/복합 조건이 필요하다면 → CHECK
 ---
 ---
 

@@ -1,4 +1,5 @@
->공공데이터 API 로 서울역 실시간 열차 정보를 수집해서, 실제 역 전광판처럼 보여주는 실시간 데이터 파이프라인 구축
+>공공데이터 API 로 서울역 열차 운행 데이터를 수집해서, 운행 현황 추적과 전날 지연 분석까지 보여주는 데이터 파이프라인 구축
+
 
 ## 시작하게 된 이유
 
@@ -32,15 +33,20 @@ travelerTrainRunInfo2  (실시간 운행정보)
    get_train_schedule(오늘) 로 계획 데이터 수집
    현재 시각 vs 계획 출발/도착 시각 비교
    → "출발 30분 전", "운행 중 (37% 진행)", "도착 완료" 추정
-   → train-schedule 토픽으로 Kafka 발행
+   → train-schedule 토픽 : 당일 운행계획 원본 (하루 1회)
+   → train-realtime 토픽 : 추정 상태값 (60초마다)
 
 ② 전날 지연 분석 (실제 vs 계획 비교)
+   기차를 타다 보면 절반 이상이 지연이었다.
+   실제로 얼마나 지연이 발생하는지 데이터로 직접 확인해보고 싶었다.
+
    get_train_schedule(어제)  → 계획 출발/도착 시각
    get_train_realtime(어제)  → 실제 출발/도착 시각
    delay_min = 실제 출발 - 계획 출발
-   → train-delay 토픽으로 Kafka 발행
+   → train-delay 토픽으로 Kafka 발행 (하루 1회, 새벽)
    → PostgreSQL 저장 → Superset 지연 현황 시각화
 ```
+
 
 ---
 ## 목표
@@ -130,6 +136,7 @@ travelerTrainRunInfo2  (실시간 운행정보)
     - API 제약 확인 (당일 실시간 불가)
 - [ ]  **STEP 3.** Kafka Producer 구성 [[03_Kafka_Producer]] 
     - 당일 운행 현황 (계획 기반 추정) → `train-schedule` 토픽
+    - 당일 운행 현황 추정 → `train-realtime` 토픽
     - 전날 지연 분석 → `train-delay` 토픽
 - [ ]  **STEP 4.** Spark Streaming Consumer
     - Kafka → Spark → 데이터 정제 → PostgreSQL 저장

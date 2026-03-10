@@ -190,7 +190,6 @@ while True:
 ---
 
 ---
-
 # ⑤ 날짜 → 문자열 (DB / Kafka 저장용)
 
 > "DB 나 Kafka 에 넣으려면 String 으로 바꿔야 한다"
@@ -198,23 +197,95 @@ while True:
 ```python
 from datetime import datetime
 now = datetime.now()
+```
 
-# 방법 1: isoformat() — 국제 표준 (빅데이터 시스템 선호)
-print(now.isoformat())
-# 2026-02-24T21:06:32.123456  ← 중간에 T 가 들어감
+---
 
-# 방법 2: strftime() — 원하는 포맷으로
+## 방법 1 — isoformat() : 국제 표준 ISO 8601
+
+```python
+now.isoformat()
+# 2026-02-24T21:06:32.123456
+#           ↑
+#           중간에 T 가 들어감 (날짜와 시간 구분자)
+```
+
+```
+언제 씀:
+  Kafka 메시지 타임스탬프
+  BigQuery, S3, Spark 같은 빅데이터 시스템에 저장할 때
+  시간 순서 정렬이 보장되어야 할 때 (사전순 정렬 = 시간순 정렬)
+
+특징:
+  마이크로초까지 포함됨 (123456)
+  T 를 공백으로 바꾸고 싶으면: now.isoformat(sep=" ")
+  → 2026-02-24 21:06:32.123456
+```
+
+>[[Kafka_Python_Producer]] 참고 
+
+---
+
+## 방법 2 — strftime() : 원하는 포맷으로
+
+```
+strftime = String Format Time
+"이 datetime 객체를 이 포맷의 문자열로 바꿔줘"
+```
+
+
+```python
+# DB 저장용 날짜
+now.strftime("%Y-%m-%d")
+# 2026-02-24
+
+# API 파라미터 run_ymd 형식
+now.strftime("%Y%m%d")
+# 20260224
+
+# 시간까지 포함
+now.strftime("%Y-%m-%d %H:%M:%S")
+# 2026-02-24 21:06:32
+
+# 결과는 무조건 str — 계산 불가
 date_str = now.strftime("%Y-%m-%d")
-print(date_str)           # 2026-02-24
-print(type(date_str))     # <class 'str'>  ← 이제 문자열, 계산 불가
+print(type(date_str))   # <class 'str'>
+```
 
-today_fmt = now.strftime("%Y%m%d")
-print(today_fmt)          # 20260224  ← API 파라미터 run_ymd 형식
+```
+언제 씀:
+  API 파라미터 만들 때 (run_ymd, baseYmd 등)
+  파일명 / 폴더명 만들 때 (partition=ds=2026-02-24)
+  DB 컬럼에 특정 포맷으로 넣을 때
+```
 
-# 방법 3: f-string (간편)
+---
+
+## 방법 3 — f-string : 간편 출력용
+
+```python
 print(f"현재 시간: {now:%Y-%m-%d %H:%M}")
 # 현재 시간: 2026-02-24 21:06
 ```
+
+```
+언제 씀:
+  print / 로그 출력할 때
+  포맷 변수를 따로 만들 필요 없을 때
+
+내부적으로 strftime 과 동일하게 동작
+```
+
+---
+
+## 세 가지 비교
+
+|방법|결과 예시|주요 용도|
+|---|---|---|
+|`isoformat()`|`2026-02-24T21:06:32.123456`|Kafka, 빅데이터 저장|
+|`strftime("%Y-%m-%d")`|`2026-02-24`|API 파라미터, DB|
+|`strftime("%Y%m%d")`|`20260224`|run_ymd, 파일명|
+|`f"{now:%Y-%m-%d %H:%M}"`|`2026-02-24 21:06`|로그, 출력|
 
 ---
 
