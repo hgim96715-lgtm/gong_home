@@ -70,20 +70,31 @@ TRAIN_API_KEY=발급받은_인증키_여기에_붙여넣기
 
 ## 제공하는 2가지 API
 
+| API       | 엔드포인트                   | 당일  | 전날  | 용도          |
+| --------- | ----------------------- | --- | --- | ----------- |
+| 여객열차 운행계획 | `travelerTrainRunPlan2` | ✅   | ✅   | 계획 출발/도착 시각 |
+| 여객열차 운행정보 | `travelerTrainRunInfo2` | ❌   | ✅   | 실제 출발/도착 시각 |
+
 ```
-① 여객열차 운행계획 조회   <- 예정 시각 (train_schedule 테이블)
-② 여객열차 운행정보 조회   <- 실제 시각 (train_realtime 테이블)
+⚠️ 코레일 정책상 당일 운행정보(실시간) 조회 불가
+   당일 호출 시 에러 없이 그냥 빈 리스트(0건) 반환됨
+   → 직접 확인해서 알아낸 것 (API 문서에 명시 안 됨)
+
+프로젝트 설계 방향:
+  당일 현황  → 운행계획 + 현재 시각 비교로 상태 추정
+  지연 분석  → 전날 운행계획 vs 전날 운행정보 비교 (하루 1회)
 ```
 
 ## 요청 파라미터
 
-|파라미터|설명|예시|필수|
-|---|---|---|:-:|
-|`serviceKey`|발급받은 API 인증키|`ABC123...`|✅|
-|`pageNo`|페이지 번호|`1`||
-|`numOfRows`|한 번에 가져올 행 수|`100`||
-|`run_ymd`|운행 날짜 (YYYYMMDD)|`20260308`||
-|`dptre_stn_cd`|출발역 코드|`0001` (서울역)||
+| 파라미터           | 설명               | 예시              | 필수  |
+| -------------- | ---------------- | --------------- | :-: |
+| `serviceKey`   | 발급받은 API 인증키     | `ABC123...`     |  ✅  |
+| `pageNo`       | 페이지 번호           | `1`             |     |
+| `numOfRows`    | 한 번에 가져올 행 수     | `100`           |     |
+| `run_ymd`      | 운행 날짜 (YYYYMMDD) | `20260308`      |     |
+| `dptre_stn_cd` | 출발역 코드           | `3900023` (서울역) |     |
+
 
 > 별표(`*`) 가 있는 항목만 필수. 나머지는 안 넣으면 서버 기본값으로 처리. [[Python_Requests_Methods#③ API 문서 읽기 — 필수 vs 선택 파라미터|필수 vs 선택 파라미터]] 참고
 
@@ -162,7 +173,7 @@ kafka-python==2.0.2   # Kafka Producer (STEP 3 에서 사용)
 ```
 
 ```bash
-pip install -r producer/requirements.txt
+pip3 install -r producer/requirements.txt
 ```
 
 ---
@@ -305,10 +316,13 @@ class TrainInfo:
         return all_items
 
     def get_train_realtime(self, run_ymd: str, trn_no: str) -> list:
+        # ⚠️ 당일 날짜로 호출하면 항상 빈 리스트 반환 (코레일 정책)
+        # 반드시 전날(yesterday) 날짜로 호출할 것
+        # 예: yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
         all_items = []
         page_no = 1
         while True:
-            print(f"⚡️ 실시간 정보 {page_no}페이지 데이터를 가져오는 중입니다...")
+            print(f"📦 운행정보 {page_no}페이지 조회 중... (전날 데이터)")
             query_str = f"pageNo={page_no}&numOfRows=100&cond[run_ymd::EQ]={run_ymd}&cond[trn_no::EQ]={trn_no}"
             data = self._request_api("travelerTrainRunInfo2", query_str)
             items = self._extract_items(data)
@@ -359,7 +373,11 @@ if __name__ == "__main__":
 
                 print(f" 현재 시각({current_time_str}) 기준, 운행 중인 [{route}] {target_trn_no}호 열차를 추적합니다.\n")
 
-                realtime_items = train_info.get_train_realtime(today, target_trn_no)
+                # ⚠️ 당일(today) 로 get_train_realtime 호출하면 빈 리스트 반환됨
+                # 전날 데이터로 지연 분석 테스트
+                from datetime import timedelta
+                yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+                realtime_items = train_info.get_train_realtime(yesterday, target_trn_no)
 
                 if realtime_items:
                     for item in realtime_items[:5]:
@@ -370,7 +388,7 @@ if __name__ == "__main__":
                               f"현재: {item.get('stn_nm', '미확인역')} ({item.get('stop_se_nm', '운행중')}) | "
                               f"출발: {real_dep} | 도착: {real_arr}")
                 else:
-                    print("해당 열차의 실시간 위치 정보가 업데이트 되지 않았습니다.")
+                    print("전날 실시간 데이터 없음 (열차번호가 전날과 다를 수 있음)")
             else:
                 print(f"현재시각({current_time_str}), 금일 여객열차 운행이 모두 종료되었습니다. 모두 안녕히 주무세요😴")
 
@@ -382,28 +400,25 @@ if __name__ == "__main__":
 
 ```bash
 cd producer
-python main.py
+python3 main.py
 ```
 
 ## 실행 결과
 
 ```
-[조회날짜] 20260309
-
+[조회날짜] 20260310
  운행계획 1페이지 데이터를 가져오는 중입니다...
-🔄 1페이지 수집 중... (모은 데이터: 100개 / 서버 전체: 350개)
- 운행계획 2페이지 데이터를 가져오는 중입니다...
-...
+🔄 8페이지 수집 중... (모은 데이터: 724개 / 서버가 말하는 전체 데이터: 724개)
 
-=== 실시간 기차 전광판 ===
- 현재 시각(14:23) 기준, 운행 중인 [서울➡️부산] 00051호 열차를 추적합니다.
+===실시간 기차 전광판===
+ 현재 시각(19:21) 기준, 운행 중인 [서울➡️부산] 00049호 열차를 추적합니다.
 
-⚡️ 실시간 정보 1페이지 데이터를 가져오는 중입니다...
-[00051호 열차] 현재: 서울 (시발) | 출발: 13:00 | 도착: 운행중
-[00051호 열차] 현재: 광명 (여객승하차) | 출발: 13:19 | 도착: 13:16
-[00051호 열차] 현재: 천안아산 (여객승하차) | 출발: 13:47 | 도착: 13:44
-[00051호 열차] 현재: 오송 (여객승하차) | 출발: 14:04 | 도착: 14:01
-[00051호 열차] 현재: 대전 (여객승하차) | 출발: 14:19 | 도착: 14:15
+⚡️ 정보 1페이지 데이터를 가져오는 중입니다...
+[00049호 열차] 현재: 서울 (시발) | 출발: 16:58 | 도착: 운행중
+[00049호 열차] 현재: 광명 (여객승하차) | 출발: 17:19 | 도착: 17:14
+[00049호 열차] 현재: 오송 (여객승하차) | 출발: 17:49 | 도착: 17:46
+[00049호 열차] 현재: 대전 (여객승하차) | 출발: 18:07 | 도착: 18:04
+[00049호 열차] 현재: 김천구미 (여객승하차) | 출발: 18:32 | 도착: 18:31
 ```
 
 
