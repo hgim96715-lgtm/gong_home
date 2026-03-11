@@ -752,7 +752,24 @@ ls -l
 DataGrip 에서 확인:
   SELECT COUNT(*) FROM train_realtime;
   SELECT COUNT(*) FROM train_delay;
+
 ```
+
+| id  | trn\_no | mrnt\_nm | dptre\_stn\_nm | arvl\_stn\_nm | plan\_dep | plan\_arr | status               | progress\_pct | data\_type | created\_at                |
+| :-- | :------ | :------- | :------------- | :------------ | :-------- | :-------- | :------------------- | :------------ | :--------- | :------------------------- |
+| 256 | 00059   | 노선미상     | 서울             | 부산            | 18:58     | 21:38     | 곧 출발 \(11분 후\)- 탑승 중 | 0             | estimated  | 2026-03-11 09:46:50.012000 |
+| 257 | 00061   | 노선미상     | 서울             | 부산            | 19:35     | 22:10     | 출발 48분전 \(대기중\)      | 0             | estimated  | 2026-03-11 09:46:50.012000 |
+| 258 | 00063   | 노선미상     | 서울             | 부산            | 19:58     | 22:38     | 출발 1시간 11분전 \(대기중\)  | 0             | estimated  | 2026-03-11 09:46:50.012000 |
+
+>realtime
+
+| id  | run\_ymd | trn\_no | dptre\_stn\_cd | dptre\_stn\_nm | arvl\_stn\_cd | arvl\_stn\_nm | trn\_plan\_dptre\_dt  | trn\_plan\_arvl\_dt   | data\_type | created\_at                |
+| :-- | :------- | :------ | :------------- | :------------- | :------------ | :------------ | :-------------------- | :-------------------- | :--------- | :------------------------- |
+| 1   | 20260311 | 00001   | 3900023        | 서울             | 3900114       | 부산            | 2026-03-11 05:13:00.0 | 2026-03-11 07:50:00.0 | schedule   | 2026-03-11 09:40:00.014000 |
+| 2   | 20260311 | 00002   | 3900114        | 부산             | 3900023       | 서울            | 2026-03-11 05:09:00.0 | 2026-03-11 07:53:00.0 | schedule   | 2026-03-11 09:40:00.014000 |
+| 3   | 20260311 | 00003   | 3900023        | 서울             | 3900114       | 부산            | 2026-03-11 05:27:00.0 | 2026-03-11 08:16:00.0 | schedule   | 2026-03-11 09:40:00.014000 |
+
+>schedule
 
 ---
 
@@ -812,7 +829,7 @@ docker exec -it train-kafka \
 ## VARCHAR 길이 초과 수정
 
 ```sql
--- DataGrip 에서 실행 (localhost:5433)
+-- DataGrip 에서 실행 (localhost:5433)으로 해야함!!!!!!
 ALTER TABLE train_schedule ALTER COLUMN trn_plan_dptre_dt TYPE VARCHAR(50);
 ALTER TABLE train_schedule ALTER COLUMN trn_plan_arvl_dt  TYPE VARCHAR(50);
 ```
