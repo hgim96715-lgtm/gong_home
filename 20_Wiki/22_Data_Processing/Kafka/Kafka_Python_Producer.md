@@ -279,20 +279,55 @@ UTC 기준 수집 시각 (글로벌 서비스, 서버 배포 시 권장)
 
 ---
 
-## send() vs flush() 동작 원리
+## send() / flush() / close() 동작 원리
 
 ```scss
-send() 는 비동기 (Async)
+send()   비동기 (Async)
   "보내!" 하고 바로 다음 줄로 넘어감
   내부 버퍼에 쌓아두고 백그라운드에서 전송
 
-flush() 는 동기 (Sync)
+flush()  동기 (Sync)
   버퍼에 남아있는 메시지를 전부 보낼 때까지 기다림
+  루프 한 바퀴 끝난 후 반드시 호출
+  안 하면 프로그램 종료 시 버퍼 메시지 유실 가능
+
+close()  연결 종료
+  flush() 를 내부적으로 한 번 더 호출한 뒤 Kafka 연결을 끊음
+  네트워크 소켓 / 스레드 등 자원을 반납
+  프로그램 종료 시 반드시 호출
 ```
 
-> [!warning] 중요
-> **루프 한 바퀴 끝난 후 또는 프로그램 종료 전에 반드시 `flush()` 호출**
-> 호출하지 않으면 **버퍼 메시지 유실 가능**
+```text
+close() 안 하면?
+  Kafka 브로커 입장에서 연결이 살아있다고 착각
+  → 연결 수 초과, 리소스 낭비
+  → 다음 실행 시 연결이 꼬이는 현상 발생 가능
+
+flush() 만 하고 close() 안 하면?
+  메시지 유실은 없지만 소켓 연결이 남아 있음
+  → 장기 운영 시 리소스 누수
+```
+
+```python
+# 올바른 종료 패턴 — finally 블록에서 처리
+try:
+    while True:
+        producer.send("train-realtime", value=data)
+        producer.flush()
+        time.sleep(60)
+except KeyboardInterrupt:
+    print("🛑 종료")
+finally:
+    producer.flush()    # 버퍼에 남은 메시지 마지막으로 전송
+    producer.close()    # 연결 정리 (내부적으로 flush 한 번 더 호출)
+```
+
+```text
+finally 블록을 쓰는 이유:
+  KeyboardInterrupt (Ctrl+C) 뿐만 아니라
+  예외가 발생해도 반드시 close() 가 실행되도록 보장
+  close() 없이 강제 종료하면 자원 정리가 안 됨
+```
 
 ```python
 # 루프마다 flush
