@@ -8,345 +8,676 @@ tags:
   - Kafka
   - Spark
 related:
-  - "[[Spark_Kafka_Docker_Setup]]"
-  - "[[Apache_Kafka_Concept]]"
-  - "[[kafka_spark_streaming_code]]"
+  - "[[DataFrame_Aggregation]]"
   - "[[00_Apache_Spark_HomePage]]"
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[Spark_DataFrame]]"
+  - "[[Spark_Functions_Library]]"
+  - "[[Spark_Data_Cleaning]]"
+  - "[[Spark_Streaming_JSON_ETL_Project]]"
+  - "[[Spark_Streaming_Kafka_Integration]]"
 ---
-## 개요: 카프카 데이터 수집 (Ingest Kafka Event) 
 
-스파크 스트리밍의 가장 강력하고 흔한 사용 패턴은 **"카프카에서 데이터를 읽어와서(Read), 가공한 뒤(Process), 다시 카프카나 DB에 저장하는(Write)"** 것입니다.
+# Spark Streaming — Kafka 데이터 읽기 / 쓰기
 
-* **필수 라이브러리:** 스파크 기본에는 카프카 연결 기능이 없습니다. 반드시 외부 패키지를 로드해야 합니다.
-    * `{python}org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1` (스파크 버전에 맞춰야 함)
+## 한 줄 요약
+
+> **Kafka 에서 데이터를 읽어(readStream) → 가공하고 → DB 나 Kafka 로 쓴다(writeStream).**
 
 ---
-## 카프카에서 데이터 가져오기 (Source)
 
-`readStream`을 사용하며 `.format("kafka")`를 지정합니다.
+---
 
-```python
-# SparkSession 생성 (라이브러리 로드 필수!)
-spark = SparkSession.builder \
-    .appName("KafkaReadTest") \
-    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1") \
-    .getOrCreate()
+# ① 전체 구조
 
-# 카프카 읽기 설정
-df = spark \
-    .readStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka:9092") \
-    .option("subscribe", "test-topic") \
-    .option("startingOffsets", "earliest") \
-    .load()
+```
+[Kafka Topic] ──readStream──▶ [Spark] ──가공──▶ [writeStream]──▶ [PostgreSQL / Kafka]
+                                  │
+                          value = Binary
+                          → CAST AS STRING
+                          → from_json (JSON 파싱)
 ```
 
-### 주요 옵션 설명
+```
+Kafka 에서 읽어온 데이터는 항상 Binary 다.
+사람이 읽을 수 있는 형태로 쓰려면 2단계 변환이 필요하다.
 
-- **`{python}kafka.bootstrap.servers`**: 카프카 브로커 주소 (Docker 내부 통신이므로 `kafka:9092`).
-- **`{python}subscribe`**: 구독할 토픽 이름 (쉼표로 구분해 여러 개 가능).
-- **`{python}startingOffsets`**:
-    - `earliest`: 처음부터 다 읽기 (데이터 유실 방지).
-    - `latest`: 지금부터 들어오는 것만 읽기 (기본값).
+  1단계: Binary  → String   (CAST)
+  2단계: String  → 컬럼들   (from_json + 스키마)
+```
 
 ---
-## 카프카 데이터의 구조 (Schema) 
 
-카프카에서 읽어온 DataFrame(`df`)은 아래와 같은 고정된 컬럼을 가집니다.
+---
 
-|**컬럼명**|**데이터 타입**|**설명**|
+# ② 필수 패키지
+
+```
+스파크 기본에는 Kafka 연결 기능이 없다.
+외부 패키지를 반드시 로드해야 한다.
+
+spark-sql-kafka-0-10_2.12:3.5.0
+                       ^^^^ Scala 버전
+                              ^^^^^ Spark 버전 (자신의 Spark 버전과 맞춰야 함)
+```
+
+```bash
+# spark-submit 실행 시 --packages 옵션으로 로드
+spark-submit \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
+  consumer.py
+```
+
+```python
+# SparkSession 안에서 로드하는 방법 (Jupyter / 테스트용)
+spark = (
+    SparkSession.builder
+    .appName("KafkaTest")
+    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0")
+    .getOrCreate()
+)
+```
+
+```
+⚠️ 버전 불일치 시 에러 발생
+   spark-sql-kafka-0-10_2.12:3.5.0  ← Spark 3.5.x 용
+   spark-sql-kafka-0-10_2.12:3.4.0  ← Spark 3.4.x 용
+   자신의 Spark 버전 확인: spark.version
+```
+
+---
+
+---
+
+# ③ Kafka 메시지 구조 — value 가 핵심
+
+Kafka 에서 읽어오면 아래 고정 컬럼들이 자동으로 생긴다.
+
+|컬럼|타입|설명|
 |---|---|---|
-|**key**|Binary|메시지의 키 (옵션)|
-|**value**|**Binary**|**실제 데이터 내용 (가장 중요!)**|
+|**value**|**Binary**|**실제 데이터 (가장 중요)**|
+|key|Binary|메시지 키 (없을 수도 있음)|
 |topic|String|토픽 이름|
 |partition|Integer|파티션 번호|
 |offset|Long|오프셋 번호|
 |timestamp|Timestamp|메시지 생성 시간|
 
-👉 **주의:** `value` 컬럼이 **이진 데이터(Binary)** 로 들어옵니다.
-사람이 읽을 수 있는 문자열(String)로 바꿔주는 작업(Casting)이 반드시 필요합니다!
-
-```python
-from pyspark.sql.functions import col, expr
-
-# Binary -> String 변환
-kafka_text_df = df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
+```
+value 가 Binary 인 이유:
+  Kafka 는 데이터 타입을 모른다 (그냥 바이트 덩어리로 저장)
+  JSON 이든 Avro 든 String 이든 모두 Binary 로 들어옴
+  → Spark 에서 직접 타입을 변환해줘야 함
 ```
 
 ---
-## [쓰기] 카프카로 데이터 보내기 (Sink)
 
-가공한 데이터를 다시 카프카로 쏠 수도 있습니다. 이때는 `value` 컬럼이 필수입니다.
+---
+
+# ④ readStream — Kafka 에서 읽기
 
 ```python
-query = kafka_text_df \
-    .writeStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka:9092") \
-    .option("topic", "output-topic") \
-    .option("checkpointLocation", "checkpoint_kafka") \
+df = (
+    spark
+    .readStream
+    .format("kafka")
+    .option("kafka.bootstrap.servers", "kafka:9092")   # Kafka 브로커 주소
+    .option("subscribe", "train-realtime")              # 구독할 토픽
+    .option("startingOffsets", "latest")                # 시작 위치
+    .load()
+)
+```
+
+## 주요 옵션
+
+```
+kafka.bootstrap.servers
+  Kafka 브로커 주소
+  Docker 내부 통신이면 서비스명:포트 → "kafka:9092"
+  외부(로컬 테스트)면 → "localhost:9092"
+
+subscribe
+  구독할 토픽 이름
+  여러 개: "topic1,topic2,topic3"
+  패턴 구독: subscribePattern 옵션으로 "topic.*"
+
+startingOffsets
+  "latest"    → 지금부터 들어오는 메시지만 읽음 (실시간)
+  "earliest"  → 토픽에 쌓인 처음부터 전부 읽음 (재처리)
+
+failOnDataLoss (기본값: true)
+  Kafka 에서 오프셋이 유실됐을 때 Spark 를 어떻게 처리할지 결정하는 옵션
+
+  "true"  → 오프셋 유실 감지 시 스트리밍 즉시 중단 (기본값)
+  "false" → 오프셋 유실이 있어도 무시하고 계속 진행
+```
+
+## failOnDataLoss 언제 쓰나
+
+```
+오프셋 유실이 발생하는 상황:
+  Kafka retention 이 짧아서 읽기 전에 메시지가 삭제됨
+  Kafka 토픽을 삭제하고 재생성했을 때
+  체크포인트에 저장된 오프셋이 Kafka 에 이미 없을 때
+  개발/테스트 중 Kafka 를 재시작했을 때
+```
+
+```python
+# 개발/테스트 환경 — 오프셋 유실 무시하고 계속 진행
+df = (
+    spark
+    .readStream
+    .format("kafka")
+    .option("kafka.bootstrap.servers", "kafka:9092")
+    .option("subscribe", "train-realtime")
+    .option("startingOffsets", "latest")
+    .option("failOnDataLoss", "false")    # ← 추가
+    .load()
+)
+```
+
+```
+⚠️ failOnDataLoss = false 주의사항:
+  오프셋 유실 = 해당 구간 데이터가 영구적으로 누락됨
+  false 로 설정하면 누락 사실을 Spark 가 무시하고 넘어감
+  데이터 정합성이 중요한 운영 환경에서는 신중하게 사용
+
+  false가 적합할때는 ? true가 적합할때는?
+    실시간 전광판 데이터라 일부 누락이 허용됨 → false 가 적합
+    지연 분석(train-delay) 처럼 정확성이 중요하면 → true 유지
+```
+
+---
+
+---
+
+# ⑤ Binary → 실제 데이터 변환
+
+## 1단계 — Binary → String (CAST)
+
+```python
+from pyspark.sql.functions import col
+
+# selectExpr 방식 (SQL 문법)
+string_df = df.selectExpr("CAST(value AS STRING)")
+
+# col 방식 (Python 방식)
+string_df = df.select(col("value").cast("string"))
+```
+
+## 2단계 — String → 컬럼 분리 (from_json)
+
+```python
+from pyspark.sql.functions import from_json
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+# 수신할 JSON 의 스키마 정의 (Producer 가 보내는 구조와 일치해야 함)
+schema = StructType([
+    StructField("trn_no",       StringType()),
+    StructField("mrnt_nm",      StringType()),
+    StructField("dptre_stn_nm", StringType()),
+    StructField("arvl_stn_nm",  StringType()),
+    StructField("status",       StringType()),
+    StructField("progress_pct", IntegerType()),
+    StructField("data_type",    StringType()),
+])
+
+# JSON 문자열 → 컬럼들로 파싱
+parsed_df = string_df.select(
+    from_json(col("value"), schema).alias("data")
+).select("data.*")   # 중첩 구조 펼치기
+```
+
+```
+from_json 후 바로 select("data.*") 로 펼치는 이유:
+  from_json 은 value 컬럼 하나를 StructType 컬럼(data) 으로 변환
+  data.trn_no, data.mrnt_nm ... 처럼 중첩된 상태
+  select("data.*") 로 펼치면 trn_no, mrnt_nm ... 각각 독립 컬럼이 됨
+```
+
+## 전체 파이프라인
+
+```python
+result_df = (
+    df
+    .selectExpr("CAST(value AS STRING) as value")     # 1. Binary → String
+    .select(from_json(col("value"), schema).alias("data"))  # 2. String → Struct
+    .select("data.*")                                  # 3. Struct 펼치기
+)
+```
+
+---
+
+---
+
+# ⑥ writeStream — 결과 쓰기
+
+## PostgreSQL 에 쓰기 (foreachBatch)
+
+```
+Streaming DataFrame 은 .write.jdbc() 를 직접 쓸 수 없다.
+Streaming 은 데이터가 계속 흘러들어오는 상태라서
+"지금 전부 저장해" 라는 명령을 내릴 수가 없기 때문.
+
+foreachBatch 는 이 문제를 해결하는 방법:
+  Spark 가 trigger 주기마다 데이터를 잘라서 배치(묶음)로 만들어줌
+  그 배치를 일반 DataFrame 처럼 다룰 수 있게 함수로 넘겨줌
+  → 함수 안에서 .write.jdbc() 사용 가능
+```
+
+```python
+def write_to_postgres(batch_df, batch_id):
+    if batch_df.isEmpty():
+        return
+    batch_df.write.jdbc(
+        url="jdbc:postgresql://postgres:5432/train_db",
+        table="train_realtime",
+        mode="append",
+        properties={
+            "user":     "train_user",
+            "password": "train_password",
+            "driver":   "org.postgresql.Driver",
+        },
+    )
+
+query = (
+    result_df
+    .writeStream
+    .foreachBatch(write_to_postgres)
+    .option("checkpointLocation", "/tmp/checkpoint/realtime")
+    .trigger(processingTime="10 seconds")
     .start()
+)
+```
+
+## batch_df / batch_id — Spark 가 자동으로 넘겨주는 인자
+
+```
+foreachBatch 에 넘기는 함수는 반드시 인자 2개를 받아야 한다.
+Spark 가 자동으로 채워서 호출하기 때문에 이름은 바꿔도 되지만
+순서와 개수는 고정이다.
+
+def write_to_postgres(batch_df, batch_id):
+                      ^^^^^^^^^  ^^^^^^^^
+                      1번 인자   2번 인자
+
+batch_df
+  trigger 주기마다 잘린 데이터 묶음 — 일반 DataFrame 과 완전히 동일
+  .show() / .count() / .write.jdbc() 등 모든 DataFrame API 사용 가능
+  이 배치 안에 데이터가 없을 수도 있어서 isEmpty() 체크가 필요
+
+batch_id
+  배치에 Spark 가 부여하는 고유 번호 (0, 1, 2, 3 ...)
+  trigger 마다 1씩 증가
+  중복 저장 방지 / 디버깅 / 멱등성 처리에 활용
+```
+
+```python
+# batch_id 활용 예시 — 로그 출력
+def write_to_postgres(batch_df, batch_id):
+    print(f"[batch {batch_id}] 처리 건수: {batch_df.count()}")
+    if batch_df.isEmpty():
+        return
+    batch_df.write.jdbc(...)
+```
+
+## mode — 저장 방식
+
+```
+Streaming 에서 foreachBatch 안의 .write 는
+일반 DataFrame 저장과 동일하게 mode 를 지정한다.
+```
+
+|mode|동작|언제 씀|
+|---|---|---|
+|`"append"`|기존 데이터 유지 + 새 데이터 추가|스트리밍 적재 (대부분 이 모드)|
+|`"overwrite"`|테이블 전체를 지우고 새로 씀|배치 처리로 전체 재적재할 때|
+|`"ignore"`|테이블이 이미 있으면 아무것도 안 함|초기 세팅용|
+|`"error"`|테이블이 이미 있으면 에러 (기본값)|실수 방지용|
+
+```
+Streaming 에서는 거의 항상 "append"
+  매 배치마다 새 데이터가 쌓여야 하기 때문
+  "overwrite" 는 배치마다 테이블을 날려버리므로 스트리밍에서 사용 금지
 ```
 
 ---
-##  JSON 데이터로 변환해서 보내기 (Publish)
 
-실무에서는 데이터를 가공한 뒤 **JSON 문자열**로 묶어서 카프카로 보내는 경우가 대부분입니다.
-하지만 카프카는 오직 `value`라는 하나의 컬럼만 받기 때문에, 여러 컬럼을 하나로 합치는 과정이 필요합니다.
+## Kafka 로 다시 쓰기 (to_json)
 
-### 핵심 함수: `to_json`과 `struct`
+````python
+from pyspark.sql.functions import to_json, struct
 
-* **`{python}struct(*)`**: 모든 컬럼을 하나의 구조체(바구니)로 묶습니다.
-* **`{python}to_json(...)`**: 그 구조체를 JSON 문자열로 변환합니다.
-
-### 💻 실습 코드 (Write to Kafka)
-
-```python
-from pyspark.sql.functions import to_json, struct, col
-
-# 1. 가공된 데이터가 있다고 가정 (예: city, count 컬럼)
-# processed_df = ... 
-
-# 2. [핵심] 여러 컬럼을 'value'라는 하나의 JSON 컬럼으로 변환
-kafka_output_df = processed_df.select(
-    to_json(struct("*")).alias("value") 
+# 여러 컬럼 → JSON 문자열 한 개로 (Kafka 는 value 컬럼 하나만 받음)
+kafka_out_df = result_df.select(
+    to_json(struct("*")).alias("value")
 )
 
-# 3. 카프카로 전송 (Checkpoint 필수!)
-query = kafka_output_df \
-    .writeStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka:9092") \
-    .option("topic", "json-output-topic") \
-    .option("checkpointLocation", "checkpoint_json") \
+query = (
+    kafka_out_df
+    .writeStream
+    .format("kafka")
+    .option("kafka.bootstrap.servers", "kafka:9092")
+    .option("topic", "train-output")
+    .option("checkpointLocation", "/tmp/checkpoint/output")
     .start()
+)
+````
 
-query.awaitTermination()
+```
+to_json(struct("*")) 이 필요한 이유:
+  Kafka 는 value 컬럼 하나만 받음
+  컬럼이 여러 개일 때 → struct("*") 로 하나의 구조체로 묶고
+                       → to_json() 으로 JSON 문자열로 변환
+                       → .alias("value") 로 컬럼명 지정
+
+  변환 예시:
+    [trn_no="KTX001", status="운행중"] (컬럼 2개)
+    → struct: {"trn_no": "KTX001", "status": "운행중"} (1개)
+    → to_json: '{"trn_no": "KTX001", "status": "운행중"}' (문자열)
 ```
 
-### 🔍 데이터 변환 과정
+## 콘솔 출력 (테스트용)
 
-1. **Original:** `[Seoul, 10]` (컬럼 2개)
-2. **Struct:** `[[Seoul, 10]]` (컬럼 1개로 묶임)
-3. **JSON:** `{"city": "Seoul", "count": 10}` (문자열로 변환됨 -> **Kafka 전송 가능!**)
-
-
----
-## 자주 만나는 에러와 해결법 (Troubleshooting) 
-
-실습 도중 겪었던 **죽음의 에러들**과 그 해결책입니다. 
-
-### ① `ModuleNotFoundError: No module named 'pyspark'`
-
-- **원인:** 코드를 **내 맥북(로컬)** 터미널에서 실행했기 때문입니다. 내 맥북엔 pyspark가 안 깔려 있습니다.
-- **해결:** 코드는 반드시 **Docker 컨테이너 안**에서 실행해야 합니다.
-
-```bash
-# Docker 안으로 명령 쏘기
-docker exec -it spark-jupyter python3 /workspace/내파일.py
-```
-
-### ② `AnalysisException: Failed to find data source: kafka`
-
-- **원인:** "카프카를 써라"라고 했지만, 스파크가 **카프카 연결용 라이브러리(JAR)** 를 갖고 있지 않아서입니다.
-- **해결 (Jupyter):** 코드 안에 `.config("spark.jars.packages", "...")`를 꼭 넣어야 합니다.
-- **해결 (Terminal / .py 실행):** `spark-submit` 명령어 뒤에 **패키지 옵션**을 붙여서 실행해야 합니다. **(이걸 빼먹어서 고생함!)**
-
-```bash
-# ✅ 올바른 실행 명령어 (.py 파일 실행 시)
-/opt/spark/bin/spark-submit \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
-  spark_kafka_test.py
-```
-
-### ③ `AnalysisException: Missing option 'subscribe'`
-
-- **원인:** 카프카 서버 주소는 적었지만, **"어떤 토픽"** 을 읽을지 설정을 안 했습니다.
-- **해결:** `.option("subscribe", "토픽이름")`을 반드시 추가하세요
-
----
-## 실행 방법 정리 (.ipynb vs .py)
-
-|**구분**|**Jupyter Notebook (.ipynb)**|**Python Script (.py)**|
-|---|---|---|
-|**용도**|데이터 분석, 시각화, 테스트|**실무 배포**, 자동화, 스케줄링|
-|**실행법**|셀(Cell) 단위 실행 (`Shift + Enter`)|터미널에서 `spark-submit` 명령어로 실행|
-|**특징**|결과를 바로 눈으로 확인 가능|`Ctrl + C`로 끌 때까지 백그라운드에서 계속 돔|
-
-
----
-## 흐름도 이대로 따라하기 !
-
-### 전체 흐름 미리보기
-
-1. **준비:** 우체통(Topic) 만들기 (데이터 담을 공간)
-2. **수신 대기 (Spark):** 스파크 켜서 "편지 오면 읽어줘" 시키기 (`spark-submit`)
-3. **발신 (Kafka):** 다른 터미널에서 편지 보내기 (Producer)
-4. **확인:** 스파크 화면에 편지가 뜨는지 보기
-
----
-## 1단계: 우체통(Topic) 만들기 
-
-**"편지를 받으려면 우체통이 먼저 있어야겠죠?"** 스파크를 켜기 전에, 카프카에 데이터를 담을 공간(Topic)을 먼저 만들어야 합니다.
-
-1. **내 맥북 터미널(Terminal)** 을 켭니다.
-2. 아래 명령어를 복사해서 붙여넣고 엔터! (이미 만들었다면 생략 가능)
-
-```bash
-# 카프카 컨테이너에 접속해서 'test-topic'이라는 토픽(우체통)을 만듭니다.
-docker exec -it kafka /opt/kafka/bin/kafka-topics.sh --create --topic test-topic --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1
+```python
+query = (
+    result_df
+    .writeStream
+    .format("console")
+    .option("truncate", False)
+    .trigger(processingTime="5 seconds")
+    .start()
+)
 ```
 
 ---
-## 2단계: 스파크 실행 준비 (터미널 열기) 
-
-이제 스파크 코드를 실행할 **주피터 랩 터미널**을 열 차례입니다.
-
-**📍 방법 1. 상단 메뉴바 이용하기 (가장 쉬움)**
-
-1. 주피터 랩 화면 맨 위 메뉴에서 **File**을 누르세요.
-2. **New** → **Terminal**을 클릭하세요.
-3. 화면 아래쪽에 **검은색 창(터미널)** 이 새로 열릴 겁니다.
-
-**📍 방법 2. 파란색 + 버튼 누르기**
-
-1. 왼쪽 상단의 파란색 **`+`** 버튼(Launcher)을 누르세요.
-2. 여러 아이콘 중 **"Terminal"** (검은색 창 아이콘)을 클릭하세요.
 
 ---
-## 3단계: 스파크 코드 실행하기 (`spark-submit`) 
 
-**여기가 가장 중요합니다!** 아까 열어둔 **주피터 랩 터미널**에 명령어를 입력합니다.
+# ⑦ parsed → final — DB 컬럼과 맞추기
 
-### 💡 잠깐! `spark-submit`이 뭔가요?
+```
+from_json + select("data.*") 로 컬럼을 펼치면
+JSON 에 있는 모든 필드가 컬럼으로 들어온다.
 
-- **.ipynb**에서는 그냥 셀 옆의 `▶` 버튼을 눌렀죠?
-- **.py** 파일은 버튼이 없습니다. 그래서 **"이 코드를 스파크한테 제출(Submit)할게! 실행해줘!"** 라고 말하는 명령어가 필요합니다.
-- 그게 바로 `spark-submit`입니다. 실무에서는 자동화를 위해 무조건 이 방식을 씁니다.
+문제:
+  JSON 에는 있지만 DB 테이블에는 없는 컬럼이 있을 수 있음
+  순서도 DB 컬럼 순서와 다를 수 있음
+  → write.jdbc 할 때 컬럼명/순서가 DB 와 정확히 맞지 않으면 에러 또는 잘못 저장
 
-👇 아래 명령어를 주피터 랩 터미널에 복사해서 넣고 엔터!
-
-```bash
-/opt/spark/bin/spark-submit \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
-  kafka_json.py
+해결:
+  final = parsed.select("컬럼1", "컬럼2", ...) 로
+  DB 테이블 컬럼과 1:1 로 맞춰서 정리
 ```
 
-**명령어 해석:**
+```python
+# parsed 상태 — JSON 에 있는 모든 필드 + created_at
+# trn_no / mrnt_nm / dptre_stn_nm / arvl_stn_nm /
+# plan_dep / plan_arr / status / progress_pct / data_type / created_at
+# (DB 에 없는 컬럼이 섞여 있을 수 있음)
 
-1. `{python}/opt/spark/bin/spark-submit`: "스파크야, 일감 받아라!"
-2. `{python}--packages ...`: "카프카 연결할 때 필요한 도구(라이브러리)도 같이 챙겨서 가!" (이게 없으면 에러남)
-3. `{python}spark_kafaka_test.py`: "이 파일을 실행해!"
+parsed = (
+    raw
+    .select(from_json(col("value").cast("string"), SCHEMA_REALTIME).alias("data"))
+    .select("data.*")
+    .withColumn("created_at", current_timestamp())
+)
 
-**👉 실행 결과:** 
-막 영어로 된 로그들이 촤라락 뜨다가... 어느 순간 멈춘 듯이 가만히 있을 겁니다. 
-(에러가 난 게 아니라, **"데이터 언제 오나?" 하고 귀를 쫑긋 세우고 기다리는 중**입니다. 성공입니다!)
-
-
----
-## 4단계: 메시지 보내기 (Producer) 
-
-스파크는 지금 기다리고 있습니다. 이제 데이터를 던져줘야겠죠? **내 맥북의 터미널(새 창)** 을 하나 더 엽니다. 
-(주피터 랩 터미널은 스파크가 쓰고 있으니 건드리지 마세요!)
-
-👇 내 맥북 터미널에 아래 명령어 입력:
-
-```bash
-# 카프카 컨테이너 안에 있는 '채팅 프로그램(Producer)'을 실행해라!
-docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic test-topic
-# ocker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic 만들어둔 토픽이름
+# final — DB train_realtime 테이블 컬럼과 정확히 일치하도록 선택
+final = parsed.select(
+    "trn_no", "mrnt_nm",
+    "dptre_stn_nm", "arvl_stn_nm",
+    "plan_dep", "plan_arr",
+    "status", "progress_pct",
+    "data_type", "created_at",
+    # ⚠️ id 컬럼은 넣지 않음 — 아래 설명 참고
+)
 ```
 
----
-## 5단계: 실시간 확인 (마법의 순간) 
-
-이제 화면을 반반 나눠서 보세요.
-
-1. **오른쪽(맥북 터미널):** 채팅창에 아무 말이나 쓰고 엔터를 치세요.
-    - `안녕?`
-2. **왼쪽(주피터 랩 터미널):** 아까 멈춰있던 스파크 화면에 글자가 뜹니다!
 ```text
--------------------------------------------
-Batch: 1
--------------------------------------------
-+-----+
-|value|
-+-----+
-|안녕? |
-+-----+
+⚠️ id 를 final 에 넣지 않는 이유
+
+DB 테이블에서 id 는 SERIAL PRIMARY KEY 로 선언되어 있다.
+
+CREATE TABLE train_realtime ( id SERIAL PRIMARY KEY, ← PostgreSQL 이 자동으로 1, 2, 3 ... 부여 trn_no VARCHAR(20), ... )
+
+SERIAL 의 동작: INSERT 할 때 id 를 명시하지 않으면 DB 가 알아서 다음 번호를 채워줌 별도로 관리할 필요 없음
+
+만약 Spark 에서 id 를 직접 넣으면: DB 의 자동 증가 시스템(시퀀스)과 충돌 중복 id 에러 또는 시퀀스 번호 체계가 꼬임
+
+결론: id 는 final.select() 에서 제외 → write.jdbc 로 INSERT 시 id 컬럼을 생략 → PostgreSQL 이 자동으로 번호를 채워줌
 ```
 
-
----
-```mermaid
-flowchart TD
-    %% 스타일 정의
-    classDef terminal fill:#333,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef kafka fill:#E65100,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef spark fill:#E65100,stroke:#fff,stroke-width:2px,color:#fff,fill-opacity:0.8;
-    classDef action fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000;
-
-    subgraph UserSpace ["💻 내 컴퓨터 (Local Environment)"]
-        User[🧑‍💻 사용자]
-        
-        subgraph Terminals [터미널 창 2개]
-            Term1["📟 터미널 1 (MacBook)<br/>Message Producer"]:::terminal
-            Term2["📟 터미널 2 (Jupyter)<br/>Spark Submit Log"]:::terminal
-        end
-    end
-
-    subgraph DockerSpace [🐳 Docker Environment]
-        subgraph KafkaContainer [Kafka Container]
-            Topic["📮 test-topic<br/>(우체통)"]:::kafka
-        end
-
-        subgraph SparkContainer [Spark Container]
-            SparkApp[🔥 Spark Application<br/>spark_kafaka_test.py]:::spark
-        end
-    end
-
-    %% 흐름 연결
-    %% 1. 토픽 생성
-    User -- " 토픽 생성 (준비)" --> Topic
-
-    %% 2. 스파크 실행
-    User -- " spark-submit 실행" --> Term2
-    Term2 -.-> |"애플리케이션 제출"| SparkApp
-    SparkApp -- " 구독 (Subscribe)" --> Topic
-
-    %% 3. 데이터 전송
-    User -- " 메시지 입력 ('안녕?')" --> Term1
-    Term1 -- " 데이터 전송 (Push)" --> Topic
-
-    %% 4. 데이터 처리 및 출력
-    Topic -- " 데이터 읽기 (Pull)" --> SparkApp
-    SparkApp -- " 가공 (Binary->String)" --> SparkApp
-    SparkApp -- "결과 출력 (Console)" --> Term2
-
-    %% 스타일 적용
-    linkStyle 4,5 stroke:#FBC02D,stroke-width:3px,color:red;
 ```
----
-### 흐름도 해설 (우리가 한 일)
+final 이 없으면 생길 수 있는 문제:
+  DB 에 없는 컬럼 포함 시 → write.jdbc 에서 column not found 에러
+  컬럼 순서가 다를 시    → 엉뚱한 컬럼에 데이터가 들어갈 수 있음
 
-1. **준비 (1번 화살표):**
-    
-    - 먼저 카프카 컨테이너 안에 `test-topic`이라는 **우체통**을 만들었습니다.
-        
-2. **수신 대기 (2, 3번 화살표):**
-    
-    - **터미널 2(Jupyter)**에서 `spark-submit`으로 파이썬 파일을 실행했습니다.
-    - 이제 스파크 앱(`🔥`)이 켜져서 카프카 우체통(`📮`)을 빤히 쳐다보고(Subscribe) 있습니다.
-        
-3. **데이터 전송 (4, 5번 화살표):**
-    
-    - **터미널 1(MacBook)**에서 채팅 프로그램(Producer)을 켰습니다.
-    - "안녕?"이라고 치는 순간, 이 메시지는 카프카 우체통으로 슝~ 날아갑니다.
-        
-4. **처리 및 출력 (6, 7, 8번 화살표):**
-    
-    - 우체통에 편지가 떨어지자마자, 지켜보고 있던 스파크가 낚아챕니다(Pull).
-    - 이진 데이터(Binary)를 우리가 읽을 수 있는 문자열(String)로 바꿉니다.
-    - 마지막으로 **터미널 2** 화면에 결과를 보여줍니다!
+final 은 "DB 에 넣기 직전 최종 정리 단계" 라고 보면 된다.
+```
+
+---
+
+---
+
+# ⑧ 클래스로 공통화 — _write_jdbc 클로저 패턴
+
+```
+토픽이 3개이면 foreachBatch 함수도 3개 만들어야 한다.
+테이블 이름만 다르고 나머지 로직이 동일하면 중복 코드가 생긴다.
+
+해결:
+  테이블 이름을 인자로 받아서 write_batch 함수를 반환하는 메서드로 공통화
+  → 클로저(Closure) 패턴
+```
+
+## 클로저란
+
+```
+함수가 함수를 반환하는 패턴.
+바깥 함수의 변수(table)를 안쪽 함수(write_batch)가 기억한다.
+
+_write_jdbc("train_schedule") 를 호출하면
+  → table = "train_schedule" 을 기억하는 write_batch 함수가 반환됨
+  → 이 write_batch 를 foreachBatch 에 넘기면 됨
+```
+
+```python
+class TrainConsumer:
+
+    def _write_jdbc(self, table: str):
+        """테이블 이름을 받아서 foreachBatch 에 넘길 함수를 반환"""
+
+        def write_batch(batch_df, batch_id):         # Spark 가 호출하는 함수
+            if batch_df.isEmpty():
+                return
+            batch_df.write.jdbc(
+                url=JDBC_URL,
+                table=table,                         # 바깥의 table 변수를 기억
+                mode="append",
+                properties=JDBC_PROPS,
+            )
+            print(f"[{table}] batch_id={batch_id} | {batch_df.count()}건 저장")
+
+        return write_batch                           # 함수 자체를 반환
+```
+
+```
+호출 흐름:
+
+  self._write_jdbc("train_schedule")
+  ↓
+  table = "train_schedule" 이 세팅된 write_batch 함수 반환
+  ↓
+  .foreachBatch(반환된_write_batch)
+  ↓
+  Spark 가 배치마다 write_batch(batch_df, batch_id) 자동 호출
+```
+
+## 실제 사용
+
+```python
+# ❌ 공통화 전 — 토픽마다 함수를 따로 만들어야 함
+def write_schedule(batch_df, batch_id):
+    batch_df.write.jdbc(..., table="train_schedule", ...)
+
+def write_realtime(batch_df, batch_id):
+    batch_df.write.jdbc(..., table="train_realtime", ...)  # 같은 코드 반복
+
+def write_delay(batch_df, batch_id):
+    batch_df.write.jdbc(..., table="train_delay", ...)     # 같은 코드 반복
+
+
+# ✅ 공통화 후 — 테이블 이름만 바꿔서 재사용
+final.writeStream.foreachBatch(self._write_jdbc("train_schedule"))
+final.writeStream.foreachBatch(self._write_jdbc("train_realtime"))
+final.writeStream.foreachBatch(self._write_jdbc("train_delay"))
+```
+
+## 전체 흐름 (run_schedule 기준)
+
+```python
+def run_schedule(self):
+    # 1. Kafka 에서 읽기
+    raw = self._read_stream("train-schedule")
+
+    # 2. Binary → JSON 파싱 + created_at 추가
+    parsed = (
+        raw
+        .select(from_json(col("value").cast("string"), SCHEMA_SCHEDULE).alias("data"))
+        .select("data.*")
+        .withColumn("created_at", current_timestamp())
+    )
+
+    # 3. DB 컬럼과 1:1 맞추기
+    final = parsed.select(
+        "run_ymd", "trn_no",
+        "dptre_stn_cd", "dptre_stn_nm",
+        "arvl_stn_cd",  "arvl_stn_nm",
+        "trn_plan_dptre_dt", "trn_plan_arvl_dt",
+        "data_type", "created_at",
+    )
+
+    # 4. PostgreSQL 에 쓰기
+    return (
+        final.writeStream
+        .foreachBatch(self._write_jdbc("train_schedule"))  # 클로저로 테이블 지정
+        .option("checkpointLocation", "/tmp/checkpoint/schedule")
+        .trigger(processingTime="10 seconds")
+        .start()
+    )
+```
+
+```
+raw    → Kafka 에서 읽은 원본 (value = Binary)
+parsed → JSON 파싱 완료 + created_at 추가 (컬럼이 많거나 순서 불일치 가능)
+final  → DB 컬럼과 정확히 일치하도록 정리 (write 직전)
+```
+
+## trigger — 배치 처리 주기
+
+```python
+.trigger(processingTime="10 seconds")   # 10초마다 처리
+.trigger(processingTime="1 minute")     # 1분마다 처리
+.trigger(once=True)                     # 한 번만 실행 (배치처럼)
+```
+
+## checkpointLocation — 장애 복구
+
+```python
+.option("checkpointLocation", "/tmp/checkpoint/토픽명")
+```
+
+```
+체크포인트란:
+  "나 여기까지 읽었어" 를 파일로 기록해두는 것
+  Spark 가 죽었다 살아나도 이어서 읽을 수 있음 (Exactly-once)
+  토픽마다 별도 경로로 관리하는 것이 원칙
+```
+
+## awaitTermination — 스트림 유지
+
+```python
+query.awaitTermination()           # 단일 쿼리
+spark.streams.awaitAnyTermination() # 여러 쿼리 동시 실행 시
+```
+
+```
+awaitTermination 없으면:
+  start() 는 백그라운드 실행
+  코드가 바로 끝나버려서 스트리밍이 즉시 종료됨
+  → 반드시 마지막에 awaitTermination 호출
+```
+
+---
+
+---
+
+# 트러블슈팅
+
+|증상|원인|해결|
+|---|---|---|
+|`AnalysisException: Failed to find data source: kafka`|spark-sql-kafka 패키지 없음|`--packages` 옵션 또는 `.config("spark.jars.packages", ...)` 추가|
+|`AnalysisException: Missing option 'subscribe'`|토픽 지정 안 함|`.option("subscribe", "토픽명")` 추가|
+|`ModuleNotFoundError: No module named 'pyspark'`|로컬에서 실행함|Docker 컨테이너 안에서 실행 (`docker exec -it spark-master ...`)|
+|`SparkException: Some data may have been lost`|오프셋 유실 (Kafka retention 만료 등)|`.option("failOnDataLoss", "false")` — 단, 데이터 누락 감수|
+|value 가 null|스키마 불일치|Producer 가 보내는 JSON 키와 StructField 이름 일치 확인|
+|결과가 안 뜸|체크포인트 오프셋 고착|checkpoint 폴더 삭제 후 재실행|
+|패키지 다운로드 매번 느림|Maven 에서 반복 다운로드|.jar 미리 받아서 `--jars` 로 지정|
+
+---
+
+---
+
+# 치트시트
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, from_json, to_json, struct
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+spark = SparkSession.builder.appName("KafkaApp").getOrCreate()
+
+# 스키마 정의
+schema = StructType([
+    StructField("trn_no",  StringType()),
+    StructField("status",  StringType()),
+    StructField("delay",   IntegerType()),
+])
+
+# 읽기
+df = (
+    spark.readStream
+    .format("kafka")
+    .option("kafka.bootstrap.servers", "kafka:9092")
+    .option("subscribe", "train-realtime")
+    .option("startingOffsets", "latest")
+    .load()
+)
+
+# 변환
+result = (
+    df
+    .selectExpr("CAST(value AS STRING) as value")
+    .select(from_json(col("value"), schema).alias("d"))
+    .select("d.*")
+)
+
+# DB 쓰기
+def to_pg(batch_df, batch_id):
+    if batch_df.isEmpty(): return
+    batch_df.write.jdbc(
+        url="jdbc:postgresql://postgres:5432/train_db",
+        table="train_realtime",
+        mode="append",
+        properties={"user": "...", "password": "...", "driver": "org.postgresql.Driver"},
+    )
+
+query = (
+    result.writeStream
+    .foreachBatch(to_pg)
+    .option("checkpointLocation", "/tmp/ckpt/realtime")
+    .trigger(processingTime="10 seconds")
+    .start()
+)
+
+spark.streams.awaitAnyTermination()
+```

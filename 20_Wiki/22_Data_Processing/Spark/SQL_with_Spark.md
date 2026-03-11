@@ -13,7 +13,7 @@ related:
   - "[[PySpark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_Concepts_View]]"
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
 ---
 ## 개념 한 줄 요약 
 

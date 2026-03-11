@@ -7,7 +7,7 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
   - "[[Spark_Streaming_Kafka_Integration]]"
   - "[[00_Apache_Spark_HomePage]]"
 ---

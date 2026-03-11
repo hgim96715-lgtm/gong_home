@@ -7,7 +7,7 @@ tags:
   - Spark
   - Troubleshooting
 related:
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
   - "[[DataFrame_Aggregation]]"
   - "[[Spark_Iterating_Data]]"
   - "[[Spark_Graph_Analysis_Basic]]"

@@ -12,7 +12,7 @@ tags:
   - JOIN
   - SQL
 related:
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[DataFrame_Transform]]"
   - "[[SQL_with_Spark]]"
   - "[[Pandas_Merge_Concat]]"
   - "[[SQL_JOIN_Concept]]"

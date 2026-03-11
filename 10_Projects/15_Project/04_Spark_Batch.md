@@ -3,11 +3,11 @@ aliases:
 tags:
   - Project
 related:
-  - "[[Spark_JDBC_Postgres_Guide]]"
+  - "[[Spark_JDBC_PostgreSQL]]"
   - "[[PySpark_Session_Context]]"
   - "[[Spark_Session_Deep_Dive]]"
   - "[[Python_Database_Connect]]"
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
   - "[[Spark_Data_IO]]"
   - "[[Docker_Host_vs_Internal_Network]]"
   - "[[Python_Database_Connect]]"

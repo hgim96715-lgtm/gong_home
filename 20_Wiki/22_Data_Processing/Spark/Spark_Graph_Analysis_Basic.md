@@ -10,7 +10,7 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
   - "[[Spark_Functions_Library]]"
 linked: file:///Users/gong/gong_study_de/apache-spark/notebooks/step14.ipynb
 ---

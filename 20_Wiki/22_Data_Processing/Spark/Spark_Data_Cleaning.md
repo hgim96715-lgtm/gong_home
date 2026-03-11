@@ -9,10 +9,10 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[DataFrame_Transform]]"
   - "[[Spark_Functions_Library]]"
   - "[[Pandas_Missing_Values]]"
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[DataFrame_Transform]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_Streaming_Window_Aggregation]]"
 ---
@@ -25,7 +25,7 @@ related:
 
 가장 기초적인 `filter + isNull` 패턴입니다.
 
->자세한 내용은 [[DataFrame_Transform_Basic#③ [핵심] 결측치(Null) 처리 (`isNotNull`,`isNull`)|결측치처리-filter]] 참조 
+>자세한 내용은 [[DataFrame_Transform#③ [핵심] 결측치(Null) 처리 (`isNotNull`,`isNull`)|결측치처리-filter]] 참조 
 
 ```python
 from pyspark.sql.functions import col, isnan, when, count
@@ -220,7 +220,7 @@ df.select(
 **"Spark DataFrame은 한 번 만들어지면 절대 수정할 수 없습니다 (Immutable)."**
 Pandas를 쓰던 습관대로 코드를 짜면 아무 일도 일어나지 않습니다.
 
-- 🔗 참고: [[Spark_DataFrame_Basics#[핵심] 불변성 (Immutability) |불변성 자세히 보기]]
+- 🔗 참고: [[Spark_DataFrame#[핵심] 불변성 (Immutability)|불변성 자세히 보기]]
 
 ### ❌ 틀린 코드 (Pandas 습관)
 

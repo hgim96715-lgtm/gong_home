@@ -11,7 +11,7 @@ related:
   - "[[00_Kafka_HomePage]]"
   - "[[Kafka_Python_Producer]]"
   - "[[Kafka_Python_Consumer]]"
-  - "[[Spark_JDBC_Postgres_Guide]]"
+  - "[[Spark_JDBC_PostgreSQL]]"
 ---
 
 ## 개념 한 줄 요약 (Concept Summary)

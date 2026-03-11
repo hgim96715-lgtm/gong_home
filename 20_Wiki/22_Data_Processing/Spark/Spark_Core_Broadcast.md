@@ -8,7 +8,7 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[Spark_DataFrame_Basics]]"
+  - "[[Spark_DataFrame]]"
   - "[[Spark_Functions_Library]]"
   - "[[Python_Classes_Objects]]"
   - "[[00_Apache_Spark_HomePage]]"

@@ -10,7 +10,7 @@ related:
   - "[[Variables_Connections]]"
   - "[[04_Spark_Batch]]"
   - "[[Airflow_Scheduling]]"
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[DataFrame_Transform]]"
   - "[[Spark_Functions_Library]]"
 linked:
   - file:////Users/gong/gong_study_de/project/spark_app/daily_report.py

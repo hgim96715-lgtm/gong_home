@@ -10,7 +10,7 @@ related:
   - "[[Spark_Streaming_Kafka_Integration]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_JSON_Handling]]"
-  - "[[DataFrame_Transform_Basic]]"
+  - "[[DataFrame_Transform]]"
   - "[[Spark_Streaming_Fault_Tolerance]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/kafka_json.py
@@ -59,7 +59,7 @@ flowchart LR
 > 👉 **[[Spark_JSON_Handling|JSON 데이터 핸들링 정리]]**
 
 > **기본 변환:** `selectExpr`, `cast`, `struct`,`expr` 등 데이터 조작법
-> 👉 **[[DataFrame_Transform_Basic|데이터프레임 변환 기초]]**
+> 👉 **[[DataFrame_Transform|데이터프레임 변환 기초]]**
 ---
 ## 파이썬 코드 작성 (`kafka_json.py`)
 
