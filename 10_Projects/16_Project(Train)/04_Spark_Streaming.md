@@ -68,6 +68,7 @@ networks: train-network 반드시 정의 필요
     ports:
       - "8080:8080"   # Spark Web UI
       - "7077:7077"   # Spark Master 포트
+      - "4040:4040" # Spark Jobs UI (작업장 화면)
     networks:
       - train-network
 
@@ -447,7 +448,7 @@ class TrainConsumer:
         print("[train-schedule] 모니터링 시작")
         print("[train-realtime] 모니터링 시작")
         print("[train-delay]    모니터링 시작")
-        print("\n Spark Web UI 모니터링 → http://localhost:8080\n")
+        print("\n Spark Web UI 모니터링 → http://localhost:4040\n")
 
         # 셋 중 하나라도 에러로 종료되면 전체 종료
         self.spark.streams.awaitAnyTermination()
@@ -581,6 +582,37 @@ awaitAnyTermination():
   에러로 인해 하나가 죽으면 나머지도 같이 종료
 ```
 
+## StreamingQuery — q_schedule,q_realtime.. 변수를 왜 만들고 안 쓰나
+
+
+```python
+q_schedule = self.run_schedule()   # ← 변수에 담아두고 아래서 안 씀?
+q_realtime = self.run_realtime()
+q_delay    = self.run_delay()
+
+self.spark.streams.awaitAnyTermination()
+```
+
+```
+run_schedule() 을 호출하는 순간
+Spark 는 백그라운드 스레드를 하나 파견해서 Kafka 구독을 시작함
+이때 반환되는 q_schedule 은 StreamingQuery 객체 — 일종의 리모컨
+
+리모컨을 변수에 담아두기만 하고 아직 누르지 않은 상태
+→ awaitAnyTermination() 이 "리모컨들이 다 종료될 때까지 프로그램 끄지 마" 역할
+
+지금 코드에서 q_schedule.xxxx 를 직접 쓰지 않는 이유:
+  awaitAnyTermination() 이 전체를 통제하므로 개별 제어 불필요
+
+실무에서는 StreamingQuery 로 이런 것들을 함:
+  q_schedule.stop()          특정 스트림만 종료
+  q_schedule.status          현재 처리 상태 확인
+  q_schedule.lastProgress    마지막 배치 처리 결과
+  q_schedule.isActive        스트림 살아있는지 확인
+```
+
+---
+
 ---
 
 ---
@@ -596,12 +628,14 @@ docker compose up -d
 # 2. 컨테이너 상태 확인
 docker compose ps
 
+# ⚠️ docker compose down 했다면 토픽 재생성 필수 (아래 참고)
+
 # 3. Producer 실행 (STEP 3)
 cd producer
 python3 producer.py &
 
 # 4. Consumer 실행 (STEP 4)
-# jar 파일을 컨테이너에 먼저 복사
+# jar 파일을 컨테이너에 먼저 복사 (docker compose down 후 재시작 시 매번)
 docker cp spark_drivers/. train-spark-master:/opt/spark/jars/
 
 # spark-submit 실행

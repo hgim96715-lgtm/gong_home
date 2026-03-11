@@ -201,257 +201,348 @@ import os
 import json
 import time
 from datetime import datetime, timedelta
-from typing import Optional
 from dotenv import load_dotenv
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError
+from typing import Optional
 from main import TrainInfo
 
 load_dotenv()
 
+# 환경변수 및 기본 설정
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-POLL_INTERVAL   = 60
-MY_STATION      = "서울"
-MAX_TARGETS     = 5
+POLL_INTERVAL   = 60     # 실시간 전광판 갱신 주기 (초)
+MY_STATION      = "서울"   # 모니터링 기준 역
+MAX_TARGETS     = 5      # 전광판에 보여줄 최대 열차 대수
 
+
+# =====================================================================
+# 🛠️ 유틸리티 함수 (Utility Functions)
+# =====================================================================
 
 def estimate_status(plan_dep: str, plan_arr: str) -> dict:
-    """당일 실시간 API 대체 — 계획 시각과 현재 시각 비교로 상태 추정"""
-    now   = datetime.now()
+    """출발/도착 시간을 비교하여 열차의 현재 상태와 진행률을 계산합니다."""
+    now = datetime.now()
     today = now.strftime("%Y-%m-%d")
+    
     try:
+        # 1. 문자열 시간을 datetime 객체로 변환
         dep_dt = datetime.strptime(f"{today} {plan_dep}", "%Y-%m-%d %H:%M")
         arr_dt = datetime.strptime(f"{today} {plan_arr}", "%Y-%m-%d %H:%M")
+        
+        # 2. [자정 넘김 해결] 도착시간이 출발시간보다 과거면 '내일'로 인식
+        if arr_dt < dep_dt:
+            arr_dt += timedelta(days=1)
+            
     except ValueError as e:
-        print(f"🚨 시간 변환 실패 | plan_dep: '{plan_dep}' plan_arr: '{plan_arr}' | {e}")
+        print(f"  🚨 [디버깅] 시간 변환 실패: {e}")
         return {"status": "시각 정보 없음", "progress_pct": 0}
-
-    diff_dep   = (dep_dt - now).total_seconds() / 60
-    diff_arr   = (now - arr_dt).total_seconds() / 60
+    
+    # 3. 시간 차이 계산 (미래 시간 - 현재 시간 = 남은 시간)
+    diff_dep = (dep_dt - now).total_seconds() / 60
+    diff_arr = (arr_dt - now).total_seconds() / 60
+    
+    # 4. 진행률(%) 계산
     total_mins = (arr_dt - dep_dt).total_seconds() / 60
-    progress   = max(0, min(100, int((now - dep_dt).total_seconds() / 60 / total_mins * 100))) if total_mins > 0 else 0
-
+    elapsed_mins = (now - dep_dt).total_seconds() / 60
+    progress = max(0, min(100, int((elapsed_mins / total_mins) * 100))) if total_mins > 0 else 0
+    
+    # 5. 분(min)을 'O시간 O분' 포맷으로 변환하는 내부 도우미 함수
+    def format_time_diff(mins: int) -> str:
+        if mins >= 60:
+            hours = mins // 60
+            minutes = mins % 60
+            return f"{hours}시간" if minutes == 0 else f"{hours}시간 {minutes}분"
+        else:
+            return f"{mins}분"
+    
+    # 6. 상태별 텍스트 출력 분기
     if diff_dep > 15:
-        mins   = int(diff_dep)
-        status = f"출발 {mins // 60}시간 {mins % 60}분 전 (대기중)" if mins >= 60 else f"출발 {mins}분 전 (대기중)"
+        mins = int(diff_dep)
+        time_str = format_time_diff(mins)
+        status = f"출발 {time_str}전 (대기중)"
+        
     elif 0 < diff_dep <= 15:
-        status = f"곧 출발 ({int(diff_dep)}분 후) — 탑승 중"
-    elif diff_dep <= 0 and diff_arr < 0:
-        remaining = int(abs((arr_dt - now).total_seconds() / 60))
-        status    = f"운행 중 ({progress}% 진행, 약 {remaining}분 후 도착 예정)"
+        status = f"곧 출발 ({int(diff_dep)}분 후)- 탑승 중"
+        
+    elif diff_dep <= 0 and diff_arr > 0:
+        rem_str = format_time_diff(int(diff_arr))
+        status = f"운행 중 ({progress}%진행 , 약 {rem_str} 후 도착예정)"
+        
     else:
-        status = f"도착 완료 ({int(diff_arr)}분 전)"
-
+        status = f"도착 완료 ({int(abs(diff_arr))}분 전)"
+        
     return {"status": status, "progress_pct": progress}
 
 
 def calc_delay_min(plan_hm: str, actual_hm: str) -> Optional[int]:
-    """계획 vs 실제 시각 차이(분) — 자정 통과 보정 포함"""
+    """계획시간과 실제시간을 비교하여 지연 시간(분)을 계산합니다."""
     if "--:--" in (plan_hm, actual_hm) or "" in (plan_hm, actual_hm):
         return None
+    
     try:
-        p_h, p_m = map(int, plan_hm.split(":"))
-        a_h, a_m = map(int, actual_hm.split(":"))
+        p_h, p_m = map(int, plan_hm.split(':'))
+        a_h, a_m = map(int, actual_hm.split(':'))
+        
         diff = (a_h * 60 + a_m) - (p_h * 60 + p_m)
-        if diff < -720:    # 밤 → 새벽 통과
-            diff += 1440
-        elif diff > 720:   # 새벽 → 밤 역주행 (드문 케이스)
-            diff -= 1440
+        
+        # 자정 전후 계산 보정 (예: 23:50 계획, 00:10 도착)
+        if diff < -720: diff += 1440
+        elif diff > 730: diff -= 1440
         return diff
     except ValueError:
         return None
-
+    
 
 def delay_label(mins: Optional[int]) -> str:
+    """지연 분(min)에 따라 직관적인 상태 라벨을 반환합니다."""
     if mins is None: return "확인불가"
-    if mins <= 0:    return f"정시({mins}분)"
-    if mins <= 5:    return f"소폭지연(+{mins}분)"
-    if mins <= 30:   return f"지연(+{mins}분)"
-    return f"대폭지연(+{mins}분)"
+    if mins <= 0: return f"정시({mins}분)"
+    if mins <= 5: return f"소폭지연(+{mins}분)"
+    if mins <= 30: return f"지연(+{mins}분)"
+    return f"대폭지연 (+{mins}분)"
 
+
+# 💡 실시간 API가 제공하지 않는 노선명(mrnt_nm)을 도착역 기준으로 유추하는 매핑 테이블
+STATION_ROUTE = {
+    "부산": "경부선", "동대구": "경부선", "대구": "경부선", "대전": "경부선",
+    "울산": "경부선", "신경주": "경부선", "구포": "경부선", "밀양": "경부선",
+    "광주송정": "호남선", "목포": "호남선", "익산": "호남선", "정읍": "호남선", "나주": "호남선",
+}
+
+def get_route_name(arvl_stn_nm: str) -> str:
+    """도착역(arvl_stn_nm)을 바탕으로 노선 이름을 유추합니다."""
+    return STATION_ROUTE.get(arvl_stn_nm, "일반노선")
+
+
+# =====================================================================
+# 🚂 카프카 프로듀서 클래스 (TrainProducer)
+# =====================================================================
 
 class TrainProducer:
     def __init__(self):
+        # Kafka Producer 초기화 및 설정 (JSON 직렬화 사용)
         self.producer = KafkaProducer(
             bootstrap_servers=KAFKA_BOOTSTRAP,
-            value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode("utf-8"),
+            value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode('utf-8'),
             acks="all",
             retries=3,
         )
-        self.train_info       = TrainInfo()
-        self.daily_schedule   = []
-        self.current_date     = ""
+        
+        self.train_info = TrainInfo()
+        self.daily_schedule = []
+        self.current_date = ""
         self.delay_done_today = False
-
+        
     def _send(self, topic: str, message: dict):
+        """지정된 토픽으로 메시지를 발행(Publish)합니다."""
         try:
             future = self.producer.send(topic, value=message)
             future.get(timeout=10)
         except KafkaTimeoutError:
-            print(f"  ⚠️  [{topic}] 전송 Timeout")
+            print(f"[{topic}] 전송 Timeout!! 카프카 서버를 확인하세요.")
         except KafkaError as e:
-            print(f"  ❌ [{topic}] 발행 실패: {e}")
-
+            print(f"[{topic}] 발행 실패: {e}")
+            
+    
     def run_schedule(self, run_ymd: str):
-        """당일 운행계획 전체 발행 — 하루 1회"""
-        print(f"\n[운행계획] {run_ymd} 발행 시작")
+        """[하루 1회] 전체 운행 계획(Schedule)을 API에서 수집하여 Kafka로 전송합니다."""
+        print(f"\n[운행계획] {run_ymd} 발행시작 (하루 1회)")
+        
         items = self.train_info.get_train_schedule(run_ymd)
+        
         if not items:
-            print("[운행계획] 데이터 없음")
+            print("[운행계획] 데이터가 없습니다.")
             return
+        
         for item in items:
             item["created_at"] = datetime.now().isoformat()
-            item["data_type"]  = "schedule"
+            item["data_type"] = "schedule"
             self._send("train-schedule", item)
+            
         self.producer.flush()
         self.daily_schedule = items
-        print(f"[운행계획] {len(items)}건 완료 ✅")
-
+        print(f"[운행계획] -> {len(self.daily_schedule)}건 발행 완료!")
+        
+        
     def run_estimated(self, target: dict):
-        """계획 기반 상태 추정 → train-realtime 발행"""
-        now      = datetime.now()
+        """[실시간] 특정 열차의 현재 상태(탑승/운행/대기)를 계산하여 Kafka로 전송합니다."""
+        now = datetime.now()
+        trn_no = target.get("trn_no", "?")
+        dep_name = target.get("dptre_stn_nm", "?")
+        arr_name = target.get("arvl_stn_nm", "?")
+        arvl_stn_nm = target.get("arvl_stn_nm", "")
+        
+        # API에 노선명(mrnt_nm)이 없으면 함수로 유추해서 채워넣음
+        mrnt_nm = target.get("mrnt_nm") or get_route_name(arvl_stn_nm)
+        
         plan_dep = TrainInfo._format_dt(target.get("trn_plan_dptre_dt", ""), "--:--")
         plan_arr = TrainInfo._format_dt(target.get("trn_plan_arvl_dt", ""), "--:--")
+        
+        # 남은 시간 및 상태 계산
         estimated = estimate_status(plan_dep, plan_arr)
-
+        
         self._send("train-realtime", {
-            "trn_no"       : target.get("trn_no"),
-            "mrnt_nm"      : target.get("mrnt_nm", "노선미상"),
-            "dptre_stn_nm" : target.get("dptre_stn_nm"),
-            "arvl_stn_nm"  : target.get("arvl_stn_nm"),
-            "plan_dep"     : plan_dep,
-            "plan_arr"     : plan_arr,
-            "status"       : estimated["status"],
-            "progress_pct" : estimated["progress_pct"],
-            "data_type"    : "estimated",
-            "created_at"   : now.isoformat(),
+            "trn_no": trn_no,
+            "mrnt_nm": mrnt_nm,
+            "dptre_stn_nm": dep_name,
+            "arvl_stn_nm": arr_name,
+            "plan_dep": plan_dep,
+            "plan_arr": plan_arr,
+            "status": estimated["status"],
+            "progress_pct": estimated["progress_pct"],
+            "data_type": "estimated",
+            "created_at": now.isoformat()
         })
+        
+        # 콘솔에 가상 전광판 출력
         print(
-            f"  [KTX {target.get('trn_no')}호] {plan_dep} 출발 | "
-            f"{target.get('mrnt_nm','노선미상'):<6} | "
-            f"{target.get('dptre_stn_nm'):<4} ➡️  {target.get('arvl_stn_nm'):<4} | "
-            f"{estimated['status']}"
+            f"[KTX {trn_no}호 열차] {plan_dep}출발 | {mrnt_nm:<6} | "
+            f"{dep_name:<4} ➡️ {arr_name:<4} | {estimated['status']}"
         )
-
+        
+        
     def run_delay_analysis(self):
-        """전날 계획 vs 실제 비교 → train-delay 발행 — 하루 1회 (새벽)"""
-        yesterday  = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-        print(f"\n[지연분석] {yesterday} 분석 시작...")
-
+        """[하루 1회] 어제의 계획 대비 실제 도착 시간을 분석하여 지연 여부를 평가합니다."""
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+        print(f"\n[지연분석] {yesterday} 분석 시작!")
+        
         plan_items = self.train_info.get_train_schedule(yesterday)
+        
         if not plan_items:
-            print("[지연분석] 운행계획 데이터 없음")
+            print(f"[지연분석] 운행계획 데이터 없음")
             return
-
+            
+        print(f"👉 [디버그] 전체 운행계획 수: {len(plan_items)}개")
+        
+        # 특정 역(MY_STATION)에서 출발하는 기차만 필터링
         plan_map = {
-            i.get("trn_no"): i for i in plan_items
-            if i.get("dptre_stn_nm") == MY_STATION
+            item.get("trn_no"): item for item in plan_items if item.get("dptre_stn_nm") == MY_STATION
         }
-
+        print(f"👉 [디버그] '{MY_STATION}' 출발 대상 기차 수: {len(plan_map)}개")
         count = 0
+        
         for trn_no, plan in plan_map.items():
-            time.sleep(0.3)   # API Rate Limit 방지
+            time.sleep(0.3) # API 서버 과부하 방지 (Rate Limiting)
+            
             actual_items = self.train_info.get_train_realtime(yesterday, trn_no)
             if not actual_items:
                 continue
-
-            # 출발: 앞에서부터 (시발역)
-            # 도착: 뒤에서부터 역탐색 (종착역 — 중간 기착지 오인 방지)
+            
+            # 실제 출발 시간 (첫 번째 데이터)
             actual_dep_item = next((i for i in actual_items if i.get("trn_dptre_dt")), None)
+            # 실제 도착 시간 (역순으로 검색하여 마지막 종착역 데이터 추출)
             actual_arr_item = next((i for i in reversed(actual_items) if i.get("trn_arvl_dt")), None)
-
-            plan_dep   = TrainInfo._format_dt(plan.get("trn_plan_dptre_dt", ""), "--:--")
-            plan_arr   = TrainInfo._format_dt(plan.get("trn_plan_arvl_dt", ""),  "--:--")
+            
+            plan_dep = TrainInfo._format_dt(plan.get("trn_plan_dptre_dt", ""), "--:--")
+            plan_arr = TrainInfo._format_dt(plan.get("trn_plan_arvl_dt", ""), "--:--")
+            
             actual_dep = TrainInfo._format_dt(actual_dep_item.get("trn_dptre_dt", "") if actual_dep_item else "", "--:--")
             actual_arr = TrainInfo._format_dt(actual_arr_item.get("trn_arvl_dt", "") if actual_arr_item else "", "--:--")
-
+            
+            # 지연시간(분) 계산
             dep_delay = calc_delay_min(plan_dep, actual_dep)
             arr_delay = calc_delay_min(plan_arr, actual_arr)
-
+            
             self._send("train-delay", {
-                "run_ymd"     : yesterday,
-                "trn_no"      : trn_no,
-                "mrnt_nm"     : plan.get("mrnt_nm", ""),
+                "run_ymd": yesterday,
+                "trn_no": trn_no,
+                "mrnt_nm": plan.get("mrnt_nm", ""),
                 "dptre_stn_nm": plan.get("dptre_stn_nm", ""),
-                "arvl_stn_nm" : plan.get("arvl_stn_nm", ""),
-                "plan_dep"    : plan_dep,
-                "plan_arr"    : plan_arr,
-                "real_dep"    : actual_dep,
-                "real_arr"    : actual_arr,
-                "dep_delay"   : dep_delay,
-                "arr_delay"   : arr_delay,
-                "dep_status"  : delay_label(dep_delay),
-                "arr_status"  : delay_label(arr_delay),
-                "data_type"   : "delay_analysis",
-                "created_at"  : datetime.now().isoformat(),
+                "arvl_stn_nm": plan.get("arvl_stn_nm", ""),
+                "plan_dep": plan_dep,
+                "plan_arr": plan_arr,
+                "real_dep": actual_dep,
+                "real_arr": actual_arr,
+                "dep_delay": dep_delay,
+                "arr_delay": arr_delay,
+                "dep_status": delay_label(dep_delay),
+                "arr_status": delay_label(arr_delay),
+                "data_type": "delay_analysis",
+                "created_at": datetime.now().isoformat()
             })
+            
             print(
-                f"  {trn_no}호 | "
-                f"출발 계획:{plan_dep} 실제:{actual_dep} [{delay_label(dep_delay)}] | "
-                f"도착 계획:{plan_arr} 실제:{actual_arr} [{delay_label(arr_delay)}]"
+                f"{trn_no}호 | "
+                f"[출발]: 계획 {plan_dep} -> 실제 {actual_dep} [{delay_label(dep_delay)}] | "
+                f"[도착]: 계획 {plan_arr} -> 실제 {actual_arr} [{delay_label(arr_delay)}]"
             )
             count += 1
-
+            
         self.producer.flush()
-        print(f"[지연분석] {count}건 완료 ✅")
+        print(f"[지연분석] {count}건 발행완료")
         self.delay_done_today = True
-
+        
+    
     def run(self):
-        print(f"🚄 Train Producer 시작 (간격: {POLL_INTERVAL}초)\n")
-
+        """프로듀서 메인 루프: 주기적으로 데이터를 폴링(Polling)하고 스케줄링합니다."""
+        print(f"Train Producer 시작 (폴링간격: {POLL_INTERVAL}초)\n")
+        
         self.current_date = datetime.now().strftime("%Y%m%d")
+        
+        # 최초 실행 시 전체 계획 수집
         self.run_schedule(self.current_date)
-        self.run_delay_analysis()   # 시작 시 전날 지연 분석
-
+        
+        # 새벽 시간이 아니더라도 최초 실행 시 지연 분석 한 번 수행
+        if not self.delay_done_today:
+            self.run_delay_analysis()
+            
         while True:
-            now        = datetime.now()
-            today_str  = now.strftime("%Y%m%d")
+            now = datetime.now()
+            today_str = now.strftime("%Y%m%d")
             current_hm = now.strftime("%H:%M")
-
-            # 날짜 바뀌면 운행계획 갱신
+            
+            # 자정이 지나면 날짜 갱신 및 스케줄 재수집
             if today_str != self.current_date:
-                print(f"\n📅 날짜 변경 [{self.current_date} → {today_str}]")
-                self.current_date     = today_str
+                print(f"\n하루가 지났군요! 날짜 변경하겠습니다. [{self.current_date} -> {today_str}]")
+                self.current_date = today_str
                 self.delay_done_today = False
                 self.run_schedule(self.current_date)
-
-            # 새벽 1~3시 지연 분석 (하루 1회)
+                
+            # 매일 새벽 1시~3시 사이에 전날 데이터 지연 분석 실행
             if not self.delay_done_today and "01:00" <= current_hm <= "03:00":
                 self.run_delay_analysis()
-
-            print(f"\n{'=' * 58}")
-            print(f"  {now.strftime('%Y-%m-%d %H:%M:%S')}  서울역 출발 열차 현황")
-            print(f"{'=' * 58}")
-
-            # 방금 출발한 기차(15분 전)부터 표시
-            past_15 = (now - timedelta(minutes=15)).strftime("%H:%M")
-            targets = [
-                item for item in self.daily_schedule
-                if item.get("dptre_stn_nm") == MY_STATION
-                and TrainInfo._format_dt(item.get("trn_plan_dptre_dt", ""), "99:99") >= past_15
-            ][:MAX_TARGETS]
-
+                
+            print(f"\n{'='*58}")
+            print(f"{now.strftime('%Y-%m-%d %H:%M:%S')} {MY_STATION}역 기준 출발 열차 현황")
+            print(f"{'='*58}")
+            
+            # 현재 시각 기준 15분 전 기차부터 필터링하여 전광판에 표시
+            past_15_mins = (now - timedelta(minutes=15)).strftime("%H:%M")
+            targets = []
+            
+            for item in self.daily_schedule:
+                dep_time = TrainInfo._format_dt(item.get("trn_plan_dptre_dt", ""), "99:99")
+                
+                # 지정된 역(서울)에서 출발하며, 이미 떠난 지 15분 이상 된 기차는 화면에서 제거
+                if item.get("dptre_stn_nm") == MY_STATION and dep_time >= past_15_mins:
+                    targets.append(item)
+                    
+                if len(targets) >= MAX_TARGETS:
+                    break
+                
             if targets:
                 for target in targets:
                     self.run_estimated(target)
                     time.sleep(0.5)
             else:
-                print(f"  {current_hm} 현재 — 금일 서울역 출발 열차 운행 종료 🌝")
-
-            print(f"\n  ⏳ {POLL_INTERVAL}초 후 갱신...\n")
+                print(f"{current_hm} 현재 - 금일 {MY_STATION}역 출발 열차 운행 종료되었습니다. 편안한 밤 보내세요 🌝")
+                
+            print(f"\n{POLL_INTERVAL}초 후 갱신..\n")
             time.sleep(POLL_INTERVAL)
-
-
+            
+            
 if __name__ == "__main__":
     tp = None
     try:
         tp = TrainProducer()
         tp.run()
     except ValueError as e:
-        print(f"설정 오류: {e}")
+        print(f"설정오류: {e}")
     except KeyboardInterrupt:
-        print("\n🛑 사용자 요청으로 Producer 종료")
+        print("\n사용자 요청(Ctrl+C)으로 Producer 종료")
     finally:
+        # 정상 종료 시 남은 찌꺼기 메시지 처리 및 연결 해제
         if tp:
             tp.producer.flush()
             tp.producer.close()

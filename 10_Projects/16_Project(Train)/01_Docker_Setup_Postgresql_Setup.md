@@ -277,6 +277,7 @@ services:
     ports:
       - "8080:8080"   # Spark Web UI
       - "7077:7077"   # Spark Master 포트
+      - "4040:4040" # Spark Jobs UI (실행 중인 작업 상세 화면) — master 에만 추가
     volumes:
       - ./spark:/opt/spark/apps                # consumer.py 마운트
     networks:
