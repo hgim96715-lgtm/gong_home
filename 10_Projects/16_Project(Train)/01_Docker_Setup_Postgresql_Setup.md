@@ -10,6 +10,7 @@ related:
   - "[[00_Docker_HomePage]]"
   - "[[Kafka_CLI_Cheatsheet]]"
   - "[[SQL_DDL_Create]]"
+  - "[[04_Spark_Streaming]]"
 ---
 # 🐳 STEP 1. Docker Compose 기초 세팅 
 
@@ -25,11 +26,26 @@ related:
 ```
 bitnami/kafka:3.7    → ❌ 유료 (Bitnami Secure Images 구독 필요)
 bitnami/kafka:latest → ⚠️  무료지만 버전 고정 안됨 (운영 불안정)
+bitnami/spark:3.5    → ❌ 동일하게 유료 전환
 ```
 
 ```
 그래서 이 프로젝트는 Apache 공식 이미지를 사용한다.
 apache/kafka:3.7.0  → ✅ 완전 무료, Apache 공식, 버전 고정 가능
+apache/spark:3.5.0  → ✅ 완전 무료, Apache 공식, 버전 고정 가능
+```
+
+```text
+bitnami vs apache 공식 이미지 환경변수 차이:
+
+  Kafka
+    bitnami  → KAFKA_CFG_* 접두사로 설정
+    apache   → 접두사 없이 직접 설정값 사용
+
+  Spark
+    bitnami  → SPARK_MODE, SPARK_MASTER_URL 환경변수로 역할 지정
+    apache   → command 로 직접 클래스 실행
+               spark-class ...Master / ...Worker spark://host:port
 ```
 
 > 단, bitnami → apache 공식 이미지는 환경변수 체계가 다르다. `KAFKA_CFG_` 접두사 없이 직접 설정값을 쓴다.
@@ -75,8 +91,14 @@ mkdir -p producer spark airflow/dags superset postgres docs
 seoul-train-realtime-project/
 ├── docker-compose.yml    ← 이 단계에서 작성
 ├── .env                  ← 이 단계에서 작성
-└── postgres/
-    └── init.sql          ← 이 단계에서 작성
+├── postgres/
+│   └── init.sql          ← 이 단계에서 작성
+├── producer/             ← STEP 2~3
+├── spark/                ← STEP 4
+├── superset/             ← STEP 5
+├── airflow/
+│   └── dags/             ← STEP 6
+└── docs/
 ```
 
 ---
@@ -193,7 +215,6 @@ train_db → public → Tables
 ## docker-compose.yml
 
 ```yaml
-
 services:
 
   # ── Kafka (KRaft 모드 — Apache 공식 이미지) ──────────────────
@@ -202,11 +223,13 @@ services:
     container_name: train-kafka
     ports:
       - "9092:9092"
+    env_file:
+      - .env                                   # .env 파일을 컨테이너 OS 환경변수로 주입
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092   # ⚠️ localhost 금지 — Docker 서비스명 사용
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -215,6 +238,8 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     volumes:
       - kafka_data:/var/lib/kafka/data
+    networks:
+      - train-network
     healthcheck:
       test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
       interval: 10s
@@ -226,7 +251,7 @@ services:
     image: postgres:16
     container_name: train-postgres
     ports:
-      - "5433:5432"  # 로컬 5432 충돌로 인해 호스트 포트를 5433 으로 변경
+      - "5433:5432"   # 맥북↔컨테이너: 5433 / 컨테이너끼리: 5432
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -234,15 +259,80 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - train-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # ── Spark Master ───────────────────────────────────────────
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: train-spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    env_file:
+      - .env                                   # KAFKA_BOOTSTRAP_SERVERS, POSTGRES_* 주입
+    ports:
+      - "8080:8080"   # Spark Web UI
+      - "7077:7077"   # Spark Master 포트
+    volumes:
+      - ./spark:/opt/spark/apps                # consumer.py 마운트
+    networks:
+      - train-network
+
+  # ── Spark Worker ───────────────────────────────────────────
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: train-spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    env_file:
+      - .env
+    environment:
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    volumes:
+      - ./spark:/opt/spark/apps                # consumer.py 마운트
+    depends_on:
+      - spark-master
+    networks:
+      - train-network
+
 volumes:
   kafka_data:
   postgres_data:
+
+networks:
+  train-network:
+    driver: bridge
+```
+
+```text
+‼️‼️ networks 정의가 없으면:
+  "service refers to undefined network train-network" 에러 발생
+  → docker-compose.yml 맨 아래 networks 블록 반드시 추가
+
+driver: bridge
+  컨테이너끼리 이름으로 통신 가능 (kafka, postgres, spark-master)
+  호스트 머신과는 ports 로 연결
+```
+
+```text
+env_file 를 쓰는 이유:
+  Docker Compose 는 .env 파일을 자동으로 읽어서
+  컨테이너 안의 OS 환경변수로 주입해줌
+  → consumer.py 에서 os.getenv("KAFKA_BOOTSTRAP_SERVERS") 바로 사용 가능
+  → python-dotenv 패키지 불필요
+
+KAFKA_ADVERTISED_LISTENERS = PLAINTEXT://kafka:9092 이어야 하는 이유:
+  Kafka 가 클라이언트에게 광고하는 "나한테 이 주소로 접속해" 주소
+  localhost 로 설정 시 다른 컨테이너에서 localhost = 자기 자신 → 연결 실패
+  → 반드시 Docker 서비스명(kafka) 으로 설정
+
+포트 정리:
+  맥북 ↔ PostgreSQL  : 5433 (DataGrip 등)
+  컨테이너 ↔ PostgreSQL: 5432 (Spark JDBC)
 ```
 
 

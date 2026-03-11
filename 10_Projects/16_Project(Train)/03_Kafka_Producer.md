@@ -13,7 +13,6 @@ related:
   - "[[Python_DateTime]]"
   - "[[Kafka_CLI_Cheatsheet]]"
   - "[[02_API_Producer]]"
-  - "[[Kafka_Python_Consumer]]"
   - "[[Kafka_Python_Producer]]"
   - "[[Kafka_Error_Handling_Retry]]"
   - "[[Kafka_Python_Serialization]]"
@@ -138,8 +137,46 @@ kafka-python==2.0.2    ← 이 단계에서 사용
 ```bash
 # .env
 TRAIN_API_KEY=발급받은_인증키
-KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 ```
+
+```text
+kafka:9092 로 통일하는 이유:
+  producer(맥북) + consumer(컨테이너) 모두 같은 주소 사용
+  맥북에서 kafka 라는 이름을 인식하게 /etc/hosts 에 등록 필요 (아래 참고)
+```
+
+## /etc/hosts 설정 — 맥북에서 kafka 이름 인식
+
+```
+맥북에서 직접 실행하는 producer.py 는
+"kafka" 라는 이름을 모름 → NoBrokersAvailable 에러
+
+→ 맥북 /etc/hosts 에 kafka = 127.0.0.1 로 등록해야 함
+```
+
+
+```bash
+# 1. /etc/hosts 열기 (맥북 비밀번호 요구)
+sudo nano /etc/hosts
+
+# 2. 맨 아랫줄에 추가
+127.0.0.1 kafka
+
+# 3. 저장 후 종료
+#    Ctrl + O → Enter (저장)
+#    Ctrl + X (종료)
+```
+
+```
+등록 후:
+  맥북에서 kafka:9092 → 127.0.0.1:9092 (localhost) 로 해석
+  컨테이너에서 kafka:9092 → Docker 서비스명으로 해석
+  → producer/consumer 모두 kafka:9092 로 통일 가능
+```
+
+---
+
 
 ---
 
@@ -172,7 +209,7 @@ from main import TrainInfo
 
 load_dotenv()
 
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
 POLL_INTERVAL   = 60
 MY_STATION      = "서울"
 MAX_TARGETS     = 5

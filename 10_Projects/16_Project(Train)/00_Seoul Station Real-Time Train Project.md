@@ -131,14 +131,14 @@ travelerTrainRunInfo2  (실시간 운행정보)
 
 - **STEP 1.** Docker Compose 기초 세팅 [[01_Docker_Setup_Postgresql_Setup]]
     - Kafka + PostgreSQL 컨테이너 구성 (Kafka + PostgreSQL 먼저 Docker Set up , 나중에 하나씩 추가)
-- [ ]  **STEP 2.** 공공데이터 API 연동 [[02_API_Producer]]
+- [x]  **STEP 2.** 공공데이터 API 연동 [[02_API_Producer]]
     - 운행계획 / 운행정보 API 호출 및 파싱
     - API 제약 확인 (당일 실시간 불가)
-- [ ]  **STEP 3.** Kafka Producer 구성 [[03_Kafka_Producer]] 
+- [x]  **STEP 3.** Kafka Producer 구성 [[03_Kafka_Producer]] 
     - 당일 운행 현황 (계획 기반 추정) → `train-schedule` 토픽
     - 당일 운행 현황 추정 → `train-realtime` 토픽
     - 전날 지연 분석 → `train-delay` 토픽
-- [ ]  **STEP 4.** Spark Streaming Consumer
+- [ ]  **STEP 4.** Spark Streaming Consumer [[04_Spark_Streaming]]
     - Kafka → Spark → 데이터 정제 → PostgreSQL 저장
 - [ ]  **STEP 5.** Superset 대시보드
     - PostgreSQL 연동 → 실시간 전광판 UI
@@ -155,13 +155,13 @@ seoul-train-realtime/
 ├── .env                     ← API 키, DB 설정 등
 │
 ├── producer/                ← STEP 2, 3
-│   ├── Dockerfile
+│   ├── producer.py
 │   ├── main.py
 │   └── requirements.txt
 │
 ├── spark/                   ← STEP 4
 │   ├── Dockerfile
-│   └── streaming_job.py
+│   └── spark_Streaming.py
 │
 ├── airflow/                 ← STEP 6
 │   └── dags/

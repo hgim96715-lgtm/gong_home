@@ -12,6 +12,7 @@ related:
   - "[[01_Docker_Setup_Postgresql_Setup]]"
   - "[[Docker_Volumes]]"
   - "[[SQL_DDL_Create]]"
+  - "[[Spark_JDBC_PostgreSQL]]"
 ---
 
 ---
