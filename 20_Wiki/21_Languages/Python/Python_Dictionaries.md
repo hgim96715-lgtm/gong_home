@@ -190,6 +190,42 @@ print(d)  # {"a": [1], "b": [1]}  <- b 도 같이 바뀜!
 d = dict.fromkeys(["a", "b"], 0)
 ```
 
+## 응용 — 순서 유지하며 중복 제거
+
+```text
+dict 의 두 가지 특성을 동시에 활용:
+  1. 키는 중복 불가     → 중복 자동 제거
+  2. Python 3.7+ 부터 삽입 순서 유지 → 원래 순서 보존
+```
+
+```python
+# 리스트 중복 제거 (순서 유지)
+items = [3, 1, 2, 1, 3, 4]
+result = list(dict.fromkeys(items))
+# [3, 1, 2, 4]   ← 첫 등장 순서 유지
+
+# 문자열 중복 제거 (순서 유지)
+my_string = "banana"
+result = ''.join(dict.fromkeys(my_string))
+# "ban"   ← b, a, n 순서 유지
+
+# set 으로 중복 제거하면 순서 보장 안 됨
+set("banana")  # {'a', 'b', 'n'}  순서 제각각 ❌
+```
+
+```text
+fromkeys vs set 비교:
+  set(items)              → 중복 제거 O / 순서 보장 X
+  dict.fromkeys(items)    → 중복 제거 O / 순서 보장 O ✅
+
+  실무 활용 예시:
+    컬럼 목록에서 중복 제거할 때
+    API 응답에서 중복 ID 제거할 때
+    로그에서 중복 이벤트 걸러낼 때
+```
+
+>[[Python_Sets#⑨ 중복 제거 패턴]] 참고
+
 ---
 
 ---
