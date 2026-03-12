@@ -447,7 +447,7 @@ class TrainProducer:
             self._send("train-delay", {
                 "run_ymd": yesterday,
                 "trn_no": trn_no,
-                "mrnt_nm": plan.get("mrnt_nm", ""),
+                "mrnt_nm":actual_items[0].get("mrnt_nm", ""),
                 "dptre_stn_nm": plan.get("dptre_stn_nm", ""),
                 "arvl_stn_nm": plan.get("arvl_stn_nm", ""),
                 "plan_dep": plan_dep,
