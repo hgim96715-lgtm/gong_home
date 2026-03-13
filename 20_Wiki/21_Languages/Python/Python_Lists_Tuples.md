@@ -399,6 +399,76 @@ def solution(my_string, s, e):
 # 앞부분 그대로 + 구간만 뒤집기 + 뒷부분 그대로
 ```
 
+
+## `[시작:​:간격]` — n번째마다 건너뛰기
+
+```text
+[start:end:step] 에서 end 를 생략하면 끝까지라는 뜻
+[start::step]  →  start 인덱스부터 끝까지, step 간격으로
+
+:: 가 두 개 붙어있어서 헷갈리지만
+앞 : 는 start / end 구분자
+뒤 : 는 step 구분자
+end 자리가 그냥 비어있는 것
+```
+
+```python
+data = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+data[::2]    # [0, 2, 4, 6, 8]  ← 처음부터 2칸씩
+data[1::2]   # [1, 3, 5, 7]     ← 1번 인덱스부터 2칸씩
+data[2::3]   # [2, 5, 8]        ← 2번 인덱스부터 3칸씩
+```
+
+```python
+# 실전 예시 — 암호 해독 (code 번째마다 글자 뽑기)
+cipher = "dfjkdlsoakjfosldjaklsfj"
+code = 4
+
+# ❌ 굳이 리스트로 안 바꿔도 됨
+arr = list(cipher)
+result = arr[code-1::code]   # 리스트 반환
+
+# ✅ 문자열에 바로 슬라이싱 가능
+result = cipher[code-1::code]   # 문자열 반환 (더 간결)
+```
+
+## 문자열은 리스트로 안 바꿔도 슬라이싱 가능
+
+```
+파이썬에서 문자열은 '읽기 전용 리스트' 처럼 동작
+인덱싱 / 슬라이싱 / for 루프 모두 리스트 변환 없이 바로 됨
+```
+
+```python
+text = "Hello"
+
+text[0]      # 'H'       인덱싱 ✅
+text[1:3]    # 'el'      슬라이싱 ✅
+text[::-1]   # 'olleH'   뒤집기 ✅
+text[::2]    # 'Hlo'     step ✅
+
+for ch in text:          # 반복 ✅
+    print(ch)
+
+# 단, 수정은 불가 (문자열은 immutable)
+text[0] = 'J'   # ❌ TypeError
+# 수정이 필요하면 list() 로 변환 후 ''.join() 으로 복원
+arr = list(text)
+arr[0] = 'J'
+''.join(arr)    # 'Jello'
+```
+
+```text
+list() 변환이 필요한 경우:
+  문자 수정이 필요할 때만
+
+list() 변환 불필요:
+  인덱싱, 슬라이싱, for 루프, step 건너뛰기
+  → 문자열에 바로 쓰면 됨
+```
+
+
 ---
 
 ---

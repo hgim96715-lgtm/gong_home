@@ -13,6 +13,7 @@ aliases:
   - translate
   - maketrans
   - chr
+  - swapcase
 tags:
   - Python
 related:
@@ -38,8 +39,11 @@ related:
 |`replace()`|특정 문자 찾아서 교체|
 |`strip()`|양끝 공백·쓰레기 제거|
 |`translate()`|여러 문자를 한 번에 교체|
+|`count()`|특정 문자·문자열 등장 횟수 세기|
 |`isdigit()`|숫자인지 문자인지 확인|
 |`ord() / chr()`|문자 ↔ 숫자 변환|
+|`swapcase()`|대↔소 뒤집기|
+
 
 ---
 
@@ -283,17 +287,25 @@ chr/ord:   변환 규칙이 수식으로 표현 가능할 때 (순환, 암호화
 
 ---
 
-# ⑦ upper() / lower() — 대소문자 변환
+# ⑦upper() / lower() / swapcase() — 대소문자 변환
 
 ```python
 text = "Python Is Easy"
-text.upper()  # 'PYTHON IS EASY'
-text.lower()  # 'python is easy'
+text.upper()     # 'PYTHON IS EASY'   전부 대문자
+text.lower()     # 'python is easy'   전부 소문자
+text.swapcase()  # 'pYTHON iS eASY'   대↔소 뒤집기
 
 # 대소문자 무시하고 비교
 user_input = "Yes"
 if user_input.lower() == "yes":
     print("통과!")
+```
+
+```text
+swapcase():
+  대문자 → 소문자
+  소문자 → 대문자
+  동시에 뒤집음
 ```
 
 ---
@@ -331,10 +343,70 @@ def check_prefix(my_string, prefix):
 ```
 
 ---
+---
+# ⑨ count() — 등장 횟수 세기
+
+> 문자열 안에서 특정 문자 또는 문자열이 몇 번 나오는지 센다.
+
+
+```python
+# 문자열에 바로 .count() 가능 — 리스트 변환 불필요
+order = "369369"
+order.count('3')   # 2
+order.count('6')   # 2
+order.count('9')   # 2
+
+# 여러 개 동시에 셀 때
+order.count('3') + order.count('6') + order.count('9')   # 6
+```
+
+## count() vs Counter — 언제 뭘 쓰나
+
+```python
+from collections import Counter
+
+text = "369369"
+
+# count() — 특정 문자 1~2개만 셀 때
+text.count('3')   # 2  ← 간단, import 불필요
+
+# Counter — 전체 문자 빈도를 한 번에 볼 때
+Counter(text)
+# Counter({'3': 2, '6': 2, '9': 2})  ← 딕셔너리처럼 사용 가능
+Counter(text)['3']   # 2
+```
+
+```
+count()   특정 문자 몇 개인지만 궁금할 때  → 짧고 간단
+Counter   전체 문자 빈도를 한꺼번에 볼 때  → 딕셔너리처럼 사용 가능
+          없는 키 조회해도 KeyError 없이 0 반환
+```
+
+```python
+# Counter 의 추가 기능
+c = Counter("aabbbcc")
+c.most_common(2)   # [('b', 3), ('a', 2)]  ← 빈도 높은 순 TOP N
+```
+
+>더 자세한 내용은 [[Python_Collections_Counter]] 참고 
+
+## 부분 문자열도 셀 수 있음
+
+
+```python
+text = "banana"
+text.count("an")   # 2  ('an', 'an')
+text.count("na")   # 2  ('na', 'na')
+
+# 단, 겹치는 구간은 세지 않음
+"aaa".count("aa")  # 1  ('aa' + 'a', 앞의 aa 소비 후 'a' 만 남는다.)
+```
 
 ---
 
-# ⑨ isdigit() / isalpha() / isalnum() — 데이터 검증
+---
+
+# ⑩ isdigit() / isalpha() / isalnum() — 데이터 검증
 
 |함수|True 조건|
 |---|---|
