@@ -12,7 +12,10 @@ related:
   - "[[SSH_Connection]]"
   - "[[00_Linux_HomePage]]"
   - "[[00_Linux_HomePage]]"
+  - "[[SQL_Regular_Expression]]"
 ---
+
+
 # Linux_Filtering_Text — grep
 
 ## 개념 한 줄 요약
@@ -78,19 +81,20 @@ cat server.log | grep "ERROR"
 
 # ③ 옵션 총정리
 
-| 옵션     | 이름          | 설명            | 예시                                         |
-| ------ | ----------- | ------------- | ------------------------------------------ |
-| `-i`   | Insensitive | 대소문자 구분 없이    | `grep -i "error"` → Error, ERROR, error 전부 |
-| `-v`   | Invert      | 패턴 제외하고 출력    | `grep -v "INFO"` → INFO 빼고 나머지             |
-| `-r`   | Recursive   | 하위 폴더까지 재귀 탐색 | `grep -r "def" .`                          |
-| `-n`   | Number      | 줄 번호 함께 출력    | `grep -n "main" app.py`                    |
-| `-c`   | Count       | 매칭된 줄 수만 출력   | `grep -c "FAIL" test.log`                  |
-| `-w`   | Word        | **단어 단위 매칭**  | `grep -w "the" text.txt`                   |
-| `-E`   | Extended    | 확장 정규표현식 사용   | grep -E "Error<code>\|</code>Fail"         |
-| `-l`   | List        | 매칭된 파일명만 출력   | `grep -rl "TODO" .`                        |
-| `-A n` | After       | 매칭 줄 + 아래 n줄  | `grep -A 3 "ERROR" log`                    |
-| `-B n` | Before      | 매칭 줄 + 위 n줄   | `grep -B 3 "ERROR" log`                    |
-| `-C n` | Context     | 매칭 줄 + 위아래 n줄 | `grep -C 3 "ERROR" log`                    |
+|옵션|이름|설명|예시|
+|---|---|---|---|
+|`-i`|Insensitive|대소문자 구분 없이|`grep -i "error"` → Error, ERROR, error 전부|
+|`-v`|Invert|패턴 제외하고 출력|`grep -v "INFO"` → INFO 빼고 나머지|
+|`-r`|Recursive|하위 폴더까지 재귀 탐색|`grep -r "def" .`|
+|`-n`|Number|줄 번호 함께 출력|`grep -n "main" app.py`|
+|`-c`|Count|매칭된 줄 수만 출력|`grep -c "FAIL" test.log`|
+|`-w`|Word|**단어 단위 매칭**|`grep -w "the" text.txt`|
+|`-E`|Extended|확장 정규표현식 사용|`grep -E "Error\|Fail"`|
+|`-e`|Expression|여러 패턴을 동시에 검색|`grep -e "Error" -e "Fail"`|
+|`-l`|List|매칭된 파일명만 출력|`grep -rl "TODO" .`|
+|`-A n`|After|매칭 줄 + 아래 n줄|`grep -A 3 "ERROR" log`|
+|`-B n`|Before|매칭 줄 + 위 n줄|`grep -B 3 "ERROR" log`|
+|`-C n`|Context|매칭 줄 + 위아래 n줄|`grep -C 3 "ERROR" log`|
 
 ---
 
@@ -158,7 +162,68 @@ echo "the cat and that dog" | grep -iwE "the|that"
 
 ---
 
-# ⑥ 정규표현식 기초
+# ⑥ `-e` — 여러 패턴 동시 검색 + 역참조
+
+## 기본 사용
+
+```bash
+# -e 로 패턴 여러 개 동시 지정
+grep -e "Error" -e "Fail" server.log
+# "Error" 또는 "Fail" 이 있는 줄 전부 출력
+```
+
+```
+-e vs -E 차이:
+  -E "Error|Fail"    확장 정규식으로 OR 표현 (한 패턴 안에서)
+  -e "Error" -e "Fail"  패턴을 여러 개 따로 지정 (각각의 패턴)
+
+  결과는 같지만 패턴이 복잡할 때 -e 가 가독성 좋음
+```
+
+## 역참조(Backreference) 와 함께 — `\1`
+
+```
+\( \)  → 그룹 캡처 (BRE — 기본 정규표현식에서는 괄호에 \ 붙임)
+\1     → 첫 번째 그룹에서 잡힌 내용을 다시 참조
+
+→ "같은 패턴이 반복되는 것" 을 찾을 때 사용
+```
+
+```bash
+# 같은 숫자가 연속으로 두 번 (11, 22, 33 ...)
+grep '\([0-9]\)\1' file.txt
+#     ↑캡처  ↑\1=앞과 같은 숫자
+
+# 공백을 사이에 두고 같은 숫자 반복 (1 1, 9 9 ...)
+grep '\([0-9]\) \1' file.txt
+#     ↑캡처   ↑공백 ↑\1=앞과 같은 숫자
+
+# 두 패턴 동시에 검색 — -e 로 OR 연결
+grep -e '\([0-9]\)\1' -e '\([0-9]\) \1' file.txt
+```
+
+```
+패턴 분석:
+  \([0-9]\)   → 숫자 1개를 그룹으로 캡처
+  \1          → 바로 앞에서 캡처한 숫자와 동일한 값
+
+  \([0-9]\)\1   → "11", "22", "99" 처럼 붙어있는 반복
+  \([0-9]\) \1  → "1 1", "9 9" 처럼 공백 사이 반복
+```
+
+```
+⚠️ 주의: 기본 grep (BRE) 에서는 \( \) 로 그룹 작성
+         grep -E (ERE) 에서는 ( ) 로 작성 (\ 없음)
+
+grep    '\([0-9]\)\1'    BRE ✅
+grep -E '([0-9])\1'     ERE ✅ (같은 결과)
+```
+
+---
+
+---
+
+# ⑦ 정규표현식 기초
 
 ```bash
 # ^ : 줄의 시작
@@ -193,7 +258,7 @@ grep -E "^[0-9]{4}-[0-9]{2}" log.txt   # 날짜 형식으로 시작하는 줄
 
 ---
 
-# ⑦ 실무 활용 패턴
+# ⑧ 실무 활용 패턴
 
 ```bash
 # 로그에서 에러만 추출 + 줄번호 표시
@@ -230,7 +295,7 @@ docker exec -it train-kafka \
 
 ---
 
-# ⑧ 자주 하는 실수
+# ⑨ 자주 하는 실수
 
 ## "파일 내용이 지워지는 건 아닌가요?"
 
@@ -263,7 +328,7 @@ grep -E "Error|Fail" log.txt   # ✅ OR 조건으로 동작
 
 ---
 
-# ⑨ 옵션 조합 치트시트
+# ⑩ 옵션 조합 치트시트
 
 ```bash
 grep -i    "error" log          # 대소문자 무시
