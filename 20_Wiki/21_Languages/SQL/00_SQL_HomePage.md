@@ -37,7 +37,7 @@
     - [[SQL_ORDER_BY]] : 데이터 줄 세우기 (`ASC`, `DESC`, `NULL 정렬`, `다중 정렬`)
 
 - **함수와 NULL의 이해**
-    - [[SQL_Numeric_Functions]] : 숫자형 함수 완벽 정리 (`ROUND`, `TRUNC`, `MOD`, `CEIL`, `FLOOR`)
+    - [[SQL_Numeric_Functions]] : 숫자형 함수 완벽 정리 (`ROUND`, `TRUNC`, `MOD`, `CEIL`, `FLOOR`,`LEAST`,`GREATEST`,`LEAST(GREATEST(값, 0), 100)`)
     - [[SQL_String_Functions]] : 문자열 자르고 붙이기 (`LTRIM`, `RTRIM`, `REPLACE`, `SPLIT`, `TRIM`, `SUBSTR`)
     - [[SQL_Date_Functions]] : 날짜 다루기 (`NOW`, `CURRENT_DATE`, `INTERVAL`, `DATE_TRUNC`, `EXTRACT`)
     - [[SQL_Type_Casting]] : 명시적/암시적 형변환(`CAST`, `TO_CHAR`, `TO_DATE`)

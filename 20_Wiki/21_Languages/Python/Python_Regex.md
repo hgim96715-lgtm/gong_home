@@ -14,6 +14,7 @@ related:
   - "[[Python_String_Methods]]"
   - "[[Python_String_Case_Replace]]"
   - "[[00_Python_HomePage]]"
+  - "[[SQL_Regular_Expression]]"
 ---
 ##  개념 한 줄 요약 
 

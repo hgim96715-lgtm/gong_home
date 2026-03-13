@@ -108,6 +108,29 @@ ROW_NUMBER() OVER (ORDER BY 급여 DESC)
 -- 같은 급여여도: 1, 2, 3, 4 (무조건 고유 번호)
 ```
 
+```text
+ROW_NUMBER() 의 또 다른 활용 — 그룹별 최신 행 1건 추출
+
+PARTITION BY 와 ORDER BY 를 조합하면
+"각 그룹에서 가장 최신(또는 최고/최저) 행 1건만" 뽑을 수 있음
+→ PostgreSQL 에서는 DISTINCT ON 이 같은 역할을 더 간결하게 함
+→ MySQL / Oracle / SQL Server 등 다른 DB 에서는 ROW_NUMBER() 가 표준 대체 방법
+```
+
+```sql
+-- 열차별 가장 최신 상태 1건만 (MySQL / Oracle / SQL Server 공통)
+SELECT *
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY trn_no ORDER BY created_at DESC) AS rn
+    FROM train_realtime
+) t
+WHERE rn = 1;
+
+-- PostgreSQL 에서는 DISTINCT ON 으로 더 간결하게
+-- → [[SQL_DISTINCT_vs_GROUP_BY]] 참고
+```
+
 ## RANK() — 공동 순위 허용, 번호 건너뜀 (올림픽 메달 방식)
 
 > 공동 2위가 2명이면 → 1, 2, 2, **4** (3등 없어짐)

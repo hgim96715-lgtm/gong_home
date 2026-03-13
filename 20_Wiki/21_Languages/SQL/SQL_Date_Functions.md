@@ -278,6 +278,103 @@ SELECT YEAR(GETDATE());            -- 단축 함수
 ```
 
 ---
+## ⚠️ VARCHAR 컬럼에는 EXTRACT 바로 못 씀 — ::TIMESTAMP 필수
+
+```
+EXTRACT 는 DATE / TIMESTAMP 타입에만 동작
+VARCHAR 컬럼에 바로 쓰면 에러 or 엉뚱한 값
+→ 반드시 ::TIMESTAMP (또는 ::DATE) 로 캐스팅 먼저
+```
+
+
+```sql
+-- train_schedule 의 trn_plan_dptre_dt 는 VARCHAR
+-- ❌ VARCHAR 에 바로 EXTRACT → 에러
+SELECT EXTRACT(HOUR FROM trn_plan_dptre_dt) FROM train_schedule;
+
+-- ✅ ::TIMESTAMP 로 캐스팅 후 EXTRACT
+SELECT EXTRACT(HOUR FROM trn_plan_dptre_dt::TIMESTAMP) FROM train_schedule;
+
+-- 실전 패턴: 시간대별 운행 횟수
+SELECT
+    EXTRACT(HOUR FROM trn_plan_dptre_dt::TIMESTAMP) AS hour,
+    COUNT(*) AS cnt
+FROM train_schedule
+GROUP BY hour
+ORDER BY hour ASC;
+```
+
+---
+## EXTRACT(EPOCH FROM ...) — 초 단위 변환
+
+```
+EPOCH: 1970-01-01 00:00:00 UTC 기준으로 경과한 초(second)
+       시간 간격(INTERVAL) 에 쓰면 → 그 간격을 초로 환산
+
+용도: 두 시각의 차이를 초 단위로 계산할 때
+      퍼센트 / 비율 계산에 특히 유용
+```
+
+```sql
+-- INTERVAL 을 초로 환산
+SELECT EXTRACT(EPOCH FROM INTERVAL '2 hours 30 minutes');
+-- 9000  (2*3600 + 30*60)
+
+-- 두 시각의 차이를 초로
+SELECT EXTRACT(EPOCH FROM ('18:00'::TIME - '15:30'::TIME));
+-- 9000  (2.5시간 = 9000초)
+
+-- 실전: 열차 진행률 계산
+-- (현재시각 - 출발시각) / (도착시각 - 출발시각) * 100
+SELECT ROUND(
+    EXTRACT(EPOCH FROM (
+        (NOW() AT TIME ZONE 'Asia/Seoul')::TIME - plan_dep::TIME
+    ))
+    / NULLIF(EXTRACT(EPOCH FROM (plan_arr::TIME - plan_dep::TIME)), 0)
+    * 100
+) AS progress_pct
+FROM train_realtime;
+```
+
+## AT TIME ZONE — Docker/서버 UTC 환경에서 KST 변환
+
+```
+Docker 컨테이너 기본 시각 = UTC
+한국 데이터(plan_dep 등) = KST (UTC+9)
+
+NOW()::TIME          = UTC 기준  ex) 05:10
+→ plan_dep '14:00' 과 비교하면 음수 → 진행률 0%
+
+(NOW() AT TIME ZONE 'Asia/Seoul')::TIME = KST 기준  ex) 14:10
+→ 정상 계산 가능
+```
+
+
+```sql
+-- UTC vs KST 확인
+SELECT NOW()::TIME;                                    -- UTC 시각
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::TIME;        -- KST 시각 (9시간 뒤)
+
+-- 날짜도 마찬가지
+SELECT CURRENT_DATE;                                   -- UTC 기준 날짜
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::DATE;        -- KST 기준 날짜
+
+-- 실전: KST 기준 시간대별 집계
+SELECT
+    EXTRACT(HOUR FROM (created_at AT TIME ZONE 'Asia/Seoul')) AS hour,
+    COUNT(*) AS cnt
+FROM train_realtime
+GROUP BY hour
+ORDER BY hour;
+```
+
+```
+⚠️ 자정 전후 주의:
+  UTC 00:00 = KST 09:00
+  UTC 기준으로 '오늘' 집계하면 KST 오전 9시 이전 데이터가 '어제'로 잡힘
+  → 날짜 집계할 때는 항상 AT TIME ZONE 먼저 확인
+```
+---
 
 ---
 
@@ -408,4 +505,23 @@ D-Day 계산할 거라면 둘 다 `::DATE` 로 맞춰서 빼는 게 안전하다
 월 전체를 조회하려면 반드시 **범위 조건(`>=`, `<`)** 이나 **`TO_CHAR` 변환** 을 사용하자.
 
 ---
+## ⑥ VARCHAR 컬럼에 EXTRACT 썼더니 에러가 나요
 
+```
+EXTRACT 는 DATE / TIMESTAMP 타입에만 동작
+VARCHAR 에 바로 쓰면 에러
+
+DB 에 날짜를 문자열로 저장한 경우 (예: '14:00', '20240313')
+→ ::TIME / ::DATE / ::TIMESTAMP 로 캐스팅 먼저
+```
+
+```sql
+-- ❌ VARCHAR 에 바로 EXTRACT
+SELECT EXTRACT(HOUR FROM plan_dep) FROM train_realtime;  -- 에러
+
+-- ✅ ::TIME 으로 캐스팅 후 EXTRACT
+SELECT EXTRACT(HOUR FROM plan_dep::TIME) FROM train_realtime;
+
+-- ✅ VARCHAR 날짜컬럼 → ::TIMESTAMP 후 EXTRACT
+SELECT EXTRACT(HOUR FROM trn_plan_dptre_dt::TIMESTAMP) FROM train_schedule;
+```

@@ -134,8 +134,8 @@ CREATE TABLE IF NOT EXISTS train_schedule (
     dptre_stn_nm        VARCHAR(50),
     arvl_stn_cd         VARCHAR(10),
     arvl_stn_nm         VARCHAR(50),
-    trn_plan_dptre_dt   VARCHAR(20),
-    trn_plan_arvl_dt    VARCHAR(20),
+    trn_plan_dptre_dt    VARCHAR(50),
+    trn_plan_dptre_dt    VARCHAR(50),
     data_type           VARCHAR(20),  -- 'schedule'
     created_at          TIMESTAMP DEFAULT NOW()
 );
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS train_schedule (
 CREATE TABLE IF NOT EXISTS train_realtime (
     id                  SERIAL PRIMARY KEY,
     trn_no              VARCHAR(20),
-    mrnt_nm             VARCHAR(50),  -- 노선명
+    -- mrnt_nm             VARCHAR(50),  -- 노선명 ,추정이 너무 안맞아서 제거 -> train_delay 테이블에만 남김
     dptre_stn_nm        VARCHAR(50),  -- 출발역
     arvl_stn_nm         VARCHAR(50),  -- 도착역
     plan_dep            VARCHAR(10),  -- 계획 출발 (HH:MM)
