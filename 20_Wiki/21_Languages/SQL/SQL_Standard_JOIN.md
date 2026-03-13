@@ -13,6 +13,7 @@ related:
   - "[[SQL_Filtering_WHERE]]"
   - "[[SQL_Self_Join]]"
   - "[[SQL_Window_Functions]]"
+  - "[[SQL_UNION]]"
 ---
 # SQL Standard JOIN
 
@@ -438,6 +439,60 @@ ON e2.hire_date <= '2019-12-31'
 
 ---
 
+## 패턴 D — OR 조인 대신 UNION ALL ⭐️ 성능 주의
+
+> "두 컬럼 중 하나라도 일치하면 조인" → OR 조건 쓰면 성능 급격히 저하
+
+```text
+문제 상황:
+  대여 기록 테이블에 rent_station_id, return_station_id 두 컬럼이 있고
+  두 컬럼 중 하나라도 특정 station 과 매칭되면 조인하고 싶을 때
+
+  직관적으로 OR 로 쓰고 싶어짐
+```
+
+```sql
+-- ❌ OR 조건 JOIN — PostgreSQL 에서 성능 저하 (인덱스 사용 불가)
+SELECT r.*, s.station_name
+FROM rental r
+JOIN station s
+    ON r.rent_station_id   = s.id
+    OR r.return_station_id = s.id;
+```
+
+```text
+왜 느린가:
+  OR 조건은 인덱스를 타지 못하고 Full Scan 으로 처리됨
+  데이터가 많을수록 성능이 기하급수적으로 나빠짐
+  PostgreSQL 은 OR JOIN 을 효율적으로 최적화하지 못함
+```
+
+```sql
+-- ✅ UNION ALL 로 대체 — OR 없이 같은 결과, 성능 정상
+SELECT r.*, s.station_name, 'rent' AS type
+FROM rental r
+JOIN station s ON r.rent_station_id = s.id
+
+UNION ALL
+
+SELECT r.*, s.station_name, 'return' AS type
+FROM rental r
+JOIN station s ON r.return_station_id = s.id;
+```
+
+```text
+UNION ALL 동작 원리:
+  ① 출발지(rent_station_id) 기준으로 조인한 결과
+  ② 도착지(return_station_id) 기준으로 조인한 결과
+  두 결과를 위아래로 쌓음
+
+  각각의 JOIN 은 단일 컬럼 조건 → 인덱스 정상 사용 ✅
+  OR 없이도 두 케이스를 전부 커버
+```
+
+>[[SQL_UNION]] 참고 
+---
+
 ---
 
 # SQLD 빈출 — 최소 JOIN 조건 개수
@@ -471,6 +526,7 @@ A ─── B ─── C ─── D
 |LEFT JOIN 했는데 INNER JOIN 결과가 나옴|INNER 쪽 조건을 WHERE 절에 둠|조인 대상 조건은 ON 절로 이동|
 |"없는 것" 을 찾는데 INNER JOIN 씀|조인 시점에 이미 데이터 제거됨|LEFT JOIN + `WHERE B.id IS NULL`|
 |ON 절에 조건 하나만 써야 한다고 생각|오해|`ON A.id = B.id AND A.date > '2024-01-01'` 처럼 AND로 추가 가능|
+|`ON A.id = B.a OR A.id = B.b` 성능 저하|OR 조건 → 인덱스 사용 불가, Full Scan|UNION ALL 로 분리해서 각각 조인|
 |NULL 처리 안 함|LEFT JOIN 결과의 NULL을 계산에 사용|`COALESCE(col, 0)` 로 처리|
 |최댓값이 여러 개인데 1개만 나올 거라 생각|공동 1등은 전부 출력됨|딱 1개만 원하면 `ROW_NUMBER()` 사용|
 
