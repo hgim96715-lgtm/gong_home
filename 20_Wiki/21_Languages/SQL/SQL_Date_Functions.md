@@ -57,12 +57,12 @@ related:
 
 # ① 현재 시간 구하기
 
-|DB|함수|반환값|
-|---|---|---|
-|PostgreSQL / MySQL|`NOW()` 또는 `CURRENT_TIMESTAMP`|날짜 + 시간|
-|PostgreSQL / MySQL|`CURRENT_DATE`|날짜만|
-|Oracle|`SYSDATE`|날짜 + 시간|
-|MSSQL|`GETDATE()` / `CURRENT_TIMESTAMP`|날짜 + 시간|
+| DB                 | 함수                                | 반환값     |
+| ------------------ | --------------------------------- | ------- |
+| PostgreSQL / MySQL | `NOW()` 또는 `CURRENT_TIMESTAMP`    | 날짜 + 시간 |
+| PostgreSQL / MySQL | `CURRENT_DATE`                    | 날짜만     |
+| Oracle             | `SYSDATE`                         | 날짜 + 시간 |
+| MSSQL              | `GETDATE()` / `CURRENT_TIMESTAMP` | 날짜 + 시간 |
 
 ```sql
 -- 🐘 PostgreSQL / MySQL
@@ -275,6 +275,107 @@ SELECT EXTRACT(DOW FROM NOW());    -- 요일 (0:일 ~ 6:토, PostgreSQL 전용)
 SELECT DATEPART(YEAR, GETDATE());  -- 2026
 SELECT DATEPART(dw, GETDATE());    -- 요일 (1:일 ~ 7:토 ← Postgres 와 숫자 다름!)
 SELECT YEAR(GETDATE());            -- 단축 함수
+```
+
+---
+## DOW vs ISODOW — 요일 추출 비교 ⭐️
+
+```text
+DOW   (Day Of Week)     → 일요일 시작
+  0:일  1:월  2:화  3:수  4:목  5:금  6:토
+
+ISODOW (ISO Day Of Week) → 월요일 시작 (ISO 8601 표준)
+  1:월  2:화  3:수  4:목  5:금  6:토  7:일
+
+실무 선택 기준:
+  한국 업무 데이터 (월~일 정렬) → ISODOW
+  ORDER BY ISODOW 그대로 쓰면 월/화/수/목/금/토/일 순서 자동 완성
+```
+
+---
+## ⚠️ 요일 정렬 함정 — 한국어 레이블 + ORDER BY
+
+```
+CASE WHEN 으로 요일을 한국어로 변환하면
+ORDER BY weekday → 가나다순 정렬 (금,목,수,월,토,화,일)
+                   요일 순서가 아님!
+→ 요일 정렬은 반드시 숫자 컬럼(ISODOW) 으로 해야 함
+```
+
+
+```sql
+-- ❌ 한국어 레이블 컬럼으로 정렬 → 가나다순
+SELECT
+    CASE
+        WHEN EXTRACT(ISODOW FROM measured_at) = 1 THEN '월요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 2 THEN '화요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 3 THEN '수요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 4 THEN '목요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 5 THEN '금요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 6 THEN '토요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 7 THEN '일요일'
+    END AS weekday
+FROM table_name
+ORDER BY weekday;   -- ❌ 금/목/수/월/토/화/일 가나다순!
+
+-- ✅ 숫자 컬럼으로 정렬 → 월/화/수/목/금/토/일
+ORDER BY EXTRACT(ISODOW FROM measured_at);
+```
+
+
+```sql
+-- ✅ 실전 패턴 — 한국어 표시 + 올바른 정렬
+SELECT
+    EXTRACT(ISODOW FROM measured_at)  AS dow_num,   -- 정렬용 숫자 (SELECT 에 포함)
+    CASE
+        WHEN EXTRACT(ISODOW FROM measured_at) = 1 THEN '월요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 2 THEN '화요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 3 THEN '수요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 4 THEN '목요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 5 THEN '금요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 6 THEN '토요일'
+        WHEN EXTRACT(ISODOW FROM measured_at) = 7 THEN '일요일'
+    END AS weekday,
+    COUNT(*) AS cnt
+FROM table_name
+GROUP BY dow_num, weekday
+ORDER BY dow_num;   -- ✅ 월/화/수/목/금/토/일 정렬
+```
+
+## 영어 요일이 괜찮다면 — TO_CHAR 로 간단하게
+
+```
+한국어 레이블이 필요 없으면
+TO_CHAR(날짜, 'Day') 한 줄로 끝
+CASE WHEN 7줄 불필요
+정렬은 ISODOW 숫자로 동일하게 사용
+```
+
+```sql
+-- TO_CHAR 요일 포맷 비교
+SELECT TO_CHAR(measured_at, 'Day');   -- Monday     (전체 이름, 뒤에 공백 패딩 있음)
+SELECT TRIM(TO_CHAR(measured_at, 'Day'));  -- Monday  (공백 제거 → TRIM 습관)
+SELECT TO_CHAR(measured_at, 'Dy');    -- Mon        (3글자 약어)
+
+-- ✅ 영어 요일 + 올바른 정렬
+SELECT
+    TRIM(TO_CHAR(measured_at, 'Day')) AS weekday,
+    COUNT(*) AS cnt
+FROM table_name
+GROUP BY weekday, EXTRACT(ISODOW FROM measured_at)
+ORDER BY EXTRACT(ISODOW FROM measured_at);   -- 숫자로 정렬
+```
+
+```
+TO_CHAR 포맷 주의:
+  'Day' → 최대 길이 맞추려고 뒤에 공백 자동 패딩
+          "Monday   " / "Tuesday  " 처럼 붙음
+  → TRIM() 항상 같이 쓰는 습관 필요
+
+DOW vs ISODOW vs MSSQL 비교:
+  PostgreSQL DOW    0:일 1:월 ... 6:토
+  PostgreSQL ISODOW 1:월 2:화 ... 7:일  ← 실무 추천
+  MSSQL DATEPART(dw)  1:일 2:월 ... 7:토  (PostgreSQL DOW 와 숫자 다름 주의!)
 ```
 
 ---
