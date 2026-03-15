@@ -9,6 +9,7 @@ tags:
   - Python
 related:
   - "[[Python_Lists_Tuples]]"
+  - "[[00_Python_HomePage]]"
 ---
 # Python Sets — 중복을 허용하지 않는 주머니
 
@@ -157,6 +158,49 @@ A.difference(B)          # A - B  차집합
 A.symmetric_difference(B) # A ^ B 대칭차
 ```
 
+## ⭐️ 리스트 · 문자열에도 집합 연산 가능 — set() 변환
+
+```
+집합 연산자는 set 타입에만 동작
+리스트, 문자열은 바로 & 쓰면 에러
+
+→ set() 으로 감싸면 어떤 iterable 이든 집합 연산 가능
+```
+
+```python
+# 리스트끼리 공통 원소 찾기
+s1 = [1, 2, 3, 4]
+s2 = [3, 4, 5, 6]
+
+set(s1) & set(s2)          # {3, 4}
+len(set(s1) & set(s2))     # 2  ← 공통 원소 개수
+
+# 코딩테스트 패턴 — 한 줄로
+def solution(s1, s2):
+    return len(set(s1) & set(s2))
+
+# 문자열도 동일 (문자 단위로 분해됨)
+set("hello") & set("world")   # {'l', 'o'}
+set("apple") | set("grape")   # {'a', 'p', 'l', 'e', 'g', 'r'}
+
+# 두 리스트의 차집합 (s1 에만 있는 것)
+set(s1) - set(s2)              # {1, 2}
+
+# 두 리스트 합치되 중복 제거
+list(set(s1) | set(s2))        # [1, 2, 3, 4, 5, 6] (순서 보장 안 됨)
+sorted(set(s1) | set(s2))      # [1, 2, 3, 4, 5, 6] (정렬까지)
+```
+
+```
+set() 변환 흐름:
+  리스트 → set() → 집합 연산 → 결과(set) → 필요하면 list() 로 다시 변환
+
+  list → set(list) → & | - ^ → set → list(결과) or len(결과)
+
+⚠️ set 은 순서가 없음
+   결과를 리스트로 다시 쓸 때 순서가 필요하면 sorted() 사용
+```
+
 ## 데이터 엔지니어링 활용 예시
 
 ```python
@@ -171,6 +215,13 @@ A.symmetric_difference(B) # A ^ B 대칭차
 
 # 이틀 모두 운행한 열차
 공통 = 어제_운행_열차 & 오늘_운행_열차   # {"KTX002", "ITX003"}
+
+# DB 컬럼 비교 — 두 테이블에 공통으로 있는 컬럼 찾기
+table_a_cols = ["id", "name", "age", "city"]
+table_b_cols = ["id", "name", "score"]
+
+set(table_a_cols) & set(table_b_cols)   # {'id', 'name'}
+set(table_a_cols) - set(table_b_cols)   # {'age', 'city'}  A 에만 있는 컬럼
 ```
 
 ---
