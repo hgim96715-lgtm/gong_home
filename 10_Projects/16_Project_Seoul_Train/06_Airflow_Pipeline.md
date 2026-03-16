@@ -619,18 +619,19 @@ Producer 가 하는 것:
 ---
 # 트러블슈팅
 
-| 증상                                             | 원인                                                                      | 해결                                                         |
-| ---------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ModuleNotFoundError: producer`                | sys.path 에 producer 경로 없음                                               | `sys.path.insert(0, '/opt/airflow/producer')` 추가           |
-| airflow DB 연결 실패                               | airflow DB 미생성                                                          | init.sql 에 `CREATE DATABASE airflow` 추가 후 psql 수동 실행       |
-| DAG 가 목록에 안 보임                                 | DAG 파일 파싱 에러                                                            | Web UI → DAGs → Import Errors 확인                           |
-| Trigger 눌러도 실행 안 됨                             | 스케줄러가 백그라운드에서 죽어있음                                                      | `docker exec -it train-airflow airflow scheduler` 포그라운드 실행 |
-| **처음 실행 후 재시작 시 DAG 안 뜸**                      | **`airflow users create` 가 이미 존재해서 실패 → `&&` 체인 끊김 → scheduler 실행 안 됨** | **`users create` 뒤에 `\| true` 추가**                         |
-| Task 실패 후 재시도 안 됨                              | `retries: 0`                                                            | `default_args` 에 `retries: 1` 이상 설정                        |
-| `catchup=True` 로 과거 실행 쌓임                      | 기본값이 True                                                               | `catchup=False` 명시                                         |
-| `producer_state.json` 으로 스킵됨                   | 이미 발행 기록 있음                                                             | 파일 삭제 후 재실행                                                |
-| `ModuleNotFoundError: No module named 'kafka'` | Airflow 컨테이너에 kafka-python 미설치                                          | docker-compose.yml command 에 pip install 추가 (아래 참고)        |
-| `producer_state.json` 날짜가 안 바뀜                 | 상대경로라 컨테이너마다 다른 위치에 저장됨                                                 | `state_file` 을 `os.path.abspath(__file__)` 기준 절대경로로 변경     |
+|증상|원인|해결|
+|---|---|---|
+|`ModuleNotFoundError: producer`|sys.path 에 producer 경로 없음|`sys.path.insert(0, '/opt/airflow/producer')` 추가|
+|airflow DB 연결 실패|airflow DB 미생성|init.sql 에 `CREATE DATABASE airflow` 추가 후 psql 수동 실행|
+|DAG 가 목록에 안 보임|DAG 파일 파싱 에러|Web UI → DAGs → Import Errors 확인|
+|Trigger 눌러도 실행 안 됨|스케줄러가 백그라운드에서 죽어있음|`docker exec -it train-airflow airflow scheduler` 포그라운드 실행|
+|**처음 실행 후 재시작 시 DAG 안 뜸**|**`airflow users create` 가 이미 존재해서 실패 → `&&` 체인 끊김 → scheduler 실행 안 됨**|**`users create` 뒤에 `\| true` 추가**|
+|Task 실패 후 재시도 안 됨|`retries: 0`|`default_args` 에 `retries: 1` 이상 설정|
+|`catchup=True` 로 과거 실행 쌓임|기본값이 True|`catchup=False` 명시|
+|`producer_state.json` 으로 스킵됨|이미 발행 기록 있음|파일 삭제 후 재실행|
+|**지연분석 성공인데 0건 발행됨**|**공공데이터 API 에 전날 데이터가 새벽 2시에 아직 없음**|**스케줄을 오전 6~9시로 늦추기 + `delay_count==0` 이면 WARNING 로그**|
+|`ModuleNotFoundError: No module named 'kafka'`|Airflow 컨테이너에 kafka-python 미설치|docker-compose.yml command 에 pip install 추가 (아래 참고)|
+|`producer_state.json` 날짜가 안 바뀜|상대경로라 컨테이너마다 다른 위치에 저장됨|`state_file` 을 `os.path.abspath(__file__)` 기준 절대경로로 변경|
 
 ## ModuleNotFoundError: No module named 'kafka' 해결
 
@@ -698,6 +699,45 @@ Try 3 out of 3
   Log          → Airflow Web UI 로그 바로 이동
   Mark success → 실패한 태스크를 성공으로 강제 처리
                  (임시방편 — 근본 원인은 kafka-python 설치)
+```
+
+
+##  ⚠️ 지연분석 0건 — 공공데이터 API 등록 지연
+
+```
+증상:
+  DAG 성공 표시 / 로그에 "정상" / 하지만 [지연분석] 0건 발행완료
+
+원인:
+  열차 실제 운행정보(실제 출발·도착 시각) 는
+  코레일이 데이터 검증 후 API 에 등록
+  → 자정 이후 바로 올라오지 않음
+  → 오전 중에 올라오는 경우가 많음
+
+  새벽 02:00 에 전날 데이터 조회
+  → API 서버에 아직 없음 → 응답은 정상이지만 빈 데이터 → 0건
+
+  Airflow 가 성공으로 표시하는 이유:
+  코드가 예외(Exception) 없이 정상 종료됨
+  0건이어도 에러를 던지지 않음 → Airflow 는 성공으로 판단
+```
+
+```
+해결:
+  스케줄을 오전 6~9시로 늦추기
+  → API 에 데이터가 올라올 시간 충분히 확보
+
+  테스트 방법:
+  수동 Trigger 로 지금 당장 실행해서
+  어제 날짜 데이터가 오는지 확인
+  → 데이터 오면 그 시간대로 스케줄 변경
+```
+
+
+```python
+# train_delay_dag.py 스케줄 변경
+schedule = '0 2 * * *'    # ❌ 새벽 2시 → 데이터 없을 수 있음
+schedule = '0 6 * * *'    #  오전 6시 변경 
 ```
 
 
