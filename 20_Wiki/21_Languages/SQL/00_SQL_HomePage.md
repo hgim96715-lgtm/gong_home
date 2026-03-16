@@ -99,7 +99,7 @@
 ---
 ## PostgreSQL  Docker _ Setup
 
-- [[PostgreSQL_Setup]] : PostgreSQL + Docker 환경 세팅 & DataGrip 연결
+- [[PostgreSQL_Setup]] : PostgreSQL + Docker 환경 세팅 & DataGrip 연결&권한&소유권 
 
 
 
