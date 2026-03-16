@@ -540,7 +540,7 @@ SoonTrains AS(
         END AS "진행률"
         
     FROM LatestTrainStatus
-    WHERE status LIKE '곧%' or status LIKE '%탑승 마감%'
+    WHERE (status LIKE '곧%' or status LIKE '%탑승 마감%' ) AND plan_dep>TO_CHAR(NOW() AT TIME ZONE 'Asia/Seoul', 'HH24:MI')
 )
 
 SELECT * FROM SoonTrains

@@ -70,19 +70,20 @@ Producer 의 while 루프 안에서 시간 체크로 처리하던
       - "8082:8080"   # Airflow Web UI (8080=Spark, 8088=Superset 충돌 방지)
     networks:
       - train-network
-    command: >
-      bash -c "
-        airflow db migrate &&
-        airflow users create \
-          --username admin \
-          --password admin \
-          --firstname Admin \
-          --lastname User \
-          --role Admin \
-          --email admin@example.com &&
-        airflow scheduler &
-        airflow webserver
-      "
+	command: >
+	  bash -c "
+	    pip3 install kafka-python requests &&
+	    airflow db migrate &&
+	    airflow users create \
+	      --username admin \
+	      --password admin \
+	      --firstname Admin \
+	      --lastname User \
+	      --role Admin \
+	      --email admin@example.com || true &&
+	    airflow scheduler &
+	    airflow webserver
+	  "
 ```
 
 ```
@@ -246,18 +247,28 @@ def train_delay_pipeline():
         sys.path.insert(0, '/opt/airflow/producer')
         from producer import TrainProducer
 
-        target_date = logical_date.in_timezone('Asia/Seoul').strftime('%Y%m%d')
-        print(f"[지연 정보 DAG] 수집 시작 🚆 - {target_date} 기준")
+        kst_date = logical_date.in_timezone('Asia/Seoul')
+
+        # ⚠️ Actions (수동 Trigger) 실행 시 오늘 날짜로 들어오는 문제 방어
+        # 스케줄 자동 실행(새벽 2시) 시에는 logical_date = 어제 → 주석 유지
+        # 수동 실행인데 어제 날짜로 분석하고 싶을 때만 주석 해제
+        # now_kst = pendulum.now('Asia/Seoul')
+        # if kst_date.date() == now_kst.date():
+        #     kst_date = kst_date.subtract(days=1)
+
+        target_date = kst_date.strftime('%Y%m%d')
+        print(f"[지연 정보 DAG] 수집 시작 🚆 - {target_date} 기준 열차 지연 정보")
 
         tp = TrainProducer()
         tp.run_delay_analysis(target_date)
         tp.producer.flush()
         tp.producer.close()
-        print(f"[지연 정보 DAG] 수집 완료 ✅ - {target_date} 기준")
+        print(f"[지연 정보 DAG] 수집 완료 ✅ - {target_date} 기준 열차 지연 정보")
 
     run_delay_analysis_task()
 
 train_delay_pipeline()
+
 ```
 
 ```
@@ -265,6 +276,19 @@ target_date 에 logical_date 를 쓰는 이유:
   @daily 스케줄에서 logical_date = 어제
   지연분석은 "어제" 데이터가 필요 → logical_date 그대로 사용
   subtract(days=1) 하면 그저께가 되므로 주의
+
+⚠️ Actions (수동 Trigger) 버튼 누르면 오늘 날짜가 들어옴:
+  Web UI → DAG → ▶ Actions → Trigger DAG
+  → logical_date = 지금 이 순간 (오늘)
+  → target_date = 오늘 날짜로 분석됨
+
+  자동 실행 (새벽 02:00):
+    logical_date = 어제 → 정상 ✅
+
+  수동으로 어제 날짜로 테스트하고 싶을 때:
+  방법 1: Trigger DAG w/ config 에서 날짜 직접 지정
+          {"logical_date": "2026-03-15T00:00:00+09:00"}
+  방법 2: 위 주석 코드 해제 (오늘이면 하루 빼기)
 ```
 
 > [[Airflow_Execution_Date]] 참고
@@ -346,8 +370,26 @@ ID: admin / PW: admin
 Web UI 에서 Trigger 버튼을 눌렀는데 실행이 안 되는 경우:
   → 컨테이너 안의 스케줄러가 제대로 안 떠 있는 것
 
-해결: 도커 안으로 직접 들어가 스케줄러를 포그라운드로 실행
+자주 발생하는 원인:
+  docker compose up 을 처음 실행했을 때는 됐는데
+  두 번째 재시작부터 갑자기 안 됨
+
+  원인: command 의 && 체인 문제
+    airflow users create ... &&   ← 이미 admin 계정 있으면 실패
+    airflow scheduler &           ← && 에 막혀서 실행 안 됨!
+
+  해결: users create 뒤에 || true 추가
+    airflow users create ... || true &&
+    airflow scheduler &           ← 이제 무조건 실행됨
 ```
+
+```bash
+# || true 추가 후 docker compose 재시작
+docker compose down
+docker compose up -d
+```
+
+### 그 다음에도 안될때 시도 
 
 ```bash
 docker exec -it train-airflow airflow scheduler
@@ -577,17 +619,18 @@ Producer 가 하는 것:
 ---
 # 트러블슈팅
 
-|증상|원인|해결|
-|---|---|---|
-|`ModuleNotFoundError: producer`|sys.path 에 producer 경로 없음|`sys.path.insert(0, '/opt/airflow/producer')` 추가|
-|airflow DB 연결 실패|airflow DB 미생성|init.sql 에 `CREATE DATABASE airflow` 추가 후 psql 수동 실행|
-|DAG 가 목록에 안 보임|DAG 파일 파싱 에러|Web UI → DAGs → Import Errors 확인|
-|Trigger 눌러도 실행 안 됨|스케줄러가 백그라운드에서 죽어있음|`docker exec -it train-airflow airflow scheduler` 포그라운드 실행|
-|Task 실패 후 재시도 안 됨|`retries: 0`|`default_args` 에 `retries: 1` 이상 설정|
-|`catchup=True` 로 과거 실행 쌓임|기본값이 True|`catchup=False` 명시|
-|`producer_state.json` 으로 스킵됨|이미 발행 기록 있음|파일 삭제 후 재실행|
-|`ModuleNotFoundError: No module named 'kafka'`|Airflow 컨테이너에 kafka-python 미설치|docker-compose.yml command 에 pip install 추가 (아래 참고)|
-|`producer_state.json` 날짜가 안 바뀜|상대경로라 컨테이너마다 다른 위치에 저장됨|`state_file` 을 `os.path.abspath(__file__)` 기준 절대경로로 변경|
+| 증상                                             | 원인                                                                      | 해결                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `ModuleNotFoundError: producer`                | sys.path 에 producer 경로 없음                                               | `sys.path.insert(0, '/opt/airflow/producer')` 추가           |
+| airflow DB 연결 실패                               | airflow DB 미생성                                                          | init.sql 에 `CREATE DATABASE airflow` 추가 후 psql 수동 실행       |
+| DAG 가 목록에 안 보임                                 | DAG 파일 파싱 에러                                                            | Web UI → DAGs → Import Errors 확인                           |
+| Trigger 눌러도 실행 안 됨                             | 스케줄러가 백그라운드에서 죽어있음                                                      | `docker exec -it train-airflow airflow scheduler` 포그라운드 실행 |
+| **처음 실행 후 재시작 시 DAG 안 뜸**                      | **`airflow users create` 가 이미 존재해서 실패 → `&&` 체인 끊김 → scheduler 실행 안 됨** | **`users create` 뒤에 `\| true` 추가**                         |
+| Task 실패 후 재시도 안 됨                              | `retries: 0`                                                            | `default_args` 에 `retries: 1` 이상 설정                        |
+| `catchup=True` 로 과거 실행 쌓임                      | 기본값이 True                                                               | `catchup=False` 명시                                         |
+| `producer_state.json` 으로 스킵됨                   | 이미 발행 기록 있음                                                             | 파일 삭제 후 재실행                                                |
+| `ModuleNotFoundError: No module named 'kafka'` | Airflow 컨테이너에 kafka-python 미설치                                          | docker-compose.yml command 에 pip install 추가 (아래 참고)        |
+| `producer_state.json` 날짜가 안 바뀜                 | 상대경로라 컨테이너마다 다른 위치에 저장됨                                                 | `state_file` 을 `os.path.abspath(__file__)` 기준 절대경로로 변경     |
 
 ## ModuleNotFoundError: No module named 'kafka' 해결
 
@@ -602,7 +645,7 @@ Producer 가 하는 것:
 # docker-compose.yml airflow command 수정
 command: >
   bash -c "
-    pip install kafka-python requests &&
+    pip3 install kafka-python requests &&
     airflow db migrate &&
     airflow users create \
       --username admin \
@@ -629,8 +672,6 @@ pip install kafka-python requests
   → producer/requirements.txt 에 이미 kafka-python, requests 있으면 재사용 가능
 ```
 
-bash
-
 ```bash
 # requirements.txt 활용 시
 command: >
@@ -648,6 +689,16 @@ command: >
   → SMTP 설정은 제대로 된 것
 ```
 
+
+```text
+Try 3 out of 3
+  → retries=2 설정대로 3번 시도 후 최종 실패한 것
+
+이메일에 있는 링크 두 가지:
+  Log          → Airflow Web UI 로그 바로 이동
+  Mark success → 실패한 태스크를 성공으로 강제 처리
+                 (임시방편 — 근본 원인은 kafka-python 설치)
+```
 
 
 

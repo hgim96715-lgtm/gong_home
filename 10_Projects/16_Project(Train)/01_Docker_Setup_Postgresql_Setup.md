@@ -342,6 +342,7 @@ services:
       - train-network
     command: >
       bash -c "
+        pip3 install kafka-python requests &&
         airflow db migrate &&
         airflow users create \
           --username admin \
@@ -349,7 +350,7 @@ services:
           --firstname Admin \
           --lastname User \
           --role Admin \
-          --email admin@example.com &&
+          --email admin@example.com || true &&
         airflow scheduler &
         airflow webserver
       "

@@ -150,10 +150,9 @@ travelerTrainRunInfo2  (실시간 운행정보)
     - Kafka → Spark → 데이터 정제 → PostgreSQL 저장
 - [x]  **STEP 5.** Superset 대시보드 [[05_Superset_Dashboard]]
     - PostgreSQL 연동 → 실시간 전광판 UI
-- [ ]  **STEP 6.** Airflow 연동 [[06_Airflow_Pipeline]]
+- [x]  **STEP 6.** Airflow 연동 [[06_Airflow_Pipeline]]
     - 파이프라인 스케줄링 + 모니터링
-- [ ]  **STEP 7.** 전체 통합 테스트 + README 정리
-
+- [ ]  **STEP 7.** 전체 통합 테스트 + README 정리 [[07_Integration_Test]]
 ---
 ## 프로젝트 폴더 구조
 

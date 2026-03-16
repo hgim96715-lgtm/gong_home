@@ -489,6 +489,82 @@ ORDER BY hour;
 |MSSQL (최신)|`FORMAT(날짜, '포맷')`|`FORMAT(GETDATE(), 'yyyy-MM-dd')`|
 |MSSQL (고전)|`CONVERT(타입, 날짜, 코드)`|`CONVERT(VARCHAR, GETDATE(), 23)`|
 
+## TO_CHAR 포맷 코드 전체 ⭐️
+
+### 날짜 포맷
+
+|포맷|의미|예시 출력|
+|---|---|---|
+|`YYYY`|4자리 연도|`2026`|
+|`YY`|2자리 연도|`26`|
+|`MM`|2자리 월 (01~12)|`03`|
+|`DD`|2자리 일 (01~31)|`16`|
+|`D`|요일 숫자 (1:일~7:토)|`2`|
+|`Day`|요일 영문 전체 이름|`Monday` (공백 패딩)|
+|`Dy`|요일 3글자 약어|`Mon`|
+
+### 시간 포맷 ⭐️ — HH vs HH24, MM vs MI
+
+|포맷|의미|예시 출력|
+|---|---|---|
+|`HH24`|24시간 형식 시 (00~23)|`13`|
+|`HH`|12시간 형식 시 (01~12)|`01`|
+|`MI`|분 (00~59) ← **M 아님!**|`29`|
+|`SS`|초 (00~59)|`45`|
+|`MS`|밀리초|`123`|
+
+```
+⚠️ 가장 많이 하는 실수:
+  MM → 월(Month)  ex) 03월
+  MI → 분(Minute) ex) 29분
+
+  HH:mm  ← mm 은 월! 분이 아님
+  HH24:MI ← 올바른 시분 표현
+```
+
+### 자주 쓰는 조합
+
+
+```sql
+TO_CHAR(NOW(), 'YYYY-MM-DD')           -- 2026-03-16
+TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS') -- 2026-03-16 13:29:45
+TO_CHAR(NOW(), 'HH24:MI')             -- 13:29
+TO_CHAR(NOW(), 'YYYYMMDD')            -- 20260316  (파일명·로그용)
+TO_CHAR(NOW(), 'YYYY년 MM월 DD일')    -- 2026년 03월 16일
+TO_CHAR(NOW(), 'YYYY-MM')             -- 2026-03   (월별 집계용)
+```
+
+## ⚠️ CURRENT_DATE 에 시간 포맷 쓰면 00:00 됨
+
+```
+CURRENT_DATE = 날짜만 (시간 정보 없음)
+→ 시간 포맷(HH24, MI) 을 써도 항상 00:00 반환
+
+시간 포맷이 필요하면 반드시 NOW() 사용
+```
+
+```sql
+-- ❌ CURRENT_DATE 에 시간 포맷 → 항상 00:00
+SELECT TO_CHAR(CURRENT_DATE, 'HH24:MI');   -- 00:00  ← 시간 정보 없음!
+SELECT TO_CHAR(CURRENT_DATE, 'HH:mm');     -- 00:03  ← mm=월이라 03월이 나옴 ← 이중 오류
+
+-- ✅ NOW() 로 현재 시각 포맷
+SELECT TO_CHAR(NOW(), 'HH24:MI');          -- 13:29  ← 정상
+
+-- ✅ KST 기준 현재 시각 (Docker/서버 환경)
+SELECT TO_CHAR(NOW() AT TIME ZONE 'Asia/Seoul', 'HH24:MI');  -- 13:29 KST
+
+-- 실전: 현재 시각 문자열로 비교
+WHERE plan_dep >= TO_CHAR(NOW() AT TIME ZONE 'Asia/Seoul', 'HH24:MI')
+```
+
+```
+함수 선택 기준:
+  현재 날짜만 필요         → CURRENT_DATE
+  현재 날짜+시간 필요      → NOW()
+  KST 기준 시각 비교 필요  → NOW() AT TIME ZONE 'Asia/Seoul'
+```
+
 ```sql
 -- 🐘 PostgreSQL / 🔴 Oracle
 SELECT TO_CHAR(NOW(), 'YYYY-MM-DD');    -- '2026-01-27'
