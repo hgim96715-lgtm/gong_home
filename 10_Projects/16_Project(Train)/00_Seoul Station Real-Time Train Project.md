@@ -13,6 +13,7 @@
 
 >구성을 머리속으로 생각하고 시작하였음에도 불구하고 이렇게 구성을 하는게 맞나? 이게 더 편한가 다른게 더 편한가 머리속이 복잡해진다.
 >그래서 빨리 구성 할줄 알았던 Superset에서 쿼리를 만들고 보고 하는 시간이 많이 든다.
+>근데 sql로 이렇게 해볼까? 저렇게 해볼까? 그게 너무잼있다. 그렇게 결과가 나오면 너무 뿌듯하다. 안나오면...하하
 
 ---
 ## API 제약 사항 (실제 확인)
@@ -145,11 +146,11 @@ travelerTrainRunInfo2  (실시간 운행정보)
     - 당일 운행 현황 (계획 기반 추정) → `train-schedule` 토픽
     - 당일 운행 현황 추정 → `train-realtime` 토픽
     - 전날 지연 분석 → `train-delay` 토픽
-- [ ]  **STEP 4.** Spark Streaming Consumer [[04_Spark_Streaming]]
+- [x]  **STEP 4.** Spark Streaming Consumer [[04_Spark_Streaming]]
     - Kafka → Spark → 데이터 정제 → PostgreSQL 저장
-- [ ]  **STEP 5.** Superset 대시보드
+- [x]  **STEP 5.** Superset 대시보드 [[05_Superset_Dashboard]]
     - PostgreSQL 연동 → 실시간 전광판 UI
-- [ ]  **STEP 6.** Airflow 연동
+- [ ]  **STEP 6.** Airflow 연동 [[06_Airflow_Pipeline]]
     - 파이프라인 스케줄링 + 모니터링
 - [ ]  **STEP 7.** 전체 통합 테스트 + README 정리
 

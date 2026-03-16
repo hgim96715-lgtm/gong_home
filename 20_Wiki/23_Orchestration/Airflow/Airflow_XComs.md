@@ -7,11 +7,12 @@ aliases:
 tags:
   - Airflow
   - Python
-  - Metadata
 related:
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
   - "[[Python_Decorators]]"
   - "[[Python_JSON]]"
+  - "[[Airflow_TaskFlow_API]]"
+  - "[[00_Airflow_HomePage]]"
 ---
 ## 개념 한 줄 요약
 

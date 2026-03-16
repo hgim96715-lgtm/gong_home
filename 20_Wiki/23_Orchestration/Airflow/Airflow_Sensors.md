@@ -7,7 +7,7 @@ aliases:
 tags:
   - Airflow
 related:
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
   - "[[Task_Dependencies]]"
   - "[[Branching]]"
   - "[[Pandas_Json_Normalize]]"

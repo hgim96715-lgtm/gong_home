@@ -10,7 +10,7 @@ tags:
   - 확장성
   - Provider
 related:
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
   - "[[Docker_Host_Access]]"
 ---
 ## 개념 한 줄 요약

@@ -224,7 +224,7 @@ services:
     ports:
       - "9092:9092"
     env_file:
-      - .env                                   # .env 파일을 컨테이너 OS 환경변수로 주입
+      - .env
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -273,13 +273,13 @@ services:
     container_name: train-spark-master
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     env_file:
-      - .env                                   # KAFKA_BOOTSTRAP_SERVERS, POSTGRES_* 주입
+      - .env
     ports:
       - "8080:8080"   # Spark Web UI
       - "7077:7077"   # Spark Master 포트
-      - "4040:4040" # Spark Jobs UI (실행 중인 작업 상세 화면) — master 에만 추가
+      - "4040:4040"   # Spark Jobs UI
     volumes:
-      - ./spark:/opt/spark/apps                # consumer.py 마운트
+      - ./spark:/opt/spark/apps
     networks:
       - train-network
 
@@ -294,19 +294,93 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
     volumes:
-      - ./spark:/opt/spark/apps                # consumer.py 마운트
+      - ./spark:/opt/spark/apps
     depends_on:
       - spark-master
     networks:
       - train-network
 
+  # ── Superset ───────────────────────────────────────────────
+  superset:
+    image: apache/superset:3.1.0
+    container_name: train-superset
+    ports:
+      - "8088:8088"   # Superset Web UI
+    env_file:
+      - .env
+    environment:
+      - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY}
+    volumes:
+      - superset_data:/app/superset_home
+    networks:
+      - train-network
+    depends_on:
+      - postgres
+
+  # ── Airflow ────────────────────────────────────────────────
+  airflow:
+    image: apache/airflow:2.9.1
+    container_name: train-airflow
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./producer:/opt/airflow/producer   # producer 코드 공유
+    ports:
+      - "8082:8080"   # Airflow Web UI (8080=Spark, 8088=Superset 충돌 방지)
+    networks:
+      - train-network
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com &&
+        airflow scheduler &
+        airflow webserver
+      "
+
 volumes:
   kafka_data:
   postgres_data:
+  superset_data:
+  airflow_data:
 
 networks:
   train-network:
     driver: bridge
+```
+
+```text
+포트 정리:
+  8080  Spark Web UI
+  8082  Airflow Web UI
+  8088  Superset Web UI
+  7077  Spark Master
+  5433  PostgreSQL (맥북 ↔ 컨테이너 / 컨테이너끼리는 5432)
+  9092  Kafka
+
+env_file 역할:
+  .env 파일을 컨테이너 OS 환경변수로 주입
+  → os.getenv("KAFKA_BOOTSTRAP_SERVERS") 로 바로 사용
+
+KAFKA_ADVERTISED_LISTENERS = kafka:9092 이어야 하는 이유:
+  localhost 로 설정 시 다른 컨테이너에서 localhost = 자기 자신 → 연결 실패
+  → 반드시 Docker 서비스명(kafka) 으로 설정
 ```
 
 ```text
@@ -411,6 +485,44 @@ $ docker compose down
 
 # 컨테이너 + 볼륨 전체 삭제 (초기화) 
 $ docker compose down -v
+```
+
+---
+## 트러블슈팅
+
+### Spark → Kafka 연결 실패 (localhost:9092)
+
+```
+증상:
+  WARN NetworkClient: Connection to node 1 (localhost/127.0.0.1:9092)
+                      could not be established. Broker may not be available.
+
+원인:
+  KAFKA_ADVERTISED_LISTENERS 가 localhost 로 설정되어 있음
+  Kafka 가 클라이언트에게 "나한테 localhost:9092 로 접속해" 라고 알려줌
+  → Spark 컨테이너에서 localhost = 자기 자신 → Kafka 못 찾음
+
+  ADVERTISED_LISTENERS 란:
+    Kafka 가 Producer/Consumer 에게 광고하는 "실제 접속 주소"
+    클라이언트가 최초 연결 후 이 주소를 받아서 이후 통신에 사용
+    → Docker 내부에서는 반드시 서비스명으로 설정해야 함
+```
+
+```yaml
+# ❌ 잘못된 설정
+KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+# Spark(다른 컨테이너)에서 localhost = 자기 자신 → Kafka 못 찾음
+
+# ✅ 올바른 설정
+KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+# Docker 네트워크 안에서 서비스명 kafka 로 접근 가능
+```
+
+```bash
+# 수정 후 재시작
+docker compose down
+docker compose up -d
+docker cp spark_drivers/. train-spark-master:/opt/spark/jars/
 ```
 
 ---

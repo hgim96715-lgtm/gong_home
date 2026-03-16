@@ -24,7 +24,7 @@
 - [[Airflow_Architecture]] : 웹서버, 스케줄러, 워커, 메타DB의 4박자 관계 (`Webserver`, `Scheduler`, `Worker`, `MetaDB`, `Executor`)
 - [[DAG_Concept]] : DAG가 도대체 뭔가요? (`방향성 비순환 그래프`, `Task`, `의존성`, `실행 순서`, `Directed Acyclic Graph`)
 - [[Airflow_Providers]] : 외부 서비스와 연동하기 위한 확장팩 (`apache-airflow-providers`, `AWS`, `GCP`, `Slack`, `DB 연결`)
-- [[Execution_Date_Confusion]] : 가장 헷갈리는 '실행 기준일' 개념 잡기 (`execution_date`, `logical_date`, `data_interval_start`, `오늘 돌지만 어제 날짜`)
+- [[Airflow_Execution_Date]] : 가장 헷갈리는 '실행 기준일' 개념 잡기 (`execution_date`, `logical_date`, `data_interval_start`, `오늘 돌지만 어제 날짜`)
 
 ---
 
@@ -33,7 +33,7 @@
 > "레고 블록 조립하듯 워크플로우 짜기"
 
 - [[Airflow_DAG_Skeleton]] : `with DAG(...)` 기본 골격 템플릿 (`dag_id`, `start_date`, `schedule_interval`, `catchup`, `default_args`)
-- [[Airflow_DAG_Operators]] : PythonOperator 완벽 정리 (`PythonOperator`, `python_callable`, `op_kwargs`, `Classic Way`)
+- [[Airflow_Operators]] : PythonOperator 완벽 정리 (`PythonOperator`, `python_callable`, `op_kwargs`, `Classic Way`)
 - [[DockerOperator_Usage]] : 컨테이너로 태스크 격리해서 실행하기 (`DockerOperator`, `image`, `command`, `volumes`, `환경 격리`)
 - [[Airflow_TaskFlow_API]] : `@task` 데코레이터로 파이썬 함수처럼 짜기 (`@task`, `@dag`, `TaskFlow API`, `Modern Way`, `XCom 자동화`)
 - [[Task_Dependencies]] : 순서 정하기 (`>>`, `<<`, `[]` 리스트`, `fan-out`, `fan-in`, `병렬 실행`)

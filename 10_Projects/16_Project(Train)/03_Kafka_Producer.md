@@ -240,7 +240,7 @@ def estimate_status(plan_dep: str, plan_arr: str) -> dict:
     elapsed_mins = (now - dep_dt).total_seconds() / 60
     progress     = max(0, min(100, round((elapsed_mins / total_mins) * 100))) if total_mins > 0 else 0
     # int() → round() 로 변경: 소수점 반올림으로 정확도 향상 (예: 78.6% → 79%, int 는 78%)
-    
+
     def format_time_diff(mins: int) -> str:
         """분 → "X시간 Y분" 포맷"""
         if mins >= 60:
@@ -334,7 +334,11 @@ class TrainProducer:
         self.delay_done_today = False
 
         # Producer 재실행 시 데이터 뻥튀기(중복 발행) 방지
-        self.state_file = "producer_state.json"
+        # 절대경로 사용 — 어느 컨테이너에서 실행해도 항상 producer.py 와 같은 폴더에 저장
+        self.state_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),  # producer.py 가 있는 폴더
+            "producer_state.json"
+        )
         self.state      = self._load_state()
 
     def _load_state(self) -> dict:
@@ -487,13 +491,6 @@ class TrainProducer:
 
         self.state["last_delay_analysis_date"] = yesterday
         self._save_state()
-                f"도착 계획:{plan_arr} 실제:{actual_arr} [{delay_label(arr_delay)}]"
-            )
-            count += 1
-
-        self.producer.flush()
-        print(f"[지연분석] {count}건 완료 ✅")
-        self.delay_done_today = True
 
     def run(self):
         print(f"🚄 Train Producer 시작 (간격: {POLL_INTERVAL}초)\n")
@@ -864,8 +861,12 @@ actual_arr_item = next((i for i in reversed(actual_items) if i.get("trn_arvl_dt"
 
 ```python
 # __init__ 에 추가
-self.state_file = "producer_state.json"
-self.state      = self._load_state()
+# 상대경로 → 절대경로 (어디서 실행해도 파일 위치 고정)
+self.state_file = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "producer_state.json"
+)
+self.state = self._load_state()
 
 def _load_state(self) -> dict:
     if os.path.exists(self.state_file):

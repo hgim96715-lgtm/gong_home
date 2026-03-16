@@ -650,6 +650,15 @@ docker exec -it train-spark-master \
   /opt/spark/apps/consumer.py
 ```
 
+```sql
+⚠️ Airflow (STEP 6) 추가 후에는 위 순서에 아래 단계도 포함
+   → [[06_Airflow_Pipeline]] ⑥ Web UI 참고
+   5. Airflow Web UI 접속 (localhost:8082)
+   6. train_schedule_dag / train_delay_dag 토글 ON
+```
+
+>[[06_Airflow_Pipeline#⑥ Airflow Web UI 접속]]
+
 ## ⚠️ docker compose down 후 체크리스트
 
 ```text
@@ -658,9 +667,10 @@ docker compose down 하면 컨테이너가 완전히 삭제됨
 Kafka 는 컨테이너가 새로 뜨면서 클러스터 ID 충돌로 볼륨을 무시하고 초기화됨
 → 토픽이 사라질 수 있음
 
-아래 두 가지는 반드시 다시 해야 함:
+아래 세 가지는 반드시 다시 해야 함:
   ① jar 파일 재복사
   ② Kafka 토픽 재생성
+  ③ Airflow DAG 토글 ON 확인  ← [[06_Airflow_Pipeline]] 추가 후
 ```
 
 ```bash

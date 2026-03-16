@@ -16,6 +16,7 @@ related:
   - "[[SQL_Regular_Expression]]"
   - "[[SQL_NULL_Functions]]"
   - "[[SQL_Numeric_Functions]]"
+  - "[[Linux_OpenSSL]]"
 ---
 
 # 05_Superset_Dashboard — 데이터 시각화
@@ -84,6 +85,7 @@ openssl rand -base64 42
 SUPERSET_SECRET_KEY=kJ3mN8pQ2rT5vX7yZ0aB1cD4eF6gH9iL+Mw==
 ```
 
+>[[Linux_OpenSSL]] 참고 
 
 ```bash
 # .env 최종 형태
@@ -248,87 +250,130 @@ ORDER BY "도착역 하루 횟수" DESC;
 
 ```sql
 WITH LatestTrains AS (
+    -- 1. 열차별 가장 최근 수집된 데이터 1행
     SELECT DISTINCT ON (trn_no)
         trn_no       AS "열차번호",
         plan_dep     AS "출발 시간",
+        plan_arr     AS "도착 시간",
         arvl_stn_nm  AS "도착역",
-        status       AS "원본_상태",
-        CASE
-            WHEN status LIKE '운행 중%' THEN SUBSTRING(status FROM '약 (.+)\s*후 도착예정') || '후 도착예정'
-            WHEN status LIKE '출발%'   THEN SUBSTRING(status FROM '(출발 (?:[0-9]+시간\s*)?(?:[0-9]+분)?전)') || ' (대기중)'
-            WHEN status LIKE '%탑승 마감%' THEN '곧 출발 (탑승 마감)'
-            WHEN status LIKE '곧%'     THEN SUBSTRING(status FROM '([0-9]+분\s*후)') || ' 출발 (탑승중)'
-        END AS "운행 상태",
 
-        -- 1. 현재 KST 시각과 출발/도착 시각의 초(Seconds) 차이 계산
+        -- 현재 KST 기준 출발/도착까지 남은 초 계산
+        EXTRACT(EPOCH FROM (plan_dep::TIME - (NOW() AT TIME ZONE 'Asia/Seoul')::TIME)) AS raw_sec_to_dep,
+        EXTRACT(EPOCH FROM (plan_arr::TIME - (NOW() AT TIME ZONE 'Asia/Seoul')::TIME)) AS raw_sec_to_arr,
+
+        -- 진행률 계산용 경과 시간 / 총 소요 시간
         EXTRACT(EPOCH FROM ((NOW() AT TIME ZONE 'Asia/Seoul')::TIME - plan_dep::TIME)) AS raw_elapsed,
         EXTRACT(EPOCH FROM (plan_arr::TIME - plan_dep::TIME))                          AS raw_total
 
     FROM train_realtime
-    WHERE plan_dep != '--:--' AND plan_arr != '--:--'   -- 에러 데이터 방어
+    WHERE plan_dep != '--:--'
+      AND plan_arr != '--:--'
+      AND created_at::DATE = CURRENT_DATE
     ORDER BY trn_no, created_at DESC
 ),
 ProgressCalc AS (
+    -- 2. 자정 전후(23시~01시) 보정 (86400초 = 24시간)
     SELECT
         *,
-        -- 2. 자정(Midnight) 랩어라운드 보정 (+24시간 = 86400초)
-        -- 현재시간 - 출발시간이 -12시간 이하면 자정을 지난 것 → +24시간
-        CASE WHEN raw_elapsed < -43200 THEN raw_elapsed + 86400 ELSE raw_elapsed END AS elapsed_sec,
-        -- 도착시간 < 출발시간이면 자정 통과 열차 → +24시간
-        CASE WHEN raw_total   < 0      THEN raw_total   + 86400 ELSE raw_total   END AS total_sec
+        CASE WHEN raw_elapsed   < -43200 THEN raw_elapsed   + 86400 ELSE raw_elapsed   END AS elapsed_sec,
+        CASE WHEN raw_total     < 0      THEN raw_total     + 86400 ELSE raw_total     END AS total_sec,
+        CASE WHEN raw_sec_to_dep < -43200 THEN raw_sec_to_dep + 86400 ELSE raw_sec_to_dep END AS to_dep_sec,
+        CASE WHEN raw_sec_to_arr < -43200 THEN raw_sec_to_arr + 86400 ELSE raw_sec_to_arr END AS to_arr_sec
     FROM LatestTrains
 ),
 FinalCalc AS (
     SELECT
         *,
-        -- 3. 최종 퍼센트 계산 (0~100 고정)
-        LEAST(GREATEST(ROUND(
-            (elapsed_sec / NULLIF(total_sec, 0)) * 100
-        ), 0), 100) AS pct
+        -- 3. 진행률 0~100 고정
+        LEAST(GREATEST(ROUND((elapsed_sec / NULLIF(total_sec, 0)) * 100), 0), 100) AS pct,
+
+        -- 4. SQL 에서 직접 운행 상태 계산 (저장된 status 값 미사용)
+        CASE
+            WHEN to_dep_sec > 900 THEN
+                -- 15분 초과 → 대기중
+                CASE
+                    WHEN to_dep_sec >= 3600
+                        THEN (to_dep_sec/3600)::int || '시간 ' ||
+                             CASE WHEN MOD((to_dep_sec/60)::int, 60) = 0
+                                  THEN ''
+                                  ELSE MOD((to_dep_sec/60)::int, 60) || '분 '
+                             END || '전 (대기중)'
+                    ELSE (to_dep_sec/60)::int || '분 전 (대기중)'
+                END
+            WHEN to_dep_sec > 60 AND to_dep_sec <= 900 THEN
+                -- 1분~15분 → 곧 출발 (탑승중)
+                (to_dep_sec/60)::int || '분 후 출발 (탑승중)'
+            WHEN to_dep_sec > 0 AND to_dep_sec <= 60 THEN
+                -- 1분 이하 → 탑승 마감
+                '곧 출발 (탑승 마감)'
+            WHEN to_dep_sec <= 0 AND to_arr_sec > 0 THEN
+                CASE
+                    WHEN to_arr_sec >= 3600
+                        THEN (to_arr_sec/3600)::int || '시간 ' ||
+                             CASE WHEN MOD((to_arr_sec/60)::int, 60) = 0
+                                  THEN ''
+                                  ELSE MOD((to_arr_sec/60)::int, 60) || '분 '
+                             END || '후 도착예정'
+                    WHEN to_arr_sec >= 60
+                        THEN (to_arr_sec/60)::int || '분 후 도착예정'
+                    ELSE '잠시 후 도착예정 🏁'
+                END
+            ELSE '도착 완료'
+        END AS "실시간_운행상태"
     FROM ProgressCalc
 )
+-- 5. 최종 출력 + 진행률 바 렌더링
 SELECT
     "열차번호",
     "출발 시간",
     "도착역",
-    "운행 상태",
+    "실시간_운행상태"   AS "운행 상태",
     CASE
-        WHEN "원본_상태" LIKE '운행 중%'
+        WHEN pct > 0 AND pct < 100
         THEN '진행률: ' || repeat('█', ceil(pct/10.0)::int)
                         || repeat('░', 10-ceil(pct/10.0)::int)
                         || ' ' || pct || '%'
+        WHEN pct >= 100 THEN '도착 완료'
         ELSE '-'
     END AS "진행률"
 FROM FinalCalc
-WHERE pct < 100;    -- 도착 완료 열차 제외
+WHERE pct < 100
+ORDER BY "출발 시간" ASC;
 ```
 
 ```text
-CTE 3단계 구조:
-  LatestTrains   DISTINCT ON → 열차별 최신 1행 + raw 초 계산
-  ProgressCalc   자정 보정   → elapsed_sec / total_sec 확정
-  FinalCalc      진행률 %    → 0~100 클램핑
+CTE 구조:
+  LatestTrains   DISTINCT ON → 열차별 최신 1행
+                 raw_sec_to_dep / raw_sec_to_arr  출발/도착까지 남은 초
+                 raw_elapsed / raw_total          진행률 계산용
+  ProgressCalc   자정 보정 → 4개 컬럼 모두 +86400 처리
+  FinalCalc      진행률 % + 운행 상태 텍스트 생성
 
-자정 보정 원리:
-  86400 = 하루 전체 초 (24 × 60 × 60)
-  43200 = 반나절 초    (12 × 60 × 60)
+자정 보정이 필요한 이유:
+  SQL 에서 TIME - TIME 은 그냥 뺄셈이라 날짜 개념이 없음
+  23:50 출발 → 00:30 도착 열차를 예로 들면:
+    plan_arr::TIME - plan_dep::TIME = 00:30 - 23:50 = -84600초 (음수!)
+    실제로는 40분짜리 운행인데 -84600초로 계산됨
 
-  raw_elapsed < -43200  → 현재시각이 출발보다 9시간 이상 앞선 것처럼 보임
-                          = 자정 넘어서 생긴 음수 → +86400
-  raw_total < 0         → 도착시각 < 출발시각 = 자정 통과 열차 → +86400
+  해결: 결과가 -43200(반나절)보다 작으면 자정을 넘긴 것으로 판단
+        +86400(하루치 초) 를 더해서 양수로 보정
+    -84600 + 86400 = 1800초(30분) ✅
 
-  예) 23:50 출발 → 00:30 도착
-      raw_total = 00:30 - 23:50 = -84600초 → +86400 = 1800초(30분) ✅
+  4개 컬럼 모두 같은 보정 적용:
+    raw_elapsed    현재시각 - 출발시각 (진행률용)
+    raw_total      도착시각 - 출발시각 (진행률 분모)
+    raw_sec_to_dep 출발시각 - 현재시각 (대기중 표시용)
+    raw_sec_to_arr 도착시각 - 현재시각 (도착예정 표시용)
 
-진행률 계산 — progress_pct 저장값 대신 NOW() 실시간:
-  ❌ 저장값 → Producer 멈추면 마지막 값에서 고정
-  ✅ NOW() AT TIME ZONE 'Asia/Seoul' → 항상 현재 KST 기준
+"2시간 0분" 이 아닌 "2시간" 으로 표시하는 이유:
+  to_arr_sec = 7200초(2시간 정확히) 일 때
+    (7200/3600)::int = 2
+    MOD((7200/60)::int, 60) = MOD(120, 60) = 0  ← 0분
+    → "2시간 0분 후 도착예정" 이 나와서 어색함
 
-NULLIF(total_sec, 0):
-  plan_dep = plan_arr 인 경우 0 나눗셈 방지
-
-WHERE pct < 100:
-  도착 완료 열차 제외 (전광판에 불필요)
+  해결: MOD 결과가 0이면 빈 문자열('') 로 대체
+    0분일 때 → "2시간  후 도착예정"  ← 공백도 없이
+    30분일 때 → "2시간 30분 후 도착예정" ✅
 ```
 
   → [[SQL_Regular_Expression]] 참고
@@ -405,6 +450,14 @@ Metric:     COUNT(*)
    EXTRACT(HOUR FROM trn_plan_dptre_dt::TIMESTAMP) ✅
 ```
 
+```sql
+SELECT trn_no,
+trn_plan_dptre_dt::TIMESTAMP as "Hour"
+FROM train_schedule
+WHERE trn_plan_dptre_dt::DATE = CURRENT_DATE
+ORDER BY "Hour" ASC
+```
+
 ## 차트 5 — 어제 운행횟수 vs 오늘 운행횟수 (상단 Table)
 
 ```text
@@ -453,53 +506,62 @@ ORDER BY "날짜 기준" ASC;
 | 지금 곧출발하는 열차 | Table      | train_realtime | DISTINCT ON WHERE status LIKE '곧%' or status LIKE '%탑승마감%' |
 
 ```sql
--- 오늘 열차 운행횟수
-SELECT COUNT(*) FROM train_schedule
-WHERE dptre_stn_nm = '서울'
-  AND run_ymd::DATE = CURRENT_DATE;
+-- 오늘 열차 운행횟수 
+SELECT COUNT(*) 
+FROM train_schedule 
+WHERE dptre_stn_nm = '서울' AND run_ymd::DATE = CURRENT_DATE;
 
--- 전날 기준 지연 횟수
-SELECT COUNT(*) FROM train_delay
-WHERE arr_delay > 0;
+-- 전날 기준 지연 횟수 
+SELECT COUNT(*) FROM train_delay WHERE arr_delay > 0;
 
 -- 지금 곧출발하는 열차
 WITH LatestTrainStatus AS (
-    SELECT DISTINCT ON (trn_no)
+    SELECT DISTINCT ON(trn_no)
         trn_no, plan_dep, arvl_stn_nm, status, progress_pct
     FROM train_realtime
     ORDER BY trn_no, created_at DESC
 ),
-SoonTrains AS (
-    SELECT
-        trn_no       AS "열차번호",
-        plan_dep     AS "출발 시간",
-        arvl_stn_nm  AS "도착역",
-        CASE
-            WHEN status LIKE '운행 중%'    THEN SUBSTRING(status FROM '약 (.+)\s*후 도착예정') || '후 도착예정'
-            WHEN status LIKE '출발%'       THEN SUBSTRING(status FROM '(출발 (?:[0-9]+시간\s*)?(?:[0-9]+분)?전)') || ' (대기중)'
-            WHEN status LIKE '%탑승 마감%' THEN '곧 출발 (탑승 마감)'
-            WHEN status LIKE '곧%'         THEN SUBSTRING(status FROM '([0-9]+분\s*후)') || ' 출발 (탑승중)'
+SoonTrains AS(
+    SELECT 
+        trn_no as "열차번호",
+        plan_dep as "출발 시간",
+        arvl_stn_nm as "도착역",
+        
+        CASE 
+          WHEN status LIKE '운행 중%' THEN  SUBSTRING(status FROM '약 (.+)\s*후 도착예정')||'후 도착예정'
+          WHEN status LIKE '출발%' THEN SUBSTRING(status FROM '(출발 (?:[0-9]+시간\s*)?(?:[0-9]+분)?전)') || ' (대기중)'
+          WHEN status LIKE '%탑승 마감%' THEN '곧 출발 (탑승 마감)'
+          WHEN status LIKE '곧%' THEN SUBSTRING(status FROM '([0-9]+분\s*후)')||' 출발 (탑승중)'
         END AS "운행 상태",
-        CASE
-            WHEN status LIKE '운행 중%'
-            THEN '진행률: ' || repeat('█', ceil(progress_pct/10.0)::int)
-                             || repeat('░', 10-ceil(progress_pct/10.0)::int)
-                             || ' ' || progress_pct || '%'
-            ELSE '-'
+        
+        CASE 
+          WHEN status LIKE '운행 중%' THEN '진행률: '||repeat('█', ceil(progress_pct/10.0)::int)|| repeat('░',10-ceil(progress_pct/10.0)::int)||' ' || progress_pct||'%'
+          ELSE '-'
         END AS "진행률"
+        
     FROM LatestTrainStatus
-    WHERE status LIKE '곧%' OR status LIKE '%탑승 마감%'
+    WHERE status LIKE '곧%' or status LIKE '%탑승 마감%'
 )
+
 SELECT * FROM SoonTrains
 UNION ALL
--- 곧 출발 열차가 없을 때 안내 메시지 표시
-SELECT
+SELECT 
     '-' AS "열차번호",
-    '-' AS "출발 시간",
+    '-' AS "출발 시간", 
     '-' AS "도착역",
-    '현재 곧 출발하는 열차가 없습니다.' AS "운행 상태",
+    
+    CASE 
+        WHEN (NOW() AT TIME ZONE 'Asia/Seoul') > (
+            SELECT MAX(trn_plan_dptre_dt::TIMESTAMP) 
+            FROM train_schedule 
+            WHERE trn_plan_dptre_dt::DATE = CURRENT_DATE
+        ) 
+        THEN '금일 서울역 출발 열차 운행이 종료되었습니다. 🌝'
+        ELSE '현재 곧 출발하는 열차가 없습니다.'
+    END AS "운행 상태",
+    
     '-' AS "진행률"
-WHERE NOT EXISTS (SELECT 1 FROM SoonTrains);
+WHERE NOT EXISTS(SELECT 1 FROM SoonTrains);
 ```
 
 
@@ -656,18 +718,19 @@ ORDER BY "Hour" ASC;
 
 # 트러블슈팅....에러 안만날래.. 🤦‍♀️
 
-|증상|원인|해결|
-|---|---|---|
-|`superset db upgrade` 후 접속 불가|`fab create-admin` 또는 `superset init` 누락|초기화 3단계 순서대로 실행|
-|`Connection refused` (PostgreSQL)|URI 에 localhost:5433 사용|`postgres:5432` 로 수정|
-|테이블이 데이터셋에 안 보임|스키마 미선택|Dataset 등록 시 스키마 `public` 선택|
-|차트 데이터 없음|Producer / Consumer 미실행|`docker compose ps` 로 상태 확인|
-|자동 새로고침 후 데이터 안 바뀜|캐시 활성화|Dashboard → Edit → Cache timeout = 0|
-|`SUPERSET_SECRET_KEY` 경고|기본값 사용 중|`.env` 에 고유한 키 값 설정|
-|`EXTRACT(HOUR FROM 컬럼)` 결과 이상|VARCHAR 컬럼에 바로 EXTRACT 적용|`컬럼::TIMESTAMP` 로 캐스팅 후 EXTRACT|
-|진행률이 전부 0%|컨테이너 내부 시각이 UTC → plan_dep(KST) 와 차이 발생|`NOW()::TIME` 대신 `(NOW() AT TIME ZONE 'Asia/Seoul')::TIME` 사용|
-|자정 통과 열차 진행률 오계산|23:50 출발 → 00:30 도착 시 raw_total 이 음수|`CASE WHEN raw_total < 0 THEN raw_total + 86400` 으로 보정|
-|**차트 숫자가 2배·3배로 뻥튀기**|**Producer 재실행 시 동일 데이터 중복 발행**|**`producer_state.json` 도입 → 아래 참고**|
+| 증상                                | 원인                                       | 해결                                                            |
+| --------------------------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| `superset db upgrade` 후 접속 불가     | `fab create-admin` 또는 `superset init` 누락 | 초기화 3단계 순서대로 실행                                               |
+| `Connection refused` (PostgreSQL) | URI 에 localhost:5433 사용                  | `postgres:5432` 로 수정                                          |
+| 테이블이 데이터셋에 안 보임                   | 스키마 미선택                                  | Dataset 등록 시 스키마 `public` 선택                                  |
+| 차트 데이터 없음                         | Producer / Consumer 미실행                  | `docker compose ps` 로 상태 확인                                   |
+| 자동 새로고침 후 데이터 안 바뀜                | 캐시 활성화                                   | Dashboard → Edit → Cache timeout = 0                          |
+| `SUPERSET_SECRET_KEY` 경고          | 기본값 사용 중                                 | `.env` 에 고유한 키 값 설정                                           |
+| `EXTRACT(HOUR FROM 컬럼)` 결과 이상     | VARCHAR 컬럼에 바로 EXTRACT 적용                | `컬럼::TIMESTAMP` 로 캐스팅 후 EXTRACT                               |
+| **출발 후에도 운행 상태가 안 바뀜**            | **저장된 status 문자열에 의존**                   | **SQL 에서 plan_dep/plan_arr vs NOW() 직접 비교로 교체**               |
+| 진행률이 전부 0%                        | 컨테이너 내부 시각이 UTC → plan_dep(KST) 와 차이 발생  | `NOW()::TIME` 대신 `(NOW() AT TIME ZONE 'Asia/Seoul')::TIME` 사용 |
+| 자정 통과 열차 진행률 오계산                  | 23:50 출발 → 00:30 도착 시 raw_total 이 음수     | `CASE WHEN raw_total < 0 THEN raw_total + 86400` 으로 보정        |
+| **차트 숫자가 2배·3배로 뻥튀기**             | **Producer 재실행 시 동일 데이터 중복 발행**          | **`producer_state.json` 도입 → 아래 참고**                          |
 
 ## Producer 재실행 시 Superset 데이터 중복 문제
 

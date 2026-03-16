@@ -11,7 +11,7 @@ related:
   - "[[Airflow_Providers]]"
   - "[[]]"
   - "[[Variables_Connections]]"
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
   - "[[Pandas_Json_Normalize]]"
   - "[[Python_JSON]]"
   - "[[Python_Requests_Response]]"
