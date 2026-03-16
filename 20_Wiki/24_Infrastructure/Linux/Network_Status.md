@@ -10,7 +10,7 @@ tags:
   - Linux
 related:
   - "[[Time_Synchronization]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Process_Management]]"
 ---
 ## 개념 한 줄 요약

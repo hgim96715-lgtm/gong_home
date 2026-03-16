@@ -11,7 +11,7 @@ related:
   - "[[Environment_Variables]]"
   - "[[Linux_Text_Transformation_tr]]"
   - "[[Linux_Shell_Script]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 한줄 요약
 

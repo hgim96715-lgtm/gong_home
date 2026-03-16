@@ -11,7 +11,7 @@
 ## 2. CLI & Operations (도구)
 
 - [[Kafka_CLI_Cheatsheet]] : 터미널 필수 명령어 모음 (`kafka-topics.sh`, `kafka-console-producer.sh`, `kafka-console-consumer.sh`, `--list`, `--describe`, `--from-beginning`)
-- [[Kafka_Docker_Compose_Setup]] : Docker 환경 구축 및 트러블슈팅 (`docker-compose`, `Zookeeper`, `Broker`, `환경변수`, `포트 설정`, `트러블슈팅`)
+- [[Kafka_Docker_Compose_Setup]] : Docker 환경 구축 및 트러블슈팅 (`docker-compose`, `Broker`, `환경변수`, `포트 설정`, `트러블슈팅`)
 
 ---
 

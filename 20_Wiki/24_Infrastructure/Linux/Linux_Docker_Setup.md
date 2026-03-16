@@ -8,7 +8,7 @@ tags:
   - Setup
 related:
   - "[[Linux_Architecture]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Linux_Fundamental_Rules]]"
   - "[[Filesystem Hierarchy Standard]]"
 ---

@@ -13,7 +13,7 @@ related:
   - "[[File_Management]]"
   - "[[Apply_Changes_Source]]"
   - "[[Airflow_CLI]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
 

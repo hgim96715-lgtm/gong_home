@@ -10,7 +10,7 @@ tags:
   - Airflow
 related:
   - "[[Airflow_Scheduling]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Time_Synchronization]]"
   - "[[Process_Management]]"
   - "[[Airflow_DAG_Skeleton]]"

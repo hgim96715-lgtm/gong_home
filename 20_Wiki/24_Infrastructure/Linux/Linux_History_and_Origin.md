@@ -10,7 +10,7 @@ related:
   - "[[Linux_vs_Unix]]"
   - "[[Open_Source_License_GPL]]"
   - "[[Linux_Distributions]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
 

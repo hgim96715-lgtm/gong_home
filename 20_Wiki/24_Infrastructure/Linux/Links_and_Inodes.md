@@ -11,7 +11,7 @@ tags:
 related:
   - "[[Linux_File_Types]]"
   - "[[File_Management]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
 

@@ -11,7 +11,7 @@ tags:
 related:
   - "[[Linux_Data_Statistics]]"
   - "[[Linux_Filtering_Text]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[File_Management]]"
   - "[[Linux_Text_Transformation_tr]]"
   - "[[File_Content_Viewing]]"

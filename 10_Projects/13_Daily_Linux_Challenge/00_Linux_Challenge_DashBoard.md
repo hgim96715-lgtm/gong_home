@@ -3,7 +3,7 @@ tags:
   - Linux_Test
   - Dashboard
 related:
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 
 > [!abstract] **Engineer's Log**

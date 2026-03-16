@@ -7,7 +7,7 @@ tags:
 related:
   - "[[Linux_Stream_Editor]]"
   - "[[Linux_Filtering_Text]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## Concept Summary
 

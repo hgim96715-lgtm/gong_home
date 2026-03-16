@@ -1,6 +1,6 @@
 [[01_Linux_Roadmap]] : 흐름도
 
-> Linux 연습 [리눅스 연습](https://labex.io/ko/labs/linux-your-first-linux-lab-270253?course=quick-start-with-linux) 참고
+
 > [[흐름도 설명]]
 
 ## Level 0. 리눅스의 세계관 (Architecture & History)

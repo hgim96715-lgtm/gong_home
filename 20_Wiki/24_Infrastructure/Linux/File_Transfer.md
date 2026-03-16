@@ -9,7 +9,7 @@ tags:
   - Linux
 related:
   - "[[Network_Status]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 1개념 한 줄 요약
 

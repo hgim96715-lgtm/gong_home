@@ -10,7 +10,7 @@ tags:
   - Linux
 related:
   - "[[Linux_Filtering_Text]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Linux_Stream_Editor]]"
 ---
 # Linux Data Statistics — `wc` · `sort` · `uniq`

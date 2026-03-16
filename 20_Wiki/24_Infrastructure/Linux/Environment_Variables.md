@@ -12,7 +12,7 @@ tags:
 related:
   - "[[Path_Variable]]"
   - "[[Shell_Config]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Linux_Docker_Setup]]"
   - "[[Linux_Fundamental_Rules]]"
 ---

@@ -13,7 +13,7 @@ related:
   - "[[File_Transfer]]"
   - "[[Pandas_Json_Normalize]]"
   - "[[Python_JSON]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Serialization_JSON_XML]]"
 ---
 

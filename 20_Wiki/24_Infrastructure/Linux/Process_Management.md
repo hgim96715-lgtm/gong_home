@@ -11,7 +11,7 @@ tags:
 related:
   - "[[Linux_Signals]]"
   - "[[Background_Jobs]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Time_Synchronization]]"
 ---
 ##  개념 한 줄 요약

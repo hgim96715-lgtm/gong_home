@@ -10,8 +10,8 @@ tags:
 related:
   - "[[File_Permissions]]"
   - "[[SSH_Connection]]"
-  - "[[00_Linux_HomePage]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[SQL_Regular_Expression]]"
 ---
 

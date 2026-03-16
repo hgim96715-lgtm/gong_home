@@ -9,7 +9,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[SSH_Connection]]"
   - "[[File_Permissions]]"
 ---

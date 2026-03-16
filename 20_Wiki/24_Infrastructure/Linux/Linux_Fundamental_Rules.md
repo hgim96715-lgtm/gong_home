@@ -10,7 +10,7 @@ tags:
   - Linux
 related:
   - "[[Linux_Architecture]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Filesystem Hierarchy Standard]]"
   - "[[Linux_Docker_Setup]]"
   - "[[01_Linux_Roadmap]]"

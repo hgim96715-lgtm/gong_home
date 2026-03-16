@@ -10,7 +10,7 @@ tags:
 related:
   - "[[Process_Management]]"
   - "[[Process_vs_Thread]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
 

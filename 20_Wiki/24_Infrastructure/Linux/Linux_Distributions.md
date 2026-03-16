@@ -12,7 +12,7 @@ tags:
   - apt
   - yum
 related:
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
   - "[[Linux_History_and_Origin]]"
   - "[[Linux_Architecture]]"
 ---

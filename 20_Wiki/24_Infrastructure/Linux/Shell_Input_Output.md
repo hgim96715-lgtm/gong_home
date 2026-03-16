@@ -10,7 +10,7 @@ tags:
 related:
   - "[[Linux_Shell_Script]]"
   - "[[Redirection_Pipe]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약 ⚡️
 

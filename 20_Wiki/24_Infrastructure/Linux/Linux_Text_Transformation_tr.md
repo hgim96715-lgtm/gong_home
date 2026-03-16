@@ -8,7 +8,7 @@ tags:
 related:
   - "[[Linux_Stream_Editor]]"
   - "[[Redirection_Pipe]]"
-  - "[[00_Linux_HomePage]]"
+  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한줄 요약
 
