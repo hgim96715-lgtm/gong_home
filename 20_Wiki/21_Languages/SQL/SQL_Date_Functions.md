@@ -450,6 +450,43 @@ NOW()::TIME          = UTC 기준  ex) 05:10
 → 정상 계산 가능
 ```
 
+## ⭐️ ::DATE 캐스팅 — 반드시 붙여야 하는 경우
+
+```
+AT TIME ZONE 결과는 TIMESTAMP WITH TIME ZONE 타입
+INTERVAL 연산 결과도 TIMESTAMP 타입
+
+→ DATE 컬럼과 비교하거나 날짜로 필터링할 때
+  타입 불일치로 에러 or 엉뚱한 결과 발생
+  ::DATE 로 명확하게 캐스팅 필수!
+```
+
+```sql
+-- ❌ 타입 불일치 — 에러 또는 예상과 다른 결과
+WHERE trn_plan_dptre_dt::DATE = NOW() AT TIME ZONE 'Asia/Seoul'
+-- NOW() AT TIME ZONE = TIMESTAMP → DATE 와 비교 시 불일치
+
+-- ✅ ::DATE 로 캐스팅
+WHERE trn_plan_dptre_dt::DATE = (NOW() AT TIME ZONE 'Asia/Seoul')::DATE
+
+-- ❌ INTERVAL 연산 후 캐스팅 없음
+WHERE trn_plan_dptre_dt::DATE = (NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '1 day'
+-- 결과가 TIMESTAMP → DATE 컬럼과 비교 불일치
+
+-- ✅ INTERVAL 연산 후에도 ::DATE 필수
+WHERE trn_plan_dptre_dt::DATE = ((NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '1 day')::DATE
+```
+
+```
+규칙 요약:
+  AT TIME ZONE 혼자 써도   → ::DATE 붙이기
+  AT TIME ZONE + INTERVAL  → ::DATE 붙이기
+  INTERVAL 혼자 써도        → ::DATE 붙이기 (TIMESTAMP 로 업캐스팅됨)
+
+  공식:
+  (NOW() AT TIME ZONE 'Asia/Seoul')::DATE                   ← 오늘 KST
+  ((NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '1 day')::DATE  ← 어제 KST
+```
 
 ```sql
 -- UTC vs KST 확인
@@ -457,8 +494,12 @@ SELECT NOW()::TIME;                                    -- UTC 시각
 SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::TIME;        -- KST 시각 (9시간 뒤)
 
 -- 날짜도 마찬가지
-SELECT CURRENT_DATE;                                   -- UTC 기준 날짜
-SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::DATE;        -- KST 기준 날짜
+SELECT CURRENT_DATE;                                   -- UTC 기준 날짜 ❌ Docker 환경
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::DATE;        -- KST 기준 날짜 ✅
+
+-- 오늘 / 어제 KST 기준
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::DATE AS 오늘_KST;
+SELECT ((NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '1 day')::DATE AS 어제_KST;
 
 -- 실전: KST 기준 시간대별 집계
 SELECT
@@ -467,14 +508,26 @@ SELECT
 FROM train_realtime
 GROUP BY hour
 ORDER BY hour;
+
+-- 실전: 어제 vs 오늘 필터링 (KST 기준)
+WHERE trn_plan_dptre_dt::DATE IN (
+    (NOW() AT TIME ZONE 'Asia/Seoul')::DATE,
+    ((NOW() AT TIME ZONE 'Asia/Seoul') - INTERVAL '1 day')::DATE
+)
 ```
 
 ```
 ⚠️ 자정 전후 주의:
   UTC 00:00 = KST 09:00
   UTC 기준으로 '오늘' 집계하면 KST 오전 9시 이전 데이터가 '어제'로 잡힘
-  → 날짜 집계할 때는 항상 AT TIME ZONE 먼저 확인
+  → CURRENT_DATE 쓰지 말고 항상 (NOW() AT TIME ZONE 'Asia/Seoul')::DATE 사용
+
+⚠️ CURRENT_DATE / CURRENT_TIME 주의:
+  Docker 컨테이너에서 UTC 기준으로 반환
+  한국 시간 새벽 1시 = UTC 전날 16시
+  → 3월 17일인데 CURRENT_DATE = 3월 16일 반환
 ```
+
 ---
 
 ---

@@ -454,7 +454,7 @@ Metric:     COUNT(*)
 SELECT trn_no,
 trn_plan_dptre_dt::TIMESTAMP as "Hour"
 FROM train_schedule
-WHERE trn_plan_dptre_dt::DATE = CURRENT_DATE
+WHERE trn_plan_dptre_dt::DATE = (NOW() AT TIME ZONE 'Asia/Seoul')::DATE
 ORDER BY "Hour" ASC
 ```
 
@@ -469,19 +469,20 @@ Columns:    날짜 기준 / 운행 횟수
 ```
 
 ```sql
-SELECT
-    CASE
-        WHEN trn_plan_dptre_dt::DATE = CURRENT_DATE - INTERVAL '1 day'
-        THEN '어제 [' || TO_CHAR(CURRENT_DATE - INTERVAL '1 day', 'YYYY-MM-DD') || ']'
-        WHEN trn_plan_dptre_dt::DATE = CURRENT_DATE
-        THEN '오늘 [' || TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD') || ']'
-    END AS "날짜 기준",
-    COUNT(trn_no) AS "운행 횟수"
-FROM train_schedule
--- INTERVAL 계산 결과를 ::DATE 로 명확히 맞춰주면 에러 날 확률 0%
-WHERE trn_plan_dptre_dt::DATE IN (CURRENT_DATE, (CURRENT_DATE - INTERVAL '1 day')::DATE)
-GROUP BY trn_plan_dptre_dt::DATE
-ORDER BY "날짜 기준" ASC;
+SELECT  
+  CASE    WHEN trn_plan_dptre_dt::DATE=(NOW() AT TIME ZONE 'Asia/Seoul'- INTERVAL '1 day')::DATE  
+    THEN '어제 [' || TO_CHAR((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1 day','YYYY-MM-DD')|| ']'  
+  
+    WHEN trn_plan_dptre_dt::DATE=(NOW() AT TIME ZONE 'Asia/Seoul')::DATE  
+    THEN '오늘 ['|| TO_CHAR((NOW() AT TIME ZONE 'Asia/Seoul'),'YYYY-MM-DD')||']'  
+    END AS "날짜 기준",  
+  
+    COUNT(trn_no) AS "운행 횟수"  
+  
+FROM train_schedule  
+WHERE trn_plan_dptre_dt::DATE IN((NOW() AT TIME ZONE 'Asia/Seoul')::DATE,((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1day')::DATE)  
+GROUP BY trn_plan_dptre_dt::DATE  
+ORDER BY "날짜 기준" DESC
 ```
 
 ```text
@@ -489,9 +490,12 @@ ORDER BY "날짜 기준" ASC;
   CASE WHEN 으로 날짜를 "어제 [2026-03-12]" 형태 레이블로 변환
   IN (CURRENT_DATE, ...) 으로 어제·오늘 두 날짜만 필터
   ::DATE 캐스팅 통일 → INTERVAL 계산 결과 타입 불일치 에러 방지
+Docker 컨테이너 = UTC 
+KST 오전 3시 = UTC 전날 18시 
+→ CURRENT_DATE = 전날 날짜로 반환 
+→ 3월 17일인데 3월 16일이 "오늘"로 뜸
 ```
 
-> 나중에 어제 오늘 말고 일주일 치를 비교 해봐야하나? 
 
 ## 차트 6 — Big Number 카드 3개 (상단)
 
@@ -509,10 +513,21 @@ ORDER BY "날짜 기준" ASC;
 -- 오늘 열차 운행횟수 
 SELECT COUNT(*) 
 FROM train_schedule 
-WHERE dptre_stn_nm = '서울' AND run_ymd::DATE = CURRENT_DATE;
+WHERE dptre_stn_nm = '서울' AND run_ymd::DATE = (NOW() AT TIME ZONE 'Asia/Seoul')::DATE;
 
 -- 전날 기준 지연 횟수 
-SELECT COUNT(*) FROM train_delay WHERE arr_delay > 0;
+
+SELECT COUNT(*) AS "전날 기준 지연 횟수"
+FROM
+  (SELECT mrnt_nm as "노선명",
+          dep_delay::int as "출발지연",
+          arr_delay::int as "도착지연",
+          SPLIT_PART(arr_status, '(', 1) as "도착 상태",
+          SPLIT_PART(dep_status, '(', 1) as "출발 상태"
+   FROM train_delay
+   WHERE arr_delay > 0
+     AND run_ymd::DATE=((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1 day')::DATE) AS virtual_table
+
 
 -- 지금 곧출발하는 열차
 WITH LatestTrainStatus AS (
@@ -554,7 +569,7 @@ SELECT
         WHEN (NOW() AT TIME ZONE 'Asia/Seoul') > (
             SELECT MAX(trn_plan_dptre_dt::TIMESTAMP) 
             FROM train_schedule 
-            WHERE trn_plan_dptre_dt::DATE = CURRENT_DATE
+            WHERE trn_plan_dptre_dt::DATE = (NOW() AT TIME ZONE 'Asia/Seoul')::DATE
         ) 
         THEN '금일 서울역 출발 열차 운행이 종료되었습니다. 🌝'
         ELSE '현재 곧 출발하는 열차가 없습니다.'
@@ -632,18 +647,20 @@ SQL Lab → SQL Editor → train_db 선택
 
 ```sql
 -- 어제 vs 오늘 운행횟수 비교
-SELECT
-    CASE
-        WHEN trn_plan_dptre_dt::DATE = CURRENT_DATE - INTERVAL '1 day'
-        THEN '어제 [' || TO_CHAR(CURRENT_DATE - INTERVAL '1 day', 'YYYY-MM-DD') || ']'
-        WHEN trn_plan_dptre_dt::DATE = CURRENT_DATE
-        THEN '오늘 [' || TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD') || ']'
-    END AS "날짜 기준",
-    COUNT(trn_no) AS "운행 횟수"
-FROM train_schedule
-WHERE trn_plan_dptre_dt::DATE IN (CURRENT_DATE, (CURRENT_DATE - INTERVAL '1 day')::DATE)
-GROUP BY trn_plan_dptre_dt::DATE
-ORDER BY "날짜 기준" ASC;
+SELECT "날짜 기준" AS "날짜 기준",
+       "운행 횟수" AS "운행 횟수"
+FROM
+  (SELECT CASE
+              WHEN trn_plan_dptre_dt::DATE=(NOW() AT TIME ZONE 'Asia/Seoul'- INTERVAL '1 day')::DATE THEN '어제 [' || TO_CHAR((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1 day', 'YYYY-MM-DD')|| ']'
+              WHEN trn_plan_dptre_dt::DATE=(NOW() AT TIME ZONE 'Asia/Seoul')::DATE THEN '오늘 ['|| TO_CHAR((NOW() AT TIME ZONE 'Asia/Seoul'),'YYYY-MM-DD')||']'
+          END AS "날짜 기준",
+          COUNT(trn_no) AS "운행 횟수"
+   FROM train_schedule
+   WHERE trn_plan_dptre_dt::DATE IN((NOW() AT TIME ZONE 'Asia/Seoul')::DATE,
+                                    ((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1day')::DATE)
+   GROUP BY trn_plan_dptre_dt::DATE
+   ORDER BY "날짜 기준" DESC) AS virtual_table
+
 
 -- 현재 운행 중인 열차 (실시간 기차 전광판) — 자정 보정 포함
 WITH LatestTrains AS (
@@ -688,19 +705,23 @@ WHERE pct < 100;
 SELECT arvl_stn_nm AS "도착역", COUNT(*) AS "도착역 하루 횟수"
 FROM train_schedule
 WHERE dptre_stn_nm = '서울'
-  AND run_ymd::DATE = CURRENT_DATE
+  AND run_ymd::DATE = (NOW() AT TIME ZONE 'Asia/Seoul')::DATE
 GROUP BY "도착역"
 ORDER BY "도착역 하루 횟수" DESC;
 
 -- 전날 지연 현황
-SELECT
-    mrnt_nm AS "노선명",
-    dep_delay::int AS "출발지연",
-    arr_delay::int AS "도착지연",
-    SPLIT_PART(arr_status, '(', 1) AS "도착 상태",
-    SPLIT_PART(dep_status, '(', 1) AS "출발 상태"
-FROM train_delay
-WHERE arr_delay > 0;
+
+SELECT COUNT(*) AS "전날 기준 지연 횟수"
+FROM
+  (SELECT mrnt_nm as "노선명",
+          dep_delay::int as "출발지연",
+          arr_delay::int as "도착지연",
+          SPLIT_PART(arr_status, '(', 1) as "도착 상태",
+          SPLIT_PART(dep_status, '(', 1) as "출발 상태"
+   FROM train_delay
+   WHERE arr_delay > 0
+     AND run_ymd::DATE=((NOW() AT TIME ZONE 'Asia/Seoul')-INTERVAL '1 day')::DATE) AS virtual_table
+
 
 -- 시간별 기차 이동 횟수 [[SQL_Date_Functions#⚠️ VARCHAR 컬럼에는 EXTRACT 바로 못 씀 — TIMESTAMP 필수]] 참고 
 SELECT
@@ -718,19 +739,21 @@ ORDER BY "Hour" ASC;
 
 # 트러블슈팅....에러 안만날래.. 🤦‍♀️
 
-| 증상                                | 원인                                       | 해결                                                            |
-| --------------------------------- | ---------------------------------------- | ------------------------------------------------------------- |
-| `superset db upgrade` 후 접속 불가     | `fab create-admin` 또는 `superset init` 누락 | 초기화 3단계 순서대로 실행                                               |
-| `Connection refused` (PostgreSQL) | URI 에 localhost:5433 사용                  | `postgres:5432` 로 수정                                          |
-| 테이블이 데이터셋에 안 보임                   | 스키마 미선택                                  | Dataset 등록 시 스키마 `public` 선택                                  |
-| 차트 데이터 없음                         | Producer / Consumer 미실행                  | `docker compose ps` 로 상태 확인                                   |
-| 자동 새로고침 후 데이터 안 바뀜                | 캐시 활성화                                   | Dashboard → Edit → Cache timeout = 0                          |
-| `SUPERSET_SECRET_KEY` 경고          | 기본값 사용 중                                 | `.env` 에 고유한 키 값 설정                                           |
-| `EXTRACT(HOUR FROM 컬럼)` 결과 이상     | VARCHAR 컬럼에 바로 EXTRACT 적용                | `컬럼::TIMESTAMP` 로 캐스팅 후 EXTRACT                               |
-| **출발 후에도 운행 상태가 안 바뀜**            | **저장된 status 문자열에 의존**                   | **SQL 에서 plan_dep/plan_arr vs NOW() 직접 비교로 교체**               |
-| 진행률이 전부 0%                        | 컨테이너 내부 시각이 UTC → plan_dep(KST) 와 차이 발생  | `NOW()::TIME` 대신 `(NOW() AT TIME ZONE 'Asia/Seoul')::TIME` 사용 |
-| 자정 통과 열차 진행률 오계산                  | 23:50 출발 → 00:30 도착 시 raw_total 이 음수     | `CASE WHEN raw_total < 0 THEN raw_total + 86400` 으로 보정        |
-| **차트 숫자가 2배·3배로 뻥튀기**             | **Producer 재실행 시 동일 데이터 중복 발행**          | **`producer_state.json` 도입 → 아래 참고**                          |
+| 증상                                 | 원인                                       | 해결                                                                      |
+| ---------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
+| `superset db upgrade` 후 접속 불가      | `fab create-admin` 또는 `superset init` 누락 | 초기화 3단계 순서대로 실행                                                         |
+| `Connection refused` (PostgreSQL)  | URI 에 localhost:5433 사용                  | `postgres:5432` 로 수정                                                    |
+| 테이블이 데이터셋에 안 보임                    | 스키마 미선택                                  | Dataset 등록 시 스키마 `public` 선택                                            |
+| 차트 데이터 없음                          | Producer / Consumer 미실행                  | `docker compose ps` 로 상태 확인                                             |
+| 자동 새로고침 후 데이터 안 바뀜                 | 캐시 활성화                                   | Dashboard → Edit → Cache timeout = 0                                    |
+| `SUPERSET_SECRET_KEY` 경고           | 기본값 사용 중                                 | `.env` 에 고유한 키 값 설정                                                     |
+| `EXTRACT(HOUR FROM 컬럼)` 결과 이상      | VARCHAR 컬럼에 바로 EXTRACT 적용                | `컬럼::TIMESTAMP` 로 캐스팅 후 EXTRACT                                         |
+| **날짜가 하루 전으로 뜸 (3월 17일인데 3월 16일)** | **CURRENT_DATE / CURRENT_TIME 은 UTC 기준** | **`(NOW() AT TIME ZONE 'Asia/Seoul')::DATE` 로 교체**                      |
+| **출발 후에도 운행 상태가 안 바뀜**             | **저장된 status 문자열에 의존**                   | **SQL 에서 plan_dep/plan_arr vs NOW() 직접 비교로 교체**                         |
+| **곧출발 목록에 몇 시간 전 열차가 남아있음**        | **저장된 status 기반 필터 + 시간 필터 오류**          | **`plan_dep < TO_CHAR(NOW() AT TIME ZONE 'Asia/Seoul', 'HH24:MI')` 추가** |
+| 진행률이 전부 0%                         | 컨테이너 내부 시각이 UTC → plan_dep(KST) 와 차이 발생  | `NOW()::TIME` 대신 `(NOW() AT TIME ZONE 'Asia/Seoul')::TIME` 사용           |
+| 자정 통과 열차 진행률 오계산                   | 23:50 출발 → 00:30 도착 시 raw_total 이 음수     | `CASE WHEN raw_total < 0 THEN raw_total + 86400` 으로 보정                  |
+| **차트 숫자가 2배·3배로 뻥튀기**              | **Producer 재실행 시 동일 데이터 중복 발행**          | **`producer_state.json` 도입 → 아래 참고**                                    |
 
 ## Producer 재실행 시 Superset 데이터 중복 문제
 

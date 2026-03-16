@@ -29,14 +29,14 @@ related:
 
 현업의 Raw 데이터는 완벽하지 않다. 이메일 대소문자가 섞여 있거나, 쉼표로 뭉쳐 있는 등 포맷이 파편화되어 있기 때문에, 정제해야 정확한 분석과 JOIN 이 가능하다.
 
-|목적|함수|
-|---|---|
-|데이터 정제 (공백·특수문자 제거)|`TRIM` · `REPLACE`|
-|특정 자리 추출 (주민번호·전화번호)|`SUBSTR`|
-|대소문자 통일|`UPPER` · `LOWER`|
-|컬럼 쪼개기|`SPLIT_PART` · `REGEXP_SUBSTR`|
-|여러 행을 한 줄로 합치기|`STRING_AGG` · `LISTAGG`|
-|자릿수 맞추기|`LPAD` · `RPAD`|
+| 목적                   | 함수                             |
+| -------------------- | ------------------------------ |
+| 데이터 정제 (공백·특수문자 제거)  | `TRIM` · `REPLACE`             |
+| 특정 자리 추출 (주민번호·전화번호) | `SUBSTR`                       |
+| 대소문자 통일              | `UPPER` · `LOWER`              |
+| 컬럼 쪼개기               | `SPLIT_PART` · `REGEXP_SUBSTR` |
+| 여러 행을 한 줄로 합치기       | `STRING_AGG` · `LISTAGG`       |
+| 자릿수 맞추기              | `LPAD` · `RPAD`                |
 
 ---
 
@@ -277,10 +277,36 @@ SELECT RPAD('AB', 5, '*');    -- 결과: 'AB***' (오른쪽에 * 채움)
 
 하나의 컬럼에 구분자(`,`, `@`)로 뭉쳐있는 데이터를 쪼갤 때 사용한다. 표준 SQL 이 아니어서 **DB별 문법 차이가 가장 심한 영역**이다.
 
+## SPLIT_PART — PostgreSQL ⭐️
+
+```text
+SPLIT_PART(문자열, 구분자, N번째)
+  문자열을 구분자로 쪼갠 후 N번째 조각 반환
+  1번째부터 시작 (0 아님)
+  PostgreSQL 전용
+
+예) SPLIT_PART('지연 도착(+15분)', '(', N)
+
+  '지연 도착(+15분)'
+       ↓ '(' 로 쪼개면
+  1번째: '지연 도착'
+  2번째: '+15분)'
+
+  N=1 → '지연 도착'   ← 괄호 앞
+  N=2 → '+15분)'      ← 괄호 뒤
+```
+
 ```sql
 -- 🐘 PostgreSQL: SPLIT_PART (가장 직관적)
+-- 문법: SPLIT_PART(문자열, 구분자, N번째)
 SELECT SPLIT_PART(이메일, '@', 2) AS 도메인 FROM 사원테이블;
 -- 결과: 'gmail.com', 'naver.com'
+
+-- 실전: 괄호 앞 텍스트만 추출
+SELECT SPLIT_PART('정시 도착(기준 시각)', '(', 1);   -- '정시 도착'
+SELECT SPLIT_PART(arr_status, '(', 1) FROM train_delay;  -- 상태 텍스트만
+-- arr_status = '지연 도착(+15분)' → '지연 도착'
+-- arr_status = '정시 도착(기준 시각)' → '정시 도착'
 
 -- 🔴 Oracle: REGEXP_SUBSTR (정규식 조합)
 -- '[^@]+': @ 가 아닌 문자 덩어리 중 2번째 덩어리
