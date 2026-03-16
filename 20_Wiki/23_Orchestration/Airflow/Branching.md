@@ -14,7 +14,7 @@ tags:
   - DAG
 related:
   - "[[Airflow_XComs]]"
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
 ---
 ## 개념 한 줄 요약
 

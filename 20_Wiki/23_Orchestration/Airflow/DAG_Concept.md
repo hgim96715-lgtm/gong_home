@@ -11,7 +11,7 @@ tags:
   - 면접질문
 related:
   - "[[Airflow_DAG_Skeleton]]"
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
 ---
 ## 개념 한 줄 요약
 

@@ -11,7 +11,7 @@ aliases:
 tags:
   - Python
 related:
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
   - "[[Airflow_Hooks]]"
   - "[[Python_Database_Connect]]"
   - "[[Python_Dictionaries]]"

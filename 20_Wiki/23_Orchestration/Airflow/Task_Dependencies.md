@@ -10,7 +10,7 @@ tags:
   - Airflow
 related:
   - "[[Airflow_DAG_Skeleton]]"
-  - "[[Airflow_DAG_Operators]]"
+  - "[[Airflow_Operators]]"
 ---
 ## 개념 한 줄 요약
 
