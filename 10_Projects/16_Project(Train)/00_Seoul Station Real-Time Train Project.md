@@ -152,64 +152,51 @@ travelerTrainRunInfo2  (실시간 운행정보)
     - PostgreSQL 연동 → 실시간 전광판 UI
 - [x]  **STEP 6.** Airflow 연동 [[06_Airflow_Pipeline]]
     - 파이프라인 스케줄링 + 모니터링
-- [ ]  **STEP 7.** 전체 통합 테스트 + README 정리 [[07_Integration_Test]]
+- [x]  **STEP 7.** 전체 통합 테스트 + README 정리 [[07_Integration_Test]]
 ---
 ## 프로젝트 폴더 구조
 
 ```text
-seoul-train-realtime/
-├── docker-compose.yml       ← 전체 컨테이너 정의
-├── .env                     ← API 키, DB 설정 등
-│
-├── producer/                ← STEP 2, 3
-│   ├── producer.py
-│   ├── main.py
-│   └── requirements.txt
-│
-├── spark/                   ← STEP 4
-│   ├── Dockerfile
-│   └── spark_Streaming.py
-│
-├── airflow/                 ← STEP 6
+├── airflow/
 │   └── dags/
-│       └── train_pipeline.py
-│
-├── superset/                ← STEP 5
-│   └── superset_config.py
-│
+│       ├── __pycache__/
+│       │   ├── train_delay_dag.cpython-312.pyc (2.0 KB)
+│       │   └── train_schedule_dag.cpython-312.pyc (1.9 KB)
+│       ├── train_delay_dag.py (1.9 KB)
+│       └── train_schedule_dag.py (1.2 KB)
+├── docs/
+│   ├── final_dashboard.jpg (337.5 KB)
+│   └── README.md (8.5 KB)
 ├── postgres/
-│   └── init.sql
-│
-└── docs/
-    ├── README.md
-    └── architecture.png
+│   └── init.sql (1.8 KB)
+├── producer/
+│   ├── __pycache__/
+│   │   ├── main.cpython-312.pyc (8.7 KB)
+│   │   └── producer.cpython-312.pyc (17.1 KB)
+│   ├── main.py (7.4 KB)
+│   ├── producer_state.json (0.1 KB)
+│   ├── producer.py (13.0 KB)
+│   └── requirements.txt (0.1 KB)
+├── spark/
+│   ├── consumer.py (7.0 KB)
+│   └── requirements.txt (0.0 KB)
+├── spark_drivers/
+│   ├── commons-pool2-2.11.1.jar (142.1 KB)
+│   ├── kafka-clients-3.4.1.jar (4932.1 KB)
+│   ├── postgresql-42.7.1.jar (1058.8 KB)
+│   ├── spark-sql-kafka-0-10_2.12-3.5.0.jar (422.2 KB)
+│   └── spark-token-provider-kafka-0-10_2.12-3.5.0.jar (55.5 KB)
+└── docker-compose.yml (5.5 KB)
 ```
+
+>Project Structure Generate vs code 확장 프로그램에서 가져왔다.
+
 
 ---
-## 목표 대시보드 화면
+## 최종 대시보드 화면 
 
-```text
-┌────────────────────────────────────────────────┐
-│  🚄 서울역 열차 현황      2026-03-10  14:23:05  │
-├──────┬──────┬──────┬────────┬──────────────────┤
-│ 열차 │ 행선 │ 출발 │ 도착   │ 현재 상태         │
-├──────┼──────┼──────┼────────┼──────────────────┤
-│ KTX  │ 부산 │14:00 │ 17:30  │ 🟢 운행중 (52%)  │
-│ KTX  │ 광주 │14:30 │ 17:10  │ 🟡 출발 7분 전   │
-│ ITX  │ 강릉 │15:00 │ 18:20  │ ⚪ 출발 37분 전  │
-└──────┴──────┴──────┴────────┴──────────────────┘
 
-┌────────────────────────────────────────────────┐
-│  📊 어제 지연 현황 (2026-03-09)                 │
-├──────┬──────┬──────────┬──────────┬────────────┤
-│ 열차 │ 행선 │ 계획 출발 │ 실제 출발 │ 지연       │
-├──────┼──────┼──────────┼──────────┼────────────┤
-│ KTX  │ 부산 │  09:00   │  09:00   │ ✅ 정시     │
-│ KTX  │ 광주 │  10:00   │  10:15   │ 🔴 +15분   │
-│ ITX  │ 강릉 │  11:30   │  11:28   │ 🟢 -2분    │
-└──────┴──────┴──────────┴──────────┴────────────┘
-```
-
+![[서울역-출발-기준으로-기차는-어디로-흘러갈까-🚆-2026-03-16T06-34-04.990Z.jpg]]
 ---
 ## Kafka 토픽 구조
 
