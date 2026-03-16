@@ -92,7 +92,7 @@ source venv/bin/activate
 
 # 3. 이제 그냥 사용 가능!
 pip3 install streamlit
-streamlit run portfolio.py
+streamlit run Home.py
 ```
 
 
