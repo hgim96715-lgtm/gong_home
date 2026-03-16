@@ -1,7 +1,7 @@
 ---
 tags:
   - Linux_Test
-status: 🟨 힌트참고
+status: 🟪 복습후 해결함
 related:
   - "[[Linux_Stream_Editor]]"
   - "[[Linux_Text_Slicing_cut]]"

@@ -1,7 +1,7 @@
 ---
 tags:
   - Linux_Test
-status: 🟨 힌트참고
+status: 🟪 복습후 해결함
 related:
   - "[[Shell_Input_Output]]"
   - "[[00_Linux_Challenge_DashBoard]]"

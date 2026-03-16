@@ -53,6 +53,7 @@
 
 - [[File_Permissions]] : 파일의 권한과 소유권 완벽 정리 (`chmod`, `chown`, `rwx`, `755`, `644`, `8진수`)
 - [[Superuser]] : 관리자 권한의 힘과 책임 (`sudo`, `su`, `root`, `/etc/sudoers`)
+- [[Linux_OpenSSL]] : 키 생성 · 인증서 · 암호화 도구 (`openssl rand`, `base64`, `SECRET_KEY 생성`, `SHA256`, `인증서 확인`)
 
 ---
 

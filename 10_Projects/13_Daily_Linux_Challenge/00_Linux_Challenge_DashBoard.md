@@ -61,8 +61,8 @@ TABLE WITHOUT ID
   status as "Current State"
 FROM "10_Projects/13_Daily_Linux_Challenge"
 WHERE file.name != this.file.name
-  AND !contains(status, "🟩")
+  AND !contains(status, "🟩") 
+  AND !contains(status, "🟪")
 SORT file.name ASC
 ```
 
-[^1]: 

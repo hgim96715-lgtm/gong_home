@@ -1,7 +1,7 @@
 ---
 tags:
   - Linux_Test
-status: 🟧 복습
+status: 🟪 복습후 해결함
 related:
   - "[[Linux_Text_Slicing_cut]]"
   - "[[00_Linux_Challenge_DashBoard]]"
