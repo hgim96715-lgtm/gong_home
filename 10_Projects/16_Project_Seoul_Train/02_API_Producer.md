@@ -9,7 +9,7 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
   - "[[01_Docker_Setup_Postgresql_Setup]]"
   - "[[Python_URL_Parsing]]"
   - "[[Python_Requests_Methods]]"

@@ -7,13 +7,13 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[01_Docker_Setup_Postgresql_Setup]]"
   - "[[02_API_Producer]]"
   - "[[03_Kafka_Producer]]"
   - "[[04_Spark_Streaming]]"
   - "[[05_Superset_Dashboard]]"
   - "[[06_Airflow_Pipeline]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---
 
 # 07_Integration_Test — 전체 통합 테스트 

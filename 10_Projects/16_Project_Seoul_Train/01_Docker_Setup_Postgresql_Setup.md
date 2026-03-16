@@ -6,7 +6,7 @@ tags:
   - Project
 related:
   - "[[PostgreSQL_Setup]]"
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-project]]"
   - "[[00_Docker_HomePage]]"
   - "[[Kafka_CLI_Cheatsheet]]"
   - "[[SQL_DDL_Create]]"

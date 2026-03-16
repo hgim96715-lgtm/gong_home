@@ -8,7 +8,6 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[03_Kafka_Producer]]"
   - "[[04_Spark_Streaming]]"
   - "[[05_Superset_Dashboard]]"
@@ -19,6 +18,7 @@ related:
   - "[[Airflow_DAG_Skeleton]]"
   - "[[Python_Sys_Module]]"
   - "[[Airflow_Execution_Date]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---
 
 # 06_Airflow_Pipeline — 배치 스케줄링

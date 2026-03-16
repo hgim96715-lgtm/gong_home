@@ -1,6 +1,5 @@
 >[!source]
 >페이지 [Streamlit 공식 홈페이지](https://streamlit.io/)
->portfolio [나의 portfolio](https://gongstudyde-ixkmtnttnimw8wszmtxgzg.streamlit.app/)
 >Streamlit에서 실시간으로 숫자가 바뀌는 원리는 **"빈 의자(Placeholder)를 먼저 놓고, 나중에 사람(데이터)을 앉히는 방식"**
 
 ## 화면 구성하기 (Basic UI)

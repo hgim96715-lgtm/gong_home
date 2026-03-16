@@ -10,7 +10,6 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[01_Docker_Setup_Postgresql_Setup]]"
   - "[[03_Kafka_Producer]]"
   - "[[Kafka_Python_Consumer]]"
@@ -20,6 +19,7 @@ related:
   - "[[Spark_Streaming_Kafka_Integration]]"
   - "[[DataFrame_Transform]]"
   - "[[Spark_JSON_Handling]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---
 # 04_Spark_Streaming — Kafka 데이터를 받아서 PostgreSQL 에 저장하기
 

@@ -8,7 +8,6 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[01_Docker_Setup_Postgresql_Setup]]"
   - "[[04_Spark_Streaming]]"
   - "[[Superset_Setup]]"
@@ -17,6 +16,7 @@ related:
   - "[[SQL_NULL_Functions]]"
   - "[[SQL_Numeric_Functions]]"
   - "[[Linux_OpenSSL]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---
 
 # 05_Superset_Dashboard — 데이터 시각화

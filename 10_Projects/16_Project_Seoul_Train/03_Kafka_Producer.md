@@ -8,7 +8,6 @@ aliases:
 tags:
   - Project
 related:
-  - "[[00_Seoul Station Real-Time Train Project|train-project]]"
   - "[[Docker_Compose_Setup]]"
   - "[[Python_DateTime]]"
   - "[[Kafka_CLI_Cheatsheet]]"
@@ -18,6 +17,7 @@ related:
   - "[[Kafka_Python_Serialization]]"
   - "[[Python_JSON]]"
   - "[[Python_OS_Module]]"
+  - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---
 
 
