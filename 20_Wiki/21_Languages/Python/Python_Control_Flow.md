@@ -9,7 +9,6 @@ aliases:
   - 흐름 제어
 tags:
   - Python
-  - Logic
 related:
   - "[[Dynamic_Tasks]]"
   - "[[Airflow_Sensors]]"
@@ -19,246 +18,299 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Python_List_Comprehension]]"
 ---
-## 개념 한 줄 요약
+# Python_Control_Flow — 제어문
 
-**"코드의 실행 순서를 내 마음대로 지휘하는 지휘봉."**
-위에서 아래로만 흐르는 물길을 **"갈림길(If)"** 을 만들어 나누거나, **"물레방아(Loop)"** 처럼 뱅글뱅글 돌게 만드는 기술입니다.
+## 한 줄 요약
 
----
-
-##  왜 필요한가? (Why & Context)
-
-###  문제점
-* 제어문이 없으면 코드를 1번 줄부터 100번 줄까지 무조건 순서대로만 실행해야 합니다.
-* **불가능한 미션:** "주말엔 크롤링 하지 마", "파일 100개 다 처리해", "에러 나면 재시도해".
-
-###  해결책 (Data Engineering Context)
-| 도구 | 역할 | 데이터 엔지니어링 활용 예시 |
-| :--- | :--- | :--- |
-| **If (조건)** | 판단 | "오늘이 휴일이면(**If**) 크롤링 스킵해." |
-| **For (반복)** | 순회 | "S3 버킷의 파일 리스트를 하나씩 꺼내서(**For**) DB에 적재해." |
-| **While (반복)** | 대기 | "API 응답이 200(성공)이 될 때까지(**While**) 5초마다 재시도해." |
-
----
-##  If 문 (조건문)
-
-상황에 따라 다른 코드를 실행합니다. 
-파이썬은 `{ }` 괄호 대신 **들여쓰기(Indentation, 공백 4칸)** 가 생명입니다.
-
-### 문법 구조 (Syntax)
-
-```python
-if [조건 A]:
-    # 조건 A가 참(True)일 때 실행
-elif [조건 B]:
-    # A는 아니고, B가 참일 때 실행
-else:
-    # 위의 모든 조건이 거짓(False)일 때 실행
+```
+코드의 실행 순서를 지휘하는 도구
+위에서 아래로만 흐르는 코드를
+갈림길(if) 로 나누거나 반복(for/while) 시키기
 ```
 
-### 실전 코드
+---
+
+---
+
+# ① if — 조건문
+
+```python
+if 조건A:
+    # A 참일 때
+elif 조건B:
+    # A 아니고 B 참일 때
+else:
+    # 전부 거짓일 때
+```
 
 ```python
 status = "failed"
 
 if status == "success":
-    print("성공! 다음 태스크 진행시켜.")
+    print("성공!")
 elif status == "failed":
-    print("실패! 관리자에게 알림 보내.")
+    print("실패! 알림 보내.")
 else:
     print("대기 중...")
 ```
 
-### Truthy & Falsy (참과 거짓)
+## Truthy / Falsy
 
-파이썬에서는 숫자 그 자체를 조건문으로 쓸 수 있습니다.
-
-- **0** : `False`로 취급
-- **0이 아닌 모든 수** (1, -1, 100...) : `True`로 취급
-
-**활용 예시:**
+```
+0         → False
+0이 아닌 수 → True  (1, -1, 100 전부)
+빈 문자열  → False
+빈 리스트  → False
+None       → False
+```
 
 ```python
 n = 3
-if n % 2:  # 나머지가 1이면 True (홀수)
-    print("홀수입니다")
-else:      # 나머지가 0이면 False (짝수)
-    print("짝수입니다")
+if n % 2:     # 나머지가 1 → True → 홀수
+    print("홀수")
+else:         # 나머지가 0 → False → 짝수
+    print("짝수")
 ```
-
-**[[Python_List_Comprehension]]** : `[i*i for i in range(2, n+1, 2)]` 처럼 짝수 제곱을 한 줄로 만드는 법 참고.
 
 ---
-## For 문 (순회 반복) 
 
-리스트, 딕셔너리 같은 **덩어리(Iterable)** 에서 데이터를 하나씩 꺼낼 때 씁니다. 
-Airflow 동적 태스크 생성의 핵심입니다.
+---
 
-### 문법 구조 (Syntax)
+# ② for — 순회 반복
 
 ```python
-for [변수명] in [반복_가능한_대상]:
-    # 꺼낸 데이터를 [변수명]으로 요리함
+for 변수 in 반복가능한_객체:
+    # 꺼낸 값을 처리
 ```
-
-### 실전 코드
 
 ```python
 files = ["data_v1.csv", "data_v2.csv", "data_v3.csv"]
 
-# 파일 리스트를 하나씩 돌면서 처리
 for file in files:
     print(f"Processing {file}...")
-    # 여기에 전처리 로직 들어감
 ```
 
-### [심화] Python은 `foreach`가 없다?
+## for 에 들어올 수 있는 것 (Iterable)
 
-다른 언어(Java, C) 개발자들이 가장 많이 묻는 질문입니다.
+```
+✅ 가능:  리스트 [] / 튜플 () / 문자열 "" / 딕셔너리 {} / range()
+❌ 불가능: 정수 10 / 실수 3.14  → TypeError
 
-- **Q.** "파이썬에는 `foreach` 문이 없나요?"
-- **A.** **네, 없습니다. `for` 문이 곧 `foreach` 이기 때문입니다.**
-    - 전통적인 `for(i=0; i<N; i++)` 방식이 아니라, 주머니에서 알맹이를 직접 꺼내는 방식입니다.
-
-### `in` 뒤에는 누가 올 수 있나? (Iterable)
-
-`for 변수 in [여기]:` 의 `[여기]` 자리에는 반드시 **Iterable(반복 가능한 객체)** 만 올 수 있습니다.
-
-- **(O) 가능한 애들:** 리스트(`[]`), 튜플(`()`), 문자열(`"abc"`), 딕셔너리(`{}`), `range()`
-- **(X) 불가능한 애들:** 정수(`10`), 실수(`3.14`) -> 꺼낼 게 없어서 에러(`TypeError`) 발생!
-
-```python
-# [해결책] 숫자로 반복하고 싶으면 range()를 써라!
-# 0부터 9까지(10번) 반복
-for i in range(10):
-    print(i)
+문자열도 Iterable:
+  for c in "hello":  →  h e l l o 하나씩 꺼냄
+  for c in str(123): →  1 2 3 하나씩 꺼냄  ← list() 변환 불필요
 ```
 
-
-----
-## While 문 (조건 반복) 
-
-끝나는 횟수가 정해져 있지 않고, **특정 조건이 만족될 때까지** 계속 기다릴 때 씁니다.
-
-### 문법 구조 (Syntax)
+## ⭐️ list(str(n)) 안 해도 되는 이유
 
 ```python
-while [조건]:
-    # 조건이 True인 동안 계속 무한 반복
+n = 12345
+
+# ❌ 굳이 list 로 변환 안 해도 됨
+for c in list(str(n)):   # list 변환 불필요
+    print(c)
+
+# ✅ str 은 그 자체로 Iterable
+for c in str(n):         # 바로 순회 가능
+    print(c)             # 1 2 3 4 5
+
+# ✅ 한 줄 - 각 자리 숫자 합계
+total = sum(int(c) for c in str(n))    # 15
+total = sum(int(i) for i in str(n))    # 동일, 변수명만 다름
+
+# ❌ list 변환 후 계산 (불필요한 단계)
+total = sum(int(c) for c in list(str(n)))
 ```
 
-### 실전 코드 (재시도 로직)
+```
+list(str(n)) 이 필요한 경우:
+  특정 인덱스의 문자를 수정할 때
+  "12345"[2] = "9"  ← 문자열은 불변이라 에러
+  lst = list("12345"); lst[2] = "9"  ← list 로 변환 후 수정
+
+list(str(n)) 불필요한 경우:
+  단순 순회 / 각 글자 처리 / 합계 계산
+  → str(n) 만으로 for 에 바로 사용 가능
+```
+
+## 제너레이터 표현식 — 괄호 안 for
 
 ```python
-import time
-retry_count = 0
+# 리스트 컴프리헨션 → 리스트 생성
+[int(c) for c in str(n)]         # [1, 2, 3, 4, 5]
 
-# 5번까지만 재시도 하겠다 (무한 루프 방지 조건)
-while retry_count < 5:
-    print(f"{retry_count + 1}번째 연결 시도 중...")
-    retry_count += 1
-    time.sleep(1) # 1초 대기
+# 제너레이터 표현식 → sum/max/min 등 집계 함수에 바로 전달
+sum(int(c) for c in str(n))      # 15  ← list 안 만들고 바로 합산
+max(int(c) for c in str(n))      # 5
+min(int(c) for c in str(n))      # 1
 
-print("연결 종료")
+# 조건 추가
+sum(int(c) for c in str(n) if int(c) % 2 == 0)  # 짝수 자리만 합산
+```
+
+```
+sum([int(c) for c in str(n)])  vs  sum(int(c) for c in str(n))
+  앞: 리스트 만들고 → sum     (메모리에 리스트 생성)
+  뒤: 바로 sum 에 전달          (메모리 효율 좋음)
+  결과는 동일, 뒤가 더 Pythonic
+```
+
+## range() 숫자 반복
+
+```python
+for i in range(5):          # 0 1 2 3 4
+for i in range(1, 6):       # 1 2 3 4 5
+for i in range(0, 10, 2):   # 0 2 4 6 8  (2씩 증가)
+for i in range(10, 0, -1):  # 10 9 8 ... 1  (역순)
+```
+
+## enumerate — 인덱스 + 값 동시에
+
+```python
+files = ["a.csv", "b.csv", "c.csv"]
+
+for i, file in enumerate(files):
+    print(i, file)
+# 0 a.csv
+# 1 b.csv
+# 2 c.csv
+
+# 1부터 시작
+for i, file in enumerate(files, 1):
+    print(i, file)
+# 1 a.csv ...
 ```
 
 ---
-## 제어 장치 (Break & Continue) 
 
-반복문을 더 세밀하게 조종하는 브레이크/액셀 페달입니다.
+---
 
-- **`break`:** "야, 그만해! 탈출!" (반복문 **즉시 종료**)
-    - _예: 파일 찾다가 찾았으면 뒤에 건 볼 필요 없이 종료._
+# ③ while — 조건 반복
 
-- **`continue`:** "이번 건 스킵하고 다음 거 해!" (이번 턴만 넘기고 **계속 진행**)
-    - _예: 파일 처리하다가 에러 나면, 멈추지 말고 다음 파일로 넘어가기._
+```python
+while 조건:
+    # 조건이 True 인 동안 계속 반복
+```
+
+```python
+import time
+retry = 0
+
+while retry < 5:
+    print(f"{retry + 1}번째 시도")
+    retry += 1
+    time.sleep(1)
+
+print("종료")
+```
+
+```
+⚠️ while True 에 break 없으면 무한 루프
+   서버 비용 폭탄의 주범
+   → 항상 탈출 조건 확인
+```
+
+---
+
+---
+
+# ④ break / continue
+
+```
+break    → 반복문 즉시 종료 (탈출)
+continue → 이번 턴만 건너뛰고 다음으로
+```
 
 ```python
 for i in range(10):
     if i == 3:
-        continue # 3은 건너뛰고 4로 감 (Skip)
+        continue   # 3 건너뜀
     if i == 5:
-        break    # 5가 되면 아예 반복문 끝! (Stop)
+        break      # 5 되면 종료
     print(i)
-# 결과: 0, 1, 2, 4 (5부터는 안 찍힘)
+# 결과: 0 1 2 4
 ```
-
 
 ---
-## For-Else 문법 (파이썬의 특권)
 
-다른 언어에는 없는 파이썬만의 독특한 문법입니다. 
-**"반복문을 다 돌았는데도 특정 사건(break)이 발생하지 않았을 때"**  실행됩니다.
+---
 
-### 문법 구조 (Syntax)
+# ⑤ for-else — 파이썬 전용 문법
 
-```python
-for 변수 in 리스트:
-    if 조건:
-        # 찾았다! (성공)
-        break
-else:
-    # 반복문이 끝까지 돌았는데도 break를 못 만남 (실패/완료)
-    # 즉, "찾는 게 없었다"는 뜻
+```
+for 문이 break 없이 끝까지 돌면 else 실행
+break 를 만나면 else 실행 안 됨
+
+용도: "찾았는지 못 찾았는지" 를 Flag 변수 없이 처리
 ```
 
-  ### 왜 필요한가? (Flag 변수 제거)
-
-보통은 "찾았니?"를 표시하기 위해 `is_found = False` 같은 변수(Flag)를 둡니다.
-`for-else`를 쓰면 이 변수를 없애고 코드를 직관적으로 짤 수 있습니다.
-
-[Before: 깃발(Flag) 변수 사용]
-
 ```python
+# ❌ 기존 방식 — Flag 변수 필요
 numbers = [1, 3, 5, 7]
-is_found = False  # 깃발 준비
+is_found = False
 
 for n in numbers:
     if n == 4:
         is_found = True
-        print("4 찾았다!")
         break
 
-if not is_found:  # 깃발 확인
-    print("4가 없네요.")
-```
+if not is_found:
+    print("4 없음")
 
-[After: For-Else 사용]
-
-```python
-numbers = [1, 3, 5, 7]
-
+# ✅ for-else — Flag 변수 불필요
 for n in numbers:
     if n == 4:
-        print("4 찾았다!")
-        break  # 찾으면 반복문 탈출 (else 실행 안 됨)
+        print("4 찾음!")
+        break
 else:
-    # break 없이 끝까지 돌았으면 실행
-    print("4가 없네요.")
+    print("4 없음")   # break 없이 끝까지 돌면 실행
 ```
 
-**핵심 요약:**
-
-- **Break를 만남** → Else 실행 **X** (중도 하차)
-- **Break 안 만남** → Else 실행 **O** (완주 성공)
+---
 
 ---
-## 초보자가 자주 착각하는 포인트 
 
-### ① 들여쓰기(Indentation) 에러
+# 자주 하는 실수
 
-파이썬은 공백(Space) 4칸에 목숨 걸어야 합니다.
-`if`나 `for` 다음 줄이 들여쓰기가 안 되어 있으면 에러(`IndentationError`)가 나거나 로직이 꼬입니다.
+## ① 들여쓰기 에러
 
-### ② While문 무한 루프 (Infinite Loop)
+```python
+# ❌ 들여쓰기 없으면 에러
+if True:
+print("hello")   # IndentationError
 
-`while True:`라고 써놓고 안에 `break`를 안 만들어두면? 컴퓨터가 멈출 때까지 영원히 돕니다.
-(클라우드 서버 비용 폭탄의 주범 💣) -> 항상 **탈출 조건**을 확인하세요.
+# ✅
+if True:
+    print("hello")
+```
 
-### ③ For문에서 리스트 수정하기
+## ② for 문 안에서 리스트 수정
 
-`for item in my_list:` 로 돌리면서 `my_list.remove(item)` 처럼 리스트 개수를 줄이면 인덱스가 꼬여서 대참사가 일어납니다. 
-원본을 건드리지 말고 **새 리스트**를 만드세요.
+```python
+my_list = [1, 2, 3, 4, 5]
 
->**Obsidian 연결**
-> 이 내용은 Airflow의 **[[Dynamic_Tasks]]** (For문 활용)와 **[[Airflow_Sensors]]** (While문 개념)를 이해하는 기초가 됩니다.
+# ❌ 순회하면서 원본 수정 → 인덱스 꼬임
+for item in my_list:
+    if item % 2 == 0:
+        my_list.remove(item)   # 대참사
+
+# ✅ 새 리스트에 담기
+result = [item for item in my_list if item % 2 != 0]
+```
+
+## ③ list(str(n)) 불필요하게 씀
+
+```python
+n = 12345
+
+# ❌ 불필요한 변환
+for c in list(str(n)):
+    ...
+
+# ✅ str 은 바로 순회 가능
+for c in str(n):
+    ...
+
+# ✅ 합계도 한 줄로
+sum(int(c) for c in str(n))
+```
