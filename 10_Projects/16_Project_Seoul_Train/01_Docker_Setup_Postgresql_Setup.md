@@ -11,6 +11,8 @@ related:
   - "[[Kafka_CLI_Cheatsheet]]"
   - "[[SQL_DDL_Create]]"
   - "[[04_Spark_Streaming]]"
+  - "[[Docker_Image_vs_Container]]"
+  - "[[Docker_Compose_Template]]"
 ---
 # 🐳 STEP 1. Docker Compose 기초 세팅 
 
