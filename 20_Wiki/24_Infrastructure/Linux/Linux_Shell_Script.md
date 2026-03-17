@@ -8,15 +8,15 @@ aliases:
   - while문
   - 쉘변수
   - case문
+  - read
 tags:
   - Shell
   - Linux
 related:
   - "[[Shell_Parameter_Expansion]]"
   - "[[Linux_Shell_Arrays]]"
+  - "[[00_Linux_HomePage]]"
 ---
-
-
 # Linux_Shell_Script — 쉘 스크립트
 
 ## 한 줄 요약
@@ -105,7 +105,7 @@ echo "${name,}"    # hELLO World  (첫 글자만 소문자)
 echo "${name^}"    # HELLO World  (첫 글자만 대문자, 이미 대문자면 그대로)
 ```
 
-```bash
+```
 활용:
   사용자 입력을 소문자로 통일 후 case 비교
   → 대소문자 구분 없이 y/Y/Yes/YES 전부 y 로 처리
@@ -130,7 +130,95 @@ read c; case "${c,,}" in y) echo YES ;; n) echo NO ;; esac
 
 ---
 
-# ③ 조건문 — if / elif / else
+# ③ read — 사용자 입력 받기
+
+```
+read 변수명
+  표준 입력(stdin) 에서 한 줄 읽어서 변수에 저장
+
+코딩 테스트 / 알고리즘에서 가장 많이 쓰는 패턴:
+  첫 줄에 개수(n) 가 오고
+  두 번째 줄에 실제 데이터가 오는 형식
+```
+
+## 기본 사용
+
+```bash
+read n
+echo "입력받은 값: $n"
+
+# 실행 후 "5" 입력하면
+# 입력받은 값: 5
+```
+
+## 여러 값 한 줄에 받기
+
+```bash
+# "1 2 3" 입력 시
+read a b c
+echo $a   # 1
+echo $b   # 2
+echo $c   # 3
+```
+
+## 배열로 받기 (-a 옵션)
+
+```bash
+# "1 2 3 4 5" 입력 시
+read -a arr
+echo ${arr[0]}     # 1
+echo ${arr[1]}     # 2
+echo ${#arr[@]}    # 5  (배열 길이)
+```
+
+## 핵심 패턴 — 첫 줄 n 으로 버리기 ⭐️
+
+```
+알고리즘 문제에서 자주 나오는 형식:
+  4          ← 첫 줄: 데이터 개수
+  1 2 3 4    ← 두 번째 줄: 실제 데이터
+
+"4" 를 없애는 게 아니라
+"4 를 읽어서 n 에 담는다"
+→ n = 4 (배열 크기로 활용 가능)
+```
+
+```bash
+read n           # 첫 줄 "4" 읽기 → n=4
+read -a arr      # 두 번째 줄 "1 2 3 4" 읽기 → 배열
+
+# n 을 활용해서 평균 계산
+sum=0
+for x in "${arr[@]}"; do
+    sum=$(( sum + x ))
+done
+echo $(( sum / n ))    # 2  (10/4=2, 정수 나눗셈)
+
+# 소수점까지
+echo "scale=2; $sum / $n" | bc   # 2.50
+```
+
+```bash
+# n 을 안 쓰고 그냥 버리는 경우도 있음
+read _           # _ 에 담아서 무시 (관행)
+read -a arr
+```
+
+## -p 옵션 — 프롬프트 같이 출력
+
+```bash
+read -p "이름 입력: " name
+echo "안녕하세요, $name"
+
+read -p "포트 번호: " port
+echo "http://localhost:$port"
+```
+
+---
+
+---
+
+# ④ 조건문 — if / elif / else
 
 ```
 대괄호 [ ] 안쪽 양옆에는 무조건 공백 필요

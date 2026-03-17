@@ -10,7 +10,6 @@ tags:
 related:
   - "[[System_Uptime]]"
   - "[[Network_Status]]"
-  - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
 

@@ -9,9 +9,9 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[00_Linux_HomePage(기존)]]"
   - "[[SSH_Connection]]"
   - "[[File_Permissions]]"
+  - "[[00_Linux_HomePage]]"
 ---
 
 # Linux_OpenSSL — 키 생성 · 인증서 · 암호화
