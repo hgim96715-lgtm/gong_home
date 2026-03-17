@@ -14,120 +14,232 @@ related:
   - "[[Python_String_Methods]]"
   - "[[00_Python_HomePage]]"
 ---
-## 개념 한 줄 요약
+# Python_Variables_Types — 변수와 자료형
 
-**"데이터를 담는 '그릇(Variable)'과 그릇에 담긴 내용물의 '종류(Type)'."**
+## 한 줄 요약
 
-* **변수(Variable):** 데이터를 저장하는 이름표. (`name = "Spark"`)
-* **자료형(Type):** 데이터의 생김새. (글자, 정수, 소수, 참/거짓)
-* **Dynamic Typing:** 파이썬은 그릇에 라벨을 안 붙여도 알아서 눈치껏 타입을 정해줍니다. (C/Java랑 다른 점!)
+```
+변수  = 데이터를 저장하는 이름표          name = "Spark"
+자료형 = 데이터의 생김새                  문자 / 정수 / 소수 / 참거짓
+
+Dynamic Typing:
+  파이썬은 타입을 직접 선언 안 해도 알아서 판단
+  C / Java:  int count = 0;   ← 타입 직접 선언 필수
+  Python:    count = 0        ← 알아서 int 로 인식
+```
 
 ---
-##  필수 자료형 4대장 
 
-데이터 엔지니어가 매일 마주치는 4가지 타입입니다.
+---
 
-### ① 문자열 (String, `str`)
+# ① 기본 자료형 4대장
 
-따옴표(`"`, `'`)로 감싸면 무조건 문자열입니다.
+## str — 문자열
 
 ```python
-# 작은 따옴표, 큰 따옴표 상관 없음
-tool = "Airflow"
-version = '2.5.1'  # 숫자로 보이지만 따옴표가 있으므로 문자열!
+tool    = "Airflow"
+version = '2.5.1'    # 숫자처럼 생겼어도 따옴표 있으면 문자열!
 
-# ⭐️ [꿀팁] f-string (변수 섞어 쓰기)
-# 문자열 앞에 'f'를 붙이고 {변수}를 넣으면 마법같이 합쳐짐. (강추!)
+# f-string — 변수 섞어 쓰기
 msg = f"현재 {tool} 버전은 {version} 입니다."
-print(msg) 
-# 출력: 현재 Airflow 버전은 2.5.1 입니다.
+# → "현재 Airflow 버전은 2.5.1 입니다."
 ```
 
-### ② 정수 (Integer, `int`)
-
-소수점이 없는 숫자입니다. 개수를 세거나 인덱스를 다룰 때 씁니다.
+## int — 정수
 
 ```python
-count = 100
+count   = 100
 workers = 4
+total   = count * workers   # 400
 
-# 사칙연산 가능
-total = count * workers  # 400
+# 인덱스 / 개수 세기에 사용
 ```
 
-### ③ 실수 (Float, `float`)
-
-소수점이 있는 숫자입니다.
+## float — 실수
 
 ```python
 accuracy = 98.5
-pi = 3.14159
+pi       = 3.14159
 
-# ⚠️ 주의: 부동소수점 오차
-# 컴퓨터는 0.1 + 0.2를 0.30000000000000004 로 계산할 때가 있음.
-# 돈 계산할 때는 decimal 모듈을 써야 함.
+# ⚠️ 부동소수점 오차
+0.1 + 0.2   # 0.30000000000000004 (컴퓨터 이진수 계산 한계)
+
+# 돈 계산 등 정밀도 필요하면 decimal 모듈 사용
+from decimal import Decimal
+Decimal('0.1') + Decimal('0.2')   # 0.3 ✅
 ```
 
-### ④ 불린 (Boolean, `bool`)
-
-**참(`True`)** 또는 **거짓(`False`)** 딱 두 가지 값만 가집니다. 
-대문자로 시작해야 한다는 점을 절대 잊지 마세요! (`true` ❌ -> `True` ⭕️)
+## bool — 불린
 
 ```python
-is_active = True
-has_error = False
+is_active = True    # 반드시 대문자 T
+has_error = False   # 반드시 대문자 F
 
-# 주로 if 문이랑 짝꿍
+# true / false → SyntaxError
+# True / False → ✅
+
 if is_active:
     print("서버 가동 중!")
 ```
 
----
-## 형 변환 (Type Casting) 
-
-**"숫자처럼 생긴 문자"** 때문에 에러가 가장 많이 납니다. 
-강제로 타입을 바꿔줘야 합니다.
+## None — 값 없음
 
 ```python
-# 상황: 웹사이트나 파일에서 읽어오면 무조건 '문자열'로 옴
-port = "8080" 
+result = None   # 0 이나 False 와 다름 — "값 자체가 없음"
 
-# (X) 에러 발생: 문자열에 숫자를 더하려고 함
-# next_port = port + 1  -> TypeError!
-
-# (O) 해결: 문자를 숫자로 바꿈 (int())
-next_port = int(port) + 1 
-print(next_port) # 8081
-```
-
-### 자주 쓰는 변환 함수
-
-- `int(값)`: 정수로 변환 ("3.5" 넣으면 에러 남! 소수는 `float`로 먼저!)
-- `str(값)`: 문자열로 변환 (숫자와 글자를 합칠 때 필수)
-- `bool(값)`: 참/거짓으로 변환 (`0`, `""`, `[]` 같은 빈 값은 `False`가 됨)
-
----
-## 데이터 엔지니어의 실수 노트 (Common Pitfalls)
-
-### ① Airflow 변수나 환경변수는 다 `str`이다!
-
-Airflow UI에서 Variable을 `100`이라고 저장해도, 파이썬 코드로 가져오면 `"100"`(문자열)으로 옵니다. 
-반드시 **`int()`로 감싸서** 써야 합니다.
-
-### ② `None` 타입
-
-"값이 없음"을 나타내는 특별한 타입입니다. `0`이나 `False`랑은 다릅니다!
-
-```python
-result = None
-
-if result is None:
+if result is None:       # None 비교는 == 아니라 is 사용
     print("데이터가 아직 안 왔어요.")
+
+# None 인지 확인
+result is None      # True
+result is not None  # False
+result == None      # 동작은 하지만 is 권장
 ```
 
+---
 
 ---
-### Tip
 
-"파이썬하다가 **`TypeError`** 가 떴다? 90%는 숫자랑 문자를 더하려고 했거나, `None`값에다가 뭘 하려고 했을 때야. 
-그럴 땐 `print(type(변수명))`을 찍어봐. 내 눈엔 숫자로 보여도 컴퓨터 눈엔 문자열(`str`)인 경우가 허다하거든!"
+# ② 형 변환 (Type Casting)
+
+```
+웹 / 파일 / API 에서 읽어오면 무조건 문자열(str) 로 옴
+→ 숫자처럼 생겨도 str 이라서 연산하면 TypeError
+
+→ 직접 타입 변환 필요
+```
+
+```python
+port = "8080"           # API 에서 읽어옴 → str
+
+# ❌ 문자열에 숫자 더하기 → TypeError
+next_port = port + 1
+
+# ✅ int() 로 변환 후 연산
+next_port = int(port) + 1   # 8081
+```
+
+## 자주 쓰는 변환
+
+```python
+int("100")      # 100
+int(3.9)        # 3    ← 버림 (round 아님)
+int("3.5")      # ❌ ValueError — 소수 문자열은 바로 int 불가
+                # → float("3.5") 먼저, 그다음 int()
+
+float("3.14")   # 3.14
+float(3)        # 3.0
+
+str(100)        # "100"
+str([1, 2])     # "[1, 2]"
+
+bool(0)         # False
+bool("")        # False
+bool([])        # False
+bool(None)      # False
+bool(1)         # True
+bool("a")       # True
+bool([0])       # True  ← 빈 리스트 아님! 주의
+```
+
+```
+TypeError 뜨면:
+  print(type(변수명)) 먼저 찍어볼 것
+  눈엔 숫자로 보여도 str 인 경우가 많음
+```
+
+---
+
+---
+
+# ③ Iterable — 이터러블이 뭔가?
+
+```
+"for 문에 넣을 수 있는 것" = Iterable (반복 가능한 객체)
+내부적으로 __iter__() 메서드가 있음
+
+쉽게: 하나씩 꺼낼 수 있는 것
+```
+
+```
+✅ Iterable (for 문에 넣을 수 있음):
+  str      "hello"   → h e l l o
+  list     [1, 2, 3] → 1 2 3
+  tuple    (1, 2, 3) → 1 2 3
+  dict     {"a": 1}  → 키 a
+  set      {1, 2, 3} → 순서 없이
+  range    range(5)  → 0 1 2 3 4
+
+❌ Not Iterable (for 문에 못 넣음):
+  int      10        → TypeError
+  float    3.14      → TypeError
+  bool     True      → TypeError
+  None               → TypeError
+```
+
+```python
+# str 도 Iterable
+for c in "hello":
+    print(c)         # h e l l o
+
+# int 는 Iterable 아님
+for i in 10:
+    print(i)         # TypeError: 'int' is not iterable
+
+# → 숫자로 반복하고 싶으면 range()
+for i in range(10):
+    print(i)         # 0 1 2 3 4 ... 9
+```
+
+## 이터러블과 자료형 변환
+
+```python
+# list() / tuple() / set() 로 변환 가능
+list("hello")     # ['h', 'e', 'l', 'l', 'o']
+tuple([1, 2, 3])  # (1, 2, 3)
+set([1, 1, 2, 2]) # {1, 2}  ← 중복 제거
+
+# int / float / bool 는 변환 안 됨
+list(10)          # TypeError
+```
+
+---
+
+---
+
+# ④ 실무 주의사항
+
+## Airflow / 환경변수는 전부 str
+
+```python
+# Airflow Variable 에 100 저장해도 코드로 오면 "100" (str)
+batch_size = Variable.get("batch_size")   # "100" (str)
+batch_size = int(Variable.get("batch_size"))   # 100 (int) ✅
+
+# os.environ 도 마찬가지
+port = os.environ.get("PORT")    # "8080" (str)
+port = int(os.environ.get("PORT", "8080"))   # 8080 (int) ✅
+```
+
+## 타입 확인 습관
+
+```python
+# TypeError 뜨면 먼저 타입 확인
+print(type(변수))         # 타입 확인
+print(repr(변수))         # "100" 인지 100 인지 구분 (따옴표 표시)
+
+repr("100")   # "'100'"  ← 따옴표 보임 → str
+repr(100)     # "100"    ← 따옴표 없음 → int
+```
+
+## None 체크
+
+```python
+# ❌ None 에 연산하면 TypeError
+result = None
+result + 1    # TypeError
+
+# ✅ None 체크 먼저
+if result is not None:
+    result + 1
+```

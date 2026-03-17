@@ -13,71 +13,133 @@ related:
   - "[[Python_Lists_Tuples]]"
   - "[[Python_Dictionaries]]"
 ---
-# Type vs Instance
+# Python_Type_Checking — type vs isinstance
 
-## 개념 한 줄 요약
+## 한 줄 요약
 
-**"이 변수, 내가 생각하는 그 데이터 타입 맞아?"**
-데이터의 자료형을 확인할 때 쓰는 파이썬 내장 함수입니다.
-
----
-## 왜 필요한가? (Why)
-
-데이터 엔지니어링 실무에서는 외부 API나 파일에서 데이터를 읽어오기 때문에, 이 데이터가 딕셔너리(`dict`)인지 리스트(`list`)인지 확신할 수 없는 경우가 많습니다. 이때 에러가 터지기 전에 **"리스트가 맞을 때만 반복문을 돌아라"** 처럼 안전장치(방어적 프로그래밍)를 걸기 위해 반드시 필요합니다.
+```
+"이 변수, 내가 생각하는 그 데이터 타입 맞아?"
+데이터의 자료형을 확인하는 내장 함수
+```
 
 ---
-## Code Core Points
 
-### 기본 문법 (`isinstance`)
+---
 
-- `isinstance(검사할_값, 확인하고_싶은_타입)`
-- 맞으면 `True`, 틀리면 `False`를 반환합니다.
+# 왜 필요한가?
+
+```
+외부 API / 파일에서 읽어온 데이터는 타입을 확신할 수 없음
+→ 에러 터지기 전에 안전장치(방어적 프로그래밍) 필요
+
+"리스트가 맞을 때만 반복문 돌아라"
+"dict 가 맞을 때만 .get() 써라"
+```
+
+---
+
+---
+
+# ① isinstance — 타입 검사 (권장)
+
+```python
+isinstance(검사할_값, 확인하고_싶은_타입)
+# 맞으면 True / 틀리면 False
+```
 
 ```python
 data = [1, 2, 3]
 
-print(isinstance(data, list))  # True
-print(isinstance(data, dict))  # False
+isinstance(data, list)   # True
+isinstance(data, dict)   # False
 ```
 
-### 여러 타입 동시에 검사하기 (Tuple 활용)
-
-"문자열이거나 정수면 통과시켜!" 라고 할 때, `or` 연산자를 여러 번 쓸 필요 없이 튜플 `()`로 묶어서 한 방에 검사할 수 있습니다.
+## 여러 타입 동시 검사 — 튜플로 묶기
 
 ```python
 val = 3.14
 
-# "int 랑 float 둘 중 하나라도 맞으면 True!"
-if isinstance(val, (int, float)):
-    print("숫자형 데이터입니다. 계산을 시작합니다.")
+# or 여러 번 쓸 필요 없이 튜플로 한 번에
+isinstance(val, (int, float))    # True  ← int 또는 float
+isinstance(val, (str, bool))     # False
+```
+
+```python
+# 실전: API 응답 데이터 방어적 처리
+response = fetch_data()
+
+if isinstance(response, list):
+    for item in response:       # 리스트일 때만 반복
+        process(item)
+elif isinstance(response, dict):
+    process(response)           # 딕셔너리면 바로 처리
+else:
+    print(f"예상치 못한 타입: {type(response)}")
 ```
 
 ---
-## Detailed Analysis: `type()` vs `isinstance()`
 
-타입을 검사할 때 초보자는 `type(a) == list`를 쓰고, 고수는 `isinstance(a, list)`를 씁니다. 
-가장 결정적인 차이는 **"상속(Inheritance)을 인정하느냐"** 입니다.
+---
 
-- **`type()`:** 아주 깐깐합니다. **"정확히 그 클래스"** 여야만 `True`를 줍니다.
-- **`isinstance()`:** 유연합니다. **"그 클래스의 자식(상속받은 녀석)이어도"** `True`를 줍니다. (다형성 존중)
+# ② type — 타입 확인
+
+```python
+type(3)          # <class 'int'>
+type(3.14)       # <class 'float'>
+type("hello")    # <class 'str'>
+type([1, 2])     # <class 'list'>
+
+# 타입 비교
+type(3) == int   # True
+```
+
+---
+
+---
+
+# ③ type vs isinstance — 핵심 차이
+
+```
+type()       깐깐함 → "정확히 그 클래스" 여야만 True
+isinstance() 유연함 → "그 클래스의 자식(상속)" 도 True
+```
 
 ```python
 class Animal:
     pass
 
-class Dog(Animal): # Animal을 상속받은 Dog
+class Dog(Animal):   # Animal 을 상속받은 Dog
     pass
 
 baduk = Dog()
 
-# 1. type()의 깐깐함
-print(type(baduk) == Dog)    # True (너 개 맞네)
-print(type(baduk) == Animal) # False (너 동물 아니잖아? 개 잖아!) -> 🚨 논리적 오류 발생
+# type() — 상속 무시
+type(baduk) == Dog      # True
+type(baduk) == Animal   # False  ← 개는 동물 아니라고?? 🚨
 
-# 2. isinstance()의 유연함
-print(isinstance(baduk, Dog))    # True
-print(isinstance(baduk, Animal)) # True (개도 동물의 한 종류지!) -> 👍 실무 권장
+# isinstance() — 상속 포함
+isinstance(baduk, Dog)     # True
+isinstance(baduk, Animal)  # True  ← 개도 동물의 한 종류 ✅
 ```
 
->**결론:** 파이썬 공식 문서에서도 데이터 타입을 검사할 때는 `type()` 비교보다 **`isinstance()` 사용을 강력하게 권장**합니다!
+```
+결론:
+  파이썬 공식 문서에서도 isinstance() 권장
+  상속 관계 고려 → 더 안전하고 유연함
 
+  type() 쓸 때:
+  "정확히 이 클래스 그 자체인지" 확인할 때만 사용
+```
+
+---
+
+---
+
+# 한눈에 비교
+
+|항목|`type()`|`isinstance()`|
+|---|---|---|
+|상속 인정|❌|✅|
+|여러 타입 동시 검사|❌|✅ `(int, float)`|
+|공식 권장|-|✅|
+|용도|정확한 클래스 확인|타입 안전성 검사|

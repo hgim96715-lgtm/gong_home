@@ -18,122 +18,188 @@ related:
   - "[[Python_Variables_Types]]"
   - "[[00_Python_HomePage]]"
   - "[[Python_Math_Module]]"
+  - "[[Python_Type_Checking]]"
 ---
+# Python_Builtin_Functions — 내장함수
 
-## 개념 한 줄 요약 
+## 한 줄 요약
 
-**"파이썬이 이미 만들어 둔 도구들. `import` 없이 바로 쓸 수 있다!"**
-
-
-- **집계(Aggregation):** 반복문(`for`) 없이 리스트의 합계, 최대/최소, 길이를 한 방에 구합니다. (`max`, `min`, `sum`, `len`)
-- **변환(Conversion):** 컴퓨터가 문자를 숫자로 기억하는 방식(ASCII)을 이용해 변환합니다. (`ord`, `chr`)
-- **핵심:** 굳이 `for`문이나 `if`문을 길게 쓰지 말고, 이 함수들을 먼저 떠올리는 것이 **Pythonic**한 코딩의 첫걸음입니다.
-
----
-## Why is it needed (왜 필요한가?)
-
-**코드 압축 (Efficiency):** `max()`를 쓰면 5~6줄짜리 `if a > b` 로직을 단 1줄로 줄일 수 있습니다. 가독성과 속도가 동시에 좋아집니다.
-**컴퓨터와의 대화 (Low-level):** 컴퓨터는 'A'를 그림이 아니라 숫자(65)로 기억합니다. 암호화 알고리즘이나 엑셀 칼럼 계산 등에서 문자를 숫자로 다뤄야 할 때 `ord/chr`가 필수입니다.
-
----
-## Practical Context (실전 활용)
-
-- **데이터 파이프라인 (Batch Processing):** 대용량 데이터를 특정 사이즈로 나누어 처리할 때, 작업 횟수와 남는 데이터를 `divmod`로 한 번에 계산한다.
-- **알고리즘 문제 (Greedy):** "가장 큰 수 만들기", "가장 작은 비용 찾기" 등 최적의 해를 찾을 때 `max`, `min`이 항상 쓰인다.
-- **데이터 검증:** 입력받은 리스트가 비어있는지 확인할 때 `len(lst) > 0`을 사용합니다.
-- **보안/암호화:** 'a'를 'b'로 바꾸는 시저 암호(Caesar Cipher)를 만들 때 `ord`로 숫자로 바꾼 뒤 +1을 하고 다시 `chr`로 문자로 바꾼다.
-
----
-## Code Core Points
-
-## 집계와 수학 (`max`, `min`, `sum`, `len`, `abs`)
-
-```python
-# 1. 최댓값 / 최솟값 (max, min)
- numbers = [1, 5, 3, 9] 
- print(max(numbers)) # 9 (리스트 통째로 넣기) 
- print(min(10, 20)) # 10 (인자 여러 개 넣기) 
- 
- # 2. 합계 (sum) - for문 돌리지 마세요! 
- print(sum(numbers)) # 18 
- 
- # 3. 길이 (len) 
- text = "Hello" 
- print(len(text)) # 5 
- 
- # 4. 절댓값 (abs) 
- print(abs(-100)) # 100
+```
+import 없이 바로 쓸 수 있는 파이썬이 미리 만들어 둔 도구들
+for / if 로 길게 쓸 것을 한 줄로 줄여주는 Pythonic 코딩의 기본
 ```
 
-> **작동 원리:** 내부적으로 C 언어로 구현된 최적화된 로직을 타기 때문에 직접 반복문을 작성하는 것보다 훨씬 빠르다.
+---
 
 ---
-## Quotient and Remainder (몫과 나머지: divmod)
 
-나눗셈의 몫과 나머지를 튜플(Tuple) 형태로 한 번에 반환한다.
+# ① 집계 — max / min / sum / len / abs
 
-- **문법:** `divmod(a, b)` (a: 나누어지는 수, b: 나누는 수)
+```python
+numbers = [1, 5, 3, 9]
+
+max(numbers)     # 9   ← 리스트 통째로
+min(10, 20)      # 10  ← 인자 여러 개
+sum(numbers)     # 18  ← for 문 쓰지 말 것
+len("Hello")     # 5
+abs(-100)        # 100
+```
+
+```
+내부적으로 C 언어로 구현된 최적화 로직
+직접 for 문 쓰는 것보다 빠름
+```
+
+## max / min 주의 — 문자열 vs 숫자
+
+```python
+# 숫자는 크기 비교
+max(10, 9)      # 10  ✅
+
+# 문자열은 사전순 비교 (첫 글자 아스키코드 기준)
+max("10", "9")  # "9"  ← '9'(57) > '1'(49) 이라서!
+                #  ⚠️ 숫자 크기 비교 아님
+
+# 해결: int() 로 변환 후 비교
+max(int("10"), int("9"))  # 10 ✅
+```
+
+```python
+# 응용: 두 수를 합쳐 더 큰 수 만들기 (코테 단골)
+a, b = 3, 30
+max(f"{a}{b}", f"{b}{a}")   # "330"  ← "330" vs "303" 사전순 비교
+```
+
+---
+
+---
+
+# ② 문자 ↔ 숫자 변환 — ord / chr
+
+```
+컴퓨터는 문자를 아스키(ASCII) 코드 숫자로 기억
+ord  문자 → 숫자 (Ordinal)
+chr  숫자 → 문자 (Character)
+```
+
+```python
+ord('a')   # 97
+ord('A')   # 65  ← 대문자가 소문자보다 숫자 작음!
+chr(97)    # 'a'
+chr(65)    # 'A'
+
+# 알파벳 A~C 출력
+for i in range(ord('A'), ord('D')):
+    print(chr(i), end=" ")
+# A B C
+```
+
+```
+주요 아스키 코드:
+  'A' = 65     'Z' = 90
+  'a' = 97     'z' = 122
+  '0' = 48     '9' = 57
+
+한글도 가능 (유니코드 지원):
+  ord('가') = 44032
+
+⚠️ ord() 는 딱 한 글자만
+  ord("ABC") → TypeError
+  ord("A")   → 65 ✅
+```
+
+---
+
+---
+
+# ③ 몫과 나머지 — divmod
+
+```
+divmod(a, b) → (몫, 나머지) 튜플 반환
+// 과 % 를 따로 두 번 하는 것보다 한 번에 처리 → 성능 유리
+```
 
 ```python
 total_records = 10050
-batch_size = 1000
+batch_size    = 1000
 
 batches, remainder = divmod(total_records, batch_size)
 
-print(f"전체 배치 수: {batches}, 남은 데이터: {remainder}") # 전체 배치 수: 10, 남은 데이터: 50
+print(f"전체 배치 수: {batches}, 남은 데이터: {remainder}")
+# 전체 배치 수: 10, 남은 데이터: 50
 ```
-
->**작동 원리:** `//` 연산과 `%` 연산을 따로 두 번 하는 것보다, `divmod`를 호출해 한 번에 처리하는 것이 성능상 유리하다.
-
----
-## 거듭제곱 (`pow`)
-
-`**` 연산자와 비슷하지만, **3번째 인자(mod)** 를 넣으면 훨씬 강력해집니다.
 
 ```python
-# 1. 기본 사용법 (** 연산자와 동일)
-print(pow(2, 10))    # 1024 (2의 10승)
-print(2 ** 10)       # 1024 (같은 결과)
-
-# 2. 3번째 인자: 모듈러 연산 (나머지)
-# pow(base, exp, mod) = (base ** exp) % mod
-# 단순히 ** 후 % 하는 것보다 훨씬 빠름!
-print(pow(2, 10, 1000))  # 24  (1024 % 1000)
-
-# [활용] 큰 수의 나머지 계산 (알고리즘 단골 패턴)
-# 10억^10억 같은 엄청난 수도 한 방에 계산 가능
-print(pow(10**9, 10**9, 10**9 + 7))  # 빠르고 정확하게 나머지 반환
+# 시간 변환 (초 → 시/분/초)
+seconds = 3725
+hours,   rest = divmod(seconds, 3600)
+minutes, sec  = divmod(rest, 60)
+print(f"{hours}시간 {minutes}분 {sec}초")  # 1시간 2분 5초
 ```
-
->💡 왜 `pow(a, b, mod)`가 `(a**b) % mod` 보다 좋은가?
->`a**b`를 먼저 계산하면 중간에 천문학적으로 큰 수가 메모리를 잡아먹습니다.
->`pow(a, b, mod)`는 내부적으로 **빠른 거듭제곱(Fast Exponentiation)** 알고리즘을 사용해 중간 결과를 계속 mod로 줄이며 계산합니다.
 
 ---
-## 비트 길이 (`int.bit_length()`)
 
-`bit_length()`는 정수를 **2진수(이진법)** 로 표현할 때 필요한 **비트(자릿수)의 개수**를 반환합니다.
+---
+
+# ④ 거듭제곱 — pow
 
 ```python
-# 10진수 → 2진수로 변환해서 생각하기
-print(bin(1))   # '0b1'     → 비트 1개
-print(bin(4))   # '0b100'   → 비트 3개
-print(bin(7))   # '0b111'   → 비트 3개
-print(bin(8))   # '0b1000'  → 비트 4개
-
-# bit_length()는 앞의 '0b'를 빼고 유효 비트 수만 셉니다
-print((1).bit_length())   # 1
-print((4).bit_length())   # 3
-print((7).bit_length())   # 3
-print((8).bit_length())   # 4
-
-# 규칙: n이 0이 아닐 때, 2^(n.bit_length()-1) <= n < 2^(n.bit_length())
+pow(2, 10)          # 1024  ← 2의 10승 (2**10 과 동일)
+pow(2, 10, 1000)    # 24    ← (2**10) % 1000
 ```
 
+## 3번째 인자 mod — 큰 수의 나머지 계산 ⭐️
 
-### `bit_length()`로 "다음 2의 거듭제곱" 구하기
+```
+pow(base, exp, mod) = (base ** exp) % mod
 
-아래 코드는 배열 길이를 **2의 거듭제곱 크기**로 올림(패딩)하는 전형적인 패턴입니다.
+2**10 → 1024 → % 1000 → 24
+
+왜 pow(a, b, mod) 가 (a**b) % mod 보다 좋은가:
+  a**b 를 먼저 계산하면 천문학적으로 큰 수가 메모리를 잡아먹음
+  pow(a, b, mod) 는 내부적으로 빠른 거듭제곱(Fast Exponentiation) 사용
+  중간 결과를 계속 mod 로 줄이며 계산 → 빠르고 메모리 효율적
+```
+
+```python
+# 알고리즘 단골 패턴 — 10억의 10억승 나머지도 바로 계산
+pow(10**9, 10**9, 10**9 + 7)  # 빠르고 정확하게 나머지 반환
+```
+
+---
+
+---
+
+# ⑤ 비트 길이 — bit_length()
+
+```
+정수를 2진수로 표현할 때 필요한 비트(자릿수) 수 반환
+
+bin(4)  = '0b100'  → 유효 비트 3개 → (4).bit_length() = 3
+bin(8)  = '0b1000' → 유효 비트 4개 → (8).bit_length() = 4
+```
+
+```python
+(1).bit_length()   # 1
+(4).bit_length()   # 3
+(7).bit_length()   # 3   (111)
+(8).bit_length()   # 4   (1000)
+(0).bit_length()   # 0   ← 0 은 유효 비트 없음
+```
+
+## << 연산자 (Left Shift) — 2의 거듭제곱
+
+```python
+1 << 0   # 1   (2⁰)
+1 << 1   # 2   (2¹)
+1 << 2   # 4   (2²)
+1 << 3   # 8   (2³)
+
+# 1 << n  =  2ⁿ  =  pow(2, n) 과 동일
+# 비트 연산이라 속도가 더 빠름
+```
+
+## 실전 패턴 — 다음 2의 거듭제곱으로 올림 (패딩)
 
 ```python
 def solution(arr):
@@ -141,134 +207,212 @@ def solution(arr):
     target = 1 << (length - 1).bit_length()
     return arr + [0] * (target - length)
 
-# 예시로 분해해보기
-arr = [1, 2, 3, 4, 5]  # length = 5
+# arr = [1, 2, 3, 4, 5]  length = 5
+# length - 1 = 4
+# (4).bit_length() = 3   (4는 이진수 '100', 3비트)
+# 1 << 3 = 8             (2³ = 8)
+# arr + [0] * (8 - 5)  → [1, 2, 3, 4, 5, 0, 0, 0]
 
-# Step 1: length - 1 = 4
-# Step 2: (4).bit_length() = 3   (4는 이진수로 '100', 3비트)
-# Step 3: 1 << 3 = 8             (1을 왼쪽으로 3칸 shift = 2^3 = 8)
-# Step 4: arr + [0] * (8 - 5) = [1, 2, 3, 4, 5, 0, 0, 0]
-
-print(solution([1, 2, 3, 4, 5]))   # [1, 2, 3, 4, 5, 0, 0, 0]
-print(solution([1, 2, 3, 4]))      # [1, 2, 3, 4]  ← 이미 2의 거듭제곱이면 그대로!
+print(solution([1, 2, 3, 4, 5]))  # [1, 2, 3, 4, 5, 0, 0, 0]
+print(solution([1, 2, 3, 4]))     # [1, 2, 3, 4]  ← 이미 2의 거듭제곱이면 그대로
 ```
-
-**`<<` 연산자 (Left Shift) 란?**
-
-|표현식|의미|결과|
-|---|---|---|
-|`1 << 0`|1 × 2⁰|1|
-|`1 << 1`|1 × 2¹|2|
-|`1 << 2`|1 × 2²|4|
-|`1 << 3`|1 × 2³|8|
->`1 << n`은 **2ⁿ을 구하는 가장 빠른 방법**입니다.  
->`pow(2, n)` 또는 `2**n` 과 결과는 같지만, 비트 연산이라 속도가 더 빠릅니다.
 
 ---
-## 문자 ↔ 숫자 변환 (`ord`, `chr`)
-
-컴퓨터는 문자를 **아스키(ASCII) 코드**라는 숫자로 기억합니다.
-문자와 아스키(ASCII) / 유니코드(Unicode) 숫자 간의 변환을 수행한다.
-
-```python
-# 1. 문자 → 숫자 (Ordinal Number)
-# "문자 'a'의 번호표를 줘"
-print(ord('a'))  # 97
-print(ord('A'))  # 65 (대문자가 숫자가 더 작음!)
-
-# 2. 숫자 → 문자 (Character)
-# "번호표 97번인 문자 나와"
-print(chr(97))   # 'a'
-
-# [활용] 알파벳 A부터 C까지 출력하기
-# range()는 숫자만 받으므로 변환이 필요함
-for i in range(ord('A'), ord('D')): 
-    print(chr(i), end=" ")
-# 결과: A B C
-```
-
->대문자('A'=65)가 소문자('a'=97)보다 숫자가 더 작다는 점을 기억해두면 정렬 로직을 짤 때 유용하다. 
->파이썬은 유니코드를 지원하므로 한글(`ord('가') = 44032`)도 정상적으로 변환된다.
 
 ---
-## Detailed Analysis (심화 분석)
 
-### 1. `max()`의 문자열 비교 로직 (사전순)
-
-`max()` 안에 숫자가 아닌 **문자열**을 넣으면 **"사전 순서상 뒤에 나오는 것"** 을 크다고 판단합니다.
+# ⑥ 반올림 — round
 
 ```python
-# 1. 일반적인 사전 순서
-print(max("apple", "banana")) # "banana" ('b'가 'a'보다 뒤니까)
+round(3.14159)       # 3     ← 정수로 반올림
+round(3.14159, 2)    # 3.14  ← 소수점 2자리
+round(3.14159, 4)    # 3.1416
 
-# 2. 문자열 합치기 문제 (코딩테스트 꿀팁)
-# 두 수를 합쳐서 더 큰 수를 만들고 싶다면?
-a, b = 3, 30
-str1 = f"{a}{b}" # "330"
-str2 = f"{b}{a}" # "303"
-
-# 문자열 상태에서 비교 (3이 0보다 크므로 330이 선택됨)
-print(max(str1, str2)) # "330"
+round(2.5)   # 2  ← 파이썬은 은행가 반올림 (짝수로 반올림)
+round(3.5)   # 4  ← 주의! 수학적 반올림과 다름
 ```
 
-### 2. 숫자로 된 문자열 비교 주의 (함정 카드 ☠️)
-
-문자열 비교는 **맨 앞글자**부터 따집니다. 숫자의 실제 크기(`value`)와 다릅니다!
-
-```python
-print(max(10, 9))     # 10 (숫자는 당연히 10이 큼)
-print(max("10", "9")) # "9"  
 ```
+⚠️ 파이썬 round() 는 은행가 반올림 (Banker's Rounding)
+  .5 일 때 가장 가까운 짝수로 반올림
+  2.5 → 2  (2가 짝수)
+  3.5 → 4  (4가 짝수)
+  4.5 → 4  (4가 짝수)
 
-- **이유:** 문자열 "9"의 첫 글자 `'9'`(아스키 57)가 "10"의 첫 글자 `'1'`(아스키 49)보다 크기 때문입니다.
-- **해결:** 숫자 크기를 비교하려면 반드시 `int()`로 변환 후 비교하세요.
+  수학적 반올림이 필요하면:
+  from decimal import Decimal, ROUND_HALF_UP
+  또는 int(x + 0.5)
+```
 
 ---
-## Common Beginner Misconceptions (자주 하는 실수)
 
-### ① `for`문 안에 `max/min` 넣지 마세요
+---
 
-`max` 함수 자체가 이미 데이터를 훑어보는 반복문입니다.
-반복문 안에 넣으면 비효율적일 뿐만 아니라 에러가 날 수 있습니다.
+# ⑦ 조건 검사 — any / all
+
+```
+any(iterable)  하나라도 True 면 True
+all(iterable)  전부 True 여야 True
+```
+
+```python
+nums = [0, 1, 2, 3]
+
+any(nums)                    # True  ← 1 이상 하나라도 있음
+all(nums)                    # False ← 0 이 False 라서
+
+any(x > 2 for x in nums)    # True  ← 3 이 있으니까
+all(x > 0 for x in nums)    # False ← 0 이 있으니까
+all(x >= 0 for x in nums)   # True  ← 전부 0 이상
+
+# 빈 리스트
+any([])   # False
+all([])   # True  ← 반례가 없으므로 (vacuous truth)
+```
+
+```python
+# 실전: 리스트에 특정 조건 만족하는 값 있는지
+data = ["정상", "지연", "정상", "취소"]
+
+any(x == "지연" for x in data)    # True  ← 지연 있음
+all(x == "정상" for x in data)    # False ← 전부 정상은 아님
+```
+
+---
+
+---
+
+# ⑧ 타입 확인 — type / isinstance
+
+```python
+type(3)           # <class 'int'>
+type(3.14)        # <class 'float'>
+type("hello")     # <class 'str'>
+type([1, 2])      # <class 'list'>
+
+# 타입 비교
+type(3) == int    # True
+```
+
+```python
+# isinstance — 상속 고려 (권장)
+isinstance(3, int)          # True
+isinstance(3.14, float)     # True
+isinstance(3, (int, float)) # True  ← 여러 타입 동시 체크
+
+# type() vs isinstance() 차이
+class MyInt(int): pass
+x = MyInt(3)
+
+type(x) == int         # False  ← MyInt 는 int 가 아님
+isinstance(x, int)     # True   ← 상속 관계 포함
+```
+
+>[[Python_Type_Checking]] 참고 
+
+---
+
+---
+
+# ⑨ 형변환 — int / float / str / bool
+
+```python
+int("123")        # 123
+int(3.9)          # 3    ← 내림 (round 아님)
+int("0b1010", 2)  # 10   ← 2진수 문자열 → 10진수
+
+float("3.14")     # 3.14
+float(3)          # 3.0
+
+str(123)          # "123"
+str([1, 2, 3])    # "[1, 2, 3]"
+
+bool(0)           # False
+bool("")          # False
+bool([])          # False
+bool(None)        # False
+bool(1)           # True
+bool("a")         # True
+```
+
+```
+int() 는 내림 (truncate) — round() 와 다름
+  int(3.9) = 3   (버림)
+  round(3.9) = 4 (반올림)
+```
+
+>[[Python_Variables_Types]] 참고
+
+---
+
+---
+
+# ⑩ is_integer() — 소수점 없는지 확인 (float 메서드)
+
+```
+float 객체의 메서드 (내장함수는 아니지만 자주 쓰임)
+소수점 이하가 0 인지 확인
+정수처럼 생긴 float 인지 체크할 때 유용
+```
+
+```python
+(3.0).is_integer()    # True   ← 소수점 없음
+(3.14).is_integer()   # False
+(5.0).is_integer()    # True
+(5.5).is_integer()    # False
+
+# 실전: 나누어 떨어지는지 확인
+def is_divisible(a, b):
+    return (a / b).is_integer()
+
+is_divisible(10, 2)   # True  (10 / 2 = 5.0)
+is_divisible(10, 3)   # False (10 / 3 = 3.333...)
+```
+
+```python
+# 리스트에서 정수로 표현 가능한 것만 필터링
+nums = [1.0, 2.5, 3.0, 4.7, 5.0]
+integers = [int(x) for x in nums if x.is_integer()]
+# [1, 3, 5]
+```
+
+```
+⚠️ int 에는 is_integer() 없음 → float 전용
+  (3).is_integer()     # AttributeError
+  (3.0).is_integer()   # True ✅
+  → int 는 항상 정수이므로 체크 불필요
+```
+
+
+---
+# 자주 하는 실수 
+
+## ① for 문 안에 max/min 넣지 말 것
 
 ```python
 arr = [5, 3, 9, 1]
 
-# [❌ 오답] 하나씩 꺼내서(c) max에 넣음 -> 에러 발생
-# for c in arr:
-#     print(max(c)) # TypeError: 'int' object is not iterable
+# ❌ 하나씩 꺼내서 max 에 넣음 → TypeError
+for c in arr:
+    print(max(c))   # int 는 iterable 이 아님
 
-# [✅ 정답] 리스트 통째로 던지세요
-print(max(arr)) # 9
+# ✅ 리스트 통째로
+print(max(arr))   # 9
 ```
 
-### ② `ord()`에는 딱 한 글자만!
-
-`ord` 함수는 문자열 전체를 숫자로 바꿔주지 않습니다.
+## ② max("10", "9") 는 "9"
 
 ```python
-# [❌ 오답]
-# print(ord("ABC")) # TypeError 발생
+# 문자열 비교는 첫 글자 아스키코드 기준
+max("10", "9")   # "9"  ← '9'(57) > '1'(49)
 
-# [✅ 정답]
-print(ord("A")) # 65
+# 숫자 크기 비교하려면 int() 변환
+max(int("10"), int("9"))  # 10
 ```
 
-### ③ "한글은 안 되나요?"
-
-됩니다! 파이썬은 유니코드(Unicode)를 지원하므로 한글도 고유 번호가 있습니다.
+## ③ ord() 는 한 글자만
 
 ```python
-print(ord('가')) # 44032
+ord("ABC")  # TypeError
+ord("A")    # 65 ✅
 ```
-
-### ④ `bit_length()`는 0일 때 0을 반환
-
-0은 2진수로 표현할 유효 비트가 없기 때문에 0을 반환합니다. 
-`length - 1` 패턴에서 `length = 1`일 때 `(0).bit_length() = 0`이 되어 `1 << 0 = 1`로 올바르게 처리됩니다.
-
-```python
-print((0).bit_length())  # 0
-print((1).bit_length())  # 1
-```
-

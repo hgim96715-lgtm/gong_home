@@ -42,14 +42,14 @@
 
 ### 내장함수 & 수학
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Builtin_Functions]]|max / min / sum / len / abs / ord / chr / pow|
-|[[Python_Sorting_Logic]]|sort / sorted / key / lambda / reverse / 다중 정렬|
-|[[Python_Math_Module]]|math.prod / ceil / floor / gcd / sqrt / pi|
-|[[Python_Fractions_Module]]|Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지|
-|[[Python_Statistics_Module]]|mean / median / stdev / variance|
-|[[Python_Collections_Counter]]|Counter / most_common / 딕셔너리 연산|
+| 노트                             | 핵심 개념                                                                  |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| [[Python_Builtin_Functions]]   | max / min / sum / len / abs / ord / chr / pow/is_integer()/형변환/any/all |
+| [[Python_Sorting_Logic]]       | sort / sorted / key / lambda / reverse / 다중 정렬                         |
+| [[Python_Math_Module]]         | math.prod / ceil / floor / gcd / sqrt / pi                             |
+| [[Python_Fractions_Module]]    | Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지                                 |
+| [[Python_Statistics_Module]]   | mean / median / stdev / variance                                       |
+| [[Python_Collections_Counter]] | Counter / most_common / 딕셔너리 연산                                        |
 
 ---
 
