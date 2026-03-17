@@ -342,6 +342,62 @@ SELECT ROUND(AVG(rating::numeric), 1) AS avg_score FROM reviews;
 ```
 
 ---
+---
+# ⑩ ROUND + double precision 함정 ⭐️
+
+```
+PostgreSQL 의 ROUND 는 numeric 타입에서만 소수점 지정 가능
+
+ROUND(numeric, int)          ✅ 지원
+ROUND(double precision, int) ❌ 지원 안 함 → 에러
+
+double precision 을 반환하는 함수들:
+  corr()  상관계수
+  AVG()   (float 입력 시)
+  기타 통계 함수들
+→ 이런 함수 결과에 ROUND(결과, 자릿수) 쓰면 에러
+```
+
+## corr() — 상관계수
+
+```sql
+-- 두 컬럼의 상관계수 (Pearson)
+SELECT corr(body_mass_g, flipper_length_mm) FROM penguins;
+-- 반환 타입: double precision
+-- 결과 예: 0.8712878822...
+
+-- ❌ double precision 에 ROUND(값, 자릿수) → 에러
+SELECT ROUND(corr(body_mass_g, flipper_length_mm), 3) FROM penguins;
+-- ERROR: function round(double precision, integer) does not exist
+```
+
+## 해결 — ::numeric 캐스팅 필수
+
+```sql
+-- ✅ ::numeric 으로 캐스팅 후 ROUND
+SELECT ROUND(corr(body_mass_g, flipper_length_mm)::numeric, 3) FROM penguins;
+-- 0.871  ✅
+
+-- 패턴: ROUND(함수결과::numeric, 자릿수)
+SELECT ROUND(corr(col_a, col_b)::numeric, 3)       AS 상관계수;
+SELECT ROUND(AVG(score)::numeric, 2)               AS 평균점수;
+SELECT ROUND(STDDEV(value)::numeric, 4)            AS 표준편차;
+SELECT ROUND(VARIANCE(value)::numeric, 4)          AS 분산;
+```
+
+```
+규칙:
+  통계 함수 (corr / stddev / variance 등)
+  → 반환 타입이 double precision
+  → ROUND(결과, 자릿수) 하려면 ::numeric 캐스팅 필수
+
+  기억법:
+  ROUND(뭔가::numeric, 자릿수)
+  의심스러우면 항상 ::numeric 붙이는 습관
+```
+
+
+---
 
 ---
 
