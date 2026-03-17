@@ -116,12 +116,15 @@ JSON 처리의 핵심
 
 ### API 요청 & 응답
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Requests_Methods]]|requests.get / post / params / headers / timeout|
-|[[Python_Requests_Response]]|status_code / .json() / raise_for_status|
-|[[HTTP_Status_Codes]]|200 / 404 / 500 / 429 Too Many|
-|[[Python_URL_Parsing]]|urlencode / quote / unquote / urlparse|
+### API 요청 & 응답
+
+| 노트                           | 핵심 개념                                               |
+| ---------------------------- | --------------------------------------------------- |
+| [[Python_Requests_Methods]]  | requests.get / post / params / headers / timeout /  |
+| [[Python_Requests_Response]] | status_code / .json() / raise_for_status            |
+| [[HTTP_Status_Codes]]        | 200 / 404 / 500 / 429 Too Many                      |
+| [[Python_URL_Parsing]]       | urlencode / quote / unquote / urlparse              |
+| [[Python_ElementTree]]       | XML 파싱 / fromstring / findtext / find / findall     |
 
 ---
 
