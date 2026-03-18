@@ -57,11 +57,11 @@ Kafka / Spark / Docker 이해의 기초
 API 연동 / 포트 / 프로토콜 이해
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[HTTP_Basics]]|Request / Response / Header / Body / Status Code / 무상태성|
-|[[REST_API_Methods]]|GET / POST / PUT / DELETE / PATCH / 멱등성|
-|[[TCP_IP]]|TCP / UDP / 3-Way Handshake / 패킷 / 포트|
+| 노트                      | 핵심 개념                                                   |
+| ----------------------- | ------------------------------------------------------- |
+| [[CS_HTTP_Basics]]      | Request / Response / Header / Body / Status Code / 무상태성 |
+| [[CS_REST_API_Methods]] | GET / POST / PUT / DELETE / PATCH / 멱등성/endpoint        |
+| [[CS_TCP_IP]]           | TCP / UDP / 3-Way Handshake / 패킷 / 포트/소켓                |
 
 ---
 

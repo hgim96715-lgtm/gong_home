@@ -7,7 +7,7 @@ tags:
   - Linux
 related:
   - "[[00_Linux_HomePage(기존)]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Sed]]"
   - "[[Shell_Input_Output]]"
 ---
 ## 개념 한 줄 요약

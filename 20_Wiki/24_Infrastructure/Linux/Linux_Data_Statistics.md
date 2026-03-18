@@ -11,7 +11,7 @@ tags:
 related:
   - "[[Linux_Filtering_Text]]"
   - "[[00_Linux_HomePage(기존)]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Sed]]"
 ---
 # Linux Data Statistics — `wc` · `sort` · `uniq`
 
@@ -328,7 +328,7 @@ sort data.txt | uniq -c | awk '{$1=$1; print}'
 
 `$1=$1` 원리: awk가 필드를 **재조합(rebuild)** 할 때 OFS(기본값: 공백 1개)로 다시 이어붙이면서 앞뒤 불필요한 공백이 사라진다.
 
-> `awk` 상세 내용 → [[Linux_Stream_Editor#C. 공백 제거 트릭 — `$1=$1` ⭐️|awk 공백 제거 트릭]] 참고
+> `awk` 상세 내용 → [[Linux_Sed#C. 공백 제거 트릭 — `$1=$1` ⭐️|awk 공백 제거 트릭]] 참고
 
 
 ---

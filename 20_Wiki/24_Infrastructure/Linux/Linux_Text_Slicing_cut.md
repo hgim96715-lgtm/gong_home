@@ -5,7 +5,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Sed]]"
   - "[[Linux_Filtering_Text]]"
   - "[[00_Linux_HomePage(기존)]]"
 ---

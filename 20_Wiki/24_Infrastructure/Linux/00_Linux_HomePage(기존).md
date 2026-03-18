@@ -13,7 +13,6 @@
 - [[Linux_Architecture]] : "리눅스 내부의 심장(Kernel)과 입(Shell)은 어떻게 대화하는가?" (`Kernel`, `Shell`, `System Call`, `User Space`)
 - [[Linux_Distributions]] : "왜 서버마다 `apt`를 쓰기도 하고 `yum`을 쓰기도 하는가?" (`Ubuntu`, `CentOS`, `Debian`, `apt`, `yum`, `dnf`)
 - [[Linux_Fundamental_Rules]] : "대소문자, 공백, 루트 권한... 리눅스에서 절대 어기면 안 되는 법도는 무엇인가?" (`whoami`, `id`, `대소문자 구분`, `공백 주의`)
-- [[Filesystem_Hierarchy_Standard]] : 리눅스 계층 구조, 디렉토리 구조 (`/etc`, `/var`, `/home`, `/usr`, `/tmp`, `지도 보기`)
 - [[Linux_Docker_Setup]] : 실습 환경 구축 (`Docker`, `컨테이너`, `이미지`, `나만의 연습장`)
 
 ---
@@ -29,7 +28,6 @@
 - [[File_Management]] : 파일 생성과 삭제, 복사 (`mkdir`, `touch`, `cp`, `mv`, `rm`, `echo`, `-r 재귀`)
 - [[Shell_Wildcards]] : 파일 찾기의 조커 카드 (`*`, `?`, `[]`, `글로브 패턴`)
 - [[File_Compression]] : 파일 압축 및 해제 (`tar`, `gzip`, `-cvf`, `-xvf`, `.tar.gz`)
-- [[File_Content_Viewing]] : 파일 내용 훑어보기 (`cat`, `head`, `tail`, `less`, `seq`, `-n 줄수`)
 - [[Redirection_Pipe]] : 명령어끼리 연결하기 (`|`, `>`, `>>`, `&&`, `||`, `;`, `stdin/stdout/stderr`)
 - [[Terminal_Editors]] : 파일 내용 깊게 수정하기 (`vi`, `nano`, `i삽입`, `ESC`, `:wq`, `:q!`)
 - [[Help_Commands]] : 모르는 명령어 검색하기 (`man`, `--help`, `tldr`)
@@ -82,7 +80,6 @@
 - [[Linux_Filtering_Text]] : 원하는 글자 찾기 (`grep`, `-i`, `-r`, `-n`, `-v`, `정규식`)
 - [[Linux_Text_Transformation_tr]] : 문자 치환 및 삭제의 기본 (`tr`, `대소문자 변환`, `특수문자 삭제`)
 - [[Linux_Text_Slicing_cut]] : 칼로 자르듯 원하는 열만 쏙! (`cut`, `-d 구분자`, `-f 필드번호`, `CSV 처리`)
-- [[Linux_Stream_Editor]] : 데이터 가공의 기초 (`awk`, `sed`, `$1 $2 필드`, `s/찾기/바꾸기/`, `NR`)
 - [[Linux_JSON_Processing]] : JSON 데이터 파싱의 신 (`jq`, `.key`, `[]`, `파이프`, `API 응답 처리`)
 - [[Linux_Data_Statistics]] : 데이터 개수 세기 및 정렬 (`wc`, `sort`, `uniq`, `-l 줄수`, `-c 빈도`)
 - [[Linux_File_Comparison]] : 파일 내용 비교 및 검증 (`diff`, `cmp`, `patch`, `변경점 추적`)
@@ -96,5 +93,4 @@
 - [[Linux_Shell_Script]] : 쉘 스크립트 기초 문법 (`if`, `for`, `while`, `var`, `#!/bin/bash`, `실행권한`)
 - [[Shell_Input_Output]] : 사용자와 대화하기 (`read`, `$1 위치인자`, `stdin`, `echo`, `-p 프롬프트`)
 - [[Shell_Arithmetic]] : 쉘에서의 산술 연산 (`$(())`, `expr`, `bc`, `소수점 계산`)
-- [[Linux_Scheduling_Crontab]] : 정해진 시간에 실행하기 (`crontab`, `-e`, `* * * * *`, `분/시/일/월/요일`)
 - [[Linux_Shell_Arrays]] : 배열로 데이터 묶어서 처리하기 (`배열 선언`, `인덱스 접근`, `@/*`, `for 루프`, `배열 길이`, `슬라이싱`)

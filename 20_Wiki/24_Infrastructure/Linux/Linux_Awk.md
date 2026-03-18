@@ -125,9 +125,57 @@ awk '{ n=2; print $n }' data.txt   # 30  ($2 와 동일)
 NF   현재 줄의 필드 개수 (Number of Fields)
 NR   현재까지 읽은 줄 번호 (Number of Records)
 FS   입력 구분자 (Field Separator, 기본 공백)
-OFS  출력 구분자 (Output Field Separator)
+OFS  출력 필드 구분자 (Output Field Separator, 기본 공백)
+ORS  출력 레코드 구분자 (Output Record Separator, 기본 \n)
 RS   레코드 구분자 (기본 줄바꿈)
 ```
+
+## OFS vs ORS — 헷갈리는 포인트 ⭐
+
+>"OFS는 열(컬럼), ORS는 행(라인)을 바꾼다"
+
+```
+OFS  같은 줄 안에서 필드(열)와 필드 사이 구분자
+ORS  줄과 줄 사이 구분자 (줄바꿈을 다른 문자로 교체)
+
+print $1, $2, $3
+→  $1 [OFS] $2 [OFS] $3 [ORS]
+       ↑                  ↑
+   열 구분 (공백)       줄 끝 (\n)
+
+OFS 바꾸면: 열과 열 사이가 바뀜
+ORS 바꾸면: 줄바꿈 자체가 바뀜
+```
+
+```bash
+# OFS 예시 — 열 구분자 변경
+awk 'BEGIN { OFS="|" } { print $1, $2, $3 }' data.txt
+# Alice|30|Seoul
+# Bob|25|Busan
+
+# ORS 예시 — 줄바꿈을 탭으로 교체
+awk 'BEGIN { ORS="\t" } { print $1 }' data.txt
+# Alice	Bob	Carol	  (줄바꿈 없이 탭으로 이어짐)
+
+# ORS="\t" 는 세로 데이터를 가로로 만들 때 유용
+# paste -s -d '\t' 와 동일한 효과
+awk '{ print $1 }' data.txt | awk 'BEGIN { ORS="\t" } { print }'
+# Alice	Bob	Carol
+```
+
+```bash
+# 실전: 여러 줄 데이터를 한 줄로 합치기
+# 방법 1: ORS 변경
+awk 'BEGIN { ORS="," } { print $1 }' data.txt
+# Alice,Bob,Carol,   (마지막에 쉼표 남음)
+
+# 방법 2: paste -s 와 비교 # [[Linux_File_Commands#⑧ paste — 파일/줄 붙이기]] 참고 
+awk '{ print $1 }' data.txt | paste -s -d ','
+# Alice,Bob,Carol    (깔끔)
+
+# ORS 방식은 마지막 구분자가 남는 점 주의
+```
+
 
 ```bash
 # NR — 줄 번호 출력
@@ -142,6 +190,8 @@ awk '{ print NF, $NF }' data.txt
 # 3 Busan
 # 3 Seoul
 ```
+
+---
 
 ---
 
