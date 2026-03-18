@@ -4,7 +4,7 @@ tags:
 status: 🟧 복습
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Awk]]"
 source: HackerRank
 difficulty:
   - Easy

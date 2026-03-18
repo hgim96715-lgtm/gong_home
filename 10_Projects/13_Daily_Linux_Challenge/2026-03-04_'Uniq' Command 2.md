@@ -5,7 +5,7 @@ status: 🟨 힌트참고
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
   - "[[Linux_Data_Statistics]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Awk]]"
 source: HackerRank
 difficulty:
   - Easy

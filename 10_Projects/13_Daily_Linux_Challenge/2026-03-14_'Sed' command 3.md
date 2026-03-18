@@ -4,7 +4,7 @@ tags:
 status: 🟩 해결
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Sed]]"
 source: HackerRank
 difficulty:
   - Easy

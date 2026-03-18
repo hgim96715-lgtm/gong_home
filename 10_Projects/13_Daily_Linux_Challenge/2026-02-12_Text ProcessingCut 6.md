@@ -4,7 +4,7 @@ tags:
 status: 🟩 해결
 related:
   - "[[Linux_Text_Slicing_cut]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Awk]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank
 ---

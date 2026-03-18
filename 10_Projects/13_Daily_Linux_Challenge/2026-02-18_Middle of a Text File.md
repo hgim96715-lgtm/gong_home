@@ -5,7 +5,7 @@ status: 🟧 복습
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
   - "[[File_Content_Viewing]]"
-  - "[[Linux_Stream_Editor]]"
+  - "[[Linux_Sed]]"
 source: HackerRank
 difficulty:
   - Easy

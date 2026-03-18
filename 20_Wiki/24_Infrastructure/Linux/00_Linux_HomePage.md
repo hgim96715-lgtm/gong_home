@@ -33,15 +33,15 @@
 로그 분석, 데이터 전처리에 매일 사용
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_File_Commands]]|cat / head / tail / less / wc / sort / uniq / cut|
-|[[Linux_Redirection]]|표준 입출력 / > >> < / pipe \| / tee / 2>&1|
-|[[Linux_Grep]]|grep / egrep / fgrep / 정규표현식 패턴|
-|[[Linux_Stream_Editor]]|sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹|
-|[[Linux_Awk]]|awk — 필드 분리 / 조건 처리 / 집계|
-|[[Linux_Find]]|find — 조건 검색 / -exec / xargs|
-|[[Linux_Archive]]|tar / gzip / bzip2 / zip — 압축 원리와 명령어|
+| 노트                      | 핵심 개념                                                   |
+| ----------------------- | ------------------------------------------------------- |
+| [[Linux_File_Commands]] | cat / head / tail / less / wc / sort / uniq / cut/paste |
+| [[Linux_Redirection]]   | 표준 입출력 / > >> < / pipe \| / tee / 2>&1                  |
+| [[Linux_Grep]]          | grep / egrep / fgrep / 정규표현식 패턴                         |
+| [[Linux_Sed]] | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                           |
+| [[Linux_Awk]]           | awk — 필드 분리 / 조건 처리 / 집계                                |
+| [[Linux_Find]]          | find — 조건 검색 / -exec / xargs                            |
+| [[Linux_Archive]]       | tar / gzip / bzip2 / zip — 압축 원리와 명령어                   |
 
 ---
 
@@ -119,15 +119,17 @@ Docker 네트워크 트러블슈팅 / 서비스 포트 확인에 매일 사용
 리눅스 마스터 1급 출제 비중 30%
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_Network_Basic]]|OSI 7계층 / IP / 서브넷 / 게이트웨이 / DNS / TCP vs UDP|
-|[[Linux_Network_Commands]]|ifconfig / ip addr / ping / traceroute / netstat / ss / nmap|
-|[[Linux_Port]]|포트 개념 / lsof / netstat -tulnp / curl / wget|
-|[[Linux_Network_Config]]|/etc/hosts / /etc/resolv.conf / /etc/network/interfaces / NetworkManager|
-|[[Linux_NFS_Samba]]|파일 공유 개념 / NFS 마운트 / Samba 설정|
-|[[Linux_DNS_DHCP]]|DNS 동작 원리 / BIND 설정 / DHCP 임대 개념|
-|[[Linux_Apache_Nginx]]|웹서버 구조 / Virtual Host / 설정 파일 / 로그|
+>CS Basics [[CS_HTTP_Basics]] , [[CS_TCP_IP]], [[CS_REST_API_Methods]] 참고 
+
+| 노트                         | 핵심 개념                                                                    |
+| -------------------------- | ------------------------------------------------------------------------ |
+| [[Linux_Network_Basic]]    | OSI 7계층 / IP / 서브넷 / 게이트웨이 / DNS / TCP vs UDP                            |
+| [[Linux_Network_Commands]] | ifconfig / ip addr / ping / traceroute / netstat / ss / nmap             |
+| [[Linux_Port]]             | 포트 개념 / lsof / netstat -tulnp / curl / wget                              |
+| [[Linux_Network_Config]]   | /etc/hosts / /etc/resolv.conf / /etc/network/interfaces / NetworkManager |
+| [[Linux_NFS_Samba]]        | 파일 공유 개념 / NFS 마운트 / Samba 설정                                            |
+| [[Linux_DNS_DHCP]]         | DNS 동작 원리 / BIND 설정 / DHCP 임대 개념                                         |
+| [[Linux_Apache_Nginx]]     | 웹서버 구조 / Virtual Host / 설정 파일 / 로그                                       |
 
 ---
 
