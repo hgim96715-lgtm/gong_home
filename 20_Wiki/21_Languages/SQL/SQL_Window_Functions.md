@@ -44,7 +44,7 @@ related:
 )
 ```
 
-## PARTITION BY vs GROUP BY
+## ARTITION BY vs GROUP BY
 
 ```sql
 -- GROUP BY: 그룹을 합쳐서 1줄로 압축 (원본 행 사라짐)
@@ -59,9 +59,55 @@ FROM 사원;
 ```
 
 ```
-GROUP BY   →  줄이는 것  (합쳐서 요약, 행 수 감소)
-PARTITION BY →  붙이는 것 (원본 유지하면서 계산값 추가)
+GROUP BY     줄이는 것  (합쳐서 요약, 행 수 감소)
+PARTITION BY 붙이는 것  (원본 유지하면서 계산값 추가)
 ```
+
+## 실행 순서 — Window 함수는 GROUP BY 이후 ⭐️
+
+```
+SQL 실행 순서:
+  FROM → WHERE → GROUP BY → HAVING → SELECT(Window 함수) → ORDER BY
+
+Window 함수는 SELECT 계산 중에 실행
+→ GROUP BY / HAVING 보다 나중에 실행
+→ GROUP BY 로 이미 행이 합쳐진 결과 위에서 동작
+```
+
+```
+⚠️ GROUP BY + Window 함수 동시 사용 불가:
+
+  GROUP BY  → 행을 합쳐버림 (여러 행 → 1행)
+  Window 함수 → 각 행을 유지하면서 계산
+
+  둘은 방향이 반대 → 함께 쓰면 충돌
+```
+
+```sql
+-- ❌ 에러 — raw 데이터에 GROUP BY + Window 함수 동시
+SELECT
+    region,
+    SUM(hvec) OVER (PARTITION BY region) AS region_total
+FROM er_realtime
+GROUP BY region;
+-- ERROR: column "er_realtime.hvec" must appear in GROUP BY clause
+
+-- ✅ 해결 1 — GROUP BY 빼고 Window 함수만
+SELECT
+    hpid, region, hvec,
+    SUM(hvec) OVER (PARTITION BY region) AS region_total
+FROM er_realtime;
+
+-- ✅ 해결 2 — GROUP BY 결과 위에 Window 함수 적용 (서브쿼리)
+SELECT
+    region,
+    SUM(hvec) AS total,
+    SUM(SUM(hvec)) OVER () AS grand_total   -- GROUP BY 결과에 Window 함수
+FROM er_realtime
+GROUP BY region;
+```
+
+>[[SQL_Execution_Order]] 참고 
 
 ---
 

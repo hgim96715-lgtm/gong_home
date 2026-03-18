@@ -10,91 +10,218 @@ tags:
 related:
   - "[[HAVING_vs_WHERE]]"
   - "[[SQL_SELECT_FROM]]"
-  - "[[01_SQL_Thinking_Roadmap]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_Aggregate_GROUP_BY]]"
+  - "[[SQL_Window_Functions]]"
 ---
-## 개념 한 줄 요약
+# SQL_Execution_Order — SQL 실행 순서
 
-우리가 코드를 치는 순서(**Writing Order**)와 데이터베이스가 실제로 일을 처리하는 순서(**Execution Order**)는 **완전히 정반대**야. 
-이 괴리 때문에 수많은 에러가 발생해.
+## 한 줄 요약
 
----
-##  The Cheat Sheet (한눈에 보기) 
-
-이 표는 머릿속에 박제해둬야 해.
-
-| 순서    | **작성 순서 (Writing)** ✍️ | **실행 순서 (Execution)** ⚙️ | 핵심 포인트 (Why?)               |
-| :---- | :--------------------- | :----------------------- | :-------------------------- |
-| **1** | `SELECT`               | **`FROM` / `JOIN`**      | 일단 재료(테이블)를 가져와야 요리를 하지!    |
-| **2** | `FROM`                 | **`WHERE`**              | 가져온 재료 중 썩은 건 버려 (필터링 1)    |
-| **3** | `WHERE`                | **`GROUP BY`**           | 남은 재료를 용도별로 묶어 (팀 나누기)      |
-| **4** | `GROUP BY`             | **`HAVING`**             | 묶은 팀 중에서 기준 미달 탈락시켜 (필터링 2) |
-| **5** | `HAVING`               | **`SELECT`**             | 이제야 결과물(컬럼)을 접시에 담아         |
-| **6** | `ORDER BY`             | **`ORDER BY`**           | 접시를 예쁘게 나열해                 |
-| **7** | `LIMIT`                | **`LIMIT`**              | 딱 정해진 개수만 서빙해               |
-
->"프(FROM) 웨(WHERE) 그(GROUP) 해(HAVING)? 셀(SELECT) 오(ORDER) 리(LIMIT)!"
->공격수(FW)가 해써오리!(FWGHSOL)
->**"셀프웨그해오리!"** 라고 주문을 외워보세요. ("**셀프**로 **왜** **그 해**에 **오리**를 먹었지?")
-
-
----
-## Detailed Breakdown (단계별 상세)
-
-DB 엔진이 되어 데이터를 처리한다고 상상해봐.
-
-### Step 1. `FROM` & `JOIN` (데이터셋 확보)
-
-* **"어디서 가져올까?"**
-* 테이블을 메모리에 올리고, 조인이 있다면 두 테이블을 붙여서 가상의 큰 테이블을 만들어.
-* 🚨 **주의:** 아직 별칭(Alias)이나 컬럼 계산이 안 된 상태야.
-
-### Step 2. `WHERE` (1차 필터링 - Row)
-
-* **"누구를 살려둘까?"**
-* 조건에 맞지 않는 행(Row)을 가차 없이 버려.
-* 🚨 **에러 포인트:** `SELECT`에서 만든 별칭(`AS total`)을 여기서 쓰면 에러 남! (아직 `SELECT` 실행 전이라서 DB는 `total`이 뭔지 모름)
-
-### Step 3. `GROUP BY` (그룹핑)
-
-* **"어떻게 묶을까?"**
-* 살아남은 데이터를 기준 컬럼으로 묶어서 하나의 '그룹'으로 만들어.
-
-### Step 4. `HAVING` (2차 필터링 - Group)
-
-* **"어떤 그룹을 살려둘까?"**
-* 묶여진 그룹의 통계(집계함수 결과)를 보고 필터링해.
-
-### Step 5. `SELECT` (데이터 추출)
-
-* **"무엇을 보여줄까?"**
-* 이제야 우리가 원하던 컬럼을 뽑고, 함수(`SUM`, `COUNT`)를 계산하고, 별칭(`AS`)을 붙여.
-
-### Step 6. `ORDER BY` (정렬)
-
-* **"어떻게 나열할까?"**
-* 뽑힌 데이터를 순서대로 줄 세워.
-* ✅ **가능:** 여기서는 `SELECT`에서 만든 **별칭(Alias)을 쓸 수 있어!** (이미 `SELECT`가 끝났으니까)
-
-### Step 7. `LIMIT` (건수 제한)
-
-* **"몇 개만 줄까?"**
-* 위에서부터 N개만 뚝 잘라서 사용자에게 던져줘.
-
----
-##  Common Pitfalls (자주 틀리는 이유) 
-
-### Q. "왜 `WHERE` 절에서 별칭(Alias)을 못 써요?"
-
-```sql
-SELECT amount * 100 AS total_amount  -- 4. 여기서 별명을 지었는데
-FROM orders                          -- 1. 가져오고
-WHERE total_amount > 5000;           -- 2. 여기서 쓰려니까 에러! (Unknown column)
+```
+작성 순서(Writing) ≠ 실행 순서(Execution)
+이 괴리 때문에 수많은 에러 발생
 ```
 
-- **이유:** `WHERE`는 2번 단계고, `SELECT`는 5번 단계라서. 2번 시점에는 `total_amount`라는 이름이 아직 세상에 없어.
+---
 
-### Q. "ORDER BY에서는 별칭 써도 되나요?"
+---
 
-- **정답:** **YES!** ⭕️
-- **이유:** `ORDER BY`는 6번 단계라서, 5번(`SELECT`)에서 만든 별칭을 알아볼 수 있어.
+# ① 실행 순서 한눈에
+
+|실행 순서|절|작성 순서|역할|
+|---|---|---|---|
+|1|`FROM` / `JOIN`|2|테이블 가져오기 (재료 확보)|
+|2|`WHERE`|3|행 필터링 1차|
+|3|`GROUP BY`|4|그룹핑|
+|4|`HAVING`|5|그룹 필터링 2차|
+|**5**|**`SELECT`**|**1**|**컬럼 추출 + 별칭(AS) 생성**|
+|5.5|`Window 함수`|-|SELECT 계산 중|
+|6|`ORDER BY`|6|정렬|
+|7|`LIMIT`|7|건수 제한|
+
+```
+암기:
+  FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
+  "프웨그해 셀오리"
+```
+
+---
+
+---
+
+# ② 단계별 설명
+
+## Step 1. FROM / JOIN — 재료 확보
+
+```
+테이블을 메모리에 올림
+JOIN 있으면 두 테이블을 붙여서 가상의 큰 테이블 생성
+
+⚠️ 아직 별칭(AS) 이나 SELECT 계산이 안 된 상태
+```
+
+## Step 2. WHERE — 행 필터링 1차
+
+```
+조건에 맞지 않는 행(Row) 제거
+집계 전 필터링 → 개별 행 기준
+
+⚠️ 에러 포인트:
+  SELECT 에서 만든 별칭을 WHERE 에서 쓰면 에러
+  → 아직 SELECT 가 실행되지 않아서 별칭이 존재하지 않음
+```
+
+```sql
+-- ❌ 에러 — WHERE 에서 SELECT 별칭 사용
+SELECT amount * 100 AS total_amount
+FROM orders
+WHERE total_amount > 5000;
+-- ERROR: column "total_amount" does not exist
+-- 이유: WHERE(2번) 실행 시점에 SELECT(5번) 별칭이 아직 없음
+
+-- ✅ 해결 — WHERE 에서는 원래 표현식 사용
+SELECT amount * 100 AS total_amount
+FROM orders
+WHERE amount * 100 > 5000;
+```
+
+## Step 3. GROUP BY — 그룹핑
+
+```
+살아남은 행을 기준 컬럼으로 묶음
+이후 SELECT 에서 집계 함수(SUM/COUNT/AVG) 사용 가능
+```
+
+## Step 4. HAVING — 그룹 필터링 2차
+
+```
+묶인 그룹의 집계 결과로 필터링
+WHERE 와 다르게 집계 함수 사용 가능
+
+WHERE  개별 행 필터 (집계 전)
+HAVING 그룹 필터  (집계 후)
+```
+
+```sql
+-- WHERE vs HAVING
+SELECT region, COUNT(*) AS cnt
+FROM hospitals
+WHERE duty_eryn = '1'          -- ① 운영 중인 병원만 (행 필터)
+GROUP BY region
+HAVING COUNT(*) >= 10;         -- ② 10개 이상인 지역만 (그룹 필터)
+```
+
+## Step 5. SELECT — 컬럼 추출 + 별칭 생성
+
+```
+이제야 컬럼을 뽑고 집계 함수 계산
+AS 로 별칭 생성
+이 시점부터 별칭이 존재함
+```
+
+## Step 5.5. Window 함수 — SELECT 계산 중 ⭐️
+
+```
+Window 함수는 SELECT 절 계산 중에 실행
+GROUP BY / HAVING 이후 단계
+
+중요:
+  Window 함수는 GROUP BY 와 같이 쓸 수 없음
+  GROUP BY 는 행을 합쳐버리지만
+  Window 함수는 각 행을 유지하면서 계산
+```
+
+```sql
+-- ❌ 에러 — GROUP BY 와 Window 함수 동시 사용
+SELECT
+    region,
+    SUM(hvec) OVER (PARTITION BY region) AS region_total
+FROM er_realtime
+GROUP BY region;
+-- ERROR: window 함수는 집계 이후 단계에서 동작
+--        GROUP BY 로 이미 행이 합쳐진 상태 → Window 함수 적용 불가
+
+-- ✅ 해결 방법 1 — GROUP BY 없이 Window 함수만 사용
+SELECT
+    hpid,
+    region,
+    hvec,
+    SUM(hvec) OVER (PARTITION BY region) AS region_total
+FROM er_realtime;
+
+-- ✅ 해결 방법 2 — 서브쿼리로 분리
+SELECT
+    region,
+    SUM(hvec) AS total,
+    SUM(SUM(hvec)) OVER () AS grand_total
+FROM er_realtime
+GROUP BY region;
+-- GROUP BY 먼저 → 그 결과에 Window 함수 적용
+```
+
+```
+Window 함수 실행 시점 요약:
+  GROUP BY → HAVING → SELECT 계산 시작 → Window 함수 계산 → ORDER BY
+
+  Window 함수는 GROUP BY 결과 위에서 동작
+  raw 데이터에 GROUP BY + Window 함수 동시 적용 불가
+```
+
+## Step 6. ORDER BY — 정렬
+
+```
+SELECT 이후에 실행
+→ SELECT 에서 만든 별칭 사용 가능 ✅
+```
+
+```sql
+SELECT amount * 100 AS total_amount
+FROM orders
+ORDER BY total_amount DESC;   -- ✅ 별칭 사용 가능
+```
+
+## Step 7. LIMIT — 건수 제한
+
+```
+정렬된 결과에서 N개만 반환
+```
+
+---
+
+---
+
+# ③ 별칭(AS) 사용 가능 시점 정리
+
+```
+WHERE    ❌  SELECT 아직 실행 안 됨
+HAVING   ❌  SELECT 아직 실행 안 됨 (집계 함수 직접 써야 함)
+ORDER BY ✅  SELECT 이후 → 별칭 사용 가능
+```
+
+```sql
+-- 요약 예시
+SELECT
+    region,
+    COUNT(*) AS cnt,                        -- 별칭 생성
+    AVG(hvec) AS avg_beds
+FROM er_realtime
+WHERE duty_eryn = '1'                       -- ❌ cnt, avg_beds 못 씀
+GROUP BY region
+HAVING COUNT(*) >= 5                        -- ❌ cnt 못 씀 → COUNT(*) 직접 써야
+ORDER BY avg_beds DESC                      -- ✅ avg_beds 사용 가능
+LIMIT 10;
+```
+
+---
+
+---
+
+# ④ 자주 하는 실수 요약
+
+|실수|원인|해결|
+|---|---|---|
+|`WHERE` 에서 SELECT 별칭 사용|WHERE(2) 는 SELECT(5) 전|WHERE 에 원래 표현식 사용|
+|`HAVING` 에서 SELECT 별칭 사용|HAVING(4) 는 SELECT(5) 전|HAVING 에 집계 함수 직접 사용|
+|`GROUP BY` + `Window 함수` 동시|Window 함수는 집계 이후|서브쿼리로 분리|
+|`WHERE` 에 집계 함수 사용|WHERE 는 집계 전 단계|`HAVING` 으로 이동|
