@@ -10,6 +10,7 @@ related:
   - "[[Python_Requests_Methods]]"
   - "[[Python_Requests_Response]]"
   - "[[Python_JSON]]"
+  - "[[Serialization_JSON_XML]]"
 ---
 
 # Python_ElementTree — XML 파싱
@@ -253,6 +254,51 @@ hpid = data["item"]["hpid"]
 # XML 응답
 root = ET.fromstring(r.content)
 hpid = root.findtext(".//hpid")
+```
+---
+---
+# ⑧ XML 내부 확인 — 디버깅
+
+```
+print(root) → <Element 'response' at 0x106757f90>
+→ Element 객체 주소만 나옴, 내용 안 보임
+→ 아래 방법으로 내용 확인
+```
+
+```python
+import xml.etree.ElementTree as ET
+
+# 방법 1: XML 문자열로 변환 (가장 확실)
+print(ET.tostring(root, encoding="unicode"))
+# → <response><header>...</header><body>...</body></response>
+
+# 방법 2: 예쁘게 들여쓰기 출력 (Python 3.9+)
+ET.indent(root)
+print(ET.tostring(root, encoding="unicode"))
+# → 태그별로 들여쓰기 적용
+
+# 방법 3: API 원본 응답 그대로 출력
+print(r.content.decode("utf-8"))
+# → API 가 실제로 뭘 보냈는지 그대로 확인
+
+# 방법 4: 첫 번째 item 컬럼 전체 확인 (실용적)
+item = root.find(".//item")
+if item is not None:
+    for child in item:
+        print(f"{child.tag}: {child.text}")
+
+# 방법 5: 구조 탐색 (어떤 태그가 있는지)
+for child in root:
+    print(child.tag)              # header / body
+    for grandchild in child:
+        print(f"  {grandchild.tag}")  # resultCode / items 등
+```
+
+```
+상황별 추천:
+  API 응답 구조 처음 확인할 때  → r.content.decode("utf-8")
+  특정 item 컬럼 확인할 때      → item 루프로 tag: text 출력
+  전체 XML 트리 구조 볼 때      → ET.indent + ET.tostring
 ```
 
 ---

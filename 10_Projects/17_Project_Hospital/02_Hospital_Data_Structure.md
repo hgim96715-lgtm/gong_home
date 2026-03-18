@@ -13,6 +13,8 @@ related:
   - "[[Python_Requests_Methods]]"
   - "[[Python_Requests_Response]]"
   - "[[Python_OS_Module]]"
+  - "[[PostgreSQL_Setup]]"
+  - "[[CS_REST_API_Methods]]"
 ---
 # 02_Hospital_Data_Structure — API 응답 확인 + 테이블 설계
 
@@ -65,6 +67,20 @@ related:
 |페이지 번호|pageNo|옵션|1||
 |목록 건수|numOfRows|옵션|10||
 
+```text
+✅ 테스트 결과 확인:
+  STAGE1 / STAGE2 없이 pageNo=1 로 호출
+  → 강릉아산병원 등 전국 데이터 반환
+  → 전국 조회 가능
+
+  API 문서에 "필수" 표기는 잘못된 것
+  → STAGE 없이 numOfRows 최대로 해서 전체 수집
+  
+
+✅ 전체 병원수 :417 확인 
+```
+
+
 ### 테스트 코드
 
 ```python
@@ -72,18 +88,19 @@ import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 import os
+from urllib.parse import unquote,quote
 
 load_dotenv()
 
 raw_key = os.getenv("HOSPITAL_API_KEY")
-decoded_key = requests.utils.unquote(raw_key)   # 이중 인코딩 방지
+decoded_key = unquote(raw_api_key)   # 이중 인코딩 방지
 
 BASE_URL = "http://apis.data.go.kr/B552657/ErmctInfoInqireService"
 
 url = f"{BASE_URL}/getEmrrmRltmUsefulSckbdInfoInqire"
 params = {
     "serviceKey": decoded_key,
-    "STAGE1":     "",   # 빈값으로 전국 조회 테스트
+    # STAGE1 / STAGE2 없어도 전국 조회 가능 
     "numOfRows":  "10",
     "pageNo":     "1"
 }
@@ -92,6 +109,10 @@ try:
     r = requests.get(url, params=params, timeout=10)
     r.raise_for_status()
     root = ET.fromstring(r.content)
+    
+    # print(f" API는 뭘 보냈을까? {r.content.decode('utf-8')}")
+    total = root.findtext(".//totalCount", "0")
+    print(f"전체 병원 수: {total}")
 
     item = root.find(".//item")
     if item is not None:
@@ -100,7 +121,7 @@ try:
     else:
         print("⚠️ 데이터 없음 → STAGE1 필수일 수 있음")
 
-except requests.exceptions.RequestException as e:
+except RequestException as e:
     print(f"네트워크 에러: {e}")
 except ET.ParseError:
     print("XML 파싱 에러")
@@ -175,7 +196,7 @@ except ET.ParseError:
 
 # ③ 응급실 메시지 API
 
-**엔드포인트:** `/getEmrrmSrsillDissMsgInqire` **저장 테이블:** `er_realtime.sym_blk_msg`
+**엔드포인트:** `/getEmrrmSrsillDissMsgInqire` **저장 테이블:** `er_realtime.notice_msg`
 
 ```
 병원이 직접 입력하는 공지 메시지
@@ -197,11 +218,11 @@ except ET.ParseError:
 
 ### 응답 컬럼
 
-|항목명|영문|설명|
-|---|---|---|
-|기관ID|hpid|hpid 기준으로 ① 과 병합|
-|기관명|hpName||
-|응급실 메시지|symBlkMsg|공지 메시지 → sym_blk_msg 저장|
+| 항목명     | 영문        | 설명                     |
+| ------- | --------- | ---------------------- |
+| 기관ID    | hpid      | hpid 기준으로 ① 과 병합       |
+| 기관명     | hpName    |                        |
+| 응급실 메시지 | symBlkMsg | 공지 메시지 → notice_msg 저장 |
 
 ---
 
@@ -301,6 +322,12 @@ MKioskTy = "이 병원이 할 수 있는 것" (인증된 역량, 정적)
 
 # ⑥ postgres/init.sql 작성
 
+>Y/N은 VARCHAR로 할까 CHECK 으로 할까? 
+>API 서버가 갑자기 에러가 나서 빈칸("")이나 미상("U") 같은 예기치 못한 값을 줄때 파이프라인이 뻗지 않게 하기위해서 VARCHAR(1)로 하기로 결정 
+>[[PostgreSQL_Setup#② 자주 쓰는 자료형]] 참고 
+
+>region은 혹시 모르니 저번에 train시 21개 로 막힌 오류가 있어서 50으로 정리 
+
 ```sql
 -- ① er_realtime: 응급실 실시간 병상 현황 (5분마다 적재)
 --    API: ① 가용병상 + ② 중증질환 + ③ 메시지 → hpid 병합 → 1 row
@@ -317,8 +344,8 @@ CREATE TABLE IF NOT EXISTS er_realtime (
     hv_trauma    VARCHAR(1),     -- 중증외상 수용 Y/N (API ②)
     hv_pediatric VARCHAR(1),     -- 신생아 수용 Y/N (API ②)
     duty_addr    VARCHAR(200),   -- 주소 (API ①)
-    region       VARCHAR(20),    -- 시도명 (주소 앞 2자리 파싱)
-    sym_blk_msg  TEXT,           -- 응급실 공지 메시지 (API ③)
+    region       VARCHAR(50),    -- 시도명 (주소 앞 2자리 파싱)
+    notice_msg  TEXT,           -- 응급실 공지 메시지 (API ③)
     data_type    VARCHAR(20),    -- 'er_realtime'
     created_at   TIMESTAMP DEFAULT NOW()
 );
@@ -327,7 +354,7 @@ CREATE TABLE IF NOT EXISTS er_realtime (
 CREATE TABLE IF NOT EXISTS er_hourly_stats (
     id              SERIAL PRIMARY KEY,
     stat_hour       TIMESTAMP,
-    region          VARCHAR(20),
+    region          VARCHAR(50),
     avg_beds        NUMERIC(5,2),   -- 평균 가용병상
     zero_count      INT,            -- 병상 0개 병원 수
     total_hospitals INT,
@@ -338,20 +365,21 @@ CREATE TABLE IF NOT EXISTS er_hourly_stats (
 -- ③ er_hospitals: 병원 기본정보 (Airflow 1일 1회)
 --    API: ④ 응급의료기관 기본정보 조회 (getEgytBassInfoInqire)
 --    MKioskTy = 인증된 역량 (정적) ← 실시간 hv_* 와 다름
+--  여기서는 hpid로 primary key, 굳이 id가 필요없음 
 CREATE TABLE IF NOT EXISTS er_hospitals (
     hpid         VARCHAR(20) PRIMARY KEY,
     hpname       VARCHAR(100),
     duty_addr    VARCHAR(200),
     duty_tel     VARCHAR(20),     -- 응급실 전화 (dutyTel3)
     duty_eryn    VARCHAR(1),      -- 응급실 운영여부 (1:운영)
-    wgs84_lat    NUMERIC(10,7),
-    wgs84_lon    NUMERIC(10,7),
+    wgs84_lat    NUMERIC(10,7),   -- 위도
+    wgs84_lon    NUMERIC(10,7),   -- 경도 
     hpbdn        INT,             -- 전체 병상 수
     mk_stroke    VARCHAR(1),      -- 뇌출혈수술 가능 (인증)
     mk_cardiac   VARCHAR(1),      -- 심근경색 가능 (인증)
     mk_trauma    VARCHAR(1),      -- 중증외상 Gate keeper (인증)
     mk_pediatric VARCHAR(1),      -- 신생아 가능 (인증)
-    region       VARCHAR(20),
+    region       VARCHAR(50),
     updated_at   TIMESTAMP DEFAULT NOW()
 );
 ```
@@ -369,17 +397,17 @@ docker compose down -v
 docker compose up -d
 
 # 테이블 생성 확인
-docker exec -it hospital-postgres psql -U hospital_user -d hospital_db -c "\dt"
+docker exec -it hospital-postgres psql -U hospital_user -d hospital_db 
 ```
 
 ```
-정상이면:
-          List of relations
- Schema |      Name       | Type  |    Owner
---------+-----------------+-------+--------------
- public | er_realtime     | table | hospital_user
- public | er_hourly_stats | table | hospital_user
- public | er_hospitals    | table | hospital_user
+hospital_db=# \dt
+                 List of relations
+ Schema |       Name       | Type  |     Owner
+--------+------------------+-------+---------------
+ public | er_hospitals     | table | hospital_user
+ public | er_hourly_status | table | hospital_user
+ public | er_realtime      | table | hospital_user
 ```
 
 ---
@@ -404,13 +432,14 @@ Password: hospital_password
 
 ```
 STAGE1/STAGE2 필수 표기 문제:
-  빈값으로 전국 조회 가능 여부 테스트 필요
-  안 되면 17개 시도 루프 처리
-  → [[03_Hospital_Producer]] 에서 확인
+  API 문서에 "필수" 로 적혀있지만
+  실제 테스트 결과 없어도 전국 조회 가능 ✅
+  pageNo=1 호출 시 강릉아산병원 등 전국 데이터 반환 확인
+  → Producer 에서 STAGE 없이 numOfRows 최대로 전체 수집
 
 hv_* (실시간) vs mk_* (인증) 구분:
-  hv_stroke (er_realtime) = 지금 뇌출혈 환자 받을 수 있나
-  mk_stroke (er_hospitals) = 이 병원이 뇌출혈 수술 인증받은 곳인가
+  hv_stroke (er_realtime) = 지금 뇌출혈 환자 받을 수 있나 (동적)
+  mk_stroke (er_hospitals) = 이 병원이 뇌출혈 수술 인증받은 곳인가 (정적)
 
 region 파싱:
   "서울특별시 강남구..." → 앞 2자리 → "서울"
@@ -419,6 +448,32 @@ region 파싱:
 API ① + ② + ③ 병합:
   같은 hpid 끼리 dict 로 모아서 Kafka 에 1 row 발행
   Producer 에서 처리
+
+Y/N 컬럼 VARCHAR(1) vs CHECK 결정:
+  CHECK (col IN ('Y','N')) 으로 하면 제약이 강함
+  BUT API 서버 에러 시 빈값("") 또는 미상값("U") 이 올 수 있음
+  → 파이프라인이 뻗지 않게 VARCHAR(1) 로 결정
+  → 데이터 검증은 Superset / 집계 쿼리에서 처리
+
+er_realtime.hpid UNIQUE 여부:
+  er_realtime 은 5분마다 같은 병원 데이터를 계속 쌓는 테이블
+  → 같은 hpid 가 반복 등장 → UNIQUE 붙이면 안 됨 ❌
+  → created_at 으로 시점 구분
+  er_hospitals 은 hpid 가 PRIMARY KEY → 자동으로 UNIQUE ✅
 ```
+
+----
+
+# 트러블슈팅
+
+|증상|원인|해결|
+|---|---|---|
+|`hospital-postgres Exited (3)`|init.sql 문법 오류|`docker logs hospital-postgres` 로 에러 확인|
+|`syntax error at or near ...`|SQL 문법 오류 (`;` 누락 등)|init.sql 세미콜론 확인|
+|`column ... does not exist`|컬럼명 오타|init.sql 컬럼명 재확인|
+|`type ... does not exist`|ENUM 타입 선언 누락 또는 순서 오류|`CREATE TYPE` 을 `CREATE TABLE` 위에 배치|
+|테이블 안 생김|볼륨 이미 존재|`docker compose down -v` 후 재실행|
+
+
 
 ✅ 완료되면 → [[03_Hospital_Producer]] 으로 이동

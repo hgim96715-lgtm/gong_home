@@ -81,13 +81,15 @@ volumes:
 |자료형|설명|예시|
 |---|---|---|
 |`SERIAL`|자동 증가 정수 (PK 용)|1, 2, 3 ...|
+|`INTEGER`|정수 (-2억 ~ 2억)|100, 200|
+|`BIGINT`|큰 정수 (-900경 ~ 900경)|타임스탬프(ms), 대용량 ID|
 |`VARCHAR(n)`|최대 n 자리 문자열|`VARCHAR(20)`|
 |`TEXT`|길이 제한 없는 문자열|긴 설명, 메시지|
-|`INTEGER`|정수|100, 200|
 |`NUMERIC(p, s)`|소수점 포함 정밀 숫자|금액, 좌표|
 |`TIMESTAMP`|날짜 + 시각|`2026-03-05 21:00:00`|
 |`DATE`|날짜만|`2026-03-05`|
 |`BOOLEAN`|참/거짓|`TRUE`, `FALSE`|
+|`ENUM`|미리 정의한 고정 값 목록|`'정시'`, `'지연'`|
 
 ## NUMERIC(p, s) — p 와 s 가 뭔가? ⭐️
 
@@ -110,12 +112,87 @@ NUMERIC(p, s)
   → 37.4881325   ✅
 ```
 
+## INTEGER vs BIGINT
+
+```
+INTEGER   4바이트  약 -21억 ~ 21억
+BIGINT    8바이트  약 -900경 ~ 900경
+
+BIGINT 쓰는 경우:
+  Unix 타임스탬프(밀리초)  → 1710000000000  (13자리, INTEGER 초과)
+  Kafka 오프셋            → 매우 큰 수
+  대용량 데이터 ID         → INTEGER 범위 초과 가능성
+
+  일반 병상 수 / 카운트   → INTEGER 로 충분
+```
+
+## ENUM — 고정 값 목록
+
+```
+미리 정해진 값만 저장 가능
+입력값 자동 검증 + 저장 공간 효율적
+
+주의:
+  CREATE TYPE 을 CREATE TABLE 보다 먼저 선언
+  값이 자주 바뀌면 VARCHAR 권장
+```
+
+
+```sql
+-- ENUM 타입 생성 (CREATE TABLE 앞에 위치해야 함)
+CREATE TYPE delay_status AS ENUM ('정시', '소폭지연', '지연', '대폭지연');
+
+CREATE TABLE train_delay (
+    id         SERIAL PRIMARY KEY,
+    dep_status delay_status,
+    arr_status delay_status
+);
+
+-- 값 추가
+ALTER TYPE delay_status ADD VALUE '운행취소';
+
+-- ENUM 목록 확인
+SELECT enum_range(NULL::delay_status);
+```
+
+## CHECK — 값 범위 제약
+
+```
+INSERT / UPDATE 시 조건 검사
+위반하면 에러 → 잘못된 데이터 입력 자체를 차단
+```
+
+
+```sql
+CREATE TABLE er_realtime (
+    id         SERIAL PRIMARY KEY,
+    hvec       INTEGER CHECK (hvec >= 0),                    -- 음수 불가
+    hvctayn    VARCHAR(1) CHECK (hvctayn IN ('Y', 'N')),     -- Y 또는 N만
+    saturation NUMERIC(5,2) CHECK (saturation BETWEEN 0 AND 100)  -- 0~100
+);
+
+-- 제약 이름 붙이기 (에러 메시지에 표시됨)
+ALTER TABLE er_realtime
+  ADD CONSTRAINT beds_positive CHECK (hvec >= 0);
+```
+
+```
+CHECK vs ENUM:
+  ENUM   정해진 문자열 목록 중 하나 (타입 정의 필요)
+  CHECK  더 복잡한 조건 (범위 / IN / BETWEEN)
+         타입 정의 없이 바로 사용 가능
+
+  값 종류가 적으면 CHECK 가 더 편함
+  VARCHAR(1) CHECK (col IN ('Y','N')) ← ENUM 없이 간단히
+```
+
+
 ```sql
 -- 자료형 사용 예시
 id           SERIAL PRIMARY KEY        -- 자동 증가 PK
 hpid         VARCHAR(20)               -- 병원 ID 문자열
 hvec         INTEGER                   -- 응급실 가용병상 (정수)
-sym_blk_msg  TEXT                      -- 긴 메시지
+notice_msg  TEXT                      -- 긴 메시지
 wgs84_lat    NUMERIC(10, 7)            -- 위도 (소수 7자리)
 wgs84_lon    NUMERIC(10, 7)            -- 경도 (소수 7자리)
 avg_beds     NUMERIC(5, 2)             -- 평균 병상 (123.45)
@@ -124,7 +201,6 @@ created_at   TIMESTAMP DEFAULT NOW()   -- 저장 시각 자동
 ```
 
 ---
-
 ---
 
 # ③ DataGrip 연결
