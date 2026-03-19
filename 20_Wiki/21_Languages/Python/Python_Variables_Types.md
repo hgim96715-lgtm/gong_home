@@ -7,6 +7,8 @@ aliases:
   - Boolean
   - TypeCasting
   - f-string
+  - type
+  - repr
 tags:
   - Python
 related:
@@ -231,6 +233,8 @@ print(repr(변수))         # "100" 인지 100 인지 구분 (따옴표 표시)
 repr("100")   # "'100'"  ← 따옴표 보임 → str
 repr(100)     # "100"    ← 따옴표 없음 → int
 ```
+
+>type / isinstance / repr 상세 → [[Python_Type_Checking]]
 
 ## None 체크
 

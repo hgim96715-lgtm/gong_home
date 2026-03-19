@@ -99,3 +99,4 @@ Python Producer → Kafka → Spark Streaming → PostgreSQL → Superset
 
 - [ ] [[01_Hospital_Docker_Setup]] — STEP 1. Docker Compose 세팅
 - [ ] [[02_Hospital_Data_Structure]] — STEP 2. API 응답 확인 + init.sql + 테이블 설계
+- [ ] [[03_Hospital_Producer]] — STEP 3. proucer

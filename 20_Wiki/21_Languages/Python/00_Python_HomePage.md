@@ -19,11 +19,11 @@ python3 --version
 
 ### 변수 & 자료형
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Variables_Types]]|str / int / bool / float / type 변환 / f-string|
-|[[Python_Type_Checking]]|type / isinstance / 상속 고려 여부|
-|[[Python_Membership_In]]|in / not in / == 완전일치|
+| 노트                         | 핵심 개념                                              |
+| -------------------------- | -------------------------------------------------- |
+| [[Python_Variables_Types]] | str / int / bool / float / type 변환 / f-string/repr |
+| [[Python_Type_Checking]]   | type / isinstance / 상속 고려 여부/repr/값의 진짜 모습         |
+| [[Python_Membership_In]]   | in / not in / == 완전일치                              |
 
 ### 문자열 처리
 

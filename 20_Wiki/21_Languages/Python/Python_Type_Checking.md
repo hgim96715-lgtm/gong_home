@@ -4,6 +4,8 @@ aliases:
   - isinstance
   - type
   - 자료형_검사
+  - repr
+  - 값의 진짜 모습 보기
 tags:
   - Python
 related:
@@ -143,3 +145,53 @@ isinstance(baduk, Animal)  # True  ← 개도 동물의 한 종류 ✅
 |여러 타입 동시 검사|❌|✅ `(int, float)`|
 |공식 권장|-|✅|
 |용도|정확한 클래스 확인|타입 안전성 검사|
+
+
+----
+---
+# repr() — 값의 진짜 모습 보기
+
+```
+type() / isinstance() 로 타입은 알았는데
+값 안에 공백 / 특수문자가 숨어있을 수 있음
+→ repr() 로 실제 값 확인
+
+print() 는 보기 좋게 출력
+repr() 는 있는 그대로 출력 (공백/특수문자 포함)
+```
+
+
+```python
+val = "Y         "   # API 응답 (공백 포함)
+
+type(val)            # <class 'str'>   ← 타입은 str 맞음
+isinstance(val, str) # True
+
+print(val)           # Y              ← 공백 안 보임
+print(repr(val))     # 'Y         '  ← 공백 눈에 보임 ✅
+
+# isinstance 는 True 인데 "Y" 랑 다른 이유가 뭔지 알 수 있음
+val == "Y"           # False (공백 때문)
+val.strip() == "Y"   # True ✅
+```
+
+
+```python
+# 타입 디버깅 세트
+print(type(val))     # 타입 확인
+print(repr(val))     # 값 확인 (공백/특수문자)
+
+# 실전: API 필드 디버깅
+for child in item:
+    print(f"{child.tag}: {type(child.text)} | {repr(child.text)}")
+# hvctayn: <class 'str'> | 'Y         '  ← 공백 발견
+# MKioskTy1: <class 'str'> | '정보미제공' ← Y/N 아님
+```
+
+```
+type()      → "어떤 타입이야?"
+isinstance() → "이 타입 맞아?"
+repr()      → "실제 값이 뭐야? (숨겨진 문자 포함)"
+
+셋 다 함께 쓰면 타입 관련 에러 대부분 잡을 수 있음
+```
