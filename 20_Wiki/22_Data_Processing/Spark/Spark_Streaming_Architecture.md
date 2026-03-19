@@ -8,7 +8,6 @@ tags:
   - Streaming
 related:
   - "[[Spark_Streaming_Intro]]"
-  - "[[Streaming_Source_Comparison]]"
   - "[[00_Apache_Spark_HomePage]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step24.ipynb

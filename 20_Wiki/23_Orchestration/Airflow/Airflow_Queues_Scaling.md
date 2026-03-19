@@ -14,7 +14,7 @@ related:
   - "[[Airflow_Flower]]"
   - "[[Airflow_Architecture(아키텍처)]]"
   - "[[CS_Stack_Queue]]"
-  - "[[Blocking_vs_NonBlocking]]"
+  - "[[CS_Blocking_vs_NonBlocking]]"
 ---
 ## 개념 한 줄 요약
 

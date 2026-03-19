@@ -23,7 +23,7 @@
 |[[RAM_Memory]]|휘발성 / 속도 차이 / OOM / 스왑 메모리|
 |[[Process_vs_Thread]]|PID / 컨텍스트 스위칭 / 공유 메모리 / GIL|
 |[[Concurrency_vs_Parallelism]]|동시성 vs 병렬성 / async / 멀티코어|
-|[[Blocking_vs_NonBlocking]]|Blocking / Non-Blocking / Async·Await / I/O 대기|
+|[[CS_Blocking_vs_NonBlocking]]|Blocking / Non-Blocking / Async·Await / I/O 대기|
 
 > 리눅스 실습 → [[00_Linux_HomePage]]
 

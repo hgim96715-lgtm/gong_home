@@ -302,7 +302,62 @@ for child in root:
 ```
 
 ---
+---
+# ⑨ 타입 힌트 — ET.Element | None
 
+```
+함수 반환값이 "ET.Element 또는 None" 임을 명시
+API 호출 성공 → ET.Element 반환
+API 호출 실패 → None 반환
+
+Python 3.10+:  ET.Element | None
+Python 3.9 이하: Optional[ET.Element]
+```
+
+
+```python
+import xml.etree.ElementTree as ET
+from typing import Optional
+
+# Python 3.10+ 방식
+def fetch_xml(endpoint: str, extra_params: dict = None) -> ET.Element | None:
+    ...
+    root = ET.fromstring(r.content)
+    return root     # 성공 → ET.Element
+    return None     # 실패 → None
+
+# Python 3.9 이하 방식
+def fetch_xml(endpoint: str, extra_params: dict = None) -> Optional[ET.Element]:
+    ...
+```
+
+
+```python
+# 호출하는 쪽에서 None 체크 필수
+root = fetch_xml("getEmrrmRltmUsefulSckbdInfoInqire")
+
+if root is None:          # API 실패
+    return {}
+
+items = root.findall(".//item")   # None 아닐 때만 탐색
+```
+
+```
+ET.Element 가 뭔가:
+  ET.fromstring() 이 반환하는 타입
+  XML 트리의 태그 하나를 나타내는 객체
+  find / findall / findtext 메서드를 가짐
+
+  root = ET.fromstring(r.content)
+  type(root)  → xml.etree.ElementTree.Element
+
+타입 힌트를 쓰는 이유:
+  IDE 자동완성 지원
+  함수 반환값이 코드만 봐도 명확
+  None 체크 안 하면 경고 표시
+```
+
+---
 ---
 
 # 메서드 한눈에 정리

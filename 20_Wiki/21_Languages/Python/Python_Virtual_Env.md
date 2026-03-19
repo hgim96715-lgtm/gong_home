@@ -14,6 +14,7 @@ related:
   - "[[Spark_Installation_Local]]"
   - "[[Dockerfile_Basics]]"
   - "[[Python_Database_Connect]]"
+  - "[[Linux_Python_Env]]"
 ---
 ## 개념 한 줄 요약
 

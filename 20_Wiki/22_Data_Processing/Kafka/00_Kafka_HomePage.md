@@ -1,38 +1,99 @@
-## 1. Concept & Architecture (기초)
 
-- [[Apache_Kafka_Concept]] : 카프카가 도대체 뭔가요? (`Pub/Sub`, `Producer`, `Consumer`, `Broker`, `메시지 큐`, `이벤트 스트리밍`)
-- [[Kafka_Topic_Partition_Offset]] : 파티션과 오프셋, 병렬 처리의 핵심 ⭐️ (`Topic`, `Partition`, `Offset`, `병렬 처리`, `순서 보장`, `메시지 위치`)
-- [[Kafka_Consumer_Group_Lag]] : 컨슈머 그룹과 랙(Lag) 관리 (`Consumer Group`, `Lag`, `group.id`, `파티션 할당`, `처리 지연 모니터링`)
-- [[Kafka_Replication_ISR]] : 데이터 복제와 장애 복구 원리 (`Replication Factor`, `ISR`, `Leader`, `Follower`, `장애 복구`, `데이터 유실 방지`)
-- [[Docker_Host_vs_Internal_Network]] : `localhost` vs `Container_Name` 완벽 정리 (`KAFKA_ADVERTISED_LISTENERS`, `외부 접속`, `내부 통신`, `브릿지 네트워크`, `포트 바인딩`)
 
----
-
-## 2. CLI & Operations (도구)
-
-- [[Kafka_CLI_Cheatsheet]] : 터미널 필수 명령어 모음 (`kafka-topics.sh`, `kafka-console-producer.sh`, `kafka-console-consumer.sh`, `--list`, `--describe`, `--from-beginning`)
-- [[Kafka_Docker_Compose_Setup]] : Docker 환경 구축 및 트러블슈팅 (`docker-compose`, `Broker`, `환경변수`, `포트 설정`, `트러블슈팅`)
+```
+실시간 데이터를 안정적으로 흘리는 메시지 스트리밍 플랫폼
+Producer → Broker → Consumer 로 데이터가 흐른다
+```
 
 ---
 
-## 3. Python Development (코딩)
+---
 
-- [[Kafka_Python_Producer]] : 데이터 전송 기초 (`confluent_kafka`, `KafkaProducer`, `produce`, `flush`, `key/value`, `Hello World`)
-- [[Kafka_Python_Consumer]] : 데이터 수신 기초 (`KafkaConsumer`, `subscribe`, `poll`, `무한 루프`, `auto_offset_reset`, `commit`)
-- [[Kafka_Python_Serialization]] : JSON 데이터 직렬화/역직렬화 패턴 (`json.dumps`, `json.loads`, `encode`, `decode`, `value_serializer`, `직렬화 패턴`)
-- [[Kafka_Error_Handling_Retry]] : 연결 실패 및 에러 처리 (`try/except`, `재시도`, `좀비 패턴`, `KafkaException`, `백오프`, `연결 실패 복구`)
+## Level 0. 개념 잡기
+
+```
+카프카가 도대체 뭔가?
+왜 단순 DB 저장이 아니라 메시지 큐를 쓰는가?
+```
+
+|노트|핵심 개념|
+|---|---|
+|[[Apache_Kafka_Concept]]|Pub/Sub / Producer / Consumer / Broker / 메시지 큐 / 이벤트 스트리밍|
+|[[Kafka_Topic_Partition_Offset]]|Topic / Partition / Offset / 병렬 처리 / 순서 보장 / 메시지 위치|
 
 ---
 
-## 4. PyFlink Integration (연동)
+---
 
-- [[PyFlink_Kafka_Source_Sink]] : Flink와 Kafka 연결하기 (`FlinkKafkaConsumer`, `FlinkKafkaProducer`, `Source`, `Sink`, `connector jar`, `체크포인트`)
-- [[Flink_Kafka_SerializationSchema]] : Flink에서의 데이터 스키마 정의 (`SerializationSchema`, `DeserializationSchema`, `JSONRowSerializationSchema`, `TypeInformation`)
+## Level 1. 환경 세팅
+
+```
+Docker 로 Kafka 띄우고
+localhost vs 컨테이너 이름 차이 이해
+```
+
+| 노트                                  | 핵심 개념                                                                                                            |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [[Docker_Host_vs_Internal_Network]] | localhost vs 컨테이너명 / KAFKA_LISTENERS / KAFKA_ADVERTISED_LISTENERS / 브릿지 네트워크 / 포트 바인딩                            |
+| [[Kafka_CLI_Cheatsheet]]            | kafka-topics.sh / kafka-console-producer.sh / kafka-console-consumer.sh / --list / --describe / --from-beginning |
 
 ---
 
-## 5. Data Lake Integration (데이터 레이크 연동)
+---
 
-> "카프카의 실시간 데이터를 모아서 영구 보존용 창고(MinIO/S3)에 쌓아보자"
+## Level 2. Python 연동
 
-- [[Kafka_to_MinIO_DataLake]] : Kafka Consumer와 Pandas를 이용한 Parquet 배치 저장 (`s3fs`, `Parquet`, `배치 저장`, `MinIO`, `S3 호환`, `pandas.to_parquet`, `통역사 설정`)
+```
+Python 으로 Kafka 에 데이터 보내고 받기
+직렬화 / 역직렬화 패턴
+```
+
+|노트|핵심 개념|
+|---|---|
+|[[Kafka_Python_Producer]]|KafkaProducer / produce / flush / key/value / acks / retries|
+|[[Kafka_Python_Consumer]]|KafkaConsumer / subscribe / poll / 무한루프 / auto_offset_reset / commit|
+|[[Kafka_Python_Serialization]]|json.dumps / json.loads / encode / decode / value_serializer / 직렬화 패턴|
+
+---
+
+---
+
+## Level 3. 안정성
+
+```
+연결 실패 / 재시도 / 에러 처리
+실제 운영에서 발생하는 문제들
+```
+
+|노트|핵심 개념|
+|---|---|
+|[[Kafka_Error_Handling_Retry]]|try/except / 재시도 / 좀비 패턴 / KafkaException / 백오프 / 연결 실패 복구|
+
+---
+
+---
+
+## Level 4. 활용
+
+```
+Kafka 에서 읽어서 어디로 보낼 것인가
+```
+
+|노트|핵심 개념|
+|---|---|
+|[[Kafka_to_MinIO_DataLake]]|Consumer + Pandas / Parquet 배치 저장 / MinIO / S3 호환 / pandas.to_parquet|
+
+---
+
+---
+
+## 프로젝트 적용
+
+|노트|설명|
+|---|---|
+|[[03_Kafka_Producer]]|서울역 프로젝트 Producer|
+|[[03_Hospital_Producer]]|Hospital 프로젝트 Producer|
+
+---
+
+---

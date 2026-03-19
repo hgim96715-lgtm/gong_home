@@ -1,6 +1,16 @@
 
 >목표: Airflow · Spark · API 파이프라인을 직접 짤 수 있는 Python 실력
 
+## 버전 확인 & 관리
+
+```bash
+# 현재 버전 확인
+python3 --version
+# 권장 버전: 3.11.x (안정적 + 속도 개선)
+```
+
+>버전 변경 방법 → [[Linux_Python_Env]] pyenv 섹션 참고
+
 ---
 
 ---
@@ -17,13 +27,13 @@
 
 ### 문자열 처리
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_String_Indexing_Slicing]]|Index / Slice / [::-1] / 음수 인덱스|
-|[[Python_String_Methods]]|split / join / strip / startswith / endswith / isdigit|
-|[[Python_String_Search]]|find / index / rfind / rindex / 없으면 -1 vs 에러|
-|[[Python_String_Case_Replace]]|upper / lower / replace / re.sub / 정규식 치환|
-|[[Python_String_Formatting]]|f-string / :<4 / :> / :^ / 소수점 / 날짜 포맷 / 천단위|
+| 노트                                 | 핵심 개념                                                  |
+| ---------------------------------- | ------------------------------------------------------ |
+| [[Python_String_Indexing_Slicing]] | Index / Slice / [:​:-1] / 음수 인덱스                       |
+| [[Python_String_Methods]]          | split / join / strip / startswith / endswith / isdigit |
+| [[Python_String_Search]]           | find / index / rfind / rindex / 없으면 -1 vs 에러           |
+| [[Python_String_Case_Replace]]     | upper / lower / replace / re.sub / 정규식 치환              |
+| [[Python_String_Formatting]]       | f-string / :<4 / :> / :^ / 소수점 / 날짜 포맷 / 천단위           |
 
 ### 흐름 제어
 
@@ -34,11 +44,11 @@
 
 ### 함수
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Functions]]|def / return / *args / **kwargs / 기본값|
-|[[Python_Unpacking]]|a, b = [1, 2] / *rest / _ / 중첩 언패킹|
-|[[Python_Variable_Swapping]]|a, b = b, a / 임시변수 없이 교환|
+| 노트                           | 핵심 개념                                 |
+| ---------------------------- | ------------------------------------- |
+| [[Python_Functions]]         | def / return / *args / **kwargs / 기본값 |
+| [[Python_Unpacking]]         | a, b = [1, 2] / *rest / _ / 중첩 언패킹    |
+| [[Python_Variable_Swapping]] | a, b = b, a / 임시변수 없이 교환              |
 
 ### 내장함수 & 수학
 
@@ -80,6 +90,8 @@ JSON 처리의 핵심
 ```
 남이 짠 코드를 가져다 쓰고, 내 코드를 정리하기
 ```
+
+>[[Linux_Python_Env]] 참고 
 
 |노트|핵심 개념|
 |---|---|

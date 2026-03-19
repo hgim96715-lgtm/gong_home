@@ -8,7 +8,7 @@ tags:
 related:
   - "[[00_Docker_HomePage]]"
   - "[[Dockerfile_Basics]]"
-  - "[[Docker_Image_Layers]]"
+  - "[[Linux_Python_Env]]"
 ---
 
 # 🐳 Docker_Python_Requirements

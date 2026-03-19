@@ -13,7 +13,7 @@ tags:
   - Airflow
 related:
   - "[[Airflow_Queues_Scaling]]"
-  - "[[Blocking_vs_NonBlocking]]"
+  - "[[CS_Blocking_vs_NonBlocking]]"
   - "[[Process_vs_Thread]]"
 ---
 ## 개념 한 줄 요약
