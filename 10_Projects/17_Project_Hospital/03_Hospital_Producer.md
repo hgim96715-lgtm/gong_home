@@ -452,6 +452,8 @@ pip3 install -r requirements.txt
 python3 producer.py
 ```
 
+>[[Docker_Python_Requirements#④ 패키지 설치 & 관리 명령어]] 참고 
+
 ```
 [Hospital Producer] Kafka 연결!!:kafka:9093
 🚑 Hospital Producer 가동 시작 (수집 주기: 300초)
