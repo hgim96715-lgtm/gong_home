@@ -83,12 +83,13 @@ related:
 
 ### 요청 파라미터
 
-|항목명|영문|필수|샘플|설명|
-|---|---|---|---|---|
-|주소(시도)|STAGE1|필수|서울특별시|빈값으로 전국 조회 테스트 필요|
-|주소(시군구)|STAGE2|필수|강남구|빈값 가능 여부 확인 필요|
-|페이지 번호|pageNo|옵션|1||
-|목록 건수|numOfRows|옵션|10||
+| 항목명     | 영문        | 필수            | 샘플    | 설명          |
+| ------- | --------- | ------------- | ----- | ----------- |
+| 주소(시도)  | STAGE1    | ~~필수~~ **옵션** | 서울특별시 | 없으면 전국 조회 ✅ |
+| 주소(시군구) | STAGE2    | ~~필수~~ **옵션** | 강남구   | 없으면 전국 조회 ✅ |
+| 페이지 번호  | pageNo    | 옵션            | 1     |             |
+| 목록 건수   | numOfRows | 옵션            | 10    |             |
+
 
 ```text
 ✅ 테스트 결과 확인:
@@ -323,6 +324,7 @@ duty_addr / region 은 er_realtime 에 없음
 >[[PostgreSQL_Setup#② 자주 쓰는 자료형]] 참고 
 
 >region은 혹시 모르니 저번에 train시 21개 로 막힌 오류가 있어서 50으로 정리 
+>VARCHAR(1)->VARCHAR(10)
 
 ```sql
 -- ① er_realtime: 응급실 실시간 병상 현황 (5분마다 적재)
@@ -333,8 +335,8 @@ CREATE TABLE IF NOT EXISTS er_realtime (
     hpname       VARCHAR(100),
     hvec         INT,            -- 응급실 가용병상 수 ← 핵심 (API ①)
     hvoc         INT,            -- 수술실 가용 수 (API ①)
-    hvctayn      VARCHAR(1),     -- CT 가용 Y/N (API ①)
-    hvventiayn   VARCHAR(1),     -- 인공호흡기 가용 Y/N (API ①)
+    hvctayn      VARCHAR(10),     -- CT 가용 Y/N (API ①)
+    hvventiayn   VARCHAR(10),     -- 인공호흡기 가용 Y/N (API ①)
     notice_msg   TEXT,           -- 응급실 공지 메시지 (API ③)
     data_type    VARCHAR(20),    -- 'er_realtime'
     created_at   TIMESTAMP DEFAULT NOW()
@@ -360,14 +362,14 @@ CREATE TABLE IF NOT EXISTS er_hospitals (
     hpname       VARCHAR(100),
     duty_addr    VARCHAR(200),
     duty_tel     VARCHAR(20),     -- 응급실 전화 (dutyTel3)
-    duty_eryn    VARCHAR(1),      -- 응급실 운영여부 (1:운영)
+    duty_eryn    VARCHAR(10),      -- 응급실 운영여부 (1:운영)
     wgs84_lat    NUMERIC(10,7),
     wgs84_lon    NUMERIC(10,7),
     hpbdn        INT,             -- 전체 병상 수
-    mk_stroke    VARCHAR(1),      -- 뇌출혈수술 가능 (인증)
-    mk_cardiac   VARCHAR(1),      -- 심근경색 가능 (인증)
-    mk_trauma    VARCHAR(1),      -- 중증외상 Gate keeper (인증)
-    mk_pediatric VARCHAR(1),      -- 신생아 가능 (인증)
+    mk_stroke    VARCHAR(10),      -- 뇌출혈수술 가능 (인증)
+    mk_cardiac   VARCHAR(10),      -- 심근경색 가능 (인증)
+    mk_trauma    VARCHAR(10),      -- 중증외상 Gate keeper (인증)
+    mk_pediatric VARCHAR(10),      -- 신생아 가능 (인증)
     region       VARCHAR(20),
     updated_at   TIMESTAMP DEFAULT NOW()
 );
@@ -441,8 +443,9 @@ STAGE1/STAGE2 필수 표기 문제:
 Y/N 컬럼 VARCHAR(1) vs CHECK 결정:
   CHECK (col IN ('Y','N')) 으로 하면 제약이 강함
   BUT API 서버 에러 시 빈값("") 또는 미상값("U") 이 올 수 있음
-  → 파이프라인이 뻗지 않게 VARCHAR(1) 로 결정
-  → 데이터 검증은 Superset / 집계 쿼리에서 처리
+  → 파이프라인이 뻗지 않게 VARCHAR(1) 로 결정 했었지만
+Consumer 실행 시 1 초과 값 발생 확인 
+→ VARCHAR(10) 으로 변경 → 데이터 검증은 Superset / 집계 쿼리에서 처리
 
 er_realtime.hpid UNIQUE 여부:
   er_realtime 은 5분마다 같은 병원 데이터를 계속 쌓는 테이블

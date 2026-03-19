@@ -95,8 +95,43 @@ Python Producer → Kafka → Spark Streaming → PostgreSQL → Superset
 ---
 
 ---
+## Topic 목록
+
+```bash
+# 현재 토픽 목록 확인
+docker exec -it hospital-kafka \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --list
+
+# er-realtime 토픽 생성
+docker exec -it hospital-kafka \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --create \
+    --topic er-realtime --partitions 1 --replication-factor 1
+
+# er-hospitals 토픽 생성 (Airflow 배치용)
+docker exec -it hospital-kafka \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --create \
+    --topic er-hospitals --partitions 1 --replication-factor 1
+
+# 토픽 상세 확인
+docker exec -it hospital-kafka \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --describe \
+    --topic er-realtime
+```
+
+
+
+
+
+
+
+
 ## END -TO -END
 
 - [ ] [[01_Hospital_Docker_Setup]] — STEP 1. Docker Compose 세팅
 - [ ] [[02_Hospital_Data_Structure]] — STEP 2. API 응답 확인 + init.sql + 테이블 설계
 - [ ] [[03_Hospital_Producer]] — STEP 3. proucer
+- [ ] [[04_Hospital_Kafka_Spark]] - STEP4. Consumer

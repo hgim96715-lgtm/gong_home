@@ -448,7 +448,7 @@ if __name__ == "__main__":
 ```bash
 # 맥북에서 직접 실행
 cd producer
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 python3 producer.py
 ```
 
