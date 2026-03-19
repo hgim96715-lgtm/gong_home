@@ -12,7 +12,7 @@ related:
   - "[[Spark_Architecture]]"
   - "[[Lazy_Evaluation]]"
   - "[[Node_vs_Partition]]"
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
 ---
 ## 개념 한 줄 요약
 

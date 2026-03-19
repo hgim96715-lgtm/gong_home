@@ -17,7 +17,7 @@ related:
   - "[[Spark_DataFrame]]"
   - "[[Spark_Core_Objects]]"
   - "[[Spark_Streaming_Kafka_Integration]]"
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
   - "[[Spark_JSON_Handling]]"
   - "[[00_Seoul_Station_Real-Time_Train_Project|train-projcet]]"
 ---

@@ -8,7 +8,7 @@ tags:
   - Spark
 related:
   - "[[Spark_Architecture]]"
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_AQE_Deep_Dive]]"
   - "[[Spark_Caching_Strategies]]"

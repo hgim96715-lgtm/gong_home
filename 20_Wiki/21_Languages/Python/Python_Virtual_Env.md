@@ -11,7 +11,7 @@ tags:
   - Linux
 related:
   - "[[Linux_Fundamental_Rules]]"
-  - "[[Spark_Installation_Local]]"
+  - "[[Spark_Installation_Local_Docker]]"
   - "[[Dockerfile_Basics]]"
   - "[[Python_Database_Connect]]"
   - "[[Linux_Python_Env]]"

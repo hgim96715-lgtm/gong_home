@@ -10,7 +10,7 @@ tags:
   - Spark
 related:
   - "[[Spark_DataFrame_SQL_Intro]]"
-  - "[[PySpark_Session_Context]]"
+  - "[[Spark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_Concepts_View]]"
   - "[[Spark_DataFrame]]"

@@ -249,7 +249,20 @@ Password:  <패스워드>
 
 ---
 
-# ④ psql 기본 명령어
+# ④ psql — PostgreSQL 전용 CLI 클라이언트
+
+```text
+psql = PostgreSQL 에 접속해서 SQL 을 직접 실행하는 명령줄 도구
+
+DataGrip  GUI (마우스로 클릭)
+psql      CLI (터미널에서 타이핑)
+
+언제 psql 쓰나:
+  DataGrip 없는 서버 환경
+  빠르게 쿼리 한 줄 확인할 때
+  docker exec 로 컨테이너 안에서 바로 접속할 때
+  스크립트에서 자동화할 때
+```
 
 ```bash
 # 컨테이너 내부 psql 접속

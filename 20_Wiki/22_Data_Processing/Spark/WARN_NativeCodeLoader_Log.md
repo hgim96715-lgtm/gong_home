@@ -10,7 +10,7 @@ tags:
   - Troubleshooting
 related:
   - "[[Spark_Session_Deep_Dive]]"
-  - "[[Spark_Installation_Local]]"
+  - "[[Spark_Installation_Local_Docker]]"
   - "[[00_Apache_Spark_HomePage]]"
 ---
 ## 로그 내용 (Log Message)

@@ -9,7 +9,7 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
   - "[[Python_Lambda_Map]]"
   - "[[Python_String_Methods]]"
   - "[[00_Apache_Spark_HomePage]]"

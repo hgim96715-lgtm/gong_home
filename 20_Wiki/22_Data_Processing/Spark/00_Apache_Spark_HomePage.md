@@ -7,13 +7,13 @@
 
 # 🏗️ 아키텍처 — Spark 가 어떻게 동작하는가
 
-|노트|핵심 키워드|
-|---|---|
-|[[Spark_Concept_Evolution]]|MapReduce vs Spark, In-Memory, DAG|
-|[[Spark_Architecture]]|Driver, Executor, Cluster Manager, 자원 배분|
-|[[RDD_Concept]]|불변성, Lineage, 파티션, 복구|
-|[[Transformations_vs_Actions]]|Lazy Evaluation, Narrow/Wide, 셔플, Action 트리거|
-|[[Spark_Catalyst_Optimizer]]|논리 계획 → 물리 계획, Predicate Pushdown|
+| 노트                                    | 핵심 키워드                                       |
+| ------------------------------------- | -------------------------------------------- |
+| [[Spark_Concept_Evolution]]           | MapReduce vs Spark, In-Memory, DAG           |
+| [[Spark_Architecture]]                | Driver, Executor, Cluster Manager, 자원 배분     |
+| [[RDD_Concept]]                       | 불변성, Lineage, 파티션, 복구                        |
+| [[Spark_Transformations_vs_Actions]]⭐ | Lazy Evaluation, Narrow/Wide, 셔플, Action 트리거 |
+| [[Spark_Catalyst_Optimizer]]          | 논리 계획 → 물리 계획, Predicate Pushdown            |
 
 ---
 
@@ -21,11 +21,10 @@
 
 # 🔧 환경 설정
 
-|노트|핵심 키워드|
-|---|---|
-|[[Spark_Installation_Local]]|pip install pyspark, Docker Compose, JAVA_HOME|
-|[[PySpark_Session_Context]]|SparkSession, builder, appName, getOrCreate|
-|[[Spark_Session_Deep_Dive]]|spark-submit, --master, client/cluster mode|
+| 노트                                   | 핵심 키워드                                                         |
+| ------------------------------------ | -------------------------------------------------------------- |
+| [[Spark_Installation_Local_Docker]]⭐ | pip install pyspark, Docker Compose, JAVA_HOME                 |
+| [[Spark_Session_Context]]⭐           | SparkSession, builder, appName, getOrCreate,setLogLevel,config |
 
 ---
 
@@ -33,18 +32,18 @@
 
 # 📊 DataFrame — 메인 무기
 
-| 노트                            | 핵심 키워드                                                     |
-| ----------------------------- | ---------------------------------------------------------- |
-| [[Spark_Core_Objects]] ⭐️     | SparkSession, **Row**, Column, RDD, sparkContext           |
-| [[Spark_DataFrame]] ⭐️        | createDataFrame, StructType, StructField, spark.read, show |
-| [[DataFrame_Transform]] | select, filter, withColumn, cast, alias                    |
-| [[DataFrame_Aggregation]]     | groupBy, agg, sort, count, sum, avg                        |
-| [[Spark_DataFrame_Joins]]     | inner, left, semi, anti, broadcast                         |
-| [[Spark_Data_Cleaning]]       | na.drop, na.fill, to_date, date_format                     |
-| [[Spark_Data_IO]]             | Parquet, CSV, partitionBy, write mode                      |
-| [[SQL_with_Spark]]            | createOrReplaceTempView, spark.sql                         |
-| [[Spark_JSON_Handling]]       | from_json, to_json, StructType, 중첩 JSON                    |
-| [[Spark_Functions_Library]]   | F.col, F.lit, F.when, F.coalesce, F.regexp_extract         |
+| 노트                             | 핵심 키워드                                                               |
+| ------------------------------ | -------------------------------------------------------------------- |
+| [[Spark_Core_Objects]] ⭐️      | SparkSession, **Row**, Column, RDD, sparkContext                     |
+| [[Spark_DataFrame]] ⭐️         | createDataFrame, StructType, StructField, spark.read, show/types     |
+| [[Spark_DataFrame_Transform]]⭐ | select, filter, withColumn, cast, alias                              |
+| [[DataFrame_Aggregation]]      | groupBy, agg, sort, count, sum, avg                                  |
+| [[Spark_DataFrame_Joins]]      | inner, left, semi, anti, broadcast                                   |
+| [[Spark_Data_Cleaning]]        | na.drop, na.fill, to_date, date_format                               |
+| [[Spark_Data_IO]]              | Parquet, CSV, partitionBy, write mode                                |
+| [[SQL_with_Spark]]             | createOrReplaceTempView, spark.sql                                   |
+| [[Spark_JSON_Handling]] ⭐      | from_json, to_json, StructType, 중첩 JSON                              |
+| [[Spark_Functions_Library]] ⭐  | F.col, F.lit, F.when, F.coalesce, F.regexp_extract,current_timestamp |
 
 ---
 
@@ -67,15 +66,15 @@
 
 # 🚰 Streaming — 실시간 처리
 
-|노트|핵심 키워드|
-|---|---|
-|[[Spark_Streaming_Intro]]|DStream vs Structured Streaming, Micro-batch|
-|[[Spark_Streaming_Architecture]]|Source, Sink, trigger, processingTime|
-|[[Spark_Streaming_Kafka_Integration]] ⭐️|readStream, writeStream, subscribe, checkpointLocation|
-|[[Spark_Streaming_Fault_Tolerance]]|Checkpoint, Exactly-once, WAL, 복구|
-|[[Spark_Streaming_Window_Watermark]]|Tumbling/Sliding Window, withWatermark, 늦은 데이터 처리|
-|[[Spark_Streaming_Join_Patterns]]|Stream-Stream Join, Stream-Static Join, Watermark 필수 여부|
-|[[Spark_Streaming_Troubleshooting]]|좀비 데이터, 오프셋 초기화, Watermark 미충족|
+| 노트                                       | 핵심 키워드                                                  |
+| ---------------------------------------- | ------------------------------------------------------- |
+| [[Spark_Streaming_Intro]]                | DStream vs Structured Streaming, Micro-batch            |
+| [[Spark_Streaming_Architecture]]         | Source, Sink, trigger, processingTime                   |
+| [[Spark_Streaming_Kafka_Integration]] ⭐️ | readStream, writeStream, subscribe, checkpointLocation  |
+| [[Spark_Streaming_Fault_Tolerance]]      | Checkpoint, Exactly-once, WAL, 복구                       |
+| [[Spark_Streaming_Window_Watermark]]     | Tumbling/Sliding Window, withWatermark, 늦은 데이터 처리       |
+| [[Spark_Streaming_Join_Patterns]]        | Stream-Stream Join, Stream-Static Join, Watermark 필수 여부 |
+| [[Spark_Streaming_Troubleshooting]]      | 좀비 데이터, 오프셋 초기화, Watermark 미충족                          |
 
 > `Spark_Streaming_Window_Aggregation` + `Spark_Streaming_Watermark` → [[Spark_Streaming_Window_Watermark]] 로 합침 `Spark_Streaming_Stream_Join` + `Spark_Streaming_Static_Join` → [[Spark_Streaming_Join_Patterns]] 로 합침
 
@@ -122,9 +121,8 @@
 
 # 📎 치트시트 / 템플릿
 
-|노트|설명|
-|---|---|
-|[[Spark_Functions_Library]]|자주 쓰는 내장 함수 레퍼런스|
-|[[Spark_Kafka_Stateful_Agg_Template]]|Kafka + GroupBy 집계 보일러플레이트|
-|[[Kafka_Spark_CLI_Cheatsheet]]|kafka-topics.sh, spark-submit 명령어 모음|
-|[[Spark_Common_Mistakes]]|Action 없는 실행, collect 남용, None 반환|
+| 노트                                    | 설명                                   |
+| ------------------------------------- | ------------------------------------ |
+| [[Spark_Kafka_Stateful_Agg_Template]] | Kafka + GroupBy 집계 보일러플레이트           |
+| [[Kafka_Spark_CLI_Cheatsheet]]        | kafka-topics.sh, spark-submit 명령어 모음 |
+| [[Spark_Common_Mistakes]]             | Action 없는 실행, collect 남용, None 반환    |

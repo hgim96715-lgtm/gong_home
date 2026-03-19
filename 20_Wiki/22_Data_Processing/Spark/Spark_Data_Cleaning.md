@@ -9,10 +9,10 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
   - "[[Spark_Functions_Library]]"
   - "[[Pandas_Missing_Values]]"
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_Streaming_Window_Aggregation]]"
 ---
@@ -25,7 +25,7 @@ related:
 
 가장 기초적인 `filter + isNull` 패턴입니다.
 
->자세한 내용은 [[DataFrame_Transform#③ [핵심] 결측치(Null) 처리 (`isNotNull`,`isNull`)|결측치처리-filter]] 참조 
+>자세한 내용은 [[Spark_DataFrame_Transform#③ [핵심] 결측치(Null) 처리 (`isNotNull`,`isNull`)|결측치처리-filter]] 참조 
 
 ```python
 from pyspark.sql.functions import col, isnan, when, count

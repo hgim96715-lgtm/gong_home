@@ -9,7 +9,7 @@ tags:
   - Spark
 related:
   - "[[Spark_Architecture]]"
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
   - "[[Python_Control_Flow]]"
   - "[[00_Apache_Spark_HomePage]]"
 ---

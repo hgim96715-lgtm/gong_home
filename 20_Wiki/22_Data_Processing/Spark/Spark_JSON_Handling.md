@@ -11,7 +11,10 @@ related:
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_DataFrame]]"
   - "[[Spark_Streaming_Kafka_Integration]]"
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
+  - "[[Python_JSON]]"
+  - "[[Spark_Core_Objects]]"
+  - "[[Spark_DataFrame]]"
 ---
 # Spark JSON Handling — JSON 파싱 / 직렬화
 

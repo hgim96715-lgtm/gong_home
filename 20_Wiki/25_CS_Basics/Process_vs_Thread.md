@@ -10,8 +10,8 @@ tags:
   - CS
 related:
   - "[[Spark_Architecture]]"
-  - "[[RAM_Memory]]"
-  - "[[CPU_Architecture]]"
+  - "[[CS_RAM_Memory]]"
+  - "[[CS_CPU_Architecture]]"
   - "[[Process_Management]]"
 ---
 ## 개념 한 줄 요약

@@ -11,7 +11,7 @@ tags:
   - RDD
 related:
   - "[[Spark_Key_Transformations]]"
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
 linked:
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step4.ipynb
   - file:///Users/gong/gong_study_de/apache-spark/notebooks/step3.ipynb

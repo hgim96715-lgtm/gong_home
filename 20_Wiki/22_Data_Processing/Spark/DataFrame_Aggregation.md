@@ -10,7 +10,7 @@ aliases:
 tags:
   - Spark
 related:
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
   - "[[Spark_DataFrame]]"
   - "[[SQL_with_Spark]]"
   - "[[00_Apache_Spark_HomePage]]"
@@ -23,7 +23,7 @@ linked:
 
 **"데이터를 끼리끼리 묶어서(GroupBy) 계산하고(Agg), 순서대로 줄 세우는(Sort) 분석 과정."**
 
-* **1부([[DataFrame_Transform]])** 가 데이터를 다듬는 과정이라면,
+* **1부([[Spark_DataFrame_Transform]])** 가 데이터를 다듬는 과정이라면,
 * **2부(이 파일)** 는 다듬어진 데이터로 **통계와 인사이트**를 뽑는 과정입니다.
 
 ---

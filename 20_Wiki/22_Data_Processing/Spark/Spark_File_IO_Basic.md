@@ -10,7 +10,7 @@ tags:
   - RDD
 related:
   - "[[RDD_Concept]]"
-  - "[[Spark_Installation_Local]]"
+  - "[[Spark_Installation_Local_Docker]]"
   - "[[Docker_Volumes]]"
   - "[[Data_Formats_CSV]]"
 ---

@@ -9,7 +9,6 @@
 ---
 
 ---
-
 ## Level 0. 개념 잡기
 
 ```
@@ -32,11 +31,11 @@
 일단 남이 만든 거 가져와서 실행해보자
 ```
 
-| 노트                               | 핵심 개념                                                      |
-| -------------------------------- | ---------------------------------------------------------- |
-| [[Docker_Lifecycle_Commands]]    | run / start / stop / rm / ps / -d 백그라운드 / --name           |
-| [[Docker_Container_Interaction]] | exec -it / logs / -f 실시간 / bash / sh                       |
-| [[Docker_Prune]]                 | system prune / image prune / volume prune / -a 전체 / 디스크 확보 |
+| 노트                                | 핵심 개념                                                      |
+| --------------------------------- | ---------------------------------------------------------- |
+| [[Docker_Lifecycle_Commands]] ⭐   | run / start / stop / rm / ps / -d 백그라운드 / --name           |
+| [[Docker_Container_Interaction]]⭐ | exec -it / logs / -f 실시간 / bash / sh                       |
+| [[Docker_Prune]]                  | system prune / image prune / volume prune / -a 전체 / 디스크 확보 |
 
 ---
 
@@ -48,11 +47,11 @@
 내 코드를 Docker 이미지로 구워보자
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Dockerfile_Basics]]|FROM / RUN / COPY / CMD / ENTRYPOINT / WORKDIR / ENV / EXPOSE|
-|[[Docker_Image_Layers]]|레이어 캐싱 원리 / 빌드 속도 최적화 / COPY 위치 / 캐시 무효화|
-|[[Docker_Python_Requirements]]|requirements.txt / pip freeze / pip install / 버전 고정 / 의존성|
+| 노트                               | 핵심 개념                                                         |
+| -------------------------------- | ------------------------------------------------------------- |
+| [[Dockerfile_Basics]]            | FROM / RUN / COPY / CMD / ENTRYPOINT / WORKDIR / ENV / EXPOSE |
+| [[Docker_Image_Layers]]          | 레이어 캐싱 원리 / 빌드 속도 최적화 / COPY 위치 / 캐시 무효화                      |
+| [[Docker_Python_Requirements]] ⭐ | requirements.txt / pip freeze / pip install / 버전 고정 / 의존성     |
 
 ---
 
@@ -64,10 +63,10 @@
 컨테이너를 껐다 켜도 데이터가 살아있으려면?
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Docker_Volumes]]|-v / volumes / bind mount / tmpfs / 영구 저장 / 호스트 경로 마운트|
-|[[Docker_Networking]]|--network / -p 포트포워딩 / bridge / host / 컨테이너 간 DNS|
+| 노트                    | 핵심 개념                                                  |
+| --------------------- | ------------------------------------------------------ |
+| [[Docker_Volumes]]    | -v / volumes / bind mount / tmpfs / 영구 저장 / 호스트 경로 마운트 |
+| [[Docker_Networking]] | --network / -p 포트포워딩 / bridge / host / 컨테이너 간 DNS      |
 
 ---
 
@@ -79,10 +78,10 @@
 컨테이너 여러 개를 한 번에 켜고 끄자
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Docker_Compose_Setup]]|docker-compose.yml 문법 / services / volumes / networks / depends_on / environment|
-|[[Docker_Compose_Commands]]|up / down / ps / logs / --build / -d 백그라운드|
+| 노트                            | 핵심 개념                                                                            |
+| ----------------------------- | -------------------------------------------------------------------------------- |
+| [[Docker_Compose_Setup]]      | docker-compose.yml 문법 / services / volumes / networks / depends_on / environment |
+| [[Docker_Compose_Commands]] ⭐ | up / down / ps / logs / --build / -d 백그라운드                                       |
 
 ---
 
@@ -105,7 +104,7 @@
 | ------------------------------------ | ---------------------------- |
 | [[01_Docker_Setup_Postgresql_Setup]] | 서울역 프로젝트 Docker Compose      |
 | [[01_Hospital_Docker_Setup]]         | Hospital 프로젝트 Docker Compose |
-| [[PostgreSQL_Setup]]                 | PostgreSQL + Docker 환경 세팅    |
+| [[PostgreSQL_Setup]] ⭐               | PostgreSQL + Docker 환경 세팅    |
 
 ---
 

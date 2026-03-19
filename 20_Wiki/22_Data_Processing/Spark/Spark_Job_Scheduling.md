@@ -8,7 +8,7 @@ tags:
   - Spark
 related:
   - "[[Spark_Architecture]]"
-  - "[[PySpark_Session_Context]]"
+  - "[[Spark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
 ---
 ##  개념 한 줄 요약 

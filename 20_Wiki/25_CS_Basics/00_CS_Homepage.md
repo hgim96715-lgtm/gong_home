@@ -19,8 +19,8 @@
 |노트|핵심 개념|
 |---|---|
 |[[CS_Operating_System]]|OS 역할 / 프로세스·스레드 / 스케줄링 / 메모리 / inode / 데드락|
-|[[CPU_Architecture]]|코어 / 스레드 / Load Average / 클럭 속도|
-|[[RAM_Memory]]|휘발성 / 속도 차이 / OOM / 스왑 메모리|
+|[[CS_CPU_Architecture]]|코어 / 스레드 / Load Average / 클럭 속도|
+|[[CS_RAM_Memory]]|휘발성 / 속도 차이 / OOM / 스왑 메모리|
 |[[Process_vs_Thread]]|PID / 컨텍스트 스위칭 / 공유 메모리 / GIL|
 |[[Concurrency_vs_Parallelism]]|동시성 vs 병렬성 / async / 멀티코어|
 |[[CS_Blocking_vs_NonBlocking]]|Blocking / Non-Blocking / Async·Await / I/O 대기|

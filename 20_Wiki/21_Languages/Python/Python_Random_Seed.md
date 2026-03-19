@@ -9,7 +9,7 @@ tags:
   - Python
 related:
   - "[[Python_Modules_Imports]]"
-  - "[[Transformations_vs_Actions]]"
+  - "[[Spark_Transformations_vs_Actions]]"
   - "[[Python_Lambda_Map]]"
   - "[[00_Python_HomePage]]"
 ---

@@ -11,7 +11,7 @@ tags:
   - DataFrame
 related:
   - "[[RDD_Concept]]"
-  - "[[PySpark_Session_Context]]"
+  - "[[Spark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[SQL_with_Spark]]"
 linked:

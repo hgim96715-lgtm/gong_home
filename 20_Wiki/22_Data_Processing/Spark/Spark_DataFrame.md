@@ -12,14 +12,10 @@ aliases:
   - withColumnRenamed
 tags:
   - Spark
-  - DataFrame
 related:
-  - "[[Spark_DataFrame_SQL_Intro]]"
-  - "[[PySpark_Session_Context]]"
-  - "[[Pandas_DataStructures]]"
-  - "[[Python_Lambda_Map]]"
+  - "[[Spark_Session_Context]]"
   - "[[00_Apache_Spark_HomePage]]"
-  - "[[DataFrame_Transform]]"
+  - "[[Spark_DataFrame_Transform]]"
   - "[[Python_Database_Connect]]"
   - "[[PostgreSQL_Setup]]"
   - "[[SQL_DDL_Create]]"

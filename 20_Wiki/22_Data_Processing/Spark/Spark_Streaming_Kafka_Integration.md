@@ -4,19 +4,15 @@ aliases:
   - readStream kafka
   - writeStream kafka
 tags:
-  - Streaming
   - Kafka
   - Spark
 related:
-  - "[[DataFrame_Aggregation]]"
   - "[[00_Apache_Spark_HomePage]]"
   - "[[Spark_DataFrame]]"
-  - "[[Spark_Functions_Library]]"
-  - "[[Spark_Data_Cleaning]]"
-  - "[[Spark_Streaming_JSON_ETL_Project]]"
-  - "[[Spark_Streaming_Kafka_Integration]]"
+  - "[[Spark_JSON_Handling]]"
+  - "[[Spark_JDBC_PostgreSQL]]"
+  - "[[Spark_Installation_Local_Docker]]"
 ---
-
 # Spark Streaming — Kafka 데이터 읽기 / 쓰기
 
 ## 한 줄 요약
@@ -83,6 +79,8 @@ spark = (
    spark-sql-kafka-0-10_2.12:3.4.0  ← Spark 3.4.x 용
    자신의 Spark 버전 확인: spark.version
 ```
+
+>[[Spark_Installation_Local_Docker]] 참고 
 
 ---
 
@@ -180,7 +178,7 @@ df = (
   false 로 설정하면 누락 사실을 Spark 가 무시하고 넘어감
   데이터 정합성이 중요한 운영 환경에서는 신중하게 사용
 
-  false가 적합할때는 ? true가 적합할때는?
+  이 프로젝트 (열차 실시간 시뮬레이션):
     실시간 전광판 데이터라 일부 누락이 허용됨 → false 가 적합
     지연 분석(train-delay) 처럼 정확성이 중요하면 → true 유지
 ```
@@ -339,11 +337,10 @@ Streaming 에서는 거의 항상 "append"
   "overwrite" 는 배치마다 테이블을 날려버리므로 스트리밍에서 사용 금지
 ```
 
----
 
 ## Kafka 로 다시 쓰기 (to_json)
 
-````python
+```python
 from pyspark.sql.functions import to_json, struct
 
 # 여러 컬럼 → JSON 문자열 한 개로 (Kafka 는 value 컬럼 하나만 받음)
@@ -360,7 +357,7 @@ query = (
     .option("checkpointLocation", "/tmp/checkpoint/output")
     .start()
 )
-````
+```
 
 ```
 to_json(struct("*")) 이 필요한 이유:
@@ -432,18 +429,29 @@ final = parsed.select(
 )
 ```
 
-```text
+```
 ⚠️ id 를 final 에 넣지 않는 이유
 
 DB 테이블에서 id 는 SERIAL PRIMARY KEY 로 선언되어 있다.
 
-CREATE TABLE train_realtime ( id SERIAL PRIMARY KEY, ← PostgreSQL 이 자동으로 1, 2, 3 ... 부여 trn_no VARCHAR(20), ... )
+  CREATE TABLE train_realtime (
+      id   SERIAL PRIMARY KEY,   ← PostgreSQL 이 자동으로 1, 2, 3 ... 부여
+      trn_no VARCHAR(20),
+      ...
+  )
 
-SERIAL 의 동작: INSERT 할 때 id 를 명시하지 않으면 DB 가 알아서 다음 번호를 채워줌 별도로 관리할 필요 없음
+SERIAL 의 동작:
+  INSERT 할 때 id 를 명시하지 않으면 DB 가 알아서 다음 번호를 채워줌
+  별도로 관리할 필요 없음
 
-만약 Spark 에서 id 를 직접 넣으면: DB 의 자동 증가 시스템(시퀀스)과 충돌 중복 id 에러 또는 시퀀스 번호 체계가 꼬임
+만약 Spark 에서 id 를 직접 넣으면:
+  DB 의 자동 증가 시스템(시퀀스)과 충돌
+  중복 id 에러 또는 시퀀스 번호 체계가 꼬임
 
-결론: id 는 final.select() 에서 제외 → write.jdbc 로 INSERT 시 id 컬럼을 생략 → PostgreSQL 이 자동으로 번호를 채워줌
+결론:
+  id 는 final.select() 에서 제외
+  → write.jdbc 로 INSERT 시 id 컬럼을 생략
+  → PostgreSQL 이 자동으로 번호를 채워줌
 ```
 
 ```
@@ -458,72 +466,69 @@ final 은 "DB 에 넣기 직전 최종 정리 단계" 라고 보면 된다.
 
 ---
 
-# ⑧ 클래스로 공통화 — _write_jdbc 클로저 패턴
+# ⑧ 클로저 패턴 — _write_jdbc 공통화
+
+## 왜 필요한가
 
 ```
-토픽이 3개이면 foreachBatch 함수도 3개 만들어야 한다.
-테이블 이름만 다르고 나머지 로직이 동일하면 중복 코드가 생긴다.
+토픽이 3개면 foreachBatch 함수도 3개 필요
+테이블 이름만 다르고 나머지 로직이 동일 → 중복 코드
 
-해결:
-  테이블 이름을 인자로 받아서 write_batch 함수를 반환하는 메서드로 공통화
-  → 클로저(Closure) 패턴
+해결: 클로저 패턴
+  테이블 이름을 인자로 받아서 write_batch 함수를 반환
+  함수 안의 table 변수를 안쪽 함수가 기억
 ```
 
-## 클로저란
-
-```
-함수가 함수를 반환하는 패턴.
-바깥 함수의 변수(table)를 안쪽 함수(write_batch)가 기억한다.
-
-_write_jdbc("train_schedule") 를 호출하면
-  → table = "train_schedule" 을 기억하는 write_batch 함수가 반환됨
-  → 이 write_batch 를 foreachBatch 에 넘기면 됨
-```
+## 클로저 구조
 
 ```python
 class TrainConsumer:
 
     def _write_jdbc(self, table: str):
-        """테이블 이름을 받아서 foreachBatch 에 넘길 함수를 반환"""
+        # ── 바깥 함수 ─────────────────────────────────────
+        # table 변수를 기억하는 write_batch 함수를 만들어서 반환
 
-        def write_batch(batch_df, batch_id):         # Spark 가 호출하는 함수
+        def write_batch(batch_df, batch_id):
+            # ── 안쪽 함수 (Spark 가 배치마다 자동 호출) ──────
+            # batch_df : trigger 주기마다 잘린 일반 DataFrame
+            # batch_id : 배치 순번 (0, 1, 2 ...)
             if batch_df.isEmpty():
                 return
             batch_df.write.jdbc(
                 url=JDBC_URL,
-                table=table,                         # 바깥의 table 변수를 기억
+                table=table,          # 바깥 함수의 table 변수를 기억
                 mode="append",
                 properties=JDBC_PROPS,
             )
-            print(f"[{table}] batch_id={batch_id} | {batch_df.count()}건 저장")
+            print(f"[{table}] batch_id={batch_id} 적재 완료")
 
-        return write_batch                           # 함수 자체를 반환
+        return write_batch            # 함수 자체를 반환 (호출하지 않음!)
 ```
 
-```
-호출 흐름:
+## 호출 흐름
 
-  self._write_jdbc("train_schedule")
+```
+self._write_jdbc("train_schedule") 호출
   ↓
-  table = "train_schedule" 이 세팅된 write_batch 함수 반환
+table = "train_schedule" 을 기억하는 write_batch 함수 반환
   ↓
-  .foreachBatch(반환된_write_batch)
+.foreachBatch(반환된 write_batch) 에 전달
   ↓
-  Spark 가 배치마다 write_batch(batch_df, batch_id) 자동 호출
+Spark 가 30초마다 write_batch(batch_df, batch_id) 자동 호출
 ```
 
-## 실제 사용
+## 공통화 전 vs 후
 
 ```python
-# ❌ 공통화 전 — 토픽마다 함수를 따로 만들어야 함
+# ❌ 공통화 전 — 테이블마다 함수 따로 (중복)
 def write_schedule(batch_df, batch_id):
     batch_df.write.jdbc(..., table="train_schedule", ...)
 
 def write_realtime(batch_df, batch_id):
-    batch_df.write.jdbc(..., table="train_realtime", ...)  # 같은 코드 반복
+    batch_df.write.jdbc(..., table="train_realtime", ...)  # 동일한 코드 반복
 
 def write_delay(batch_df, batch_id):
-    batch_df.write.jdbc(..., table="train_delay", ...)     # 같은 코드 반복
+    batch_df.write.jdbc(..., table="train_delay", ...)     # 동일한 코드 반복
 
 
 # ✅ 공통화 후 — 테이블 이름만 바꿔서 재사용
@@ -532,14 +537,16 @@ final.writeStream.foreachBatch(self._write_jdbc("train_realtime"))
 final.writeStream.foreachBatch(self._write_jdbc("train_delay"))
 ```
 
-## 전체 흐름 (run_schedule 기준)
+## 전체 흐름 — raw / parsed / final 3단계
 
 ```python
 def run_schedule(self):
-    # 1. Kafka 에서 읽기
+
+    # ① raw — Kafka 에서 읽은 원본 (value = Binary)
     raw = self._read_stream("train-schedule")
 
-    # 2. Binary → JSON 파싱 + created_at 추가
+    # ② parsed — JSON 파싱 + created_at 추가
+    #    컬럼이 JSON 키 그대로 들어옴 (순서 불일치 가능)
     parsed = (
         raw
         .select(from_json(col("value").cast("string"), SCHEMA_SCHEDULE).alias("data"))
@@ -547,7 +554,9 @@ def run_schedule(self):
         .withColumn("created_at", current_timestamp())
     )
 
-    # 3. DB 컬럼과 1:1 맞추기
+    # ③ final — DB 컬럼과 정확히 1:1 맞추기 (write 직전 최종 정리)
+    #    DB 에 없는 컬럼 포함 시 → column not found 에러
+    #    id 는 SERIAL (DB 자동 부여) → 제외
     final = parsed.select(
         "run_ymd", "trn_no",
         "dptre_stn_cd", "dptre_stn_nm",
@@ -556,10 +565,10 @@ def run_schedule(self):
         "data_type", "created_at",
     )
 
-    # 4. PostgreSQL 에 쓰기
+    # ④ PostgreSQL 에 쓰기
     return (
         final.writeStream
-        .foreachBatch(self._write_jdbc("train_schedule"))  # 클로저로 테이블 지정
+        .foreachBatch(self._write_jdbc("train_schedule"))
         .option("checkpointLocation", "/tmp/checkpoint/schedule")
         .trigger(processingTime="10 seconds")
         .start()
@@ -567,9 +576,10 @@ def run_schedule(self):
 ```
 
 ```
-raw    → Kafka 에서 읽은 원본 (value = Binary)
-parsed → JSON 파싱 완료 + created_at 추가 (컬럼이 많거나 순서 불일치 가능)
-final  → DB 컬럼과 정확히 일치하도록 정리 (write 직전)
+3단계 요약:
+  raw    Kafka 원본  → value = Binary
+  parsed JSON 파싱  → 컬럼 분리 + created_at 추가
+  final  DB 정렬    → DB 컬럼과 1:1 맞추기 (id 제외)
 ```
 
 ## trigger — 배치 처리 주기

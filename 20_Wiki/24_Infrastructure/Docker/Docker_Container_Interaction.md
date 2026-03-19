@@ -12,7 +12,6 @@ related:
   - "[[Docker_Image_vs_Container]]"
   - "[[Docker_Compose_Commands]]"
 ---
-
 # Docker_Container_Interaction — 컨테이너 내부 접속 & 로그
 
 ## 한 줄 요약
@@ -112,9 +111,6 @@ docker exec -it my-container sh
   docker exec my-container which sh     # /bin/sh 나오면 sh 있음
 ```
 
->[참고] Alpine 이미지는 **'알파인 리눅스(Alpine Linux)'라는 아주 작고 가벼운 운영체제를 기반으로 만든 도커 이미지**
-`postgres:13-alpine`처럼 이름 뒤에 **'-alpine(알파인)'** 이 붙은 이미지
-
 ---
 
 ---
@@ -128,7 +124,7 @@ print() / logging 으로 찍은 내용이 여기 나옴
 
 ```bash
 # 지금까지 쌓인 로그 전체 출력
-docker logs my-kafka
+docker logs my-kafka(별명붙인것:container_name)
 
 # 마지막 N줄만
 docker logs --tail 50 my-kafka
@@ -183,7 +179,66 @@ docker logs -f --tail 20 my-kafka
 
 ---
 
-# ⑥ 실전 패턴 모음
+# ⑥ docker cp — 로컬 ↔ 컨테이너 파일 복사
+
+```
+컨테이너가 실행 중일 때 파일을 주고받는 명령어
+볼륨 마운트 없이도 파일을 넣고 꺼낼 수 있음
+```
+
+```bash
+# 로컬 → 컨테이너 (파일 하나)
+docker cp 로컬파일 컨테이너명:/컨테이너경로
+
+# 로컬 → 컨테이너 (폴더 안 파일 전체)
+docker cp 로컬폴더/. 컨테이너명:/컨테이너경로
+
+# 컨테이너 → 로컬 (꺼내기)
+docker cp 컨테이너명:/컨테이너경로 로컬경로
+```
+
+## Spark 프로젝트 실전 패턴
+
+```bash
+# ① JAR 파일 복사 (docker compose down 후 재시작 시 매번)
+docker cp spark_drivers/. hospital-spark-master:/opt/spark/jars/
+
+# ② .env 파일 복사 (load_dotenv() 가 컨테이너 안에서 읽어야 함)
+docker cp .env hospital-spark-master:/opt/spark/apps/.env
+
+# ③ python-dotenv 설치 (-u root 로 권한 올려서 설치)
+docker exec -u root -it hospital-spark-master pip3 install python-dotenv
+
+# 복사 확인
+docker exec hospital-spark-master ls /opt/spark/jars/ | grep kafka
+docker exec hospital-spark-master ls /opt/spark/apps/
+```
+
+```
+⚠️ JAR 복사 주의:
+  ./spark_drivers:/opt/spark/jars   폴더째 마운트 ❌ (Spark 엔진 파일 덮어씌워짐)
+  docker cp spark_drivers/. ...     파일만 복사   ✅
+
+-u root 가 필요한 이유:
+  컨테이너 기본 사용자가 root 가 아닐 수 있음
+  pip3 install 은 시스템 패키지 변경 → root 권한 필요
+```
+
+## 최초 실행 체크리스트 (Spark Consumer)
+
+```bash
+# 순서대로 실행
+docker cp spark_drivers/. hospital-spark-master:/opt/spark/jars/
+docker cp .env hospital-spark-master:/opt/spark/apps/.env
+docker exec -u root -it hospital-spark-master pip3 install python-dotenv
+# 그 다음 spark-submit 실행
+```
+
+---
+
+---
+
+# ⑦ 실전 패턴 모음
 
 ```bash
 # PostgreSQL 직접 접속
@@ -212,11 +267,13 @@ docker logs --tail 100 hospital-airflow | grep ERROR
 docker logs --tail 100 hospital-kafka   | grep WARN
 ```
 
----
+>[[Kafka_CLI_Cheatsheet]] 토픽 생성 참고 
 
 ---
 
-# ⑦ exec vs run 차이
+---
+
+# ⑧ exec vs run 차이
 
 ```
 docker exec  이미 실행 중인 컨테이너에 명령어 추가
@@ -233,13 +290,13 @@ docker run -it postgres bash       ← 새 postgres 컨테이너를 만들어서
 
 # 명령어 한눈에 정리
 
-| 명령어                          | 동작              | 비고           |
-| ---------------------------- | --------------- | ------------ |
-| `docker exec -it 이름 bash`    | 컨테이너 내부 bash 접속 | bash 없으면 sh  |
-| `docker exec -it 이름 sh`      | 컨테이너 내부 sh 접속   | Alpine 이미지에서 |
-| `docker exec 이름 명령어`         | 명령어 한 번만 실행     | -it 없이       |
-| `docker logs 이름`             | 전체 로그 출력        |              |
-| `docker logs -f 이름`          | 실시간 로그 스트리밍     | Ctrl+C 로 종료  |
-| `docker logs --tail N 이름`    | 마지막 N줄만         |              |
-| `docker logs -t 이름`          | 타임스탬프 포함        |              |
-| `docker logs --since 30m 이름` | 최근 30분 로그       |              |
+|명령어|동작|비고|
+|---|---|---|
+|`docker exec -it 이름 bash`|컨테이너 내부 bash 접속|bash 없으면 sh|
+|`docker exec -it 이름 sh`|컨테이너 내부 sh 접속|Alpine 이미지에서|
+|`docker exec 이름 명령어`|명령어 한 번만 실행|-it 없이|
+|`docker logs 이름`|전체 로그 출력||
+|`docker logs -f 이름`|실시간 로그 스트리밍|Ctrl+C 로 종료|
+|`docker logs --tail N 이름`|마지막 N줄만||
+|`docker logs -t 이름`|타임스탬프 포함||
+|`docker logs --since 30m 이름`|최근 30분 로그||

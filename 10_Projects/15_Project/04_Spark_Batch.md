@@ -4,7 +4,7 @@ tags:
   - Project
 related:
   - "[[Spark_JDBC_PostgreSQL]]"
-  - "[[PySpark_Session_Context]]"
+  - "[[Spark_Session_Context]]"
   - "[[Spark_Session_Deep_Dive]]"
   - "[[Python_Database_Connect]]"
   - "[[Spark_DataFrame]]"

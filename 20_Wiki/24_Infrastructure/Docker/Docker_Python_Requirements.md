@@ -100,25 +100,25 @@ COPY . .
 
 ```bash
 # 설치
-$ pip install kafka-python
+$ pip3 install kafka-python
 
 # 특정 버전 설치
-$ pip install kafka-python==2.0.2
+$ pip3 install kafka-python==2.0.2
 
 # requirements.txt 한 번에 설치
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 
 # 설치된 패키지 목록 확인
-$ pip list
+$ pip3 list
 
 # 특정 패키지 정보 확인
-$ pip show kafka-python
+$ pip3 show kafka-python
 
 # 업그레이드
-$ pip install --upgrade kafka-python
+$ pip3 install --upgrade kafka-python
 
 # 삭제
-$ pip uninstall kafka-python
+$ pip3 uninstall kafka-python
 ```
 
 ---

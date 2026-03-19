@@ -13,9 +13,8 @@ tags:
   - Spark
   - PostgreSQL
 related:
-  - "[[Spark_Data_IO]]"
-  - "[[Python_Database_Connect]]"
   - "[[00_Apache_Spark_HomePage]]"
+  - "[[Spark_Streaming_Kafka_Integration]]"
 ---
 # Spark JDBC — Spark 에서 PostgreSQL 읽고 쓰기
 
@@ -203,10 +202,9 @@ JDBC_PROPS = {
   아까 마운트한 postgresql-42.7.1.jar 파일 안에 들어있는 클래스 이름
 ```
 
-## 4단계 — 읽기 / 쓰기
+## 4단계 — 읽기 / 쓰기(저장)
 
-### (읽기) read.jdbc — DB → DataFrame
-
+### read.jdbc — DB → DataFrame
 
 ```python
 df = spark.read.jdbc(
@@ -229,8 +227,6 @@ table 에 서브쿼리도 가능 (괄호 + 별명 필수):
   table="(SELECT * FROM train_delay WHERE dep_delay > 5) AS sub"
 ```
 
-python
-
 ```python
 # 특정 조건만 읽어오기 — 서브쿼리 방식
 df = spark.read.jdbc(
@@ -242,7 +238,7 @@ df = spark.read.jdbc(
 
 ---
 
-### (쓰기) write.jdbc — DataFrame → DB
+### write.jdbc — DataFrame → DB
 
 ```python
 df.write.jdbc(
@@ -277,7 +273,7 @@ mode 4가지:
 ```
 Streaming DataFrame 은 write.jdbc() 를 직접 쓸 수 없다.
 
-  ❌ result_df.write.jdbc(...)
+  ❌ df.write.jdbc(...)
      → AnalysisException: Queries with streaming sources must be executed with writeStream
 
 이유:
@@ -289,37 +285,83 @@ Streaming DataFrame 은 write.jdbc() 를 직접 쓸 수 없다.
   그 안에서 write.jdbc() 호출
 ```
 
-
 ```python
+# ── Kafka 에서 읽어서 파싱한 Streaming DataFrame ──────────
+df_raw = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "kafka:9092") \
+    .option("subscribe", "er-realtime") \
+    .load()
+
+# JSON 파싱 / 컬럼 변환 등 Transformation
+result_df = df_raw \
+    .selectExpr("CAST(value AS STRING) as json_str") \
+    .select(from_json(col("json_str"), schema).alias("data")) \
+    .select("data.*")
+# result_df = Streaming DataFrame ← 아직 실행 안 함 (Lazy)
+
+
+# ── foreachBatch 로 배치 단위 저장 ────────────────────────
 def write_batch(batch_df, batch_id):
-    if batch_df.isEmpty():    # 빈 배치도 호출되므로 체크 필수
+    """
+    batch_df  : trigger 주기마다 잘린 일반 DataFrame (Streaming 아님)
+    batch_id  : 배치 순번 (0, 1, 2 ...)
+    빈 배치도 호출되므로 반드시 체크 필요
+    """
+    # ✅ 로그만 필요 → isEmpty() (수백 배 빠름)
+    if batch_df.isEmpty():
         return
-    batch_df.write.jdbc(      # 일반 DataFrame 이므로 write.jdbc 가능
+
+    # ✅ 건수 로그도 남겨야 하면 → count() 변수에 저장 (Action 1번)
+    # batch_count = batch_df.count()
+    # if batch_count == 0:
+    #     return
+
+    batch_df.write.jdbc(
         url=JDBC_URL,
-        table="train_delay",
+        table="er_realtime",
         mode="append",
         properties=JDBC_PROPS,
     )
+    print(f"[배치 {batch_id}] → er_realtime 적재")
+    # 건수 로그 시: print(f"[배치 {batch_id}] {batch_count}건 → er_realtime 적재")
+
 
 query = (
-    result_df                          # Streaming DataFrame
+    result_df                   # Kafka 에서 파싱한 Streaming DataFrame
     .writeStream
-    .foreachBatch(write_batch)         # 배치마다 write_batch 호출
-    .option("checkpointLocation", "/tmp/checkpoint/delay")
-    .trigger(processingTime="30 seconds")
+    .foreachBatch(write_batch)  # trigger 주기마다 write_batch(batch_df, batch_id) 호출
+    .option("checkpointLocation", "/tmp/hospital_checkpoint")
+    .trigger(processingTime="30 seconds")   # 30초마다 배치 처리
     .start()
 )
+query.awaitTermination()
 ```
 
 ```
-read.jdbc vs write.jdbc 비교:
+result_df 가 어디서 왔는가:
+  Kafka readStream → JSON 파싱 → Transformation 결과물
+  Streaming DataFrame — 데이터가 계속 흘러오는 상태
 
-  spark.read.jdbc(...)        → DB 에서 DataFrame 으로 읽기  (배치 전용)
-  batch_df.write.jdbc(...)    → DataFrame 을 DB 에 저장      (배치 / foreachBatch 안)
+processingTime="30 seconds":
+  마이크로 배치 주기
+  30초마다 Kafka 에서 쌓인 메시지를 한 번에 잘라서 처리
+  배치가 끝나면 다음 30초 대기
+  Producer 가 5분(300초) 마다 발행 → 30초 배치면 충분히 빠름
+  너무 짧게 설정하면 PostgreSQL 에 빈 배치가 자주 들어와 부하 발생
 
-  Streaming 에서 쓰기:
-    writeStream.foreachBatch(함수) 안에서 write.jdbc 호출
-    함수 시그니처는 반드시 (batch_df, batch_id) 2개 인자
+foreachBatch 함수 시그니처:
+  반드시 (batch_df, batch_id) 2개 인자
+  batch_df  = 일반 DataFrame (write.jdbc 가능)
+  batch_id  = 배치 순번 (로깅용)
+```
+
+```
+isEmpty() vs count() 선택 기준:
+  건수 로그 안 남긴다 → isEmpty()          (빠름)
+  건수 로그 필요하다  → count() 변수 저장  (Action 1번)
+  둘 다 혼용          → Action 2번         (비효율 ❌)
+  → Spark_Transformations_vs_Actions 참고
 ```
 
 ---

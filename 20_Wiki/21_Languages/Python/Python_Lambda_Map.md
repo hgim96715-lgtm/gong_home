@@ -10,7 +10,7 @@ tags:
 related:
   - "[[RDD_Concept]]"
   - "[[Spark_Session_Deep_Dive]]"
-  - "[[PySpark_Session_Context]]"
+  - "[[Spark_Session_Context]]"
   - "[[00_Python_HomePage]]"
   - "[[Python_List_Comprehension]]"
 ---
