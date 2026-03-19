@@ -249,6 +249,63 @@ echo -e "A\nB\nC\nD" | paste -s -d ','
 awk '{print $1}' data.txt | paste -s -d '\t'
 ```
 
+## paste - - - — stdin 을 N열로 배치
+
+```
+paste - - -
+  - (하이픈) = stdin 에서 한 줄씩 읽기
+  - 가 N개 = N열로 배치
+
+세로로 늘어진 데이터를 N개씩 묶어서 가로로 배치할 때
+```
+
+
+```bash
+# 입력:
+# 1
+# 2
+# 3
+# 4
+# 5
+# 6
+
+# 2열로 배치
+echo -e "1\n2\n3\n4\n5\n6" | paste - -
+# 1    2
+# 3    4
+# 5    6
+
+# 3열로 배치
+echo -e "1\n2\n3\n4\n5\n6" | paste - - -
+# 1    2    3
+# 4    5    6
+
+# 구분자 지정
+echo -e "1\n2\n3\n4\n5\n6" | paste -d ',' - - -
+# 1,2,3
+# 4,5,6
+```
+
+```
+paste - - -  vs  paste -s:
+  paste -s      한 파일 전체를 한 줄로 이어붙임 (1행 출력)
+  paste - - -   N개씩 묶어서 N열로 배치 (여러 행 출력)
+
+  1 2 3 4 5 6 입력 시:
+  paste -s    → 1  2  3  4  5  6  (한 줄)
+  paste - -   → 1  2             (두 줄, 2열씩)
+               3  4
+               5  6
+```
+
+```bash
+# 실전: 이름/나이 데이터를 2열로 정리
+cat names.txt | paste - -
+# Alice  30
+# Bob    25
+# Carol  28
+```
+
 ---
 
 ---
