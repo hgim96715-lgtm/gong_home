@@ -32,6 +32,26 @@ related:
   마이페이지 → 데이터활용 → Open API → 활용신청 현황 → 미리보기
 ```
 
+```text
+⚠️ API 문서 vs 실제 XML 필드명이 다른 경우가 있음!!! 이 때문에 오류가 걸렸었음.. 헤맴..
+
+  문서:     dutyName  (대문자 N)
+  실제 XML: dutyname  (소문자 n)
+
+  문서:     MKioskTy1 (대문자)
+  실제 XML: MKioskTy1 (동일한 경우도 있고 다른 경우도 있음)
+
+  findtext() 는 대소문자 구분
+  → 반드시 r.content.decode() 로 실제 XML 직접 확인 후 필드명 사용
+
+확인 방법:
+  root = ET.fromstring(r.content)
+  item = root.find(".//item")
+  for child in item:
+      print(f"{child.tag}: {child.text}")
+  → 실제 tag 이름 눈으로 확인
+```
+
 ---
 
 ---
@@ -43,11 +63,14 @@ related:
 
 실시간 수집 (Producer 5분마다):
   ① /getEmrrmRltmUsefulSckbdInfoInqire   응급실 실시간 가용병상
-  ② /getSrsillDissAceptncPosblInfoInqire  중증질환자 수용가능정보
-  ③ /getEmrrmSrsillDissMsgInqire          응급실 메시지
+  ② /getEmrrmSrsillDissMsgInqire          응급실 메시지
 
 정적 수집 (Airflow 1일 1회):
-  ④ /getEgytBassInfoInqire               응급의료기관 기본정보
+  ③ /getEgytBassInfoInqire               응급의료기관 기본정보
+
+제외:
+  /getSrsillDissAceptncPosblInfoInqire  중증질환자 수용가능정보
+  → XML 직접 확인 결과 대부분 "정보미제공" → 분석 의미 없음 → 제외
 ```
 
 ---
@@ -129,72 +152,36 @@ except ET.ParseError:
 
 ### 응답 컬럼 목록
 
-|항목명|영문|샘플|설명|
-|---|---|---|---|
-|기관코드|hpid|A0000028|병원 ID|
-|입력일시|hvidate|2013-10-01|데이터 갱신 시각|
-|**응급실**|**hvec**|**32**|**응급실 가용병상 ← 핵심**|
-|수술실|hvoc|3||
-|신경중환자|hvcc|0||
-|신생중환자|hvncc|0||
-|흉부중환자|hvccc|8||
-|일반중환자|hvicc|8||
-|입원실|hvgc|253||
-|CT가용|hvctayn|Y|Y/N|
-|MRI가용|hvmriayn|Y|Y/N|
-|조영촬영기가용|hvangioayn|Y|Y/N|
-|인공호흡기가용|hvventiayn|Y|Y/N|
-|구급차가용|hvamyn|Y|Y/N|
-|응급실 당직의 직통|hv1|02-3410-2062||
-|내과중환자실|hv2|3||
-|외과중환자실|hv3|6||
-|VENTI(소아)|hv10|Y|Y/N|
-|인큐베이터|hv11|Y|Y/N|
-|기관명|dutyname|삼성서울병원||
-|응급실전화|dutytel3|02-3410-2060||
+| 항목명        | 영문         | 샘플           | 설명                |
+| ---------- | ---------- | ------------ | ----------------- |
+| 기관코드       | hpid       | A0000028     | 병원 ID             |
+| 입력일시       | hvidate    | 2013-10-01   | 데이터 갱신 시각         |
+| **응급실**    | **hvec**   | **32**       | **응급실 가용병상 ← 핵심** |
+| 수술실        | hvoc       | 3            |                   |
+| 신경중환자      | hvcc       | 0            |                   |
+| 신생중환자      | hvncc      | 0            |                   |
+| 흉부중환자      | hvccc      | 8            |                   |
+| 일반중환자      | hvicc      | 8            |                   |
+| 입원실        | hvgc       | 253          |                   |
+| CT가용       | hvctayn    | Y            | Y/N               |
+| MRI가용      | hvmriayn   | Y            | Y/N               |
+| 조영촬영기가용    | hvangioayn | Y            | Y/N               |
+| 인공호흡기가용    | hvventiayn | Y            | Y/N               |
+| 구급차가용      | hvamyn     | Y            | Y/N               |
+| 응급실 당직의 직통 | hv1        | 02-3410-2062 |                   |
+| 내과중환자실     | hv2        | 3            |                   |
+| 외과중환자실     | hv3        | 6            |                   |
+| VENTI(소아)  | hv10       | Y            | Y/N               |
+| 인큐베이터      | hv11       | Y            | Y/N               |
+| 기관명        | dutyname   | 삼성서울병원       |                   |
+| 응급실전화      | dutytel3   | 02-3410-2060 |                   |
+
 
 ---
 
 ---
 
-# ② 중증질환자 수용가능정보 API
-
-**엔드포인트:** `/getSrsillDissAceptncPosblInfoInqire` **저장 테이블:** `er_realtime` (① 과 hpid 병합)
-
-### 요청 파라미터
-
-|항목명|영문|필수|샘플|설명|
-|---|---|---|---|---|
-|주소(시도)|STAGE1|필수|서울특별시||
-|주소(시군구)|STAGE2|필수|강남구||
-|질환/수술명|SM_TYPE|옵션|1|mkioskty Y 인 병원 찾기|
-|페이지 번호|pageNo|옵션|1||
-|목록 건수|numOfRows|옵션|10||
-
-### 응답 컬럼 목록
-
-|항목명|영문|샘플|설명|
-|---|---|---|---|
-|기관명|dutyName|삼성서울병원||
-|기관ID|hpid|A0000028|hpid 기준으로 ① 과 병합|
-|**Gate keeper**|**mkioskty25**|**Y**|**중증외상 ← 핵심**|
-|뇌출혈수술|mkioskty1|Y|Y:가능 / N:불가|
-|뇌경색의재관류|mkioskty2|Y||
-|심근경색의재관류|mkioskty3|Y||
-|복부손상의수술|mkioskty4|Y||
-|사지접합의수술|mkioskty5|N||
-|응급내시경|mkioskty6|Y||
-|응급투석|mkioskty7|Y||
-|조산산모|mkioskty8|Y||
-|정신질환자|mkioskty9|N||
-|신생아|mkioskty10|Y||
-|중증화상|mkioskty11|N||
-
----
-
----
-
-# ③ 응급실 메시지 API
+# ② 응급실 메시지 API
 
 **엔드포인트:** `/getEmrrmSrsillDissMsgInqire` **저장 테이블:** `er_realtime.notice_msg`
 
@@ -228,7 +215,7 @@ except ET.ParseError:
 
 ---
 
-# ④ 응급의료기관 기본정보 API
+# ③ 응급의료기관 기본정보 API
 
 **엔드포인트:** `/getEgytBassInfoInqire` **저장 테이블:** `er_hospitals`
 
@@ -249,72 +236,81 @@ MKioskTy = "이 병원이 할 수 있는 것" (인증된 역량, 정적)
 
 ### 응답 컬럼 목록
 
-|항목명|영문|샘플|설명|
-|---|---|---|---|
-|기관ID|hpid|A0000028|PK|
-|기관명|dutyName|세브란스병원||
-|주소|dutyAddr|서울특별시 강남구...|region 추출용|
-|대표전화|dutyTel1|02-3410-2114||
-|**응급실전화**|**dutyTel3**|**02-3410-2060**||
-|응급실운영여부|dutyEryn|1|1:운영 / 2:미운영|
-|병상수|dutyHano|1966||
-|총병상수|hpbdn|2086||
-|**병원위도**|**wgs84Lat**|**37.488**|지도용|
-|**병원경도**|**wgs84Lon**|**127.085**|지도용|
-|Gate keeper|MKioskTy25|Y|중증외상 (인증)|
-|뇌출혈수술|MKioskTy1|Y|Y:가능 / N:불가|
-|뇌경색의재관류|MKioskTy2|Y||
-|심근경색의재관류|MKioskTy3|Y||
-|복부손상의수술|MKioskTy4|Y||
-|응급내시경|MKioskTy6|Y||
-|응급투석|MKioskTy7|Y||
-|신생아|MKioskTy10|Y||
-|흉부중환자실|hpccuyn|15||
-|신경중환자실|hpcuyn|10||
-|응급실(수)|hperyn|47||
-|수술실|hpopyn|38||
+| 항목명         | 영문           | 샘플               | 설명           |
+| ----------- | ------------ | ---------------- | ------------ |
+| 기관ID        | hpid         | A0000028         | PK           |
+| 기관명         | dutyName     | 세브란스병원           |              |
+| 주소          | dutyAddr     | 서울특별시 강남구...     | region 추출용   |
+| 대표전화        | dutyTel1     | 02-3410-2114     |              |
+| **응급실전화**   | **dutyTel3** | **02-3410-2060** |              |
+| 응급실운영여부     | dutyEryn     | 1                | 1:운영 / 2:미운영 |
+| 병상수         | dutyHano     | 1966             |              |
+| 총병상수        | hpbdn        | 2086             |              |
+| **병원위도**    | **wgs84Lat** | **37.488**       | 지도용          |
+| **병원경도**    | **wgs84Lon** | **127.085**      | 지도용          |
+| Gate keeper | MKioskTy25   | Y                | 중증외상 (인증)    |
+| 뇌출혈수술       | MKioskTy1    | Y                | Y:가능 / N:불가  |
+| 뇌경색의재관류     | MKioskTy2    | Y                |              |
+| 심근경색의재관류    | MKioskTy3    | Y                |              |
+| 복부손상의수술     | MKioskTy4    | Y                |              |
+| 응급내시경       | MKioskTy6    | Y                |              |
+| 응급투석        | MKioskTy7    | Y                |              |
+| 신생아         | MKioskTy10   | Y                |              |
+| 흉부중환자실      | hpccuyn      | 15               |              |
+| 신경중환자실      | hpcuyn       | 10               |              |
+| 응급실(수)      | hperyn       | 47               |              |
+| 수술실         | hpopyn       | 38               |              |
 
 ---
 
 ---
 
-# ⑤ 우리가 쓸 컬럼 선별
+# ④ 내가 쓸 컬럼 선별
 
-## er_realtime (① + ② + ③ hpid 병합)
+## er_realtime (① + ② hpid 병합)
 
-|DB 컬럼|API 필드|출처 API|설명|
-|---|---|---|---|
-|hpid|hpid|①|병원 ID|
-|hpname|dutyname|①|병원명|
-|**hvec**|**hvec**|**①**|**응급실 가용병상 ← 핵심**|
-|hvoc|hvoc|①|수술실 가용 수|
-|hvctayn|hvctayn|①|CT 가용 (Y/N)|
-|hvventiayn|hvventiayn|①|인공호흡기 가용 (Y/N)|
-|hv_stroke|mkioskty1|②|뇌출혈수술 수용 (실시간)|
-|hv_cardiac|mkioskty3|②|심근경색 수용 (실시간)|
-|hv_trauma|mkioskty25|②|중증외상 수용 (실시간)|
-|hv_pediatric|mkioskty10|②|신생아 수용 (실시간)|
-|duty_addr|dutyAddr|①|주소 (region 추출용)|
-|region|-|-|시도명 (주소 앞 2자리 파싱)|
-|sym_blk_msg|symBlkMsg|③|응급실 공지 메시지|
+| DB 컬럼      | API 필드     | 출처 API | 설명                |
+| ---------- | ---------- | ------ | ----------------- |
+| hpid       | hpid       | ①      | 병원 ID             |
+| hpname     | dutyname   | ①      | 병원명               |
+| **hvec**   | **hvec**   | **①**  | **응급실 가용병상 ← 핵심** |
+| hvoc       | hvoc       | ①      | 수술실 가용 수          |
+| hvctayn    | hvctayn    | ①      | CT 가용 (Y/N)       |
+| hvventiayn | hvventiayn | ①      | 인공호흡기 가용 (Y/N)    |
+| notice_msg | symBlkMsg  | ③      | 응급실 공지 메시지        |
+
+```text
+중증질환 수용가능정보 API 제외 이유:
+  XML 직접 확인 결과 MKioskTy 대부분 "정보미제공"
+  416개 병원 중 유효한 Y/N 데이터 비율 너무 낮음
+  → 분석 결과가 실제보다 낮게 나올 수 있음 → 오해 유발
+  → 과감히 제외
+
+  대신 er_hospitals 의 mk_* (기본정보 API 인증값) 활용
+  → 인증 기반이라 더 신뢰할 수 있음
+
+duty_addr / region 은 er_realtime 에 없음
+→ er_hospitals JOIN 으로 조회 해야함...
+```
+
 
 ## er_hospitals (④)
 
-|DB 컬럼|API 필드|설명|
-|---|---|---|
-|hpid|hpid|병원 ID (PK)|
-|hpname|dutyName|기관명|
-|duty_addr|dutyAddr|주소|
-|duty_tel|dutyTel3|응급실 전화|
-|duty_eryn|dutyEryn|응급실 운영여부|
-|wgs84_lat|wgs84Lat|위도|
-|wgs84_lon|wgs84Lon|경도|
-|hpbdn|hpbdn|전체 병상 수|
-|mk_stroke|MKioskTy1|뇌출혈수술 가능 (인증)|
-|mk_cardiac|MKioskTy3|심근경색 가능 (인증)|
-|mk_trauma|MKioskTy25|중증외상 Gate keeper (인증)|
-|mk_pediatric|MKioskTy10|신생아 가능 (인증)|
-|region|-|시도명 (dutyAddr 파싱)|
+| DB 컬럼        | API 필드     | 설명                    |
+| ------------ | ---------- | --------------------- |
+| hpid         | hpid       | 병원 ID (PK)            |
+| hpname       | dutyName   | 기관명                   |
+| duty_addr    | dutyAddr   | 주소                    |
+| duty_tel     | dutyTel3   | 응급실 전화                |
+| duty_eryn    | dutyEryn   | 응급실 운영여부              |
+| wgs84_lat    | wgs84Lat   | 위도                    |
+| wgs84_lon    | wgs84Lon   | 경도                    |
+| hpbdn        | hpbdn      | 전체 병상 수               |
+| mk_stroke    | MKioskTy1  | 뇌출혈수술 가능 (인증)         |
+| mk_cardiac   | MKioskTy3  | 심근경색 가능 (인증)          |
+| mk_trauma    | MKioskTy25 | 중증외상 Gate keeper (인증) |
+| mk_pediatric | MKioskTy10 | 신생아 가능 (인증)           |
+| region       | -          | 시도명 (dutyAddr 파싱)     |
 
 ---
 
@@ -330,7 +326,7 @@ MKioskTy = "이 병원이 할 수 있는 것" (인증된 역량, 정적)
 
 ```sql
 -- ① er_realtime: 응급실 실시간 병상 현황 (5분마다 적재)
---    API: ① 가용병상 + ② 중증질환 + ③ 메시지 → hpid 병합 → 1 row
+--    API: ① 가용병상 + ② 메시지 → hpid 병합 → 1 row
 CREATE TABLE IF NOT EXISTS er_realtime (
     id           SERIAL PRIMARY KEY,
     hpid         VARCHAR(20),
@@ -339,13 +335,7 @@ CREATE TABLE IF NOT EXISTS er_realtime (
     hvoc         INT,            -- 수술실 가용 수 (API ①)
     hvctayn      VARCHAR(1),     -- CT 가용 Y/N (API ①)
     hvventiayn   VARCHAR(1),     -- 인공호흡기 가용 Y/N (API ①)
-    hv_stroke    VARCHAR(1),     -- 뇌출혈수술 수용 Y/N (API ②)
-    hv_cardiac   VARCHAR(1),     -- 심근경색 수용 Y/N (API ②)
-    hv_trauma    VARCHAR(1),     -- 중증외상 수용 Y/N (API ②)
-    hv_pediatric VARCHAR(1),     -- 신생아 수용 Y/N (API ②)
-    duty_addr    VARCHAR(200),   -- 주소 (API ①)
-    region       VARCHAR(50),    -- 시도명 (주소 앞 2자리 파싱)
-    notice_msg  TEXT,           -- 응급실 공지 메시지 (API ③)
+    notice_msg   TEXT,           -- 응급실 공지 메시지 (API ③)
     data_type    VARCHAR(20),    -- 'er_realtime'
     created_at   TIMESTAMP DEFAULT NOW()
 );
@@ -354,7 +344,7 @@ CREATE TABLE IF NOT EXISTS er_realtime (
 CREATE TABLE IF NOT EXISTS er_hourly_stats (
     id              SERIAL PRIMARY KEY,
     stat_hour       TIMESTAMP,
-    region          VARCHAR(50),
+    region          VARCHAR(20),
     avg_beds        NUMERIC(5,2),   -- 평균 가용병상
     zero_count      INT,            -- 병상 0개 병원 수
     total_hospitals INT,
@@ -365,21 +355,20 @@ CREATE TABLE IF NOT EXISTS er_hourly_stats (
 -- ③ er_hospitals: 병원 기본정보 (Airflow 1일 1회)
 --    API: ④ 응급의료기관 기본정보 조회 (getEgytBassInfoInqire)
 --    MKioskTy = 인증된 역량 (정적) ← 실시간 hv_* 와 다름
---  여기서는 hpid로 primary key, 굳이 id가 필요없음 
 CREATE TABLE IF NOT EXISTS er_hospitals (
     hpid         VARCHAR(20) PRIMARY KEY,
     hpname       VARCHAR(100),
     duty_addr    VARCHAR(200),
     duty_tel     VARCHAR(20),     -- 응급실 전화 (dutyTel3)
     duty_eryn    VARCHAR(1),      -- 응급실 운영여부 (1:운영)
-    wgs84_lat    NUMERIC(10,7),   -- 위도
-    wgs84_lon    NUMERIC(10,7),   -- 경도 
+    wgs84_lat    NUMERIC(10,7),
+    wgs84_lon    NUMERIC(10,7),
     hpbdn        INT,             -- 전체 병상 수
     mk_stroke    VARCHAR(1),      -- 뇌출혈수술 가능 (인증)
     mk_cardiac   VARCHAR(1),      -- 심근경색 가능 (인증)
     mk_trauma    VARCHAR(1),      -- 중증외상 Gate keeper (인증)
     mk_pediatric VARCHAR(1),      -- 신생아 가능 (인증)
-    region       VARCHAR(50),
+    region       VARCHAR(20),
     updated_at   TIMESTAMP DEFAULT NOW()
 );
 ```
@@ -431,23 +420,23 @@ Password: hospital_password
 # 설계 고민 노트
 
 ```
+중증질환 API 제외 결정:
+  XML 직접 확인 결과 MKioskTy 항목 대부분 "정보미제공"
+  병원이 시스템에 입력을 안 한 것 (트래픽 문제 아님)
+  유효 데이터 비율이 너무 낮아 분석 의미 없음 → 제외
+  대신 er_hospitals 의 mk_* (기본정보 API 인증값) 으로 대체
+
+API 문서 vs 실제 XML 필드명 불일치:
+  문서에 적힌 영문 필드명과 실제 XML 태그가 다른 경우 있음
+  예) 문서: dutyName → 실제 XML: dutyname (소문자)
+  → findtext() 는 대소문자 구분
+  → 반드시 실제 XML 직접 출력해서 tag 이름 확인 후 사용
+
 STAGE1/STAGE2 필수 표기 문제:
   API 문서에 "필수" 로 적혀있지만
   실제 테스트 결과 없어도 전국 조회 가능 ✅
   pageNo=1 호출 시 강릉아산병원 등 전국 데이터 반환 확인
   → Producer 에서 STAGE 없이 numOfRows 최대로 전체 수집
-
-hv_* (실시간) vs mk_* (인증) 구분:
-  hv_stroke (er_realtime) = 지금 뇌출혈 환자 받을 수 있나 (동적)
-  mk_stroke (er_hospitals) = 이 병원이 뇌출혈 수술 인증받은 곳인가 (정적)
-
-region 파싱:
-  "서울특별시 강남구..." → 앞 2자리 → "서울"
-  Producer 에서 Python 으로 처리
-
-API ① + ② + ③ 병합:
-  같은 hpid 끼리 dict 로 모아서 Kafka 에 1 row 발행
-  Producer 에서 처리
 
 Y/N 컬럼 VARCHAR(1) vs CHECK 결정:
   CHECK (col IN ('Y','N')) 으로 하면 제약이 강함
@@ -460,6 +449,10 @@ er_realtime.hpid UNIQUE 여부:
   → 같은 hpid 가 반복 등장 → UNIQUE 붙이면 안 됨 ❌
   → created_at 으로 시점 구분
   er_hospitals 은 hpid 가 PRIMARY KEY → 자동으로 UNIQUE ✅
+
+API ① + ② 병합:
+  같은 hpid 끼리 dict 로 모아서 Kafka 에 1 row 발행
+  Producer 에서 처리
 ```
 
 ----
@@ -477,3 +470,7 @@ er_realtime.hpid UNIQUE 여부:
 
 
 ✅ 완료되면 → [[03_Hospital_Producer]] 으로 이동
+
+
+
+>2 번 중증질환은 xml확인결과 모두 거의 정보미제공 으로 판별 과감히 버리고 3개로 구성해야겠다.
