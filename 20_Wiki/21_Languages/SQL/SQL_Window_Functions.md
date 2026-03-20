@@ -558,7 +558,149 @@ FROM 사원;
 |최과장|300|800|800|
 
 ---
+---
+# ⑥ MAX + JOIN 패턴 — 동점까지 모두 가져오기
 
+## 언제 필요한가
+
+```
+"각 그룹에서 최댓값인 행을 가져와라"
+→ 단순히 MAX 값만 구하면 끝이 아님
+→ 그 값을 가진 원본 행의 다른 컬럼들도 함께 필요
+
+예시:
+  개발사별 가장 많이 팔린 플랫폼은?
+  → 개발사 + 플랫폼 + 판매량 다 필요
+  → 동점 플랫폼이 있으면 둘 다 가져와야 함
+
+Window 함수 RANK() 로도 가능하지만
+동점(공동 1위) 처리가 중요한 상황에서
+MAX + JOIN 패턴이 더 직관적
+```
+
+## 기본 흐름
+
+```
+1단계: GROUP BY 로 집계 (원하는 단위로 합산)
+2단계: MAX() 로 그룹별 최댓값 구하기
+3단계: 1단계 결과와 JOIN → 최댓값을 가진 행만 남김
+```
+
+```sql
+-- 실전: 개발사별 가장 많이 팔린 플랫폼 (동점 포함)
+
+-- 1단계: 개발사 + 플랫폼 별 총 판매량 집계
+WITH sum_game AS (
+    SELECT
+        c.name AS developer,
+        p.name AS platform,
+        SUM(sales_na + sales_eu + sales_jp + sales_other) AS sales
+    FROM games g
+    JOIN companies c ON g.developer_id = c.company_id
+    JOIN platforms p ON g.platform_id  = p.platform_id
+    GROUP BY c.name, p.name
+),
+
+-- 2단계: 개발사별 최대 판매량
+max_sales AS (
+    SELECT
+        developer,
+        MAX(sales) AS max_sale
+    FROM sum_game
+    GROUP BY developer
+)
+
+-- 3단계: 집계 결과 + 최댓값 JOIN → 최댓값 행만 남김
+SELECT
+    s.developer,
+    s.platform,
+    s.sales
+FROM sum_game s
+JOIN max_sales ms
+    ON s.developer = ms.developer
+   AND s.sales     = ms.max_sale   -- ← 최댓값과 일치하는 행만 남김
+;
+```
+
+## 왜 JOIN 이 필요한가?
+
+```sql
+-- ❌ 이렇게 하면 안 됨
+SELECT developer, platform, MAX(sales)
+FROM sum_game
+GROUP BY developer;
+
+-- → platform 컬럼을 GROUP BY 에 넣으면
+--   developer + platform 조합으로 집계 → 개발사별 최대가 아님
+-- → platform 을 GROUP BY 에서 빼면
+--   SELECT 에 platform 을 쓸 수 없음 (집계되지 않은 컬럼)
+```
+
+```
+문제의 핵심:
+  MAX(sales) 를 가진 행이 어느 platform 인지 알려면
+  MAX 값을 구한 뒤 원본과 다시 연결해야 함
+  → 이게 MAX + JOIN 패턴
+```
+
+## RANK() 로 대체 가능
+
+
+```sql
+-- RANK() 버전 (동점 포함 처리 동일)
+WITH sum_game AS (
+    SELECT
+        c.name AS developer,
+        p.name AS platform,
+        SUM(sales_na + sales_eu + sales_jp + sales_other) AS sales
+    FROM games g
+    JOIN companies c ON g.developer_id = c.company_id
+    JOIN platforms p ON g.platform_id  = p.platform_id
+    GROUP BY c.name, p.name
+),
+ranked AS (
+    SELECT
+        developer,
+        platform,
+        sales,
+        RANK() OVER (PARTITION BY developer ORDER BY sales DESC) AS rnk
+    FROM sum_game
+)
+SELECT developer, platform, sales
+FROM ranked
+WHERE rnk = 1;   -- 공동 1위 전부 포함
+```
+
+## MAX + JOIN vs RANK() 비교
+
+```
+MAX + JOIN:
+  직관적 — "최댓값 구하고 → 다시 연결"
+  CTE 2개 필요
+  동점 자동 처리 (AND s.sales = ms.max_sale 조건으로)
+
+RANK():
+  Window 함수 문법 알아야 함
+  CTE 1개로 가능
+  rnk = 1 로 동점 자동 처리 (DENSE_RANK 도 동일)
+
+→ 둘 다 결과 동일
+→ 익숙한 것 쓰면 됨
+→ Window 함수 못 쓰는 환경(구버전 DB)에서는 MAX + JOIN 필수
+```
+
+## 문제 키워드 신호
+
+```
+"각 그룹에서 가장 높은/낮은 ~ 를 가진 행"
+"~별 최대 판매량을 기록한 제품"
+"부서별 가장 높은 급여를 받는 사원"
+"사용자별 가장 최근 주문"
+
+→ MAX + JOIN  또는  RANK() WHERE rnk = 1
+→ 동점 포함 여부 확인
+```
+---
 ---
 
 # 초보자 실수 모음
