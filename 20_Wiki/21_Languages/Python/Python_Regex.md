@@ -16,273 +16,297 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[SQL_Regular_Expression]]"
 ---
-##  개념 한 줄 요약 
+# Python_Regex — 정규표현식
 
-**"특정한 규칙(패턴)을 가진 문자열을 찾거나(`search`), 바꾸거나(`sub`), 쪼갤 때(`split`) 쓰는 도구."**
+## 한 줄 요약
 
-* **핵심:** 파이썬 내장 모듈인 **`import re`** 를 반드시 선언해야 합니다.
-* **언제 써요?** "이메일 주소만 뽑아줘", "전화번호 형식이 맞는지 확인해줘", "로그에서 에러 코드만 가져와" 등.
-
----
-## `r` (Raw String)의 마법 
-
-**"백슬래시(`\`)를 두 번(`\\`) 쓰기 귀찮다면, 앞에 `r`을 붙이세요!"**
-
-정규식에는 `\d`, `\w` 처럼 백슬래시가 많이 들어갑니다.
-하지만 파이썬에서 `\`는 원래 "탈출 문자(Escape)"라서 충돌이 일어납니다.
-
-###  `r` 없이 쓸 때 (Bad)
-
-백슬래시를 문자로 인식시키려고 **두 번씩** 써야 합니다. (가독성 꽝 )
-
-```python
-# 파이썬: "\\d가 뭐야? 아, \d를 쓰고 싶은 거구나."
-pattern = "\\d{3}-\\d{4}-\\d{4}"
+```
+특정 패턴을 가진 문자열을 찾거나 / 바꾸거나 / 쪼개는 도구
+import re 로 사용
 ```
 
-###  `r` 붙여 쓸 때 (Good)
-
-**Raw String(`r"..."`)** 은 "안에 있는 백슬래시를 건드리지 말고 **날것 그대로(Raw)** 둬!" 라는 뜻입니다.
-
-```python
-# 파이썬: "오케이, 안에 있는 \d는 건드리지 않을게."
-pattern = r"\d{3}-\d{4}-\d{4}"
-```
-
-**💡 결론:** 정규식 패턴을 만들 때는 무조건 습관적으로 **`r"..."`** 을 붙이세요!
-
->"나중에 경로(Path) 다룰 때도 유용해. 
->윈도우 파일 경로가 `C:\User\Name` 이런 식인데, 이것도 `r'C:\User\Name'` 이렇게 쓰면 에러 없이 깔끔하게 들어가.
-> **`re` 모듈 쓸 때는 그냥 무조건 `r` 붙인다**고 생각하면 편해!"
-
+---
 
 ---
-## 찾는 함수 3대장 (`match` vs `search` vs `findall`) 
 
-가장 많이 헷갈리는 부분입니다. **`search`** 가 가장 범용적입니다.
+# ① r"" — Raw String (무조건 붙이기)
 
-| 함수 | 설명 | 반환 값 | 특징 |
-| :--- | :--- | :--- | :--- |
-| **`re.search(패턴, 문자열)`** | **어디서든** 찾음 | Match Object | **가장 추천!** 문장 중간에 있어도 찾음. |
-| `re.match(패턴, 문자열)` | **맨 앞부터** 찾음 | Match Object | 문장 중간에 있으면 못 찾음(None). |
-| `re.findall(패턴, 문자열)` | **싹 다** 찾음 | **List** `['a', 'b']` | 결과가 리스트로 바로 나옴. (group 필요 없음) |
+```
+정규식에는 \d \w \s 처럼 백슬래시가 많음
+파이썬에서 \ 는 탈출문자 → 충돌 발생
 
-### ① `re.search()` 사용법 (강추) 
+r"" (Raw String) = "백슬래시를 건드리지 말고 그대로 둬"
+```
 
-문자열 전체를 훑어서 **가장 먼저 발견되는 하나**를 찾습니다.
+```python
+# r 없이 → 백슬래시 두 번 써야 함
+pattern = "\\d{3}-\\d{4}-\\d{4}"   # 가독성 꽝
+
+# r 붙이기 → 그냥 씀
+pattern = r"\d{3}-\d{4}-\d{4}"     # 깔끔 ✅
+```
+
+```
+정규식 쓸 때는 무조건 r"..." 붙이는 습관
+```
+
+---
+
+---
+
+# ② 함수 3가지 — 반환값이 전부 다름
+
+|함수|반환값|특징|
+|---|---|---|
+|`re.search(패턴, 문자열)`|Match Object (1개)|어디서든 첫 번째 1개|
+|`re.match(패턴, 문자열)`|Match Object (1개)|문자열 맨 앞에서만|
+|`re.findall(패턴, 문자열)`|**리스트**|모두 찾아서 리스트로|
+|`re.sub(패턴, 바꿀값, 문자열)`|**str**|찾아서 치환 후 문자열 반환|
+
+---
+
+---
+
+# ③ re.search() — 어디서든 첫 번째 1개
+
+## 반환값: Match Object
 
 ```python
 import re
 
 text = "제 번호는 010-1234-5678 입니다."
-
-# [패턴] 숫자3개-숫자4개-숫자4개
 pattern = r"\d{3}-\d{4}-\d{4}"
 
 result = re.search(pattern, text)
 
+print(result)
+# <re.Match object; span=(5, 18), match='010-1234-5678'>
+# → Match Object (박스) 가 반환됨 / 문자열이 아님!
+```
+
+## Match Object 에서 값 꺼내기 — .group()
+
+```python
+# 찾은 전체 문자열
+result.group()    # '010-1234-5678'
+result.group(0)   # '010-1234-5678'  (group() 과 동일)
+
+# 위치 확인
+result.span()     # (5, 18)  → (시작인덱스, 끝인덱스)
+result.start()    # 5
+result.end()      # 18
+```
+
+## 반드시 None 체크 후 사용
+
+```python
+result = re.search(pattern, text)
+
+# ❌ 바로 .group() 하면 에러 가능
+result.group()   # 못 찾으면 AttributeError: 'NoneType'
+
+# ✅ None 체크 먼저
 if result:
-    print("찾았다!", result.group())  # '010-1234-5678'
+    print(result.group())
 else:
     print("못 찾음")
 ```
 
-### ② `re.match()`의 함정 
+## 그룹핑 () — 일부만 꺼내기
 
-`match`는 **"문자열의 시작(Start)"** 부터 패턴이 일치해야 합니다.
+```python
+# 괄호로 그룹 지정
+m = re.search(r"(\d{3})-(\d{4}-\d{4})", "010-1234-5678")
+
+m.group(0)   # '010-1234-5678'  ← 전체
+m.group(1)   # '010'            ← 첫 번째 괄호
+m.group(2)   # '1234-5678'      ← 두 번째 괄호
+```
+
+```python
+# 실전: 로그에서 에러 코드만 추출
+log = "[2024-01-30] ERROR: Connection Refused (Code: 503)"
+
+m = re.search(r"Code: (\d+)", log)
+if m:
+    print(m.group(1))   # '503'  ← 괄호 안만 꺼냄
+```
+
+## re.match() — 맨 앞에서만 (주의)
 
 ```python
 text = "제 번호는 010-1234-5678 입니다."
-pattern = r"\d{3}-\d{4}-\d{4}"
 
-# 맨 앞글자는 '제'이지 숫자가 아님 -> None 반환
-print(re.match(pattern, text)) 
-# 결과: None (못 찾음!)
+re.match(r"\d{3}-\d{4}-\d{4}", text)
+# → None  ← 맨 앞이 "제" 라서 못 찾음
+
+# 거의 안 씀 → search 쓰는 게 안전
 ```
 
-----
-## 바꾸기: `re.sub()` 
+---
 
-**"찾아서(`search`) + 바꾼다(`replace`)"** 를 한 방에 처리합니다.
+---
 
-데이터 정제(Cleaning)할 때 가장 많이 씁니다.
+# ④ re.findall() — 전부 찾아서 리스트로
 
-* **문법:** `{python}re.sub(찾을패턴, 바꿀문자, 원본텍스트)`
+## 반환값: 리스트 (바로 씀 / .group() 필요 없음)
 
-### ① 특수문자 싹 다 지우기 (Data Cleaning)
+```python
+text = "010-1234-5678 이고 집 전화는 02-123-4567 입니다."
+pattern = r"\d{2,3}-\d{3,4}-\d{4}"
 
-"한글과 숫자만 남기고 나머지는 다 지워줘!"
+result = re.findall(pattern, text)
+
+print(result)
+# ['010-1234-5678', '02-123-4567']  ← 리스트 바로 반환
+
+# 바로 for 문 사용 가능 (.group() 없음)
+for phone in result:
+    print(phone)
+```
+
+## 그룹 있으면 → 그룹 내용의 리스트
+
+```python
+text = "이름: 홍길동, 나이: 30, 이름: 김철수, 나이: 25"
+
+# 그룹 없음 → 전체 매칭 리스트
+re.findall(r"\d+", text)
+# ['30', '25']
+
+# 그룹 있음 → 그룹 내용 리스트 (튜플)
+re.findall(r"이름: (\S+), 나이: (\d+)", text)
+# [('홍길동', '30'), ('김철수', '25')]
+
+# 그룹 1개면 → 문자열 리스트
+re.findall(r"이름: (\S+)", text)
+# ['홍길동', '김철수']
+```
+
+```
+findall 반환 정리:
+  그룹 없음       → ['매칭1', '매칭2']
+  그룹 1개        → ['그룹1값', '그룹1값']
+  그룹 2개 이상   → [('그룹1', '그룹2'), ...]  튜플 리스트
+```
+
+---
+
+---
+
+# ⑤ re.sub() — 찾아서 치환
+
+## 반환값: 문자열 (str)
 
 ```python
 import re
 
-text = "안녕하세요!!! 010-1234-5678 ^^;;"
-
-# [패턴] 한글(가-힣), 숫자(0-9), 공백(\s)이 "아닌(^)" 것만 찾아라
-# ^는 대괄호[] 안에서는 "Not"을 의미함
-pattern = r"[^가-힣0-9\s]" 
-
-clean_text = re.sub(pattern, "", text)
-print(clean_text) 
-# 결과: "안녕하세요 01012345678 " (특수문자 사라짐)
-```
-
-### ② 개인정보 마스킹 (Masking)
-
-"전화번호 뒷자리를 `****`로 가려줘!"
-
-```python
+# 전화번호 뒷자리 마스킹
 text = "010-1234-5678"
-
-# [패턴] -뒤에 숫자4개
-pattern = r"-\d{4}$" 
-
-# 해당 패턴을 "-****"로 치환
-masked_text = re.sub(pattern, "-****", text)
-print(masked_text) 
-# 결과: "010-1234-****"
+result = re.sub(r"-\d{4}$", "-****", text)
+print(result)   # '010-1234-****'
+print(type(result))   # <class 'str'>
 ```
-
-### ③ 고급 치환: 함수(Lambda)와 그룹핑(Group) 활용하기 (Advanced)
-
-"조건에 따라 알아서 다르게 바꿔줘!" (예: Obsidian 링크 `[[문서|별명]]` 껍데기 벗기기)
-
-`re.sub`의 두 번째 인자 자리에 고정된 문자열 대신 **함수(Lambda)** 를 넣으면, 정규식으로 찾아낸 결과물(`Match` 객체)을 입맛대로 가공해서 반환할 수 있습니다.
 
 ```python
-import re
-
-text_a = "이것은 [[Python]] 문서입니다."
-text_b = "이것은 [[Python|파이썬 기초]] 문서입니다."
-
-# [패턴] [[ ]] 안의 내용을 두 그룹으로 쪼갭니다.
-# 그룹 1 (m.group(1)): | 앞의 진짜 문서 이름 ("Python")
-# 그룹 2 (m.group(2)): | 뒤의 별명 ("파이썬 기초"), 없으면 None
-pattern = r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]'
-
-# [핵심 로직] lambda m: m.group(2) or m.group(1)
-# 해석: 파이썬의 `A or B` 문법을 활용하여, 별명(group 2)이 존재하면 그걸 남기고, 
-# 비어있으면 진짜 이름(group 1)을 남겨라!
-clean_a = re.sub(pattern, lambda m: m.group(2) or m.group(1), text_a)
-clean_b = re.sub(pattern, lambda m: m.group(2) or m.group(1), text_b)
-
-print(clean_a) 
-# 결과: "이것은 Python 문서입니다." (대괄호만 날아감)
-
-print(clean_b) 
-# 결과: "이것은 파이썬 기초 문서입니다." (진짜 이름은 숨기고 별명만 남음)
+# 특수문자 제거 (한글 + 숫자 + 공백만 남기기)
+text = "안녕하세요!!! 010-1234-5678 ^^"
+result = re.sub(r"[^가-힣0-9\s]", "", text)
+print(result)   # '안녕하세요 01012345678 '
 ```
 
-
-----
-##  결과 꺼내기 : `group()`과 Match Object 이해하기 
-
-정규식 함수(`re.search`, `re.sub`의 람다 등)는 결과를 바로 **문자열(String)** 로 주지 않습니다.
-**`Match Object`** 라는 **"포장 박스"** 에 담아서 줍니다.
-
-### ① 박스(`Match Object`) vs 내용물(`String`)
+## lambda 활용 — 조건에 따라 다르게 치환
 
 ```python
-import re
+# re.sub 두 번째 인자에 함수 넣기
+# 찾은 결과(Match Object) 를 받아서 가공 후 반환
 
-text = "My number is 010-1234-5678"
-pattern = r"\d{3}-\d{4}-\d{4}"  # 전화번호 패턴
+text = "price: 100, discount: 20"
 
-# 1. 찾기 (Search)
-match = re.search(pattern, text)
-
-# 2. 그냥 출력하면? (박스 채로 확인)
-print(match)
-# 결과: <re.Match object; span=(13, 26), match='010-1234-5678'>
-# 👉 "아, 뭔가 찾긴 찾았는데 객체(Object)네?"
-
-# 3. .group()으로 꺼내기 (내용물 확인)
-print(match.group()) 
-# 결과: '010-1234-5678'
-# 👉 "이제야 진짜 문자열이 나왔네!"
+# 숫자를 2배로 바꾸기
+result = re.sub(
+    r"\d+",
+    lambda m: str(int(m.group()) * 2),  # m = Match Object
+    text
+)
+print(result)   # 'price: 200, discount: 40'
 ```
-
-### ② 왜 `group(0)`, `group(1)`로 나뉘나요?
-
-정규식에서 **괄호 `()`** 를 쓰면 그룹을 나눌 수 있기 때문입니다.
-
-- **`.group(0)` (또는 `.group()`):** 매칭된 **전체** 문자열 (기본값)
-- **`.group(1)`:** 첫 번째 괄호 `()` 안의 내용
-- **`.group(2)`:** 두 번째 괄호 `()` 안의 내용
-
-```python
-# 전화번호를 국번(010)과 나머지로 쪼개서 찾기
-m = re.search(r"(\d{3})-(\d{4}-\d{4})", "010-1234-5678")
-
-print(m.group(0)) # '010-1234-5678' (전체)
-print(m.group(1)) # '010'           (첫 번째 괄호)
-print(m.group(2)) # '1234-5678'     (두 번째 괄호)
-```
-
-**💡 아까 `lambda x: x.group(0)`은 무슨 뜻인가요?** 
-`re.sub`이 찾은 건 **Match Object(박스)** 인 `x`입니다. 
-람다 함수 안에서 `.lower()` 같은 문자열 함수를 쓰려면, 먼저 `x.group(0)`으로 **박스를 까서 문자열을 꺼내야** 했기 때문입니다!
 
 ---
-##  위치 확인: `span()` 📍
 
-`match` 객체를 출력해보면 `span=(6, 12)` 같은 숫자가 보입니다.
-이건 **"찾은 문자열이 원본의 몇 번째 인덱스에 있는지"** 알려주는 좌표입니다.
+---
 
-* **`span()` 반환값:** `{python}(시작_인덱스, 끝_인덱스)` 튜플 형태
-* **주의:** 파이썬 슬라이싱 규칙과 똑같이 **"끝 인덱스는 포함하지 않습니다."**
+# ⑥ span() — 위치 확인
 
 ```python
-import re
-
 text = "Hello Python World"
-#       0123456789... (인덱스)
+m = re.search("Python", text)
 
-match = re.search("Python", text)
+m.span()    # (6, 12)  → (시작, 끝)  끝은 포함 안 함
+m.start()   # 6
+m.end()     # 12
 
-# 1. 좌표 확인
-print(match.span())  
-# 결과: (6, 12) -> 6번째부터 11번째 글자까지라는 뜻
-
-# 2. 좌표로 원본 자르기 (Slicing)
-start, end = match.span()
-print(text[start:end]) 
-# 결과: "Python" (정확히 그 단어가 나옴)
+# 좌표로 슬라이싱
+start, end = m.span()
+text[start:end]   # 'Python'
 ```
 
-- `match.start()` : 시작 인덱스 
-- `match.end()` : 끝 인덱스 
+---
 
 ---
-## 자주 쓰는 패턴 (Cheatsheet) 
 
-| **기호** | **의미**       | **예시**                    |
-| ------ | ------------ | ------------------------- |
-| `\d`   | 숫자 (Digit)   | `\d{3}` (숫자 3개)           |
-| `\w`   | 문자+숫자 (Word) | `\w+` (단어 1개 이상)          |
-| `.`    | 아무 글자나 하나    | `.`                       |
-| `*`    | 0개 이상 반복     | `a*` (없거나 a, aa, aaa...)  |
-| `+`    | **1개 이상 반복** | `\d+` (숫자가 1개 이상 연속됨)     |
-| `?`    | 있거나 없거나      | `https?` (http 또는 https)  |
-| `^`    | 문자열의 시작      | `^Hello` (Hello로 시작하는 문장) |
-| `$`    | 문자열의 끝       | `End$` (End로 끝나는 문장)      |
+# 패턴 치트시트
 
+|기호|의미|예시|
+|---|---|---|
+|`\d`|숫자|`\d{3}` 숫자 3개|
+|`\w`|문자+숫자+_|`\w+` 단어 1개 이상|
+|`\s`|공백|`\s+` 공백 1개 이상|
+|`.`|아무 글자 1개|`a.b` → axb, ayb|
+|`*`|0개 이상|`a*`|
+|`+`|1개 이상|`\d+`|
+|`?`|있거나 없거나|`https?`|
+|`^`|문자열 시작|`^\d` 숫자로 시작|
+|`$`|문자열 끝|`\d$` 숫자로 끝|
+|`[abc]`|a 또는 b 또는 c|`[0-9]`|
+|`[^abc]`|a,b,c 제외 전부|`[^가-힣]` 한글 제외|
+|`{n}`|정확히 n번|`\d{4}`|
+|`{n,m}`|n~m번|`\d{2,4}`|
+|`(abc)`|그룹|`(\d+)`|
 
 ---
-## 실전 예제 (Data Engineering) 
 
-**로그 파일에서 에러 코드만 뽑고 싶다면?**
+---
+
+# 자주 하는 실수
 
 ```python
-log = "[2024-01-30 12:00:00] ERROR: Connection Refused (Code: 503)"
+# ① .group() 전에 None 체크 안 함
+m = re.search(r"\d+", "abc")
+m.group()   # AttributeError: 'NoneType' → if m: 먼저 체크
 
-# 'Code: ' 뒤에 있는 숫자(\d+)를 찾아라
-match = re.search(r"Code: (\d+)", log)
+# ② findall 에 .group() 쓰려 함
+result = re.findall(r"\d+", text)
+result.group()   # AttributeError: list has no .group()
+# findall 은 이미 리스트 → for 문으로 바로 사용
 
-if match:
-    error_code = match.group(1) # 괄호 안의 내용만 추출
-    print(f"에러 코드: {error_code}") # 503
+# ③ r"" 안 붙임
+re.search("\d+", text)   # \d 를 탈출문자로 해석 → 오동작
+re.search(r"\d+", text)  # ✅
+
+# ④ match 로 중간값 찾으려 함
+re.match(r"\d+", "abc123")  # None → search 써야 함
 ```
 
+---
 
+---
 
+# 함수 반환값 한눈에
+
+```
+re.search()   Match Object   → .group() 으로 꺼냄 / None 체크 필수
+re.match()    Match Object   → .group() 으로 꺼냄 / 맨 앞만 찾음
+re.findall()  list           → 바로 for 문 / .group() 없음
+re.sub()      str            → 바로 사용 가능
+```
