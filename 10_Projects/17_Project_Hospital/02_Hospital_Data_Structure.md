@@ -333,10 +333,13 @@ CREATE TABLE IF NOT EXISTS er_realtime (
     id           SERIAL PRIMARY KEY,
     hpid         VARCHAR(20),
     hpname       VARCHAR(100),
-    hvec         INT,            -- 응급실 가용병상 수 ← 핵심 (API ①)
-    hvoc         INT,            -- 수술실 가용 수 (API ①)
-    hvctayn      VARCHAR(10),     -- CT 가용 Y/N (API ①)
-    hvventiayn   VARCHAR(10),     -- 인공호흡기 가용 Y/N (API ①)
+    hvec         INTEGER,        -- 응급실 가용병상 수 ← 핵심 (API ①) 음수 가능
+    hvoc         INTEGER,        -- 수술실 가용 수 (API ①)
+    hvgc         INTEGER,        -- 일반 입원실 병상 수 (API ①)
+    hvctayn      VARCHAR(10),    -- CT 가용 Y/N (API ①)
+    hvventiayn   VARCHAR(10),    -- 인공호흡기 가용 Y/N (API ①)
+    hvmriayn     VARCHAR(10),    -- MRI 가용 Y/N (API ①)
+    hvangioayn   VARCHAR(10),    -- 조영촬영기 가용 Y/N (API ①)
     notice_msg   TEXT,           -- 응급실 공지 메시지 (API ③)
     data_type    VARCHAR(20),    -- 'er_realtime'
     created_at   TIMESTAMP DEFAULT NOW()
@@ -362,18 +365,21 @@ CREATE TABLE IF NOT EXISTS er_hospitals (
     hpname       VARCHAR(100),
     duty_addr    VARCHAR(200),
     duty_tel     VARCHAR(20),     -- 응급실 전화 (dutyTel3)
-    duty_eryn    VARCHAR(10),      -- 응급실 운영여부 (1:운영)
+    duty_eryn    VARCHAR(1),      -- 응급실 운영여부 (1:운영)
     wgs84_lat    NUMERIC(10,7),
     wgs84_lon    NUMERIC(10,7),
     hpbdn        INT,             -- 전체 병상 수
-    mk_stroke    VARCHAR(10),      -- 뇌출혈수술 가능 (인증)
-    mk_cardiac   VARCHAR(10),      -- 심근경색 가능 (인증)
-    mk_trauma    VARCHAR(10),      -- 중증외상 Gate keeper (인증)
-    mk_pediatric VARCHAR(10),      -- 신생아 가능 (인증)
+    mk_stroke    VARCHAR(1),      -- 뇌출혈수술 가능 (인증)
+    mk_cardiac   VARCHAR(1),      -- 심근경색 가능 (인증)
+    mk_trauma    VARCHAR(1),      -- 중증외상 Gate keeper (인증)
+    mk_pediatric VARCHAR(1),      -- 신생아 가능 (인증)
     region       VARCHAR(20),
     updated_at   TIMESTAMP DEFAULT NOW()
 );
 ```
+
+
+
 
 ---
 

@@ -151,7 +151,7 @@ spark/
 import os
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json,col,current_timestamp
+from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import (StructType, StructField, StringType, IntegerType)
 
 load_dotenv()
@@ -179,8 +179,11 @@ schema = StructType([
     StructField("hpname",     StringType()),
     StructField("hvec",       IntegerType()),   # 음수 가능 (설계 고민 노트 참고)
     StructField("hvoc",       IntegerType()),
+    StructField("hvgc",       IntegerType()),   # 일반 입원실
     StructField("hvctayn",    StringType()),    # Y/N (parse_yn 처리됨)
     StructField("hvventiayn", StringType()),    # Y/N (parse_yn 처리됨)
+    StructField("hvmriayn",   StringType()),    # MRI 가용 Y/N
+    StructField("hvangioayn", StringType()),    # 조영촬영기 가용 Y/N
     StructField("notice_msg", StringType()),
     StructField("data_type",  StringType()),
     StructField("created_at", StringType()),
@@ -214,7 +217,7 @@ df = (
     .select(col("value").cast("string").alias("json_str"))
     .select(from_json(col("json_str"), schema).alias("data"))
     .select("data.*")
-    .withColumn("created_at", current_timestamp()) # 안바꾸면 에러!
+    .withColumn("created_at", col("created_at").cast("timestamp"))
 )
 
 # ── PostgreSQL 적재 (count 변수에 캐싱 — Action 1번) ──────

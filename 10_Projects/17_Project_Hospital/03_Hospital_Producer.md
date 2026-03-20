@@ -186,7 +186,7 @@ import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from dotenv import load_dotenv
-from urllib.parse import unquote   
+from urllib.parse import unquote  
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
@@ -299,8 +299,11 @@ def fetch_realtime_beds() -> dict:
             "hpname":     item.findtext("dutyName", ""),
             "hvec":       parse_int(item.findtext("hvec")),
             "hvoc":       parse_int(item.findtext("hvoc")),
+            "hvgc":       parse_int(item.findtext("hvgc")),       # 일반 입원실
             "hvctayn":    parse_yn(item.findtext("hvctayn")),
             "hvventiayn": parse_yn(item.findtext("hvventiayn")),
+            "hvmriayn":   parse_yn(item.findtext("hvmriayn")),    # MRI 가용
+            "hvangioayn": parse_yn(item.findtext("hvangioayn")), # 조영촬영기 가용
         }
     print(f"[가용병상] {len(result)}곳 병원 수집되었습니다.")
     return result
