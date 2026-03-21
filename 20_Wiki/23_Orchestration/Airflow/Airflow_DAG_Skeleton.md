@@ -10,7 +10,7 @@ tags:
   - Airflow
   - DAG
 related:
-  - "[[DAG_Concept]]"
+  - "[[Airflow_DAG_Concept]]"
   - "[[Airflow_Operators]]"
   - "[[Airflow_UI_Usage]]"
   - "[[Airflow_TaskGroup]]"

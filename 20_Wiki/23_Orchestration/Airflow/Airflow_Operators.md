@@ -9,7 +9,7 @@ aliases:
 tags:
   - Airflow
 related:
-  - "[[Airflow_Architecture(아키텍처)]]"
+  - "[[Airflow_Architecture]]"
   - "[[Airflow_DAG_Skeleton]]"
   - "[[00_Airflow_HomePage]]"
   - "[[Airflow_TaskFlow_API]]"

@@ -137,7 +137,6 @@ BIGINT 쓰는 경우:
   값이 자주 바뀌면 VARCHAR 권장
 ```
 
-
 ```sql
 -- ENUM 타입 생성 (CREATE TABLE 앞에 위치해야 함)
 CREATE TYPE delay_status AS ENUM ('정시', '소폭지연', '지연', '대폭지연');
@@ -162,12 +161,11 @@ INSERT / UPDATE 시 조건 검사
 위반하면 에러 → 잘못된 데이터 입력 자체를 차단
 ```
 
-
 ```sql
 CREATE TABLE er_realtime (
     id         SERIAL PRIMARY KEY,
     hvec       INTEGER CHECK (hvec >= 0),                    -- 음수 불가
-    hvctayn    VARCHAR(1) CHECK (hvctayn IN ('Y', 'N')),     -- Y 또는 N만
+    hvctayn    VARCHAR(10),   -- Y/N (1 초과 값 올 수 있어서 10으로 여유)
     saturation NUMERIC(5,2) CHECK (saturation BETWEEN 0 AND 100)  -- 0~100
 );
 
@@ -186,7 +184,6 @@ CHECK vs ENUM:
   VARCHAR(1) CHECK (col IN ('Y','N')) ← ENUM 없이 간단히
 ```
 
-
 ```sql
 -- 자료형 사용 예시
 id           SERIAL PRIMARY KEY        -- 자동 증가 PK
@@ -201,6 +198,7 @@ created_at   TIMESTAMP DEFAULT NOW()   -- 저장 시각 자동
 ```
 
 ---
+
 ---
 
 # ③ DataGrip 연결
@@ -251,7 +249,7 @@ Password:  <패스워드>
 
 # ④ psql — PostgreSQL 전용 CLI 클라이언트
 
-```text
+```
 psql = PostgreSQL 에 접속해서 SQL 을 직접 실행하는 명령줄 도구
 
 DataGrip  GUI (마우스로 클릭)
@@ -491,5 +489,57 @@ down -v 불필요 (psql 직접):
 |DataGrip 연결 실패|포트포워딩 안 됨|`docker-compose.yml` 포트 확인|
 |psql 접속 안 됨|컨테이너 아직 healthy 아님|`docker compose ps` 상태 확인 후 재시도|
 |ENUM 타입 에러|`CREATE TYPE` 을 테이블보다 나중에 선언|init.sql 에서 `CREATE TYPE` 을 `CREATE TABLE` 위에 배치|
-|Airflow DB 연결 실패|`CREATE DATABASE airflow` 누락|init.sql 에 DB 생성 + 유저 + GRANT 추가|
+|Airflow DB 연결 실패|`CREATE DATABASE airflow` 누락|아래 상세 참고|
 |`GRANT` 했는데 테이블 접근 불가|DB 권한과 테이블 권한 별개|`GRANT ON DATABASE` + `GRANT ON ALL TABLES` 둘 다 필요|
+
+
+---
+---
+# Airflow DB 연결 실패 상세
+
+```
+에러:
+  sqlalchemy.exc.OperationalError: (psycopg2.OperationalError)
+  connection to server at "postgres" (172.18.0.4), port 5432 failed:
+  FATAL: password authentication failed for user "airflow"
+
+원인:
+  Airflow 가 메타데이터 저장용으로 "airflow" DB / USER 를 사용
+  PostgreSQL 에 airflow 유저와 DB 가 없으면 연결 실패
+```
+
+## 방법 1 — init.sql 에 추가 (권장)
+
+```sql
+-- postgres/init.sql 맨 위에 추가
+CREATE DATABASE airflow;
+CREATE USER airflow WITH PASSWORD 'airflow';
+GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
+ALTER DATABASE airflow OWNER TO airflow;
+```
+
+```bash
+# 볼륨 초기화 후 재실행
+docker compose down -v
+docker compose up -d
+```
+
+## 방법 2 — psql 에서 직접 실행 (볼륨 유지)
+
+```bash
+# 기존 데이터 유지하면서 airflow DB 만 추가
+docker exec -it train-postgres psql -U train_user -d train_db
+
+# psql 프롬프트에서 실행
+CREATE DATABASE airflow;
+CREATE USER airflow WITH PASSWORD 'airflow';
+GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
+ALTER DATABASE airflow OWNER TO airflow;
+\q
+```
+
+```
+init.sql 에 추가해두는 게 맞음
+→ 나중에 down -v 해도 자동으로 생성됨
+→ 수동 실행 후 init.sql 수정도 잊지 말 것
+```

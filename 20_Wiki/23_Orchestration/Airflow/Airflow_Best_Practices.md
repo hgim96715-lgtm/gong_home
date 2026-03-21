@@ -11,7 +11,7 @@ tags:
   - 면접질문
   - 고급
 related:
-  - "[[DAG_Concept]]"
+  - "[[Airflow_DAG_Concept]]"
   - "[[Idempotent(멱등성)]]"
 ---
 ## 개념 한 줄 요약

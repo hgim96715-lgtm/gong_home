@@ -80,10 +80,11 @@ superset init
 # docker exec 로 컨테이너 안에서 같은 명령어 실행
 
 # 1. 메타데이터 DB 테이블 생성
-docker exec -it train-superset superset db upgrade
+docker exec -it <container-name> superset db upgrade
+# docker exec -it hospital-superset superset db upgrade
 
 # 2. 관리자 계정 생성
-docker exec -it train-superset superset fab create-admin \
+docker exec -it <container-name> superset fab create-admin \
   --username admin \
   --firstname Admin \
   --lastname Admin \
@@ -91,7 +92,8 @@ docker exec -it train-superset superset fab create-admin \
   --password admin
 
 # 3. 기본 역할 / 권한 초기화
-docker exec -it train-superset superset init
+docker exec -it <container-name> superset init
+# docker exec -it hospital-superset  superset init
 ```
 
 ```

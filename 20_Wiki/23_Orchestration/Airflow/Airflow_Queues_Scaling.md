@@ -12,7 +12,7 @@ tags:
   - Scaling
 related:
   - "[[Airflow_Flower]]"
-  - "[[Airflow_Architecture(아키텍처)]]"
+  - "[[Airflow_Architecture]]"
   - "[[CS_Stack_Queue]]"
   - "[[CS_Blocking_vs_NonBlocking]]"
 ---

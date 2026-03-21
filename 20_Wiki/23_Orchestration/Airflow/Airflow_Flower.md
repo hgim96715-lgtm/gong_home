@@ -8,7 +8,7 @@ tags:
   - Airflow
 related:
   - "[[Docker_Host_Access]]"
-  - "[[Airflow_Architecture(아키텍처)]]"
+  - "[[Airflow_Architecture]]"
   - "[[Airflow_Queues_Scaling]]"
 ---
 ## 개념 한 줄 요약
