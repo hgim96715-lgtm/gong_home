@@ -54,14 +54,82 @@ pattern = r"\d{3}-\d{4}-\d{4}"     # 깔끔 ✅
 
 ---
 
-# ② 함수 3가지 — 반환값이 전부 다름
+# ② 함수 4가지 — 반환값과 검색 범위가 전부 다름
 
-|함수|반환값|특징|
+|함수|반환값|검색 범위|
 |---|---|---|
-|`re.search(패턴, 문자열)`|Match Object (1개)|어디서든 첫 번째 1개|
-|`re.match(패턴, 문자열)`|Match Object (1개)|문자열 맨 앞에서만|
+|`re.search(패턴, 문자열)`|Match Object|어디서든 첫 번째 1개|
+|`re.match(패턴, 문자열)`|Match Object|문자열 맨 앞에서만|
+|`re.fullmatch(패턴, 문자열)`|Match Object|전체가 패턴과 완전 일치해야|
 |`re.findall(패턴, 문자열)`|**리스트**|모두 찾아서 리스트로|
 |`re.sub(패턴, 바꿀값, 문자열)`|**str**|찾아서 치환 후 문자열 반환|
+
+## search vs match vs fullmatch 비교 ⭐️
+
+```
+search     어디서든 패턴 찾기
+match      맨 앞부터 패턴이 시작해야 함 (뒤에 다른 거 있어도 됨)
+fullmatch  처음부터 끝까지 전체가 패턴과 완전히 일치해야 함
+```
+
+```python
+text = "abc123def"
+
+re.search(r"\d+", text)     # ✅ "123"  → 중간에 있어도 찾음
+re.match(r"\d+", text)      # ❌ None   → 맨 앞이 숫자 아님
+re.fullmatch(r"\d+", text)  # ❌ None   → 전체가 숫자만이 아님
+
+text2 = "123abc"
+re.search(r"\d+", text2)    # ✅ "123"  → 앞부분 숫자 찾음
+re.match(r"\d+", text2)     # ✅ "123"  → 앞부터 숫자로 시작
+re.fullmatch(r"\d+", text2) # ❌ None   → 뒤에 abc 있으니까
+
+text3 = "123"
+re.search(r"\d+", text3)    # ✅ "123"
+re.match(r"\d+", text3)     # ✅ "123"
+re.fullmatch(r"\d+", text3) # ✅ "123"  → 전체가 숫자만
+```
+
+## fullmatch — 유효성 검사에 최적
+
+```
+search 로 유효성 검사하면:
+  re.search(r"\d+", "123abc") → Match 반환  ← 앞에 숫자 있으니까
+  → "유효하다" 고 판단 → 잘못된 결과!
+
+fullmatch 써야:
+  re.fullmatch(r"\d+", "123abc") → None
+  → "유효하지 않다" → 정확!
+```
+
+```python
+# 전화번호 형식 검증
+def is_valid_phone(s):
+    return bool(re.fullmatch(r"\d{2,3}-\d{3,4}-\d{4}", s))
+
+is_valid_phone("010-1234-5678")     # True
+is_valid_phone("010-1234-5678 ")    # False  ← 뒤에 공백
+is_valid_phone("010-1234-5678abc")  # False  ← 뒤에 문자
+
+# 숫자로만 이루어졌는지
+bool(re.fullmatch(r"\d+", "12345"))   # True
+bool(re.fullmatch(r"\d+", "123a5"))   # False
+```
+
+## match — 앞부분 형식 확인
+
+```python
+# 로그가 날짜로 시작하는지 확인 + 날짜만 추출
+log = "2026-03-19 ERROR: something failed"
+
+m = re.match(r"(\d{4}-\d{2}-\d{2})", log)
+if m:
+    print(m.group(1))   # '2026-03-19'  ← 앞부분만 추출
+
+# match vs fullmatch 차이
+re.match(r"\d{4}-\d{2}-\d{2}", log)     # ✅ 앞이 날짜면 됨
+re.fullmatch(r"\d{4}-\d{2}-\d{2}", log) # ❌ 뒤에 더 있으니까
+```
 
 ---
 

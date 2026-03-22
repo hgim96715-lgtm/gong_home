@@ -7,16 +7,15 @@ aliases:
   - For
   - While
   - 흐름 제어
+  - 월러스 연산자
 tags:
   - Python
 related:
-  - "[[Dynamic_Tasks]]"
-  - "[[Airflow_Sensors]]"
-  - "[[Python_Looping_Helpers]]"
-  - "[[Python_Variables_Types]]"
-  - "[[Spark_Iterating_Data]]"
   - "[[00_Python_HomePage]]"
-  - "[[Python_List_Comprehension]]"
+  - "[[Python_Lists_Tuples]]"
+  - "[[Python_Looping_Helpers]]"
+  - "[[Python_Lambda_Map]]"
+  - "[[Python_Sorting_Logic]]"
 ---
 # Python_Control_Flow — 제어문
 
@@ -313,4 +312,110 @@ for c in str(n):
 
 # ✅ 합계도 한 줄로
 sum(int(c) for c in str(n))
+```
+
+---
+
+---
+
+# ⑥ := — 왈러스 연산자 (Python 3.8+)
+
+## 한 줄 요약
+
+```
+할당 + 조건 검사를 동시에 하는 연산자
+:= 모양이 바다코끼리 눈과 엄니 같아서 "왈러스(walrus)"
+
+기존: 변수에 값 넣고 → 다음 줄에서 조건 검사
+:=  : 조건 검사하면서 동시에 변수에 저장
+```
+
+## 기본 사용
+
+```python
+# 기존 방식
+n = len(data)
+if n > 10:
+    print(n)
+
+# := 방식 — 할당 + 조건 동시에
+if (n := len(data)) > 10:
+    print(n)   # n 을 여기서도 사용 가능
+```
+
+## while 루프 — 가장 많이 쓰는 패턴
+
+```python
+# 기존 방식
+chunk = f.read(8192)
+while chunk:
+    process(chunk)
+    chunk = f.read(8192)   # 루프 끝에 다시 읽어야 함 (중복)
+
+# := 방식 — 중복 제거
+while chunk := f.read(8192):
+    process(chunk)
+```
+
+```python
+# 입력 받으며 처리
+while (line := input("입력: ")) != "quit":
+    print(f"입력값: {line}")
+# "quit" 입력 시 종료
+```
+
+## if + 재사용
+
+```python
+import re
+
+# 기존 방식
+m = re.search(r"\d+", text)
+if m:
+    print(m.group())
+
+# := 방식
+if m := re.search(r"\d+", text):
+    print(m.group())   # m 바로 사용
+```
+
+## List Comprehension 에서
+
+```python
+data = [1, -2, 3, -4, 5]
+
+# 기존: 같은 계산 두 번
+[abs(x) for x in data if abs(x) > 2]
+
+# := 방식: 계산 한 번만
+[y for x in data if (y := abs(x)) > 2]
+# [3, 4, 5]
+```
+
+## 주의사항
+
+```python
+# ⚠️ 괄호 필수 — 우선순위 때문
+if n := len(data) > 10:    # ❌ n = (len(data) > 10) = True/False
+    print(n)               # 원하는 결과 아님
+
+if (n := len(data)) > 10:  # ✅ n = len(data) 먼저 할당
+    print(n)               # 정상
+
+# ⚠️ 남용 금지 — 읽기 어려워짐
+# 간단한 경우는 기존 방식이 더 명확
+n = len(data)
+if n > 10:
+    print(n)
+```
+
+```
+언제 쓰면 좋은가:
+  while 루프에서 반복 읽기 (파일 / 소켓 / 스트림)
+  if 조건에서 결과를 바로 재사용할 때
+  같은 함수 호출을 두 번 피하고 싶을 때
+
+언제 쓰지 않는 게 나은가:
+  단순 if 조건 (굳이 := 쓸 필요 없음)
+  가독성보다 중요한 게 없는 경우
 ```
