@@ -94,6 +94,7 @@ SQLD 1과목 핵심 영역
 |---|---|
 |[[SQL_JOIN_Concept]]|EQUI JOIN / NON EQUI JOIN / 다중 조인 원리|
 |[[SQL_Standard_JOIN]]|INNER / LEFT·RIGHT·FULL OUTER / CROSS / NATURAL JOIN|
+| [[SQL_Self_Join]]          | Self Join / 사원-매니저 / 계층 비교                                 |
 
 ---
 
@@ -116,14 +117,13 @@ SQLD 1과목 핵심 영역
 
 ### 분석 & 고급 집계
 
-|노트|핵심 개념|
-|---|---|
-|[[SQL_Group_Functions]]|ROLLUP / CUBE / GROUPING SETS / GROUPING|
-|[[SQL_Window_Functions]]|RANK / DENSE_RANK / ROW_NUMBER / PARTITION BY / LAG / LEAD|
-|[[SQL_Top_N_Query]]|LIMIT / ROWNUM / FETCH FIRST N ROWS ONLY|
-|[[SQL_Self_Join]]|Self Join / 사원-매니저 / 계층 비교|
-|[[SQL_Hierarchical_Query]]|START WITH / CONNECT BY / WITH RECURSIVE / LEVEL|
-|[[SQL_Pivot_Unpivot]]|PIVOT / UNPIVOT / FILTER / UNION ALL|
+| 노트                         | 핵심 개념                                                      |
+| -------------------------- | ---------------------------------------------------------- |
+| [[SQL_Group_Functions]]    | ROLLUP / CUBE / GROUPING SETS / GROUPING                   |
+| [[SQL_Window_Functions]]   | RANK / DENSE_RANK / ROW_NUMBER / PARTITION BY / LAG / LEAD |
+| [[SQL_Top_N_Query]]        | LIMIT / ROWNUM / FETCH FIRST N ROWS ONLY                   |
+| [[SQL_Hierarchical_Query]] | START WITH / CONNECT BY / WITH RECURSIVE / LEVEL           |
+| [[SQL_Pivot_Unpivot]]      | PIVOT / UNPIVOT / FILTER / UNION ALL                       |
 
 ### 고급 문자열 처리
 
@@ -154,9 +154,13 @@ DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 
 ## PostgreSQL 실습 환경
 
-|노트|핵심 개념|
-|---|---|
-|[[PostgreSQL_Setup]]|Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리|
+>[[Python_Database_Connect]] 참고 
+
+| 노트                   | 핵심 개념                                  |
+| -------------------- | -------------------------------------- |
+| [[PostgreSQL_Setup]] | Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리 |
+
+
 
 ---
 
