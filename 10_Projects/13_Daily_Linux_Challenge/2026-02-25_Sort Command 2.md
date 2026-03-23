@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟩 해결
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
   - "[[Linux_Data_Statistics]]"

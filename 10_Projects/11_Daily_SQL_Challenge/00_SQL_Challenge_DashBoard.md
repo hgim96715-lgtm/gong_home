@@ -14,10 +14,7 @@ related:
 
 ```dataview
 TABLE WITHOUT ID
-  "🦁 **" + length(rows) + " 문제**" as "총 도전",
-  "🟩 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "한방 해결",
-  "🟪 **" + length(filter(rows, (r) => contains(r.status, "🟪"))) + " 개**" as "복습 성공",
-  "🧨 **" + length(filter(rows, (r) => !contains(r.status, "🟩") AND !contains(r.status, "🟪"))) + " 개**" as "남은 숙제"
+  "🦁 **" + length(rows) + " 문제**" as "총 도전"
 FROM "10_Projects/11_Daily_SQL_Challenge"
 WHERE file.name != this.file.name
 GROUP BY true
@@ -26,9 +23,14 @@ GROUP BY true
 ---
 ## Monthly Log 📅
 
+```dataview
+CALENDAR file.cday
+FROM "10_Projects/11_Daily_SQL_Challenge"
+```
 
 ```dataview
-CALENDAR file.day FROM "10_Projects/11_Daily_SQL_Challenge" WHERE status != null
+CALENDAR file.day
+FROM "10_Projects/11_Daily_SQL_Challenge"
 ```
 ---
 ## 학습 현황 (Status Board)
@@ -40,30 +42,13 @@ CALENDAR file.day FROM "10_Projects/11_Daily_SQL_Challenge" WHERE status != null
 ```dataview
 TABLE WITHOUT ID
   link(file.link, split(file.name, "_")[1]) as "Project / Topic",
-  split(file.name, "_")[0] as "Date",
-  status as "Status"
+  split(file.name, "_")[0] as "Date"
 FROM "10_Projects/11_Daily_SQL_Challenge"
 WHERE file.name != this.file.name
 SORT file.name DESC
 LIMIT 5
 ```
 
-
->[!failure]+ **🔥 긴급! 복습이 필요해 (Review List)**
-
->아직 완벽하게 해결하지 못한(`🟩 해결` 아님) 문제들입니다
-
-```dataview
-TABLE WITHOUT ID
-  link(file.link, split(file.name, "_")[1]) as "주제",
-  split(file.name, "_")[0] as "날짜",
-  status as "현재 상태"
-FROM "10_Projects/11_Daily_SQL_Challenge"
-WHERE file.name != this.file.name
-  AND !contains(status, "🟩") 
-  AND !contains(status, "🟪")  
-SORT file.name ASC
-```
 
 ---
 

@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟩 해결
 related:
   - "[[Shell_Arithmetic]]"
   - "[[Shell_Input_Output]]"

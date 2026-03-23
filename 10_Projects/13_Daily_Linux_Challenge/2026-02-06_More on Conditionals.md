@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟩 해결
 related:
   - "[[Linux_Shell_Script]]"
   - "[[Redirection_Pipe]]"

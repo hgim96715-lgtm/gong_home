@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟪 복습후 해결함
 related:
   - "[[Linux_Shell_Script]]"
   - "[[00_Linux_Challenge_DashBoard]]"

@@ -16,22 +16,18 @@ related:
 
 ```dataview
 TABLE WITHOUT ID
-  "🐧 **" + length(rows) + " 문제**" as "총 도전",
-  "🟩 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "한방 해결",
-  "🟪 **" + length(filter(rows, (r) => contains(r.status, "🟪"))) + " 개**" as "복습 성공",
-  "🧨 **" + length(filter(rows, (r) => !contains(r.status, "🟩") AND !contains(r.status, "🟪"))) + " 개**" as "남은 숙제"
+  "🐧 **" + length(rows) + " 문제**" as "총 도전"
 FROM "10_Projects/13_Daily_Linux_Challenge"
 WHERE file.name != this.file.name
 GROUP BY true
 ```
 
 ---
-> [!info]+ 📅 Shell Scripting Streak
+## Monthly Log 📅
 
 ```dataview
-CALENDAR file.day
+CALENDAR file.cday
 FROM "10_Projects/13_Daily_Linux_Challenge"
-WHERE status != null
 ```
 
 

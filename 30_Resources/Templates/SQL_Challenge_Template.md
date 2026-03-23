@@ -5,7 +5,6 @@ related:
   - "[[00_SQL_Challenge_DashBoard]]"
 source:
 difficulty:
-status:
 ---
 ##  해결 전략 (Code Before Think)
 

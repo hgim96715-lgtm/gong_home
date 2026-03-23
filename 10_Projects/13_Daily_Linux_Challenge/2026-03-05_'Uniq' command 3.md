@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟧 복습
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
   - "[[Linux_Awk]]"

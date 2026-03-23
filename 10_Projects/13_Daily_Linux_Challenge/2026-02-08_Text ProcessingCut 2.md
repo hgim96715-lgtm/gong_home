@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟪 복습후 해결함
 related:
   - "[[Linux_AWk]]"
   - "[[Linux_Text_Slicing_cut]]"

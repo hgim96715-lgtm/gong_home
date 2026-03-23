@@ -8,7 +8,6 @@ related:
 source: solvesql
 difficulty:
   - Lv.4
-status: 🟩 해결
 ---
 ##  해결 전략 (Code Before Think)
 

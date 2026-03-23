@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟨 힌트참고
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
   - "[[Linux_Awk]]"

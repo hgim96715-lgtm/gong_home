@@ -16,21 +16,18 @@ related:
 
 ```dataview
 TABLE WITHOUT ID
-  "🐍 **" + length(rows) + " 문제**" as "총 도전",
-  "🟩 **" + length(filter(rows, (r) => contains(r.status, "🟩"))) + " 개**" as "한방 해결",
-  "🟪 **" + length(filter(rows, (r) => contains(r.status, "🟪"))) + " 개**" as "복습 성공",
-  "🧨 **" + length(filter(rows, (r) => !contains(r.status, "🟩") AND !contains(r.status, "🟪"))) + " 개**" as "남은 숙제"
+  "🐍 **" + length(rows) + " 문제**" as "총 도전"
 FROM "10_Projects/12_Daily_Python_Challenge"
 WHERE file.name != this.file.name
 GROUP BY true
 ```
 
 ---
-> [!info]+  📅 Coding Streak
+## Monthly Log 📅
+
 ```dataview
-CALENDAR file.day
+CALENDAR file.cday
 FROM "10_Projects/12_Daily_Python_Challenge"
-WHERE status != null
 ```
 
 
@@ -43,8 +40,7 @@ WHERE status != null
 ```dataview
 TABLE WITHOUT ID
   link(file.link, split(file.name, "_")[1]) as "Project / Topic",
-  split(file.name, "_")[0] as "Date",
-  status as "Status"
+  split(file.name, "_")[0] as "Date"
 FROM "10_Projects/12_Daily_Python_Challenge"
 WHERE file.name != this.file.name
 SORT file.name DESC
@@ -52,18 +48,3 @@ LIMIT 5
 ```
 
 
->[!warning]+ ** 디버깅/복습 필요 (Bug Report)**
-
-아직 `🟩 해결`되지 않은 코드들입니다. 다시 열어서 리팩토링 하세요!
-
-```dataview
-TABLE WITHOUT ID
-  link(file.link, split(file.name, "_")[1]) as "Topic",
-  split(file.name, "_")[0] as "Date",
-  status as "Current State"
-FROM "10_Projects/12_Daily_Python_Challenge"
-WHERE file.name != this.file.name
-  AND !contains(status, "🟩") 
-  AND !contains(status, "🟪")
-SORT file.name ASC
-```

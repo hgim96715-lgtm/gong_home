@@ -1,7 +1,6 @@
 ---
 tags:
   - Python_Test
-status:
 related:
   - "[[00_Python_Challenge_DashBoard]]"
 difficulty:

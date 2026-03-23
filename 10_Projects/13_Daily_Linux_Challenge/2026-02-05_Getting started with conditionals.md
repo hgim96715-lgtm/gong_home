@@ -1,7 +1,6 @@
 ---
 tags:
   - Linux_Test
-status: 🟪 복습후 해결함
 related:
   - "[[Linux_Text_Transformation_tr]]"
   - "[[Shell_Parameter_Expansion]]"
