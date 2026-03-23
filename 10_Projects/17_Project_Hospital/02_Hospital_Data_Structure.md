@@ -320,11 +320,12 @@ duty_addr / region 은 er_realtime 에 없음
 # ⑥ postgres/init.sql 작성
 
 >Y/N은 VARCHAR로 할까 CHECK 으로 할까? 
->API 서버가 갑자기 에러가 나서 빈칸("")이나 미상("U") 같은 예기치 못한 값을 줄때 파이프라인이 뻗지 않게 하기위해서 VARCHAR(1)로 하기로 결정 
+>API 서버가 갑자기 에러가 나서 빈칸("")이나 미상("U") 같은 예기치 못한 값을 줄때 파이프라인이 뻗지 않게 하기위해서 VARCHAR(10)로 하기로 결정 
 >[[PostgreSQL_Setup#② 자주 쓰는 자료형]] 참고 
 
 >region은 혹시 모르니 저번에 train시 21개 로 막힌 오류가 있어서 50으로 정리 
 >VARCHAR(1)->VARCHAR(10)
+>1글자만 들어올 거라 예상해도 `VARCHAR(10)` 정도로 넉넉하게 잡아줘야겠다.. 오류 발생
 
 ```sql
 -- ① er_realtime: 응급실 실시간 병상 현황 (5분마다 적재)
@@ -365,14 +366,14 @@ CREATE TABLE IF NOT EXISTS er_hospitals (
     hpname       VARCHAR(100),
     duty_addr    VARCHAR(200),
     duty_tel     VARCHAR(20),     -- 응급실 전화 (dutyTel3)
-    duty_eryn    VARCHAR(1),      -- 응급실 운영여부 (1:운영)
+    duty_eryn    VARCHAR(10),      -- 응급실 운영여부 (1:운영)
     wgs84_lat    NUMERIC(10,7),
     wgs84_lon    NUMERIC(10,7),
     hpbdn        INT,             -- 전체 병상 수
-    mk_stroke    VARCHAR(1),      -- 뇌출혈수술 가능 (인증)
-    mk_cardiac   VARCHAR(1),      -- 심근경색 가능 (인증)
-    mk_trauma    VARCHAR(1),      -- 중증외상 Gate keeper (인증)
-    mk_pediatric VARCHAR(1),      -- 신생아 가능 (인증)
+    mk_stroke    VARCHAR(10),      -- 뇌출혈수술 가능 (인증)
+    mk_cardiac   VARCHAR(10),      -- 심근경색 가능 (인증)
+    mk_trauma    VARCHAR(10),      -- 중증외상 Gate keeper (인증)
+    mk_pediatric VARCHAR(10),      -- 신생아 가능 (인증)
     region       VARCHAR(20),
     updated_at   TIMESTAMP DEFAULT NOW()
 );
