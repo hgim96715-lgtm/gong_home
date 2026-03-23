@@ -16,7 +16,6 @@ related:
   - "[[Python_Dictionaries]]"
   - "[[Python_Lambda_Map]]"
 ---
-
 # Python_Sorting_Logic — 정렬
 
 ## 한 줄 요약
@@ -88,9 +87,8 @@ sorted(data.items(), key=lambda item: item[1], reverse=True)
 ```
 key=lambda item: item[1]
   → "원소(item) 하나가 들어오면 [1]번째를 기준으로 삼아라"
+  → lambda 는 [[Python_Lambda_Map]] 참고
 ```
-
->lambda 는 [[Python_Lambda_Map]] 참고
 
 ---
 
@@ -181,6 +179,67 @@ dict(sorted(data.items(), key=lambda x: x[1], reverse=True))
 
 ---
 
+# ⑥ 문자열 정렬로 비교 — 순서 무시 비교 ⭐️
+
+```
+두 문자열이 같은 문자로 이루어졌는지 비교할 때
+sorted() 로 정렬하면 순서 무시하고 구성만 비교 가능
+
+"abc" vs "bca" → 순서 다르지만 같은 문자 구성
+sorted("abc") = ['a', 'b', 'c']
+sorted("bca") = ['a', 'b', 'c']  ← 정렬하면 동일!
+```
+
+```python
+# 아나그램 확인 (같은 문자로 이루어진지)
+sorted("listen") == sorted("silent")   # True
+sorted("hello")  == sorted("world")    # False
+
+# 문자 구성 비교
+word1, word2 = "abc", "bca"
+sorted(word1) == sorted(word2)   # True  ← 순서 달라도 구성 같음
+```
+
+## 코딩테스트 실전 — 아나그램 그룹 묶기
+
+```python
+# 같은 문자 구성끼리 그룹으로 묶기
+words = ["eat", "tea", "tan", "ate", "nat", "bat"]
+
+groups = {}
+for word in words:
+    key = "".join(sorted(word))   # 정렬된 문자열을 키로
+    groups.setdefault(key, []).append(word)
+
+# {'aet': ['eat', 'tea', 'ate'], 'ant': ['tan', 'nat'], 'abt': ['bat']}
+```
+
+## sorted() vs Counter — 어떤 걸 쓸까?
+
+```python
+from collections import Counter
+
+s1 = "listen"
+s2 = "silent"
+
+# sorted() 방식
+sorted(s1) == sorted(s2)         # True
+
+# Counter 방식
+Counter(s1) == Counter(s2)       # True
+```
+
+```
+코딩테스트:  sorted()  ← 간단 + 충분히 빠름
+실무/가독성: Counter() ← "문자 빈도 비교" 의미 명확
+
+→ [[Python_Collections_Counter]] 참고
+```
+
+---
+
+---
+
 # 핵심 정리
 
 ```
@@ -193,6 +252,10 @@ key        정렬 기준 지정
            튜플 맨 앞이 기준이면 → lambda 없이 sorted() 그대로
 
 reverse=True   내림차순 (랭킹, TOP N 뽑을 때)
+
+순서 무시 비교:
+  sorted(str1) == sorted(str2)   ← 같은 문자 구성인지 확인
+  Counter(str1) == Counter(str2) ← 동일 (더 명확)
 
 데이터 엔지니어 반사 공식:
   "빈도수 많은 순서대로" → sorted(..., key=lambda x: x[1], reverse=True)
