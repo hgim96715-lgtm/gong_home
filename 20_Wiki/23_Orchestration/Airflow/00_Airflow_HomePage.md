@@ -36,12 +36,12 @@
 
 ## Level 1. 핵심 개념
 
-|노트|핵심 개념|
-|---|---|
-|[[Why_Airflow]]|ETL 오케스트레이션 / 스케줄링 / 의존성 관리|
-|[[Airflow_Architecture]]|Webserver / Scheduler / Worker / MetaDB / Executor|
-|[[Airflow_DAG_Concept]]|방향성 비순환 그래프 / Task / 의존성 / 실행 순서|
-|[[Airflow_Execution_Date]]|execution_date / logical_date / 오늘 돌지만 어제 날짜|
+| 노트                            | 핵심 개념                                                         |
+| ----------------------------- | ------------------------------------------------------------- |
+| [[Why_Airflow]]               | ETL 오케스트레이션 / 스케줄링 / 의존성 관리                                   |
+| [[Airflow_Architecture]]      | Webserver / Scheduler / Worker / MetaDB / Executor            |
+| [[Airflow_DAG_Concept]]       | 방향성 비순환 그래프 / Task / 의존성 / 실행 순서                              |
+| [[Airflow_Execution_Date]] ⭐️ | execution_date / logical_date / 오늘 돌지만 어제 날짜/context/pendulum |
 
 ---
 
@@ -49,14 +49,14 @@
 
 ## Level 2. DAG 작성하기
 
-|노트|핵심 개념|
-|---|---|
-|[[Airflow_DAG_Skeleton]]|`with DAG(...)` 기본 골격 / dag_id / start_date / catchup|
-|[[Airflow_Operators]]|PythonOperator / python_callable / op_kwargs|
-|[[Airflow_TaskFlow_API]]|@task / @dag / TaskFlow API / XCom 자동화|
-|[[Task_Dependencies]]|`>>` / `<<` / 리스트 / fan-out / fan-in / 병렬 실행|
-|[[Airflow_Scheduling]]|cron 표현식 / @daily / catchup / timetable|
-|[[Airflow_TaskGroup]]|TaskGroup / 시각적 그룹화 / prefix_group_id|
+| 노트                          | 핵심 개념                                                 |
+| --------------------------- | ----------------------------------------------------- |
+| [[Airflow_DAG_Skeleton]] ⭐️ | `with DAG(...)` 기본 골격 / dag_id / start_date / catchup |
+| [[Airflow_Operators]]       | PythonOperator / python_callable / op_kwargs          |
+| [[Airflow_TaskFlow_API]] ⭐️ | @task / @dag / TaskFlow API / XCom 자동화                |
+| [[Task_Dependencies]]       | `>>` / `<<` / 리스트 / fan-out / fan-in / 병렬 실행          |
+| [[Airflow_Scheduling]] ⭐️   | cron 표현식 / @daily / catchup / timetable               |
+| [[Airflow_TaskGroup]]       | TaskGroup / 시각적 그룹화 / prefix_group_id                 |
 
 ---
 
@@ -64,11 +64,11 @@
 
 ## Level 3. 데이터 통신 & 보안
 
-| 노트                        | 핵심 개념                                     |
-| ------------------------- | ----------------------------------------- |
-| [[Airflow_XComs]]         | xcom_push / xcom_pull / 메타DB 저장 / 용량 제한   |
+| 노트                                | 핵심 개념                                     |
+| --------------------------------- | ----------------------------------------- |
+| [[Airflow_XComs]]                 | xcom_push / xcom_pull / 메타DB 저장 / 용량 제한   |
 | [[Airflow_Variables_Connections]] | Variable / Connection / API Key / DB 접속정보 |
-| [[Airflow_Hooks]]         | Hook / PostgresHook / S3Hook / get_conn   |
+| [[Airflow_Hooks]] ⭐️              | Hook / PostgresHook / S3Hook / get_conn   |
 
 ---
 

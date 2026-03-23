@@ -179,6 +179,43 @@ DAG 에 한 번 등록 → 모든 태스크가 자동 상속
 | `email_on_failure`  | 실패 시 이메일 알림      | `False`                         |
 | `email_on_retry`    | 재시도 시 이메일 알림     | `False`                         |
 
+
+## pendulum.duration() — timedelta 대신 쓰는 이유
+
+```python
+# Python 표준
+from datetime import timedelta
+retry_delay = timedelta(minutes=5)
+
+# Airflow 권장
+import pendulum
+retry_delay = pendulum.duration(minutes=5)
+```
+
+```
+기능은 동일 / Airflow 2.x 에서 pendulum 통일 권장
+timedelta 써도 동작하지만 pendulum.duration() 이 더 Airflow 스러움
+
+자주 쓰는 단위:
+  pendulum.duration(seconds=30)   → 30초
+  pendulum.duration(minutes=5)    → 5분
+  pendulum.duration(minutes=30)   → 30분
+  pendulum.duration(hours=1)      → 1시간
+  pendulum.duration(days=1)       → 1일
+
+조합도 가능:
+  pendulum.duration(hours=1, minutes=30)   → 1시간 30분
+```
+
+```python
+# 상황별 execution_timeout 권장값
+  pendulum.duration(minutes=10)   # API 수집 DAG
+  pendulum.duration(minutes=30)   # 일반 배치 처리
+  pendulum.duration(hours=1)      # 대용량 처리 / Spark 작업
+  pendulum.duration(hours=3)      # 장시간 ML 학습
+  # None                          # 무한 대기 (권장하지 않음)
+```
+
 ## 각 속성 상세 
 
 ```python

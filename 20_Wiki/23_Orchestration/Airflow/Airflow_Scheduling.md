@@ -8,13 +8,11 @@ aliases:
   - Cron
 tags:
   - Airflow
-  - Dataset
-  - schedule
-  - cron
 related:
   - "[[Airflow_DAG_Skeleton]]"
   - "[[Linux_Scheduling_Crontab]]"
   - "[[00_Airflow_HomePage]]"
+  - "[[Airflow_Execution_Date]]"
 ---
 # Airflow_Scheduling — DAG 스케줄링
 
@@ -236,3 +234,5 @@ pendulum.datetime(..., tz="Asia/Seoul") 로 start_date 설정하면
 tz 없으면 UTC 자정 = KST 오전 9시
 → start_date 에 항상 tz="Asia/Seoul" 명시 필수
 ```
+
+>[[Airflow_Execution_Date]] 참고 
