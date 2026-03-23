@@ -14,6 +14,7 @@ related:
   - "[[PostgreSQL_Setup]]"
   - "[[Python_Functions]]"
   - "[[Docker_Host_vs_Internal_Network]]"
+  - "[[Airflow_Hooks]]"
 ---
 # Python_Database_Connect — Python + PostgreSQL 연결
 
@@ -34,8 +35,32 @@ sqlalchemy  pandas 연동 / 고수준 연결
 |---|---|---|
 |수준|저수준 (SQL 직접)|고수준 (추상화)|
 |주로 쓰는 곳|cursor.execute()|pd.read_sql() / df.to_sql()|
-|적합한 상황|Kafka 적재 / 배치 INSERT|Streamlit / pandas 연동|
+|적합한 상황|데이터 엔지니어링 / 대용량 배치|웹 서비스 / pandas 연동|
+|처리 속도|빠름 (execute_values / COPY)|대용량 배치 시 느림|
+|SQL 제어|SQL 직접 튜닝 가능|추상화 → 직접 제어 어려움|
 |내부 관계|독립|내부적으로 psycopg2 사용|
+
+```
+SQLAlchemy ORM:
+  파이썬 클래스 → DB 테이블 매핑
+  user = User(name="홍길동") → INSERT 자동
+  웹 서비스 단건 처리에 적합 (Django / FastAPI)
+
+SQLAlchemy Core (create_engine):
+  SQL 은 직접 쓰되 연결 관리 자동화
+  pd.read_sql() / df.to_sql() 와 함께 사용
+  pandas 연동 / Streamlit 대시보드
+
+psycopg2 직접:
+  SQL 전부 직접 작성
+  execute_values / COPY 로 대용량 배치 처리
+  데이터 엔지니어링 파이프라인에 최적
+
+선택 기준:
+  웹 서비스 단건 CRUD    → SQLAlchemy ORM
+  pandas / Streamlit    → SQLAlchemy Core (create_engine)
+  대용량 배치 / ETL      → psycopg2 + execute_values
+```
 
 ---
 

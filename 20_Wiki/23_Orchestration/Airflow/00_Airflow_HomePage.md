@@ -24,6 +24,10 @@
   FATAL: password authentication failed for user "airflow"
   → PostgreSQL init.sql 에 airflow DB / USER 생성 필요
   # [[PostgreSQL_Setup#Airflow DB 연결 실패 상세]] 참고
+
+⚠️ Airflow UI 접속 불가 (admin 계정 없음):
+  → airflow users create 로 admin 계정 직접 생성 필요
+  # [[PostgreSQL_Setup#Step 3 — admin 계정 생성]] 참고
 ```
 
 ---
@@ -60,11 +64,11 @@
 
 ## Level 3. 데이터 통신 & 보안
 
-|노트|핵심 개념|
-|---|---|
-|[[Airflow_XComs]]|xcom_push / xcom_pull / 메타DB 저장 / 용량 제한|
-|[[Variables_Connections]]|Variable / Connection / API Key / DB 접속정보|
-|[[Airflow_Hooks]]|Hook / PostgresHook / S3Hook / get_conn|
+| 노트                        | 핵심 개념                                     |
+| ------------------------- | ----------------------------------------- |
+| [[Airflow_XComs]]         | xcom_push / xcom_pull / 메타DB 저장 / 용량 제한   |
+| [[Airflow_Variables_Connections]] | Variable / Connection / API Key / DB 접속정보 |
+| [[Airflow_Hooks]]         | Hook / PostgresHook / S3Hook / get_conn   |
 
 ---
 

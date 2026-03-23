@@ -7,7 +7,7 @@ related:
   - "[[Airflow_Installation]]"
   - "[[Airflow_DAG_Skeleton]]"
   - "[[DockerOperator_Usage]]"
-  - "[[Variables_Connections]]"
+  - "[[Airflow_Variables_Connections]]"
   - "[[04_Spark_Batch]]"
   - "[[Airflow_Scheduling]]"
   - "[[Spark_DataFrame_Transform]]"

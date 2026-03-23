@@ -10,7 +10,6 @@ tags:
 related:
   - "[[Python_Decorators]]"
   - "[[Airflow_XComs]]"
-  - "[[ETL_vs_ELT]]"
   - "[[00_Airflow_HomePage]]"
   - "[[Airflow_Operators]]"
   - "[[Airflow_DAG_Skeleton]]"

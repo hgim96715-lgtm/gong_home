@@ -141,12 +141,12 @@ SQLD 1과목 핵심 영역
 DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[SQL_DML_CRUD]]|INSERT / UPDATE / DELETE / MERGE / UPSERT|
-|[[SQL_Database_Transactions_TCL]]|COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK|
-|[[SQL_DDL_Create]]|CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS|
-|[[SQL_DCL_Grant_Revoke]]|GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE|
+| 노트                                | 핵심 개념                                                 |
+| --------------------------------- | ----------------------------------------------------- |
+| [[SQL_DML_CRUD]]                  | INSERT / UPDATE / DELETE / MERGE / UPSERT/ON CONFLICT |
+| [[SQL_Database_Transactions_TCL]] | COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK   |
+| [[SQL_DDL_Create]]                | CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS  |
+| [[SQL_DCL_Grant_Revoke]]          | GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE   |
 
 ---
 
@@ -154,12 +154,12 @@ DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 
 ## PostgreSQL 실습 환경
 
->[[Python_Database_Connect]] 참고 
 
-| 노트                   | 핵심 개념                                  |
-| -------------------- | -------------------------------------- |
-| [[PostgreSQL_Setup]] | Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리 |
-
+|노트|핵심 개념|
+|---|---|
+|[[PostgreSQL_Setup]]|Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리|
+|[[Python_Database_Connect]]|psycopg2 / execute_values / sqlalchemy / .env|
+|[[Airflow_Hooks]]|PostgresHook / execute_values UPSERT / copy_expert|
 
 
 ---

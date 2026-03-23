@@ -508,7 +508,15 @@ down -v 불필요 (psql 직접):
   PostgreSQL 에 airflow 유저와 DB 가 없으면 연결 실패
 ```
 
-## 방법 1 — init.sql 에 추가 (권장)
+```
+해결 순서:
+  Step 1: airflow DB / USER 생성  ← 방법 A 또는 B 중 선택
+  Step 2: Airflow 재시작
+  Step 3: admin 계정 생성         ← 반드시 Step 1 이후
+  Step 4: UI 접속
+```
+
+## Step 1-A — init.sql 에 추가 (권장)
 
 ```sql
 -- postgres/init.sql 맨 위에 추가
@@ -519,12 +527,13 @@ ALTER DATABASE airflow OWNER TO airflow;
 ```
 
 ```bash
-# 볼륨 초기화 후 재실행
+# Step 2: 볼륨 초기화 후 재실행
 docker compose down -v
 docker compose up -d
 ```
 
-## 방법 2 — psql 에서 직접 실행 (볼륨 유지)
+## Step 1-B — psql 에서 직접 실행 (볼륨 유지)
+
 
 ```bash
 # 기존 데이터 유지하면서 airflow DB 만 추가
@@ -539,7 +548,52 @@ ALTER DATABASE airflow OWNER TO airflow;
 ```
 
 ```
-init.sql 에 추가해두는 게 맞음
-→ 나중에 down -v 해도 자동으로 생성됨
-→ 수동 실행 후 init.sql 수정도 잊지 말 것
+1-A vs 1-B:
+  1-A  init.sql 수정 + down -v → 깔끔 / 기존 데이터 삭제
+  1-B  psql 직접 실행          → 기존 데이터 유지
+  → 1-B 선택 시 init.sql 도 수정해둘 것 (down -v 시 재생성 대비)
+```
+
+## Step 3 — admin 계정 생성
+
+```
+Step 1 완료 후 반드시 실행
+admin 계정 없으면 Airflow UI 로그인 불가
+컨테이너명은 docker-compose.yml 의 container_name
+```
+
+```bash
+docker exec -it [컨테이너명] \
+  airflow users create \
+  --username admin \
+  --password admin \
+  --firstname Admin \
+  --lastname User \
+  --role Admin \
+  --email admin@example.com
+```
+
+```
+정상 출력:
+  [INFO] Added user admin
+  User "admin" created with role "Admin"
+
+경고 메시지 (무시해도 됨):
+  UserWarning: Using the in-memory storage for tracking rate limits
+  → 개발 환경에서는 무시 / 운영 환경에서는 Redis 스토리지 설정 권장
+```
+
+## Step 4 — UI 접속
+
+```
+http://localhost:8084
+ID: admin / PW: admin
+```
+
+```
+전체 순서 정리:
+  1. init.sql 에 airflow DB / USER 추가
+  2. docker compose down -v && docker compose up -d
+  3. airflow users create 로 admin 계정 생성
+  4. http://localhost:8084 접속 → admin / admin 로그인
 ```

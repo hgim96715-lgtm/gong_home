@@ -32,18 +32,18 @@
 
 # 📊 DataFrame — 메인 무기
 
-| 노트                             | 핵심 키워드                                                               |
-| ------------------------------ | -------------------------------------------------------------------- |
-| [[Spark_Core_Objects]] ⭐️      | SparkSession, **Row**, Column, RDD, sparkContext                     |
-| [[Spark_DataFrame]] ⭐️         | createDataFrame, StructType, StructField, spark.read, show/types     |
-| [[Spark_DataFrame_Transform]]⭐ | select, filter, withColumn, cast, alias                              |
-| [[DataFrame_Aggregation]]      | groupBy, agg, sort, count, sum, avg                                  |
-| [[Spark_DataFrame_Joins]]      | inner, left, semi, anti, broadcast                                   |
-| [[Spark_Data_Cleaning]]        | na.drop, na.fill, to_date, date_format                               |
-| [[Spark_Data_IO]]              | Parquet, CSV, partitionBy, write mode                                |
-| [[SQL_with_Spark]]             | createOrReplaceTempView, spark.sql                                   |
-| [[Spark_JSON_Handling]] ⭐      | from_json, to_json, StructType, 중첩 JSON                              |
-| [[Spark_Functions_Library]] ⭐  | F.col, F.lit, F.when, F.coalesce, F.regexp_extract,current_timestamp |
+| 노트                             | 핵심 키워드                                                                                     |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| [[Spark_Core_Objects]] ⭐️      | SparkSession, **Row**, Column, RDD, sparkContext                                           |
+| [[Spark_DataFrame]] ⭐️         | createDataFrame, StructType, StructField, spark.read, show/types                           |
+| [[Spark_DataFrame_Transform]]⭐ | select, filter, withColumn, cast, alias                                                    |
+| [[DataFrame_Aggregation]]      | groupBy, agg, sort, count, sum, avg                                                        |
+| [[Spark_DataFrame_Joins]]      | inner, left, semi, anti, broadcast                                                         |
+| [[Spark_Data_Cleaning]]        | na.drop, na.fill, to_date, date_format                                                     |
+| [[Spark_Data_IO]]              | Parquet, CSV, partitionBy, write mode                                                      |
+| [[SQL_with_Spark]]             | createOrReplaceTempView, spark.sql                                                         |
+| [[Spark_JSON_Handling]] ⭐      | from_json, to_json, StructType, 중첩 JSON                                                    |
+| [[Spark_Functions_Library]] ⭐  | F.col, F.lit, F.when, F.coalesce, F.regexp_extract,current_timestamp/pyspark.sql.functions |
 
 ---
 
