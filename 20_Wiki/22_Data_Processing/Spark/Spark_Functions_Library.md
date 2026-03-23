@@ -117,6 +117,42 @@ df.withColumn("created_at", current_timestamp())
   또는 withColumn("created_at", current_timestamp()) 사용
 ```
 
+## from_utc_timestamp() — UTC → 시간대 변환 ⭐️
+
+
+```python
+from pyspark.sql.functions import from_utc_timestamp, current_timestamp
+
+df.withColumn("created_at", from_utc_timestamp(current_timestamp(), "Asia/Seoul"))
+```
+
+```
+current_timestamp() 는 UTC 기준으로 반환
+Spark 컨테이너 서버는 UTC 로 설정된 경우가 많음
+→ DB 에 저장하면 한국 시각보다 9시간 느린 시각이 들어감
+
+from_utc_timestamp(타임스탬프, 시간대):
+  UTC 시각을 지정한 시간대 기준으로 변환
+  "Asia/Seoul" = KST (+9시간)
+  → DB 에 한국 실제 시각으로 저장됨
+```
+
+
+```python
+# 예시
+# current_timestamp()              = 2026-03-23 03:00:00 (UTC)
+# from_utc_timestamp(..., "Asia/Seoul") = 2026-03-23 12:00:00 (KST)
+
+# Hospital Consumer 실적용 패턴
+df.withColumn("created_at", from_utc_timestamp(current_timestamp(), "Asia/Seoul"))
+```
+
+```
+from_utc_timestamp vs to_utc_timestamp:
+  from_utc_timestamp(ts, tz)  UTC → 해당 시간대로 변환  (DB 저장 시)
+  to_utc_timestamp(ts, tz)    해당 시간대 → UTC 로 변환  (UTC 로 정규화 시)
+```
+
 ## F.current_date() — 오늘 날짜
 
 ```python
@@ -245,17 +281,19 @@ df.select(to_json(struct("*")).alias("value"))
 
 # 한눈에 정리
 
-| 함수                    | 역할                              |
-| --------------------- | ------------------------------- |
-| `col("name")`         | 컬럼 선택                           |
-| `lit(value)`          | 상수 → 컬럼                         |
-| `when().otherwise()`  | 조건문                             |
-| `coalesce()`          | NULL 대체                         |
-| `current_timestamp()` | 현재 시각 (TimestampType) ← DB 저장 시 |
-| `current_date()`      | 오늘 날짜                           |
-| `to_date()`           | 문자열 → 날짜                        |
-| `substring()`         | 문자열 자르기 (1-index)               |
-| `regexp_replace()`    | 정규식 치환                          |
-| `from_json()`         | JSON → 구조체                      |
-| `to_json()`           | 구조체 → JSON                      |
-| `explode()`           | 배열 → 행                          |
+
+|함수|역할|
+|---|---|
+|`col("name")`|컬럼 선택|
+|`lit(value)`|상수 → 컬럼|
+|`when().otherwise()`|조건문|
+|`coalesce()`|NULL 대체|
+|`current_timestamp()`|현재 시각 (TimestampType / UTC 기준)|
+|`from_utc_timestamp(ts, "Asia/Seoul")`|UTC → KST 변환 (한국 시각 저장 시)|
+|`current_date()`|오늘 날짜|
+|`to_date()`|문자열 → 날짜|
+|`substring()`|문자열 자르기 (1-index)|
+|`regexp_replace()`|정규식 치환|
+|`from_json()`|JSON → 구조체|
+|`to_json()`|구조체 → JSON|
+|`explode()`|배열 → 행|

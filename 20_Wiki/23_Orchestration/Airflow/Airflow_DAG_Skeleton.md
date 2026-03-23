@@ -95,6 +95,70 @@ with DAG(
 
 >schedule은 혹시 업데이트랑 엇갈릴까봐 여유있게 00시 05분으로 정리
 
+## TaskFlow API 방식 (Airflow 2.0+ 권장) ⭐️
+
+```python
+import pendulum
+from airflow.decorators import dag, task
+
+@dag(
+    dag_id      = 'my_first_dag_taskflow',
+    description = 'TaskFlow API 템플릿',
+    schedule    = '0 9 * * *',
+    start_date  = pendulum.datetime(2026, 1, 1, tz="Asia/Seoul"),
+    catchup     = False,
+    tags        = ['template'],
+    default_args = {
+        'owner'             : 'data_team',
+        'retries'           : 3,
+        'retry_delay'       : pendulum.duration(minutes=5),
+        'execution_timeout' : pendulum.duration(minutes=30),
+    },
+)
+def my_pipeline():
+
+    @task
+    def extract():
+        print("데이터 수집")
+        return {"rows": 100}
+
+    @task
+    def transform(data: dict):
+        print(f"가공: {data['rows']}건")
+        return data
+
+    @task
+    def load(data: dict):
+        print(f"적재: {data['rows']}건")
+
+    # 순서 정의 — 반환값이 자동으로 다음 태스크로 전달
+    data = extract()
+    data = transform(data)
+    load(data)
+
+my_pipeline()   # ← 반드시 호출해야 DAG 등록됨
+```
+
+## Classic vs TaskFlow 비교
+
+```
+Classic (with DAG + Operator):
+  Airflow 1.x 부터 써온 전통 방식
+  XCom 을 명시적으로 push/pull 해야 함
+  EmptyOperator / PythonOperator 등 Operator 직접 사용
+  기존 코드 / 레거시 환경에서 많이 사용
+
+TaskFlow API (@dag, @task):
+  Airflow 2.0+ 권장 방식
+  @task 함수의 반환값이 자동으로 다음 @task 로 전달 (XCom 자동)
+  파이썬 함수처럼 직관적
+  의존성이 return 값으로 자동 결정
+
+  → 새 프로젝트 시작 시 TaskFlow API 권장
+```
+
+> → [[Airflow_TaskFlow_API]] 참고
+
 ---
 
 ---
@@ -105,14 +169,15 @@ with DAG(
 DAG 에 한 번 등록 → 모든 태스크가 자동 상속
 ```
 
-|속성|설명|권장값|
-|---|---|---|
-|`owner`|책임자 명시|팀명 or 본인 ID|
-|`retries`|실패 시 재시도 횟수|`3`|
-|`retry_delay`|재시도 대기 시간|`pendulum.duration(minutes=5)`|
-|`depends_on_past`|어제 실패 시 오늘 실행 여부|`False`|
-|`email_on_failure`|실패 시 이메일 알림|`False`|
-|`email_on_retry`|재시도 시 이메일 알림|`False`|
+| 속성                  | 설명               | 권장값                             |
+| ------------------- | ---------------- | ------------------------------- |
+| `owner`             | 책임자 명시           | 팀명 or 본인 ID                     |
+| `retries`           | 실패 시 재시도 횟수      | `3`                             |
+| `retry_delay`       | 재시도 대기 시간        | `pendulum.duration(minutes=5)`  |
+| `execution_timeout` | 태스크 최대 실행 시간     | `pendulum.duration(minutes=30)` |
+| `depends_on_past`   | 어제 실패 시 오늘 실행 여부 | `False`                         |
+| `email_on_failure`  | 실패 시 이메일 알림      | `False`                         |
+| `email_on_retry`    | 재시도 시 이메일 알림     | `False`                         |
 
 ## 각 속성 상세 
 
@@ -131,6 +196,13 @@ default_args = {
     'retry_delay': pendulum.duration(minutes=5),
     # → 재시도 사이 대기 시간 (안 적으면 기본값 5분)
     # → 명시적으로 적는 게 국룰 (나중에 수정하기 쉬움)
+
+    # 타임아웃
+    'execution_timeout': pendulum.duration(minutes=30),
+    # → 태스크 1개가 이 시간 초과하면 강제 실패 처리
+    # → 무한 대기(API 응답 없음 / DB 잠김 등) 방지
+    # → None 이면 무한 대기 (기본값) → 설정 권장
+    # → DAG 특성에 맞게 조정 (API 수집: 10분 / 대용량 처리: 1시간 등)
 
     # 과거 의존성
     'depends_on_past': False,
@@ -234,10 +306,6 @@ tags = ['train', 'schedule']        # train_schedule_dag
   예) ['data_team', 'prod', 'daily']
   → 나중에 "prod 환경 DAG 만 보기" 필터링 가능
 ```
-
-
-
-
 
 ---
 
