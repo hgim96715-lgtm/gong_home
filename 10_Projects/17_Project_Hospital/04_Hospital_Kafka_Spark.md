@@ -151,7 +151,7 @@ spark/
 import os
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
+from pyspark.sql.functions import from_json,col,current_timestamp,from_utc_timestamp
 from pyspark.sql.types import (StructType, StructField, StringType, IntegerType)
 
 load_dotenv()
@@ -217,7 +217,10 @@ df = (
     .select(col("value").cast("string").alias("json_str"))
     .select(from_json(col("json_str"), schema).alias("data"))
     .select("data.*")
-    .withColumn("created_at", col("created_at").cast("timestamp"))
+    .withColumn("created_at", from_utc_timestamp(current_timestamp(), "Asia/Seoul"))
+    # current_timestamp() = UTC 기준
+    # from_utc_timestamp(..., "Asia/Seoul") = KST 로 변환 (+9시간)
+    # [[Spark_Functions_Library#from_utc_timestamp() — UTC → 시간대 변환 ⭐️]] 참조 
 )
 
 # ── PostgreSQL 적재 (count 변수에 캐싱 — Action 1번) ──────
@@ -277,12 +280,22 @@ docker cp .env hospital-spark-master:/opt/spark/apps/.env
 docker exec -u root -it hospital-spark-master pip3 install python-dotenv
 
 # 4. spark-submit 실행
-docker exec -it hospital-spark-master \
-  /opt/spark/bin/spark-submit \
-  --master spark://spark-master:7077 \
-  --jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar \
-  /opt/spark/apps/consumer.py
+docker exec -it hospital-spark-master \ /opt/spark/bin/spark-submit \ --master spark://spark-master:7077 \ --executor-memory 1g \ --driver-memory 1g \ --jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar \ /opt/spark/apps/consumer.py
 ```
+
+```text
+# 에러 내용  ERROR TaskSchedulerImpl: Lost executor 0 on 172.18.0.7: worker lost: Not receiving heartbeat for 60 seconds
+
+--executor-memory 1g  → Executor 메모리 (기본값 512m → 1g 로 증가)
+--driver-memory 1g    → Driver 메모리 (기본값 1g / 명시적으로 지정 권장)
+
+Worker Lost 에러 발생 시:
+  Worker 메모리: docker-compose.yml SPARK_WORKER_MEMORY=2G
+  submit 메모리: --executor-memory 1g
+  SPARK_WORKER_MEMORY >= executor-memory 여야 함 (Worker 가 더 커야 함)
+```
+
+>Docker Compose 메모리 설정 상세 → [[Docker_Compose_Setup#리소스 설정 — Spark Worker Lost 에러]] 참고
 
 ```
 정상 실행 시:
@@ -349,6 +362,13 @@ startingOffsets="latest":
 checkpointLocation:
   Spark 가 어디까지 읽었는지 저장
   Consumer 재시작해도 중복 없이 이어서 처리
+  
+  
+created_at 시간대 처리: 
+current_timestamp() → UTC 기준 (Spark 기본값) 
+from_utc_timestamp(current_timestamp(), "Asia/Seoul") → KST (+9시간)
+ DB 에 저장되는 시각이 우리 시간과 9시간 차이 나는 문제 방지 
+ → Superset / DataGrip 에서 확인 시 실제 한국 시각으로 표시
 
 hvec 음수 처리 고민:
   실제 데이터에서 hvec = -9 같은 음수 값이 나옴

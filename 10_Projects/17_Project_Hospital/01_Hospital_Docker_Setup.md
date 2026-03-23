@@ -210,8 +210,8 @@ services:
     container_name: hospital-spark-worker
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     environment:
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=2G # 1G → 2G (Worker Lost 에러 방지)
+      - SPARK_WORKER_CORES=2
     volumes:
       - ./spark:/opt/spark/apps
     depends_on:

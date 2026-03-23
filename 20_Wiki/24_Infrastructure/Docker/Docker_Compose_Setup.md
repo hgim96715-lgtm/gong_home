@@ -232,3 +232,45 @@ restart: unless-stopped # 직접 멈추지 않는 한 항상 재시작
 |비밀번호 GitHub 에 올라감|`.env` 를 `.gitignore` 에 안 추가|`.gitignore` 에 `.env` 추가|
 
 ---
+# 리소스 설정 — Spark Worker Lost 에러
+
+```
+증상:
+  ERROR TaskSchedulerImpl: Lost executor 0 on 172.18.0.7:
+  worker lost: Not receiving heartbeat for 60 seconds
+
+원인:
+  docker-compose.yml 의 SPARK_WORKER_MEMORY 가 너무 작음
+  Worker 가 메모리 부족으로 응답 중단 → Executor 연결 끊김
+  기본값 1G 로는 Spark Streaming 배치 반복 시 부족할 수 있음
+```
+
+
+```yaml
+# docker-compose.yml 수정
+spark-worker:
+  environment:
+    - SPARK_WORKER_MEMORY=2G   # 1G → 2G
+    - SPARK_WORKER_CORES=2     # 1 → 2
+```
+
+```bash
+# spark-submit 도 메모리 명시
+spark-submit \
+  --master spark://spark-master:7077 \
+  --executor-memory 1g \    # 기본 512m → 1g
+  --driver-memory 1g \
+  --jars ... \
+  consumer.py
+```
+
+```
+SPARK_WORKER_MEMORY >= --executor-memory 여야 함
+Worker 가 Executor 보다 커야 할당 가능
+
+적용 순서:
+  1. docker-compose.yml 수정
+  2. docker compose down
+  3. docker compose up -d
+  4. spark-submit 메모리 옵션 추가해서 재실행
+```

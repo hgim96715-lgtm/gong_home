@@ -78,10 +78,11 @@
 컨테이너 여러 개를 한 번에 켜고 끄자
 ```
 
-| 노트                            | 핵심 개념                                                                            |
-| ----------------------------- | -------------------------------------------------------------------------------- |
-| [[Docker_Compose_Setup]]      | docker-compose.yml 문법 / services / volumes / networks / depends_on / environment |
-| [[Docker_Compose_Commands]] ⭐ | up / down / ps / logs / --build / -d 백그라운드                                       |
+| 노트                            | 핵심 개념                                                                                                                                        |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [[Docker_Compose_Setup]]⭐     | docker-compose.yml 문법 / services / volumes / networks / depends_on / environment/Worker Lost 에러 → SPARK_WORKER_MEMORY / --executor-memory 설정 |
+| [[Docker_Compose_Commands]] ⭐ | up / down / ps / logs / --build / -d 백그라운드                                                                                                   |
+
 
 ---
 

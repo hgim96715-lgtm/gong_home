@@ -113,6 +113,49 @@ executor.memory:
   데이터 많으면 늘려야 Spill to Disk 안 생김
 ```
 
+### ⚠️ Worker Lost 에러 — 메모리 연관 설정 ⭐️
+
+```
+증상:
+  ERROR TaskSchedulerImpl: Lost executor 0 on 172.18.0.7:
+  worker lost: Not receiving heartbeat for 60 seconds
+
+원인: Spark Worker 메모리 부족 → 응답 중단 → Executor 연결 끊김
+
+수정할 곳 2가지:
+  1. docker-compose.yml — SPARK_WORKER_MEMORY 증가
+  2. spark-submit — --executor-memory 옵션 추가
+```
+
+```yaml
+# docker-compose.yml
+spark-worker:
+  environment:
+    - SPARK_WORKER_MEMORY=2G   # 1G → 2G
+    - SPARK_WORKER_CORES=2
+```
+
+```bash
+# spark-submit
+spark-submit \
+  --master spark://spark-master:7077 \
+  --executor-memory 1g \   # 기본 512m → 1g
+  --driver-memory 1g \
+  consumer.py
+```
+
+```
+SPARK_WORKER_MEMORY >= --executor-memory 조건 필수
+Worker 가 Executor 보다 커야 할당 가능
+
+.config() 와 --executor-memory 의 차이:
+  .config("spark.executor.memory", "1g")  코드 안에서 설정
+  --executor-memory 1g                    spark-submit 실행 시 설정
+  spark-submit 옵션이 .config() 보다 우선 적용
+```
+
+> Docker Compose 메모리 설정 상세 → [[Docker_Compose_Setup#리소스 설정 — Spark Worker Lost 에러]] 참고
+
 ## Executor 자원 설정
 
 |설정|설명|예시|
