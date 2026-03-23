@@ -38,7 +38,7 @@
 | [[Linux_File_Commands]] | cat / head / tail / less / wc / sort / uniq / cut/paste |
 | [[Linux_Redirection]]   | 표준 입출력 / > >> < / pipe \| / tee / 2>&1                  |
 | [[Linux_Grep]]          | grep / egrep / fgrep / 정규표현식 패턴                         |
-| [[Linux_Sed]] | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                           |
+| [[Linux_Sed]]           | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                           |
 | [[Linux_Awk]]           | awk — 필드 분리 / 조건 처리 / 집계                                |
 | [[Linux_Find]]          | find — 조건 검색 / -exec / xargs                            |
 | [[Linux_Archive]]       | tar / gzip / bzip2 / zip — 압축 원리와 명령어                   |
@@ -102,7 +102,8 @@ Airflow BashOperator / crontab 스케줄링의 기초
 | 노트                              | 핵심 개념                                                      |
 | ------------------------------- | ---------------------------------------------------------- |
 | [[Linux_Shell_Script]]          | read/변수 / if / case / for / while / 함수 / 종료 코드             |
-| [[Shell_Arithmetic]]            | $(()) / bc / bc -l / scale / printf 반올림                    |
+| [[Linux_Shell_Arrays]]          | 배열, readArray, while read                                  |
+| [[Linux_Shell_Arithmetic]]      | $(()) / bc / bc -l / scale / printf, 반올림                   |
 | [[Linux_Environment_Variables]] | 환경변수 개념 / export / .bashrc / .bash_profile / source / PATH |
 | [[Linux_Scheduling_Crontab]]    | cron 데몬 / crontab 문법 / 실전 패턴 / 로그 리다이렉션                    |
 | [[Linux_String_Processing]]     | 변수 치환 / 슬라이싱 / 대소문자 변환 / 정규표현식 연동                          |

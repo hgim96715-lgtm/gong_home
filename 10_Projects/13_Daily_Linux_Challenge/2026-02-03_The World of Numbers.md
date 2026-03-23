@@ -2,7 +2,7 @@
 tags:
   - Linux_Test
 related:
-  - "[[Shell_Arithmetic]]"
+  - "[[Linux_Shell_Arithmetic]]"
   - "[[Shell_Input_Output]]"
   - "[[00_Linux_Challenge_DashBoard]]"
 source: HackerRank

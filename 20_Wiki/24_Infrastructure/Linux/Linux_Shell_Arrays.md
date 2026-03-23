@@ -6,9 +6,8 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[00_Linux_HomePage(기존)]]"
+  - "[[00_Linux_HomePage]]"
   - "[[Linux_Shell_Script]]"
-  - "[[Shell_Parameter_Expansion]]"
 ---
 
 # Shell_Arrays

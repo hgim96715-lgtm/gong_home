@@ -3,7 +3,7 @@ tags:
   - Linux_Test
 related:
   - "[[00_Linux_Challenge_DashBoard]]"
-  - "[[Shell_Arithmetic]]"
+  - "[[Linux_Shell_Arithmetic]]"
 source: solvesql
 difficulty:
   - Medium
