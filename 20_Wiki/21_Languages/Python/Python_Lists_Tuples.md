@@ -11,6 +11,7 @@ aliases:
   - insert
   - pop
   - append
+  - 슬라이싱으로 회전
 tags:
   - Python
 related:
@@ -25,6 +26,7 @@ related:
   - "[[Python_Membership_In]]"
   - "[[Python_Looping_Helpers]]"
   - "[[Python_Type_Checking]]"
+  - "[[Python_Collections_Modules]]"
 ---
 # Python_Lists_Tuples
 
@@ -469,6 +471,88 @@ list() 변환 불필요:
   → 문자열에 바로 쓰면 됨
 ```
 
+## 슬라이싱으로 회전 — rotate 패턴 ⭐️
+
+```
+deque.rotate() 없이 슬라이싱으로 회전 구현
+문자열 / 리스트 모두 동일한 방식
+```
+
+|방향|코드|결과|
+|---|---|---|
+|오른쪽 (뒤 → 앞)|`A[-1] + A[:-1]`|`"hello"` → `"ohell"`|
+|왼쪽 (앞 → 뒤)|`A[1:] + A[0]`|`"hello"` → `"elloh"`|
+
+
+```python
+A = "hello"
+
+# 오른쪽으로 1칸 회전 — 맨 뒤가 맨 앞으로
+A[-1] + A[:-1]
+# 'o' + 'hell' = 'ohell'
+
+# 왼쪽으로 1칸 회전 — 맨 앞이 맨 뒤로
+A[1:] + A[0]
+# 'ello' + 'h' = 'elloh'
+```
+
+
+```python
+# 리스트도 동일
+A = [1, 2, 3, 4, 5]
+
+[A[-1]] + A[:-1]   # [5, 1, 2, 3, 4]  오른쪽
+A[1:] + [A[0]]     # [2, 3, 4, 5, 1]  왼쪽
+```
+
+```
+슬라이싱 회전 vs deque.rotate():
+  슬라이싱    새 문자열/리스트 생성 → 원본 유지
+  deque.rotate()  원본 in-place 회전 → 더 효율적
+
+  코딩테스트 문자열 조작 → 슬라이싱 패턴
+  대량 데이터 회전 → deque.rotate()
+```
+
+## 회전 결과인지 확인 — b*2 패턴 ⭐️
+
+```
+"a 가 b 를 회전한 결과인지" 확인할 때
+b 를 두 번 이어붙이면 모든 회전 경우가 포함됨
+
+b = "hello"
+b*2 = "hellohello"
+  → "hello" 의 모든 회전 결과가 b*2 안에 있음
+  → a 가 b*2 의 부분 문자열이면 a 는 b 의 회전 결과
+```
+
+```python
+# a 가 b 의 회전 결과인지 확인
+solution = lambda a, b: (b * 2).find(a)
+# a 가 있으면 시작 인덱스 반환
+# a 가 없으면 -1 반환
+
+solution("ohell", "hello")   # 4  ← 있음 (회전 결과)
+solution("world", "hello")   # -1 ← 없음 (회전 결과 아님)
+
+# 있는지 없는지만 판단할 때
+a in (b * 2)   # True / False
+```
+
+```
+b = "hello"
+b * 2 = "hellohello"
+         ↑↑↑↑↑        원본
+              ↑↑↑↑↑   한 칸 회전들
+
+모든 회전 결과:
+  "hello"  → "hellohello" 에 포함 ✅
+  "ohell"  → "hellohello" 에 포함 ✅ (index 4)
+  "lohel"  → "hellohello" 에 포함 ✅
+  "world"  → "hellohello" 에 없음  ❌
+```
+
+> `deque.rotate()` 상세 → [[Python_Collections_Modules#② deque — 양방향 큐 ⭐️]] 참고
 
 ---
 

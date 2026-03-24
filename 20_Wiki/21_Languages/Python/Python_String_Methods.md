@@ -388,7 +388,7 @@ c = Counter("aabbbcc")
 c.most_common(2)   # [('b', 3), ('a', 2)]  ← 빈도 높은 순 TOP N
 ```
 
->더 자세한 내용은 [[Python_Collections_Counter]] 참고 
+>더 자세한 내용은 [[Python_Collections_Modules]] 참고 
 
 ## 부분 문자열도 셀 수 있음
 

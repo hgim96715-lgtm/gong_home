@@ -42,7 +42,7 @@ python3 --version
 | [[Python_Control_Flow]]    | if / for / while / for-else / break / continue/월러스 연산자(:=) |
 | [[Python_Looping_Helpers]] | range / enumerate / zip / unpacking                        |
 
- ### 함수
+### 함수
 
 | 노트                           | 핵심 개념                                 |
 | ---------------------------- | ------------------------------------- |
@@ -59,7 +59,7 @@ python3 --version
 | [[Python_Math_Module]]         | math.prod / ceil / floor / gcd / sqrt / pi                             |
 | [[Python_Fractions_Module]]    | Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지                                 |
 | [[Python_Statistics_Module]]   | mean / median / stdev / variance                                       |
-| [[Python_Collections_Counter]] | Counter / most_common / 딕셔너리 연산                                        |
+| [[Python_Collections_Modules]] | Counter / most_common / 딕셔너리 연산/deque/defaultdict/ namedtuple          |
 
 ---
 
