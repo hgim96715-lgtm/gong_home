@@ -9,12 +9,12 @@
 
 /.obsidian
 /.obsidian/
-/99_Assets(이미지&첨부파일저장소)/
+# /99_Assets(이미지&첨부파일저장소)/
 /*.icloud
 
 # Images / binaries
 *.png
-*.jpg
+# *.jpg
 *.jpeg
 *.gif
 *.bmp

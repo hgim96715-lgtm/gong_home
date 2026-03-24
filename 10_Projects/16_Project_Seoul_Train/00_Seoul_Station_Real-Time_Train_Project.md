@@ -189,7 +189,7 @@ travelerTrainRunInfo2  (실시간 운행정보)
 └── docker-compose.yml (5.5 KB)
 ```
 
->Project Structure Generate vs code 확장 프로그램에서 가져왔다.
+>Project Structure Generate vs code 확장 프로그램에서 가져왔습니다.
 
 
 ---
