@@ -502,13 +502,13 @@ FROM 사원;
 
 ## 키워드 해석
 
-|키워드|해석|
-|---|---|
-|`UNBOUNDED PRECEDING`|파티션의 **맨 첫 행**|
-|`UNBOUNDED FOLLOWING`|파티션의 **맨 끝 행**|
-|`CURRENT ROW`|**현재 행**|
-|`1 PRECEDING`|**바로 1줄 앞**|
-|`1 FOLLOWING`|**바로 1줄 뒤**|
+| 키워드                   | 해석         |
+| --------------------- | ---------- |
+| `UNBOUNDED PRECEDING` | 파티션의 맨 첫 행 |
+| `UNBOUNDED FOLLOWING` | 파티션의 맨 끝 행 |
+| `CURRENT ROW`         | 현재 행       |
+| `N PRECEDING`         | N줄 앞       |
+| `N FOLLOWING`         | N줄 뒤       |
 
 ## ROWS vs RANGE
 
@@ -517,19 +517,122 @@ FROM 사원;
 | `ROWS`  | 물리적 줄 수 | 값이 같든 다르든 진짜 줄 수로 셈                        |
 | `RANGE` | 논리적 값   | `ORDER BY` 기준 컬럼의 값이 같은 행들을 하나의 덩어리로 묶어서 셈 |
 
+## 이동 평균 — 공식 패턴 ⭐️
+
+```
+AVG(컬럼) OVER (
+    ORDER BY 기준
+    ROWS BETWEEN N PRECEDING AND CURRENT ROW
+)
+
+→ 현재 행 포함 + 과거 N개 = 총 N+1개 평균
+→ 거의 공식처럼 외워도 됨
+```
 
 ```sql
 SELECT 날짜, 매출,
-    -- 이동 평균 (앞 1줄 ~ 뒤 1줄, 총 3줄)
+    -- 최근 3일 이동 평균 (오늘 포함 3개)
+    AVG(매출) OVER (
+        ORDER BY 날짜
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS 이동평균_3일,
+
+    -- 최근 7일 이동 평균 (오늘 포함 7개)
+    AVG(매출) OVER (
+        ORDER BY 날짜
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ) AS 이동평균_7일,
+
+    -- 앞뒤 1줄 포함 3줄 평균 (중앙 기준)
     AVG(매출) OVER (
         ORDER BY 날짜
         ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
-    ) AS 이동평균_3일,
+    ) AS 이동평균_중앙
+FROM 매출테이블;
+```
 
-    -- 완벽한 누적합
+```
+ROWS BETWEEN N PRECEDING AND CURRENT ROW 읽는 법:
+  N PRECEDING  = 과거 N개
+  CURRENT ROW  = 현재 행
+  → 현재 포함 + 과거 N개 = 총 N+1개
+
+  ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  → 오늘 포함 3개 (그제, 어제, 오늘)
+  → "최근 3일 이동 평균"
+```
+
+## 시간 단위 → 행 개수 변환 ⭐️
+
+```
+시계열 데이터는 "시간"을 "행 개수"로 바꿔서 생각해야 함
+
+예시:
+  10분 단위 데이터 (10분마다 1행)
+  → 1시간 = 6행
+  → "1시간 이동 평균" = ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+
+  5분 단위 데이터
+  → 1시간 = 12행
+  → "1시간 이동 평균" = ROWS BETWEEN 11 PRECEDING AND CURRENT ROW
+
+계산 공식:
+  필요한 N = (원하는 시간 / 데이터 간격) - 1
+  1시간 / 10분 - 1 = 6 - 1 = 5 → ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+```
+
+```sql
+-- 실전: 10분 단위 응급실 병상 데이터로 1시간 이동 평균
+SELECT
+    measured_at,
+    hvec,
+    AVG(hvec) OVER (
+        ORDER BY measured_at
+        ROWS BETWEEN 5 PRECEDING AND CURRENT ROW   -- 10분 × 6 = 1시간
+    ) AS moving_avg_1h
+FROM er_realtime
+ORDER BY measured_at;
+```
+
+## end_at 보정 패턴 — INTERVAL ⭐️
+
+```
+로그/시계열 데이터에서 자주 나오는 패턴
+데이터가 시작 시각(start_at)만 있고 끝 시각이 없을 때
+→ 측정 주기를 더해서 end_at 계산
+```
+
+```sql
+-- 10분 단위 로그 → end_at = measured_at + 10분
+SELECT
+    measured_at,
+    measured_at + INTERVAL '10 minute' AS end_at,
+    hvec
+FROM er_realtime;
+
+-- 1시간 단위 집계 데이터
+SELECT
+    stat_hour,
+    stat_hour + INTERVAL '1 hour' AS end_at,
+    avg_beds
+FROM er_hourly_stats;
+```
+
+```
+활용:
+  Superset 타임라인 차트에서 시작~끝 범위 지정
+  JOIN 시 시간 구간 조건
+  WHERE measured_at BETWEEN start_at AND start_at + INTERVAL '10 minute'
+```
+
+## 누적합 — 완벽한 패턴
+
+```sql
+SELECT 날짜, 매출,
+    -- 완벽한 누적합 (ROWS 명시)
     SUM(매출) OVER (
         ORDER BY 날짜
-        RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
     ) AS 누적합
 FROM 매출테이블;
 ```
