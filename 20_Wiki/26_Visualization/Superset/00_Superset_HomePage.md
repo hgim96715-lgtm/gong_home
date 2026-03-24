@@ -1,8 +1,11 @@
 
->Apache Superset — 오픈소스 데이터 시각화 / BI 툴
->SQL 을 알면 바로 쓸 수 있고
->PostgreSQL, MySQL, Redshift, BigQuery 등 다양한 DB 연결 가능
+```
+Apache Superset — 오픈소스 데이터 시각화 / BI 툴
+SQL 을 알면 바로 쓸 수 있고
+PostgreSQL, MySQL, Redshift, BigQuery 등 다양한 DB 연결 가능
+```
 
+---
 ---
 
 ## 노트 목록
@@ -17,4 +20,4 @@
 |[[Superset_Chart_Types]]|상황에 맞는 차트 종류 선택 기준|Bar · Pie · Line · Table · Big Number · Histogram|
 |[[Superset_Dashboard]]|여러 차트를 하나의 화면으로 구성하는 방법|레이아웃 · 자동 새로고침 · 필터 연동 · 공유|
 |[[Superset_Filter_Box]]|대시보드를 인터랙티브하게 만드는 필터 설정|Native Filter · 날짜 범위 · 드롭다운 · 크로스 필터|
-
+|[[Superset_Map_Setup]]|지도 차트 설정 (Mapbox + superset_config.py)|Mapbox API Key · Deck.gl · TALISMAN · docker-compose 볼륨|
