@@ -343,7 +343,9 @@ CREATE TABLE IF NOT EXISTS er_realtime (
     hvangioayn   VARCHAR(10),    -- 조영촬영기 가용 Y/N (API ①)
     notice_msg   TEXT,           -- 응급실 공지 메시지 (API ③)
     data_type    VARCHAR(20),    -- 'er_realtime'
-    created_at   TIMESTAMP DEFAULT NOW()
+    created_at   TIMESTAMP DEFAULT NOW(),
+    duty_tel VARCHAR(20),
+    region VARCHAR(20)
 );
 
 -- ② er_hourly_stats: 시간대별 집계 (Airflow 배치)

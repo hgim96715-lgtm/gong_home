@@ -69,14 +69,14 @@ SQLD 1과목 핵심 영역
 
 ### 함수와 NULL
 
-| 노트                         | 핵심 개념                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| [[SQL_Numeric_Functions]]  | ROUND / TRUNC / MOD / CEIL / FLOOR / LEAST / GREATEST                                    |
-| [[SQL_String_Functions]]   | LTRIM / RTRIM / TRIM / SUBSTR / REPLACE / SPLIT_PART / LPAD / RPAD / LENGTH / STRING_AGG |
-| [[SQL_Date_Functions]]     | NOW / CURRENT_DATE / INTERVAL / DATE_TRUNC / EXTRACT / TO_CHAR 포맷                        |
-| [[SQL_Type_Casting]]       | CAST / TO_CHAR / TO_DATE / 명시적·암시적 형변환                                                   |
-| [[SQL_Understanding_NULL]] | 3값 논리 / NULL 연산 / IS NULL                                                                |
-| [[SQL_NULL_Functions]]     | COALESCE / NVL / NULLIF / NVL2                                                           |
+| 노트                         | 핵심 개념                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| [[SQL_Numeric_Functions]]  | ROUND / TRUNC / MOD / CEIL / FLOOR / LEAST / GREATEST                                               |
+| [[SQL_String_Functions]]   | LTRIM / RTRIM / TRIM / SUBSTR / REPLACE / SPLIT_PART / LPAD / RPAD / LENGTH / STRING_AGG/SPLIT_PART |
+| [[SQL_Date_Functions]]     | NOW / CURRENT_DATE / INTERVAL / DATE_TRUNC / EXTRACT / TO_CHAR 포맷                                   |
+| [[SQL_Type_Casting]]       | CAST / TO_CHAR / TO_DATE / 명시적·암시적 형변환                                                              |
+| [[SQL_Understanding_NULL]] | 3값 논리 / NULL 연산 / IS NULL                                                                           |
+| [[SQL_NULL_Functions]]     | COALESCE / NVL / NULLIF / NVL2                                                                      |
 
 ### 그룹화 및 집계
 

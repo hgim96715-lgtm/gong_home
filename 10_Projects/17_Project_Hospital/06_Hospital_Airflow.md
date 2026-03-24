@@ -62,7 +62,10 @@ docker compose ps
 cd producer && python3 produer.py
 
 # 4. Consumer 실행 (Kafka → er_realtime 적재)
-docker exec -it hospital-spark-master \ /opt/spark/bin/spark-submit \ --master spark://spark-master:7077 \ --executor-memory 1g \ --driver-memory 1g \ --jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar \ /opt/spark/apps/consumer.py
+docker exec -it hospital-kafka \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 --create \
+    --topic er-realtime --partitions 1 --replication-factor 1
 ```
 
 ```
@@ -93,6 +96,8 @@ http://localhost:8084
 ID:       admin
 Password: admin
 ```
+
+>Hooks를  사용하려면 AIrflow UI에다가 postgres 연결 해야함 [[Airflow_Hooks#② Connection 설정 — 사전 준비]] 참고 
 
 ---
 
@@ -367,15 +372,6 @@ services:
 ```bash
 # DAG 목록 확인
 docker exec -it hospital-airflow airflow dags list
-
-# 수동 실행 (최초 테스트)
-docker exec -it hospital-airflow \
-    airflow dags trigger hospital_info_dag
-
-# 로그 확인
-docker exec -it hospital-airflow \
-    airflow tasks logs hospital_info_dag fetch_hospitals
-
 # Airflow UI → http://localhost:8084 → DAG → Trigger ▶
 ```
 

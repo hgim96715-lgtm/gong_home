@@ -304,7 +304,8 @@ def fetch_realtime_beds() -> dict:
             "hvventiayn": parse_yn(item.findtext("hvventiayn")),
             "hvmriayn":   parse_yn(item.findtext("hvmriayn")),    # MRI 가용
             "hvangioayn": parse_yn(item.findtext("hvangioayn")), # 조영촬영기 가용
-        }
+        },
+        "duty_tel": item.findtext("dutyTel3","")
     print(f"[가용병상] {len(result)}곳 병원 수집되었습니다.")
     return result
 

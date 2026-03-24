@@ -185,6 +185,7 @@ schema = StructType([
     StructField("hvmriayn",   StringType()),    # MRI 가용 Y/N
     StructField("hvangioayn", StringType()),    # 조영촬영기 가용 Y/N
     StructField("notice_msg", StringType()),
+    StructField("duty_tel", StringType()),
     StructField("data_type",  StringType()),
     StructField("created_at", StringType()),
     # region / duty_addr → er_hospitals 에서 JOIN 으로 조회
@@ -221,6 +222,26 @@ df = (
     # current_timestamp() = UTC 기준
     # from_utc_timestamp(..., "Asia/Seoul") = KST 로 변환 (+9시간)
     # [[Spark_Functions_Library#from_utc_timestamp() — UTC → 시간대 변환 ⭐️]] 참조 
+    .withColumn("region",
+		.when(col("duty_tel").startswith("02"), "서울")
+		.when(col("duty_tel").startswith("031"), "경기")
+		.when(col("duty_tel").startswith("032"), "인천")
+		.when(col("duty_tel").startswith("033"), "강원")
+		.when(col("duty_tel").startswith("041"), "충남")
+		.when(col("duty_tel").startswith("042"), "대전")
+		.when(col("duty_tel").startswith("043"), "충북")
+		.when(col("duty_tel").startswith("044"), "세종")
+		.when(col("duty_tel").startswith("051"), "부산")
+		.when(col("duty_tel").startswith("052"), "울산")
+		.when(col("duty_tel").startswith("053"), "대구")
+		.when(col("duty_tel").startswith("054"), "경북")
+		.when(col("duty_tel").startswith("055"), "경남")
+		.when(col("duty_tel").startswith("061"), "전남")
+		.when(col("duty_tel").startswith("062"), "광주")
+		.when(col("duty_tel").startswith("063"), "전북")
+		.when(col("duty_tel").startswith("064"), "제주")
+		.otherwise("기타")
+)
 )
 
 # ── PostgreSQL 적재 (count 변수에 캐싱 — Action 1번) ──────
@@ -280,7 +301,11 @@ docker cp .env hospital-spark-master:/opt/spark/apps/.env
 docker exec -u root -it hospital-spark-master pip3 install python-dotenv
 
 # 4. spark-submit 실행
-docker exec -it hospital-spark-master \ /opt/spark/bin/spark-submit \ --master spark://spark-master:7077 \ --executor-memory 1g \ --driver-memory 1g \ --jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar \ /opt/spark/apps/consumer.py
+docker exec -it hospital-spark-master \
+/opt/spark/bin/spark-submit \
+--master spark://spark-master:7077 \
+--jars /opt/spark/jars/spark-sql-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/spark-token-provider-kafka-0-10_2.12-3.5.0.jar,/opt/spark/jars/kafka-clients-3.4.1.jar,/opt/spark/jars/commons-pool2-2.11.1.jar,/opt/spark/jars/postgresql-42.7.1.jar \
+/opt/spark/apps/consumer.py
 ```
 
 ```text
