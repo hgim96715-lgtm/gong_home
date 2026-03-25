@@ -50,6 +50,45 @@ abs(-100)        # 100
 직접 for 문 쓰는 것보다 빠름
 ```
 
+## sum() + range() 조합 패턴 ⭐️
+
+```python
+# a 부터 b 까지 합계
+
+# ❌ 리스트 컴프리헨션 불필요
+sum([n for n in range(a, b+1)])
+# [a, a+1, ..., b] 리스트를 메모리에 생성 후 sum → 낭비
+
+# ✅ range 는 이미 iterable → 바로 전달
+sum(range(a, b+1))
+# 리스트 생성 없이 바로 합산
+```
+
+```
+sum() 은 리스트뿐 아니라 iterable 이면 뭐든 받음
+range() 는 iterable → [n for n in range()] 불필요
+
+[n for n in range(a, b+1)]  → 리스트 생성 (메모리 낭비)
+range(a, b+1)               → 바로 전달 (효율적)
+```
+
+>[[Python_Variables_Types#③ Iterable — 이터러블이 뭔가?]] 참고!!
+
+```python
+# a > b 케이스까지 안전하게
+sum(range(min(a, b), max(a, b) + 1))
+#          ↑ 항상 작은 수 시작 / 큰 수 끝
+
+# 예시
+a, b = 5, 1
+sum(range(min(5,1), max(5,1)+1))  # sum(range(1, 6)) = 15
+sum(range(1, 6))                  # 1+2+3+4+5 = 15
+
+# 비교: a, b 정렬 후 사용 (Python_Variable_Swapping 패턴)
+if a > b: a, b = b, a
+sum(range(a, b+1))   # 동일 결과
+```
+
 ## max / min 주의 — 문자열 vs 숫자
 
 ```python
