@@ -2,9 +2,49 @@
 >목표: SQLD 자격증 + 데이터 엔지니어 실무 SQL Oracle · PostgreSQL 병행 학습
 
 ---
-
 ---
 
+## 문제 상황별 도구 선택 치트시트
+
+
+|문제 상황|쓸 도구|핵심 노트|
+|---|---|---|
+|부서별 평균 / 합계 구하기|`GROUP BY` + 집계함수|[[SQL_Aggregate_GROUP_BY]]|
+|원본 행 유지하면서 평균 옆에 붙이기|`OVER(PARTITION BY)`|[[SQL_Window_Functions]]|
+|1등 / 상위 N명 뽑기|`RANK()` / `DENSE_RANK()`|[[SQL_Window_Functions]]|
+|각 그룹에서 최신 1건만|`ROW_NUMBER()` WHERE rn=1|[[SQL_Window_Functions]]|
+|이전 행 / 다음 행 값 비교|`LAG()` / `LEAD()`|[[SQL_Window_Functions]]|
+|연속 구간 찾기 (Gaps & Islands)|`year - ROW_NUMBER()` + GROUP BY|[[SQL_Window_Functions]]|
+|이동 평균 / 누적합|`ROWS BETWEEN`|[[SQL_Window_Functions]]|
+|NULL 을 다른 값으로 대체|`COALESCE()` / `NVL()`|[[SQL_NULL_Functions]]|
+|조건에 따라 값 분기|`CASE WHEN`|[[SQL_CASE_WHEN]]|
+|두 테이블 연결하기|`JOIN` (INNER / LEFT / FULL)|[[SQL_Standard_JOIN]]|
+|자기 자신 비교 (사원-매니저)|`Self JOIN`|[[SQL_Self_Join]]|
+|있는지 없는지 확인|`EXISTS` / `IN`|[[SQL_SubQuery]]|
+|쿼리 결과 위 아래로 붙이기|`UNION ALL` / `UNION`|[[SQL_UNION]]|
+|복잡한 쿼리 단계별로 쪼개기|`WITH (CTE)`|[[SQL_WITH_CTE]]|
+|있으면 UPDATE 없으면 INSERT|`ON CONFLICT` / `MERGE`|[[SQL_DML_CRUD]]|
+|행을 열로 / 열을 행으로|`PIVOT` / `UNPIVOT`|[[SQL_Pivot_Unpivot]]|
+|패턴 문자열 찾기|`LIKE` / `REGEXP`|[[SQL_Filtering_WHERE]]|
+|계층 구조 (상위-하위 관계)|`WITH RECURSIVE` / `CONNECT BY`|[[SQL_Hierarchical_Query]]|
+|소계 / 중계 / 총계 한 번에|`ROLLUP` / `CUBE`|[[SQL_Group_Functions]]|
+
+---
+---
+## 실무 빈출 매핑
+
+| 상황          | 실무 (PostgreSQL)                    |
+| ----------- | ---------------------------------- |
+| 가용병상 지역별 평균 | `AVG() OVER (PARTITION BY region)` |
+| 포화 병원 순위    | `RANK() OVER (ORDER BY hvec ASC)`  |
+| 최신 데이터 1건   | `DISTINCT ON (hpid)`               |
+| NULL 대체     | `COALESCE(hvec, 0)`                |
+| 문자열 자르기     | `SPLIT_PART(duty_addr, ' ', 2)`    |
+| 있으면 UPDATE  | `ON CONFLICT DO UPDATE`            |
+| 날짜 시간대      | `NOW() AT TIME ZONE 'Asia/Seoul'`  |
+
+---
+---
 ## Level 0. 핵심 사고력
 
 ```
@@ -12,15 +52,14 @@
 실행 순서를 모르면 쿼리를 짜도 왜 틀렸는지 모른다
 ```
 
-| 노트                          | 핵심 개념                   |
-| --------------------------- | ----------------------- |
-| [[SQL_Execution_Order]]     | 작성 순서 vs 실행 순서 / 치트시트   |
-| [[SQL_Main_Table_Strategy]] | FROM 주인공 정하는 원칙         |
+|노트|핵심 개념|
+|---|---|
+|[[01_SQL_Thinking_Roadmap]]|쿼리 짜기 전 필독 / 실행 순서 & 전략|
+|[[SQL_Execution_Order]]|작성 순서 vs 실행 순서 / 치트시트|
+|[[SQL_Main_Table_Strategy]]|FROM 주인공 정하는 원칙|
 
 ---
-
 ---
-
 ## Level 1. 데이터 모델링
 
 ```

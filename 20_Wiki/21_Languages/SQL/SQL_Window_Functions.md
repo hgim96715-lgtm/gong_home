@@ -15,8 +15,6 @@ related:
   - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[SQL_CASE_WHEN]]"
 ---
-
-
 # SQL 윈도우 함수 (Window Functions)
 
 ## 개념 한 줄 요약
@@ -27,10 +25,10 @@ related:
 
 ## 왜 필요한가?
 
+```
 문제: GROUP BY 부서 → 부서별 1줄만 남고 사원 개별 데이터 사라짐
-
 해결: 윈도우 함수 → 개별 사원 데이터 유지 + 옆에 부서 평균 컬럼 추가
-
+```
 
 ---
 
@@ -44,7 +42,7 @@ related:
 )
 ```
 
-## ARTITION BY vs GROUP BY
+## PARTITION BY vs GROUP BY
 
 ```sql
 -- GROUP BY: 그룹을 합쳐서 1줄로 압축 (원본 행 사라짐)
@@ -107,8 +105,6 @@ FROM er_realtime
 GROUP BY region;
 ```
 
->[[SQL_Execution_Order]] 참고 
-
 ---
 
 ---
@@ -154,7 +150,7 @@ ROW_NUMBER() OVER (ORDER BY 급여 DESC)
 -- 같은 급여여도: 1, 2, 3, 4 (무조건 고유 번호)
 ```
 
-```text
+```
 ROW_NUMBER() 의 또 다른 활용 — 그룹별 최신 행 1건 추출
 
 PARTITION BY 와 ORDER BY 를 조합하면
@@ -175,6 +171,117 @@ WHERE rn = 1;
 
 -- PostgreSQL 에서는 DISTINCT ON 으로 더 간결하게
 -- → [[SQL_DISTINCT_vs_GROUP_BY]] 참고
+```
+
+## ROW_NUMBER() — Gaps and Islands (연속 구간 찾기) ⭐️
+
+```
+"연속된 년도에 수상한 기간은 몇 년인가?"
+"연속으로 출석한 구간은?"
+
+이런 문제를 Gaps and Islands(간격과 섬) 문제라고 부름
+  섬(Island)   = 연속된 데이터 구간
+  간격(Gap)    = 끊긴 구간
+
+ROW_NUMBER() 를 쓰면 순위를 매기는 게 아니라
+연속 구간을 그룹으로 묶는 데 활용할 수 있음
+```
+
+## 왜 year - ROW_NUMBER() 가 연속 구간이 되는가
+
+```
+핵심 원리:
+  연속된 년도는 1씩 증가 → year - ROW_NUMBER() 는 항상 같은 값
+  끊기면 year 가 점프 → year - ROW_NUMBER() 가 달라짐
+
+예시 (수상 년도: 2010, 2011, 2012, 2015, 2016):
+
+  year  ROW_NUMBER()  year - ROW_NUMBER()
+  2010       1             2009  ← 같은 값 → 같은 그룹
+  2011       2             2009  ←
+  2012       3             2009  ←
+  2015       4             2011  ← 다른 값 → 다른 그룹 (2013/2014 빠짐)
+  2016       5             2011  ←
+
+year - ROW_NUMBER() 가 같은 행끼리 = 연속된 구간
+```
+
+```sql
+-- 연도별 연속 수상 구간 찾기
+WITH numbered AS (
+    SELECT
+        year,
+        ROW_NUMBER() OVER (ORDER BY year) AS rn,
+        year - ROW_NUMBER() OVER (ORDER BY year) AS grp   -- 연속 그룹 키
+    FROM awards
+),
+grouped AS (
+    SELECT
+        grp,
+        MIN(year) AS start_year,
+        MAX(year) AS end_year,
+        COUNT(*)  AS consecutive_years   -- 연속 기간
+    FROM numbered
+    GROUP BY grp
+)
+SELECT
+    start_year,
+    end_year,
+    consecutive_years
+FROM grouped
+ORDER BY start_year;
+
+-- 결과:
+-- start_year  end_year  consecutive_years
+-- 2010        2012      3   ← 3년 연속
+-- 2015        2016      2   ← 2년 연속
+```
+
+```
+단계별 이해:
+
+1단계 (numbered):
+  각 행에 ROW_NUMBER 부여 + year - rn 으로 그룹 키 생성
+
+2단계 (grouped):
+  같은 grp 끼리 묶어서
+  시작년도 / 끝년도 / 기간 계산
+
+3단계:
+  연속 구간별 결과 출력
+```
+
+```sql
+-- 응용: 선수별 연속 출전 구간
+WITH numbered AS (
+    SELECT
+        player_name,
+        year,
+        ROW_NUMBER() OVER (PARTITION BY player_name ORDER BY year) AS rn,
+        year - ROW_NUMBER() OVER (PARTITION BY player_name ORDER BY year) AS grp
+    FROM olympic_records
+)
+SELECT
+    player_name,
+    MIN(year) AS start_year,
+    MAX(year) AS end_year,
+    COUNT(*) AS consecutive_years
+FROM numbered
+GROUP BY player_name, grp
+HAVING COUNT(*) >= 2   -- 2회 이상 연속만
+ORDER BY player_name, start_year;
+```
+
+```
+PARTITION BY 추가 → 선수별로 각각 그룹 계산
+HAVING COUNT(*) >= 2 → 1회짜리 단독 수상 제외
+
+LAG 와 비교:
+  LAG     → "연속인지 아닌지" 판단 (간격 비교)
+  year-rn → "연속 구간을 하나의 그룹으로 묶기"
+
+  LAG 로 연속 여부 판단 → 그룹별 기간 집계 필요
+  year-rn 패턴 → 한 번에 그룹화 + 집계 가능
 ```
 
 ## RANK() — 공동 순위 허용, 번호 건너뜀 (올림픽 메달 방식)
@@ -422,12 +529,12 @@ FROM 올림픽참가기록;
 
 # ④ 비율 함수 (SQL Server 미지원)
 
-| 함수                  |     결과값 범위      | 핵심 역할              |
-| ------------------- | :-------------: | ------------------ |
-| `RATIO_TO_REPORT()` |      0 ~ 1      | 전체 합 대비 내 비율       |
-| `PERCENT_RANK()`    | 0.0 ~ 1.0 (0부터) | 상대적 순위 비율 (상위 몇 %) |
-| `CUME_DIST()`       |  (0, 1] (0 불가)  | 누적 분포 비율 (나 포함)    |
-| `NTILE(N)`          |   1 ~ N (정수)    | N개 등급으로 균등 분할      |
+|함수|결과값 범위|핵심 역할|
+|---|:-:|---|
+|`RATIO_TO_REPORT()`|0 ~ 1|전체 합 대비 내 비율|
+|`PERCENT_RANK()`|0.0 ~ 1.0 (0부터)|상대적 순위 비율 (상위 몇 %)|
+|`CUME_DIST()`|(0, 1] (0 불가)|누적 분포 비율 (나 포함)|
+|`NTILE(N)`|1 ~ N (정수)|N개 등급으로 균등 분할|
 
 ---
 
@@ -498,24 +605,30 @@ FROM 사원;
 
 # ⑤ Windowing 절 — 범위 세밀 지정
 
-> `ORDER BY` 로 줄을 세웠다면, 현재 행 기준으로 어디서 어디까지 연산할지 지정한다. 이동 평균(최근 3일 평균 매출) 구할 때 필수.
+```
+ORDER BY 로 줄을 세웠다면
+현재 행 기준으로 어디서 어디까지 연산할지 지정
+이동 평균 / 누적합 구할 때 필수
+```
 
 ## 키워드 해석
 
-| 키워드                   | 해석         |
-| --------------------- | ---------- |
-| `UNBOUNDED PRECEDING` | 파티션의 맨 첫 행 |
-| `UNBOUNDED FOLLOWING` | 파티션의 맨 끝 행 |
-| `CURRENT ROW`         | 현재 행       |
-| `N PRECEDING`         | N줄 앞       |
-| `N FOLLOWING`         | N줄 뒤       |
+|키워드|해석|
+|---|---|
+|`UNBOUNDED PRECEDING`|파티션의 맨 첫 행|
+|`UNBOUNDED FOLLOWING`|파티션의 맨 끝 행|
+|`CURRENT ROW`|현재 행|
+|`N PRECEDING`|N줄 앞|
+|`N FOLLOWING`|N줄 뒤|
 
 ## ROWS vs RANGE
 
-| 구분      | 기준      | 특징                                         |
-| ------- | ------- | ------------------------------------------ |
-| `ROWS`  | 물리적 줄 수 | 값이 같든 다르든 진짜 줄 수로 셈                        |
-| `RANGE` | 논리적 값   | `ORDER BY` 기준 컬럼의 값이 같은 행들을 하나의 덩어리로 묶어서 셈 |
+|구분|기준|특징|
+|---|---|---|
+|`ROWS`|물리적 줄 수|값이 같든 다르든 진짜 줄 수로 셈|
+|`RANGE`|논리적 값 범위|ORDER BY 컬럼 값이 같은 행들을 덩어리로 묶어서 셈|
+
+---
 
 ## 이동 평균 — 공식 패턴 ⭐️
 
@@ -641,7 +754,12 @@ FROM 매출테이블;
 
 ## ⚠️ 기본값의 배신 — 누적합이 점프하는 이유
 
-> `ORDER BY` 만 쓰고 범위 생략 시 → 암묵적으로 **`RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`** 발동 같은 정렬 기준값(급여, 날짜)을 가진 행들이 덩어리로 묶여 한 번에 더해져 숫자가 껑충 점프한다.
+```
+ORDER BY 만 쓰고 범위 생략 시
+→ 암묵적으로 RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW 발동
+→ ORDER BY 기준 컬럼 값이 같은 행들이 덩어리로 묶여 한 번에 더해짐
+→ 숫자가 껑충 점프
+```
 
 ```sql
 SELECT 사원명, 급여,
@@ -649,19 +767,46 @@ SELECT 사원명, 급여,
     SUM(급여) OVER (ORDER BY 급여) AS 누적합_기본,
 
     -- 해결책 (ROWS) → 1줄씩 차곡차곡
-    SUM(급여) OVER (ORDER BY 급여 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS 누적합_정확
+    SUM(급여) OVER (
+        ORDER BY 급여
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS 누적합_정확
 FROM 사원;
 ```
 
 |사원명|급여|누적합 (RANGE 기본)|누적합 (ROWS 해결)|
 |---|---|:-:|:-:|
 |박신입|100|100|100|
-|**나보통**|**200**|**500 💥**|**300**|
-|**김대리**|**200**|**500**|**500**|
+|나보통|200|500 💥|300|
+|김대리|200|500|500|
 |최과장|300|800|800|
 
 ---
+
 ---
+
+# 초보자 실수 모음
+
+|실수|해결|
+|---|---|
+|순위 함수에 `ORDER BY` 없이 `OVER()` 만 사용|`OVER (ORDER BY 컬럼)` 필수|
+|윈도우 함수를 `WHERE` 절에 사용|CTE 또는 인라인 뷰로 감싸고 바깥에서 필터링|
+|`LAST_VALUE()` 가 자기 자신을 출력|`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` 추가|
+|`SUM() OVER(ORDER BY)` 누적합이 점프|`ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` 명시|
+|COUNT 로 연속성 판단|`LAG` + 간격 비교로 대체|
+
+---
+
+## 관련 노트
+
+- [[SQL_Aggregate_GROUP_BY]] — COUNT · SUM · AVG · MAX · MIN 기본
+- [[SQL_Top_N_Query]] — ROWNUM · FETCH FIRST
+- [[SQL_CASE_WHEN]] — 조건부 집계
+
+---
+
+---
+
 # ⑥ MAX + JOIN 패턴 — 동점까지 모두 가져오기
 
 ## 언제 필요한가
@@ -748,7 +893,6 @@ GROUP BY developer;
 
 ## RANK() 로 대체 가능
 
-
 ```sql
 -- RANK() 버전 (동점 포함 처리 동일)
 WITH sum_game AS (
@@ -803,17 +947,3 @@ RANK():
 → MAX + JOIN  또는  RANK() WHERE rnk = 1
 → 동점 포함 여부 확인
 ```
----
----
-
-# 초보자 실수 모음
-
-|실수|해결|
-|---|---|
-|순위 함수에 `ORDER BY` 없이 `OVER()` 만 사용|`OVER (ORDER BY 컬럼)` 필수|
-|윈도우 함수를 `WHERE` 절에 사용|CTE 또는 인라인 뷰로 감싸고 바깥에서 필터링|
-|`LAST_VALUE()` 가 자기 자신을 출력|`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` 추가|
-|`SUM() OVER(ORDER BY)` 누적합이 점프|`ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` 명시|
-|COUNT 로 연속성 판단|`LAG` + 간격 비교로 대체|
-
----
