@@ -123,6 +123,95 @@ awk '{ print NF, $NF }' data.txt
 # 3 Seoul    ← 필드 3개, 마지막 = Seoul
 ```
 
+## NR 활용 패턴 ⭐️
+
+```
+NR = 현재까지 읽은 줄 번호 (1부터 시작)
+NR % 2 == 1  → 홀수 줄 (1, 3, 5, ...)
+NR % 2 == 0  → 짝수 줄 (2, 4, 6, ...)
+```
+
+```bash
+# 홀수 줄만 출력
+awk 'NR % 2 == 1 { print }' data.txt
+# Alice 30 Seoul
+# Carol 28 Seoul
+
+# 짝수 줄만 출력
+awk 'NR % 2 == 0 { print }' data.txt
+# Bob 25 Busan
+
+# 홀수 줄에 ; 붙이고 짝수 줄에 줄바꿈
+awk '{
+    printf "%s", $0
+    if (NR % 2 == 1) printf ";"
+    else             printf "\n"
+}' data.txt
+# Alice 30 Seoul;Bob 25 Busan
+# Carol 28 Seoul;
+```
+
+```
+NR % 2 == 1 → 홀수 줄 → ; 로 이어붙이기
+NR % 2 == 0 → 짝수 줄 → \n 으로 줄바꿈
+
+결과:  홀수줄;짝수줄
+       홀수줄;짝수줄
+```
+
+```bash
+# 헤더 줄(1번) 건너뛰기
+awk 'NR > 1 { print }' data.txt
+
+# 특정 범위 줄만
+awk 'NR >= 2 && NR <= 4 { print }' data.txt
+
+# 마지막 줄 번호 = 전체 줄 수
+awk 'END { print NR }' data.txt
+```
+
+## -F vs printf — 자주 헷갈리는 것 ⭐️
+
+```
+-F     입력을 읽을 때 필드를 어떻게 쪼갤지
+printf 출력할 때 어떻게 보여줄지
+
+완전히 다른 역할:
+  -F  → INPUT  (들어오는 데이터 파싱)
+  printf → OUTPUT (나가는 데이터 포맷)
+```
+
+```bash
+# 입력: "Alice;30;Seoul" (세미콜론 구분)
+# -F ";" → 세미콜론으로 쪼개서 $1 $2 $3 으로 분리
+
+awk -F ";" '{ print $1, $2 }' data.txt
+# Alice 30   ← 쪼개서 출력
+
+# ❌ 잘못된 생각: -F ";" 로 출력에 ; 를 붙이려고 함
+# -F 는 입력 파싱 전용 → 출력과 무관!
+```
+
+```bash
+# 출력에 ; 를 붙이고 싶으면 printf 로 직접 지정
+awk '{
+    printf "%s", $0         # $0 출력 (줄바꿈 없이)
+    if (NR % 2 == 1) printf ";"   # 홀수 줄이면 ; 붙이기
+    else             printf "\n"  # 짝수 줄이면 줄바꿈
+}' data.txt
+```
+
+```
+문제 요구사항으로 판단하는 법:
+
+  "입력이 ; 로 구분되어 있다"  → -F ";"  (입력 파싱)
+  "출력에 ; 를 붙여라"         → printf ";" (출력 포맷)
+
+  "홀수 줄과 짝수 줄을 ; 로 이어붙여라"
+  → 입력 구분자 문제 X
+  → NR % 2 로 홀수/짝수 구분 + printf 로 ; 출력 ✅
+```
+
 ## OFS vs ORS
 
 ```
