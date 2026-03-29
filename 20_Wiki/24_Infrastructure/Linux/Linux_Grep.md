@@ -10,7 +10,6 @@ related:
   - "[[Linux_Awk]]"
   - "[[Linux_File_Commands]]"
 ---
-
 # Linux_Grep — 텍스트 검색
 
 ## 한 줄 요약
@@ -71,6 +70,42 @@ grep -i 'error' app.log
 # 줄 번호 포함
 grep -n 'ERROR' app.log
 # 42:ERROR: connection failed
+```
+
+## -w — 단어 단위 매칭 ⭐️
+
+```bash
+# 예시 파일
+# there is the other log
+# the log file
+# logger.info
+
+grep 'the' data.txt
+# there is the other log   ← 'there', 'other' 안의 'the' 도 매칭
+# the log file
+
+grep -w 'the' data.txt
+# the log file             ← 정확히 'the' 단어만
+# 'there', 'other' 제외!
+```
+
+```
+-w 의 기준:
+  단어 경계 = 공백 / 특수문자 / 줄 시작·끝
+  앞뒤가 알파벳·숫자·_ 이 아닐 때만 매칭
+
+  'the'    ✅  단독 단어
+  'there'  ❌  the + re → 단어 경계 아님
+  'other'  ❌  ot + her → 단어 경계 아님
+  'the_'   ❌  _ 도 단어 문자로 취급
+```
+
+```bash
+# 실전: 정확히 'ERROR' 만 찾기 (ERRORS, error_msg 제외)
+grep -w 'ERROR' app.log
+
+# 변수명 정확히 찾기 (log 가 포함된 logger, logging 제외)
+grep -w 'log' *.py
 ```
 
 ## 반전 (-v) — 없는 줄 찾기

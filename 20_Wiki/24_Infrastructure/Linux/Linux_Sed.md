@@ -49,13 +49,23 @@ echo "hello world" | sed 's/world/korea/'
 ## 기본 구조
 
 ```
-s / 찾을패턴 /   바꿀문자 /    플래그
+s / 찾을패턴 / 바꿀문자 / 플래그
 ↑              ↑           ↑
 substitute    replacement  options
 ```
 
+## 플래그 정리
+
+|플래그|의미|
+|---|---|
+|없음|첫 번째 매칭만 치환 (기본값)|
+|`g`|줄 전체 모두 치환 (global)|
+|`i`|대소문자 무시|
+|`숫자`|N번째 매칭만 치환|
+|`gi`|전체 + 대소문자 무시|
+
 ```bash
-# 첫 번째 매칭만 치환 (기본)
+# 첫 번째 매칭만 치환 (g 없음)
 echo "aaa bbb aaa" | sed 's/aaa/XXX/'
 # XXX bbb aaa  ← 첫 번째만 바뀜
 
@@ -66,6 +76,72 @@ echo "aaa bbb aaa" | sed 's/aaa/XXX/g'
 # i 플래그: 대소문자 무시
 echo "Hello HELLO hello" | sed 's/hello/hi/gi'
 # hi hi hi
+
+# 숫자 플래그: N번째만 치환
+echo "a,b,c,d" | sed 's/,/|/2'
+# a,b|c,d   ← 2번째 , 만 바뀜
+```
+
+## g 를 일부러 쓰지 않는 경우 ⭐️
+
+```bash
+# 줄에서 첫 번째 단어만 바꾸고 싶을 때
+echo "error error error" | sed 's/error/FIXED/'
+# FIXED error error   ← 첫 번째만 바뀜 (의도적으로 g 없음)
+
+# 반대로 g 붙이면
+echo "error error error" | sed 's/error/FIXED/g'
+# FIXED FIXED FIXED   ← 전부 바뀜
+```
+
+```
+g 없음 → 줄당 첫 번째 매칭만
+         "첫 번째 항목만 바꾸고 나머지는 유지하고 싶다" 할 때 사용
+```
+
+## \b — 단어 경계 매칭 ⭐️
+
+```
+\b = word boundary (단어 경계)
+     grep -w 와 같은 효과
+     앞뒤가 알파벳·숫자·_ 가 아닐 때만 매칭
+```
+
+```bash
+# 예시 파일
+# the answer is there and other
+# the the the
+
+# \b 없이 → there, other 안의 the 도 바뀜
+echo "the answer is there" | sed 's/the/THIS/g'
+# THIS answer is THISre   ← there → THISre (의도치 않은 치환!)
+
+# \b 있으면 → 정확히 'the' 단어만
+echo "the answer is there" | sed 's/\bthe\b/THIS/g'
+# THIS answer is there    ← 'the' 만 바뀌고 'there' 는 유지
+```
+
+```
+\b 적용 기준:
+  'the'    ✅  단독 단어 → 매칭
+  'there'  ❌  the + re → 단어 경계 없음
+  'other'  ❌  ot + her → 단어 경계 없음
+  'the_'   ❌  _ 도 단어 문자로 취급
+```
+
+```bash
+# 변수명 정확히 치환 (count 는 두고 counter 는 제외)
+sed 's/\bcount\b/total/g' script.py
+
+# IP 주소 특정 부분 변경
+echo "192.168.1.100" | sed 's/\b1\b/X/g'
+# 192.168.X.100  ← 단독 1 만 바뀜 (192 안의 1 은 유지)
+```
+
+```
+⚠️ macOS 기본 sed 는 \b 지원 안 함
+   macOS: brew install gnu-sed 후 gsed 사용
+   또는 grep -w 로 대체
 ```
 
 ## 구분자 변경 — / 대신 다른 문자
