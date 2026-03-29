@@ -72,14 +72,14 @@ python3 --version
 JSON 처리의 핵심
 ```
 
-| 노트                            | 핵심 개념                                               |
-| ----------------------------- | --------------------------------------------------- |
-| [[Python_Lists_Tuples]]       | [] / () / Mutable vs Immutable / append / pop,count |
-| [[Python_Lambda_Map]]         | lambda / map / filter / reduce                      |
-| [[Python_List_Comprehension]] | [결과 for x in 리스트 if 조건] 한 줄 축약                      |
-| [[Python_Dictionaries]]       | {} / .get() / .items() / .keys() / .values()        |
-| [[Python_JSON]]               | json.loads / json.dumps / indent / 직렬화·역직렬화         |
-| [[Python_Sets]]               | set / 교집합 & / 합집합 \| / 차집합 - / frozenset            |
+| 노트                            | 핵심 개념                                                               |
+| ----------------------------- | ------------------------------------------------------------------- |
+| [[Python_Lists_Tuples]]       | [] / () / Mutable vs Immutable / append / pop,count/reversed/sorted |
+| [[Python_Lambda_Map]]         | lambda / map / filter / reduce                                      |
+| [[Python_List_Comprehension]] | [결과 for x in 리스트 if 조건] 한 줄 축약                                      |
+| [[Python_Dictionaries]]       | {} / .get() / .items() / .keys() / .values()                        |
+| [[Python_JSON]]               | json.loads / json.dumps / indent / 직렬화·역직렬화                         |
+| [[Python_Sets]]               | set / 교집합 & / 합집합 \| / 차집합 - / frozenset                            |
 
 ---
 

@@ -355,6 +355,86 @@ print(new_nums)  # [1, 2, 3]
 ---
 
 ---
+# ⑤-2 뒤집기 — reversed / [:​:-1] / .reverse()
+
+
+```python
+data = [1, 2, 3, 4, 5]
+
+# ① [::-1]  새 리스트 생성 (원본 유지)
+data[::-1]              # [5, 4, 3, 2, 1]
+
+# ② reversed()  이터레이터 반환 (for 문에 바로 사용)
+list(reversed(data))    # [5, 4, 3, 2, 1]
+for x in reversed(data):
+    print(x)            # 5 4 3 2 1
+
+# ③ .reverse()  원본 in-place 뒤집기 (반환값 없음!)
+data.reverse()
+print(data)             # [5, 4, 3, 2, 1]
+mix = data.reverse()    # mix = None ← 실수 주의
+```
+
+|방법|원본 변경|반환값|문자열 가능|
+|---|---|---|---|
+|`[::-1]`|❌|새 리스트/문자열|✅|
+|`reversed()`|❌|이터레이터|✅ (단, list/str 변환 필요)|
+|`.reverse()`|✅|None|❌|
+
+
+```python
+# 문자열 뒤집기
+"hello"[::-1]              # 'olleh'
+"".join(reversed("hello")) # 'olleh'
+```
+
+## reversed() 실전 패턴 ⭐️
+
+```python
+# 숫자 → 각 자리 뒤집기
+n = 12345
+list(reversed(str(n)))              # ['5', '4', '3', '2', '1']
+list(map(int, reversed(str(n))))    # [5, 4, 3, 2, 1]
+```
+
+```
+단계별 분해:
+  str(12345)            → '12345'       (문자열로 변환)
+  reversed('12345')     → 이터레이터    (뒤집기)
+  map(int, ...)         → 각 문자 int 변환
+  list(...)             → [5, 4, 3, 2, 1]
+```
+
+```python
+# 활용 예시
+
+# 자릿수 합계 (뒤집은 결과 합산)
+n = 12345
+sum(map(int, reversed(str(n))))   # 15 (1+2+3+4+5)
+
+# 팰린드롬 확인 (앞뒤가 같은지)
+s = "racecar"
+s == "".join(reversed(s))         # True
+s == s[::-1]                      # True (더 간결)
+
+# 역순 누적
+data = [1, 2, 3, 4, 5]
+result = []
+for x in reversed(data):
+    result.append(x * 2)
+# [10, 8, 6, 4, 2]
+```
+
+```
+언제 뭘 쓰나:
+  새 리스트/문자열 바로 필요   → [::-1]  (가장 간결)
+  for 문에서 역순 순회         → reversed()  (메모리 효율)
+  원본 자체를 뒤집어야 할 때   → .reverse()
+  각 자리 숫자로 변환 필요     → list(map(int, reversed(str(n))))
+```
+
+----
+---
 
 # ⑥ 슬라이싱 — [시작:끝:간격]
 
@@ -684,7 +764,9 @@ rows_extended = [r + (datetime.now(), status) for r in rows]
 |---|---|---|
 |`list_b = list_a` 후 원본이 바뀜|참조 복사 (별명 붙이기)|`list_a[:]` 또는 `.copy()`|
 |`mix = a.extend(b)` 가 None|extend 는 None 반환|`a.extend(b)` 후 `a` 사용|
+|`mix = data.reverse()` 가 None|reverse() 는 None 반환|`data.reverse()` 후 `data` 사용|
 |`text[-1:-n-1]` 이 빈 문자열|step 기본값 +1 방향 불일치|`text[-n:]` 사용|
 |`index()` 에서 ValueError|없는 값 조회|`if val in data:` 로 먼저 확인|
 |정렬 후 순위 못 구함|index() 패턴을 모름|`sorted_list.index(값) + 1`|
 |요소 1개 튜플이 문자열로 됨|콤마 누락|`("hello",)` 콤마 필수|
+|`reversed(str(n))` 바로 출력 안 됨|이터레이터라 바로 못 씀|`list(reversed(str(n)))` 또는 `"".join(reversed(str(n)))`|
