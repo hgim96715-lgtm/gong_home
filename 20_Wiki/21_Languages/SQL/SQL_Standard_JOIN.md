@@ -188,6 +188,69 @@ SELECT BOY_NAME, GIRL_NAME FROM GIRL CROSS JOIN BOY;
 SELECT BOY_NAME, GIRL_NAME FROM GIRL, BOY;  -- 동일
 ```
 
+## CROSS JOIN 실전 패턴 — 전체 합계를 모든 행에 붙이기 ⭐️
+
+```
+1행짜리 집계 결과를 전체 데이터에 붙일 때 CROSS JOIN 사용
+ON 조건 없이 붙이면 1행 × N행 = N행 (모든 행에 같은 값)
+
+활용:
+  전체 합계 대비 비율 계산
+  파티션 합계를 원본 행에 붙이기
+  단 1행짜리 스칼라 값을 전체에 뿌리기
+```
+
+```sql
+-- 카테고리별 / 서브카테고리별 매출 비율 계산
+WITH
+  cate_sum AS (
+    SELECT
+      category,
+      SUM(sales) AS sales_category
+    FROM records
+    GROUP BY category
+  ),
+  sub_sum AS (
+    SELECT
+      category,
+      sub_category,
+      SUM(sales) AS sales_sub_category
+    FROM records
+    GROUP BY category, sub_category
+  ),
+  total_sales AS (
+    SELECT SUM(sales) AS sales_total   -- ← 1행짜리 전체 합계
+    FROM records
+  )
+SELECT
+  ss.category,
+  ss.sub_category,
+  ROUND(ss.sales_sub_category, 2)                               AS sales_sub_category,
+  ROUND(cs.sales_category, 2)                                   AS sales_category,
+  ROUND(ts.sales_total, 2)                                      AS sales_total,
+  ROUND(ss.sales_sub_category / cs.sales_category * 100, 2)    AS pct_in_category,
+  ROUND(ss.sales_sub_category / ts.sales_total * 100, 2)       AS pct_in_total
+FROM sub_sum ss
+JOIN cate_sum cs
+  ON ss.category = cs.category
+CROSS JOIN total_sales ts;   -- ← ON 없이 붙임 (1행 × N행 = N행)
+```
+
+```text
+JOIN vs CROSS JOIN 선택 기준:
+
+  sub_sum JOIN cate_sum
+  → category 가 같은 행끼리 매칭 → ON 조건 필요
+
+  sub_sum CROSS JOIN total_sales
+  → total_sales 는 1행 → 전체 합계를 모든 행에 붙이면 됨
+  → ON 조건 없어도 됨 (1행 × N행 = N행 그대로)
+
+  CROSS JOIN 에 ON 을 쓰면?
+  → 일반 INNER JOIN 과 동일해짐
+  → 1행짜리 결과를 전체에 뿌릴 때만 CROSS JOIN 사용
+```
+
 ---
 
 ---
