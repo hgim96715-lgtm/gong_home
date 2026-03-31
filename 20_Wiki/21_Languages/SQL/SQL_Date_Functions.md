@@ -353,29 +353,66 @@ CASE WHEN 7줄 불필요
 
 ```sql
 -- TO_CHAR 요일 포맷 비교
-SELECT TO_CHAR(measured_at, 'Day');   -- Monday     (전체 이름, 뒤에 공백 패딩 있음)
-SELECT TRIM(TO_CHAR(measured_at, 'Day'));  -- Monday  (공백 제거 → TRIM 습관)
-SELECT TO_CHAR(measured_at, 'Dy');    -- Mon        (3글자 약어)
+SELECT TO_CHAR(measured_at, 'Day');       -- Monday     (뒤에 공백 패딩 있음)
+SELECT TRIM(TO_CHAR(measured_at, 'Day')); -- Monday     (공백 제거)
+SELECT TO_CHAR(measured_at, 'FMDay');     -- Monday     (FM 으로 공백 제거 — TRIM 불필요)
+SELECT TO_CHAR(measured_at, 'Dy');        -- Mon        (3글자 약어)
+SELECT TO_CHAR(measured_at, 'FMDy');      -- Mon        (FM + 약어)
+```
 
--- ✅ 영어 요일 + 올바른 정렬
+## FM 접두사 — Fill Mode (공백 패딩 제거) ⭐️
+
+```
+TO_CHAR 는 기본적으로 최대 길이에 맞춰 공백을 채움
+  'Day'  → "Monday   " / "Tuesday  " / "Wednesday"  ← 길이 맞추려고 공백 자동 패딩
+  'MM'   → "03"  (이미 2자리라 패딩 없음)
+  'DD'   → "05"  (이미 2자리라 패딩 없음)
+
+FM (Fill Mode) 을 앞에 붙이면 공백 패딩 제거
+  'FMDay' → "Monday" / "Tuesday" / "Wednesday"  ← 공백 없이 딱 맞게
+```
+
+
+```sql
+-- 공백 패딩 확인
+SELECT TO_CHAR(NOW(), 'Day') = 'Monday';     -- FALSE ("Monday   " ← 공백 있어서!)
+SELECT TO_CHAR(NOW(), 'FMDay') = 'Monday';   -- TRUE  (공백 없음)
+SELECT TRIM(TO_CHAR(NOW(), 'Day')) = 'Monday'; -- TRUE (TRIM 으로 제거)
+```
+
+```
+'FMDay' 안 되는 경우:
+  Oracle → FM 지원 ✅
+  PostgreSQL → FM 지원 ✅
+  MSSQL FORMAT() → FM 없음 ❌ → TRIM() 으로 대체
+  구버전 DB → TRIM() 쓰는 게 안전
+
+  실수:
+  'FMday' (소문자) → 동작은 하지만 결과가 'monday' (소문자)
+  'FMDAY' (대문자) → 'MONDAY' (전체 대문자)
+  대소문자가 결과 케이스를 결정
+  → 'FMDay' 가 일반적인 형식 (Pascal Case)
+```
+
+```sql
+-- ✅ FM + 올바른 정렬
 SELECT
-    TRIM(TO_CHAR(measured_at, 'Day')) AS weekday,
+    TO_CHAR(measured_at, 'FMDay') AS weekday,   -- TRIM 없이 깔끔
     COUNT(*) AS cnt
 FROM table_name
 GROUP BY weekday, EXTRACT(ISODOW FROM measured_at)
-ORDER BY EXTRACT(ISODOW FROM measured_at);   -- 숫자로 정렬
+ORDER BY EXTRACT(ISODOW FROM measured_at);
+
+-- FM 은 Day 외에도 적용 가능
+SELECT TO_CHAR(NOW(), 'FMHH24:FMMI');    -- "9:5"  (앞 0 제거)
+SELECT TO_CHAR(NOW(), 'HH24:MI');        -- "09:05" (앞 0 유지 — 보통 이게 더 좋음)
 ```
 
 ```
-TO_CHAR 포맷 주의:
-  'Day' → 최대 길이 맞추려고 뒤에 공백 자동 패딩
-          "Monday   " / "Tuesday  " 처럼 붙음
-  → TRIM() 항상 같이 쓰는 습관 필요
-
-DOW vs ISODOW vs MSSQL 비교:
-  PostgreSQL DOW    0:일 1:월 ... 6:토
-  PostgreSQL ISODOW 1:월 2:화 ... 7:일  ← 실무 추천
-  MSSQL DATEPART(dw)  1:일 2:월 ... 7:토  (PostgreSQL DOW 와 숫자 다름 주의!)
+정리:
+  공백 패딩 제거  → FM 접두사 or TRIM()
+  앞 0 제거       → FM 접두사 (HH24 → "9" 대신 "09" 원하면 FM 쓰지 말 것)
+  MSSQL          → FM 없음 → TRIM() 사용
 ```
 
 ---
@@ -546,15 +583,17 @@ WHERE trn_plan_dptre_dt::DATE IN (
 
 ### 날짜 포맷
 
-|포맷|의미|예시 출력|
-|---|---|---|
-|`YYYY`|4자리 연도|`2026`|
-|`YY`|2자리 연도|`26`|
-|`MM`|2자리 월 (01~12)|`03`|
-|`DD`|2자리 일 (01~31)|`16`|
-|`D`|요일 숫자 (1:일~7:토)|`2`|
-|`Day`|요일 영문 전체 이름|`Monday` (공백 패딩)|
-|`Dy`|요일 3글자 약어|`Mon`|
+| 포맷      | 의미                  | 예시 출력            |
+| ------- | ------------------- | ---------------- |
+| `YYYY`  | 4자리 연도              | `2026`           |
+| `YY`    | 2자리 연도              | `26`             |
+| `MM`    | 2자리 월 (01~12)       | `03`             |
+| `DD`    | 2자리 일 (01~31)       | `16`             |
+| `D`     | 요일 숫자 (1:일~7:토)     | `2`              |
+| `Day`   | 요일 영문 전체 이름         | `Monday` (공백 패딩) |
+| `FMDay` | 요일 영문 전체 이름 (공백 없음) | `Monday`         |
+| `Dy`    | 요일 3글자 약어           | `Mon`            |
+| `Dy`    | 요일 3글자 약어           | `Mon`            |
 
 ### 시간 포맷 ⭐️ — HH vs HH24, MM vs MI
 
@@ -654,6 +693,49 @@ SELECT DATE_TRUNC('month', '2026-03-15');  -- 결과: 2026-03-01 00:00:00
 
 -- TRUNC: Oracle 버전
 SELECT TRUNC(SYSDATE, 'MM') FROM DUAL;    -- 결과: 2026-03-01
+```
+
+## DATE_TRUNC + ::date — 00:00:00 없애기 ⭐️
+
+```
+DATE_TRUNC 결과는 항상 TIMESTAMP
+→ 뒤에 00:00:00 붙어서 나옴
+
+::date 캐스팅 하면 시간 부분 제거
+→ 2022-11-02 처럼 날짜만 깔끔하게
+```
+
+```sql
+-- DATE_TRUNC 기본 → TIMESTAMP 반환
+SELECT DATE_TRUNC('day', purchased_at);
+-- 2022-11-02 00:00:00  ← 00:00:00 붙음
+
+-- ::date 캐스팅 → 시간 제거
+SELECT DATE_TRUNC('day', purchased_at)::date AS order_date;
+-- 2022-11-02  ← 깔끔
+
+-- 월 단위도 동일
+SELECT DATE_TRUNC('month', purchased_at)::date AS order_month;
+-- 2022-11-01  ← 00:00:00 없이
+
+-- GROUP BY 에서도 활용
+SELECT
+    DATE_TRUNC('day', purchased_at)::date AS order_date,
+    COUNT(*) AS cnt
+FROM orders
+GROUP BY order_date
+ORDER BY order_date;
+```
+
+```
+정리:
+  DATE_TRUNC('day', ...)          → 2022-11-02 00:00:00  (TIMESTAMP)
+  DATE_TRUNC('day', ...)::date    → 2022-11-02           (DATE)
+  DATE_TRUNC('day', ...)::text    → '2022-11-02 00:00:00' (문자열)
+  TO_CHAR(DATE_TRUNC(...), 'YYYY-MM-DD') → '2022-11-02'  (문자열)
+
+  날짜로 비교 / 집계가 필요하면  → ::date
+  문자열로 출력만 하면            → TO_CHAR
 ```
 
 ### ⚠️ GROUP BY 에서 흔한 실수
