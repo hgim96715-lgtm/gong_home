@@ -7,8 +7,9 @@ aliases:
   - git amend
 tags:
   - Git
+related:
+  - "[[00_Git_HomePage]]"
 ---
-
 # Git_Commands — 자주 쓰는 Git 명령어
 
 ## 한 줄 요약
@@ -30,6 +31,58 @@ git add .                     # 전체 스테이징
 git add 파일명                 # 특정 파일만
 git commit -m "메시지"         # 커밋
 git push origin main           # 원격 푸시
+```
+
+---
+
+---
+
+# ① -1 로컬 폴더 → GitHub 처음 올리기 ⭐️
+
+```
+새 프로젝트 폴더를 GitHub 에 처음 연결할 때
+GitHub 에서 새 저장소 만든 뒤 아래 명령어 실행
+```
+
+```bash
+# 로컬 폴더에서 Git 초기화
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+
+# GitHub 원격 저장소 연결
+git remote add origin https://github.com/사용자명/저장소명.git
+
+# 처음 push (-u 로 upstream 설정)
+git push -u origin main
+```
+
+```
+-u (--set-upstream) 의미:
+  처음 한 번만 붙이면
+  이후부터는 git push 만 해도 됨 (origin main 생략 가능)
+
+이미 git init 된 폴더라면:
+  git init 건너뛰고
+  git remote add origin ... 부터 시작
+```
+
+## 이미 로컬에 저장소가 있을 때
+
+```bash
+# GitHub 에서 새 저장소 만들고
+git remote add origin https://github.com/사용자명/저장소명.git
+git branch -M main
+git push -u origin main
+```
+
+## 원격 저장소 확인 / 변경
+
+```bash
+git remote -v                                     # 현재 연결된 원격 확인
+git remote set-url origin https://새_주소.git     # 원격 주소 변경
+git remote remove origin                          # 원격 연결 제거
 ```
 
 ---
@@ -186,6 +239,8 @@ git restore --staged 파일명
 
 |상황|명령어|
 |---|---|
+|새 폴더 GitHub 에 처음 올리기|`git init` → `git remote add origin` → `git push -u origin main`|
+|이미 있는 폴더 GitHub 연결|`git remote add origin` → `git push -u origin main`|
 |마지막 커밋 메시지 수정|`git commit --amend -m "새 메시지"`|
 |파일 빠트리고 커밋|`git add 파일` + `git commit --amend --no-edit`|
 |마지막 커밋 취소 (변경사항 유지)|`git reset --soft HEAD~1`|
