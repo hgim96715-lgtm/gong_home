@@ -71,6 +71,55 @@ else:         # 나머지가 0 → False → 짝수
     print("짝수")
 ```
 
+## True if ... else False — 불필요한 패턴 ⭐️
+
+```
+비교 연산자 / % 연산의 결과는 이미 bool
+True if 조건 else False → 조건 자체가 bool 이라 그대로 반환하면 됨
+```
+
+```python
+# ❌ 불필요한 패턴
+def solution(x):
+    sum_arr = sum(int(a) for a in str(x))
+    return True if x % sum_arr == 0 else False
+    # x % sum_arr == 0 자체가 이미 True / False
+
+# ✅ 조건식 그대로 반환
+def solution(x):
+    return x % sum(int(a) for a in str(x)) == 0
+    # == 0 비교 결과가 이미 bool → 그대로 return
+```
+
+```
+연산자 결과가 이미 bool 인 것들:
+  ==  !=  >  <  >=  <=    → True / False
+  %  (나머지)              → 숫자 (0 이면 False / 아니면 True)
+  in  not in               → True / False
+
+  → 이 결과에 True if ... else False 붙일 필요 없음
+  → 조건식 자체를 return 하면 됨
+```
+
+```python
+# 다양한 예시
+
+# ❌
+return True if n % 2 == 0 else False
+# ✅
+return n % 2 == 0
+
+# ❌
+return True if "a" in word else False
+# ✅
+return "a" in word
+
+# ❌
+is_ok = True if score >= 60 else False
+# ✅
+is_ok = score >= 60
+```
+
 ---
 
 ---
