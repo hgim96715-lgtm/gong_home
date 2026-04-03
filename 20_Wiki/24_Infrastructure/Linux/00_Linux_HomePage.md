@@ -33,15 +33,16 @@
 로그 분석, 데이터 전처리에 매일 사용
 ```
 
-| 노트                      | 핵심 개념                                                   |
-| ----------------------- | ------------------------------------------------------- |
-| [[Linux_File_Commands]] | cat / head / tail / less / wc / sort / uniq / cut/paste |
-| [[Linux_Redirection]]   | 표준 입출력 / > >> < / pipe \| / tee / 2>&1                  |
-| [[Linux_Grep]]          | grep / egrep / fgrep / 정규표현식 패턴                         |
-| [[Linux_Sed]]           | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                           |
-| [[Linux_Awk]]           | awk — 필드 분리 / 조건 처리 / 집계                                |
-| [[Linux_Find]]          | find — 조건 검색 / -exec / xargs                            |
-| [[Linux_Archive]]       | tar / gzip / bzip2 / zip — 압축 원리와 명령어                   |
+| 노트                      | 핵심 개념                                             |
+| ----------------------- | ------------------------------------------------- |
+| [[Linux_File_Commands]] | cat / head / tail / less / wc / sort / uniq / cut |
+| [[Linux_Vim_Nano]]      | vim / nano / 모드 전환 / 저장·종료 / 이동·검색 / 상황별 선택       |
+| [[Linux_Redirection]]   | 표준 입출력 / > >> < / pipe \| / tee / 2>&1            |
+| [[Linux_Grep]]          | grep / -i -n -v -r -E / 정규식 / 파이프 조합              |
+| [[Linux_Stream_Editor]] | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                     |
+| [[Linux_Awk]]           | awk — 필드 분리 / 조건 처리 / 집계                          |
+| [[Linux_Find]]          | find — 조건 검색 / -exec / xargs                      |
+| [[Linux_Archive]]       | tar / gzip / bzip2 / zip — 압축 원리와 명령어             |
 
 ---
 
