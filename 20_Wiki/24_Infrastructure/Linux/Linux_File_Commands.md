@@ -16,6 +16,7 @@ related:
   - "[[Linux_Grep]]"
   - "[[Linux_Awk]]"
   - "[[Linux_Sed]]"
+  - "[[Linux_Basic_Commands]]"
 ---
 
 # Linux_File_Commands — 파일 내용 보기 & 처리
