@@ -80,8 +80,8 @@ Kafka / Spark 컨테이너 운영의 기초
 
 |노트|핵심 개념|
 |---|---|
-|[[File_Permissions]]|권한 개념 (rwx) / chmod / chown / chgrp / umask / SUID / SGID / Sticky bit|
-|[[Superuser]]|root 개념 / sudo / su / sudoers / /etc/hosts|
+|[[Linux_File_Permissions]]|권한 개념 (rwx) / chmod / chown / chgrp / umask / SUID / SGID / Sticky bit|
+|[[Linux_Superuser]]|root 개념 / sudo / su / sudoers / /etc/hosts|
 |[[Linux_User_Group]]|사용자·그룹 관리 / useradd / usermod / groupadd / passwd / /etc/passwd /etc/shadow|
 |[[Linux_SSH]]|공개키 암호화 개념 / ssh / scp / ssh-keygen / authorized_keys / config|
 |[[Linux_OpenSSL]]|암호화 개념 / rand / dgst / enc / 인증서 / AES / RSA|

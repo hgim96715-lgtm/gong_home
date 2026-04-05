@@ -10,9 +10,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Terminal_Editors]]"
-  - "[[00_Linux_HomePage(기존)]]"
-  - "[[Superuser]]"
+  - "[[00_Linux_HomePage]]"
 ---
 ## 개념 한 줄 요약
 

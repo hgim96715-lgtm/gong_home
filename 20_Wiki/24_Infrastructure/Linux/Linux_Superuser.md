@@ -8,10 +8,8 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[File_Permissions]]"
-  - "[[00_Linux_HomePage(기존)]]"
-  - "[[Linux_Fundamental_Rules]]"
-  - "[[Linux_Shell_Script]]"
+  - "[[00_Linux_HomePage]]"
+  - "[[Linux_User_Group]]"
 ---
 # Superuser — sudo · su · root
 

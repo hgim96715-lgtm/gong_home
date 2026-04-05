@@ -10,7 +10,7 @@ tags:
   - Linux
 related:
   - "[[SSH_Connection]]"
-  - "[[File_Permissions]]"
+  - "[[Linux_File_Permissions]]"
   - "[[00_Linux_HomePage]]"
 ---
 

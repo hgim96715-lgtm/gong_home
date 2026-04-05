@@ -8,7 +8,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[Superuser]]"
+  - "[[Linux_Superuser]]"
   - "[[Linux_Fundamental_Rules]]"
   - "[[00_Linux_HomePage(기존)]]"
 ---

@@ -8,7 +8,7 @@ aliases:
 tags:
   - Linux
 related:
-  - "[[File_Permissions]]"
+  - "[[Linux_File_Permissions]]"
   - "[[SSH_Connection]]"
   - "[[00_Linux_HomePage(기존)]]"
   - "[[00_Linux_HomePage(기존)]]"

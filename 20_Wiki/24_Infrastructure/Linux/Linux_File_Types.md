@@ -10,7 +10,7 @@ tags:
   - Linux
 related:
   - "[[File_Navigation]]"
-  - "[[File_Permissions]]"
+  - "[[Linux_File_Permissions]]"
   - "[[00_Linux_HomePage(기존)]]"
 ---
 ## 개념 한 줄 요약
