@@ -269,12 +269,3 @@ network:
 ---
 
 ---
-
-## 실행 체크리스트
-
-□ .env 값 전부 채우기
-□ docker compose up -d
-□ docker compose ps → 전부 running 확인
-□ Kafka 토픽 생성
-□ DataGrip 연결 확인 (localhost:5433)
-□ init.sql 반영 확인 (\dt)
