@@ -7,105 +7,284 @@ aliases:
 tags:
   - Python
 related:
+  - "[[00_Python_HomePage]]"
   - "[[Python_Generators_Yield]]"
-  - "[[PyFlink_Evictor]]"
+  - "[[Python_Lists_Tuples]]"
+  - "[[Python_Control_Flow]]"
+  - "[[Python_Sets]]"
 ---
-# Python Iterables & Iterators: 데이터 줄 세우기
+# Python_Iterables_Iterators — 이터러블과 이터레이터
 
-## 한줄 요약
-
-**Iterable**은 `for`문에 넣을 수 있는 "데이터 보따리"이고,
-**Iterator**는 그 보따리에서 데이터를 "하나씩 꺼내주는 손가락(포인터)"입니다.
-
-
-> **Iterable(이터러블)** 이란 `for` 문에 넣어서 내부 요소들을 하나씩 꺼내 쓸 수 있는 모든 객체를 말합니다(도시락 통)
-> **Iterator:** "내용물"이 아니라 "꺼내는 동작"입니다!(젓가락)
-
----
-## 왜 필요한가?
-
-**메모리 폭발 방지 (Memory Efficiency):**
-- 1억 개의 데이터가 담긴 리스트를 한 번에 메모리에 올리면 서버가 터집니다.
-- 하지만 **Iterator**를 쓰면 "지금 당장 처리할 1개"만 메모리에 올려서 효율적으로 작업할 수 있습니다.
-
-**게으른 계산 (Lazy Evaluation):**
-- 미리 다 만들어두지 않고, 필요할 때(`next()`)만 계산해서 가져옵니다. 
-- 끝을 알 수 없는 실시간 데이터 스트림(PyFlink) 처리에 필수적입니다.
-
-**프로토콜 통일:**
-- 파이썬은 `__iter__`와 `__next__`라는 약속(Protocol)을 통해 리스트, 튜플, 딕셔너리, 파일 등을 모두 동일한 방식으로 반복할 수 있게 만듭니다.
-
----
-## 실무 핵심
-
-PyFlink의 `ProcessWindowFunction`에서 `elements`를 받을 때 바로 이 개념이 쓰입니다.
-Flink는 윈도우 안의 데이터를 리스트로 주지 않고 **Iterator** 형태로 줍니다.
-그래야 수만 개의 데이터가 쌓여도 메모리를 아끼며 하나씩 계산할 수 있기 때문입니다.
-
----
-## Code Core Points
-
-- **`iter(obj)`**: `obj`가 가진 `__iter__` 메서드를 호출해 Iterator로 변환합니다.
-- **`next(it)`**: Iterator의 `__next__` 메서드를 호출해 다음 데이터를 가져옵니다. 데이터가 없으면 `StopIteration` 예외를 던집니다.
--  **`list(it)`**: Iterator를 강제로 리스트로 변환합니다. 이때 Iterator 안에 남은 모든 데이터를 **메모리에 몽땅 적재**하므로 매우 주의해야 합니다.
-- **일회용성**: Iterator는 한 번 끝까지 가면 다시 처음으로 돌아갈 수 없는 "일방통행"입니다.
-
-- **종류:** 리스트(`list`), 튜플(`tuple`), 문자열(`str`), 딕셔너리(`dict`), `range()` 등이 모두 Iterable입니다.
-- **판별법:** `iter()` 함수를 넣었을 때 에러가 안 나고 **Iterator(손가락)**를 뱉어내면 Iterable입니다.
-
----
-## 코드분석
-
-```python
-# 1. 가장 흔한 Iterable: 리스트
-# 보따리 안에 1, 2, 3이 줄 서서 기다리고 있습니다.
-my_list = [1, 2, 3]
-
-# 2. Iterable이기 때문에 for문에 바로 넣을 수 있습니다.
-# 파이썬이 내부적으로 "보따리에서 하나씩 꺼내줘!"라고 명령합니다.
-for item in my_list:
-    print(item)
-
-# 3. 문자열도 Iterable입니다.
-# 한 글자씩 줄을 서 있는 상태죠.
-for char in "Hello":
-    print(char) # H, e, l, l, o가 순서대로 출력됨
-
-# 1. 보따리(Iterable) 준비
-lunch_box = ["Sandwich", "Apple", "Juice"]
-
-# 2. 손가락(Iterator) 생성
-# lunch_box 자체가 바뀌는 게 아니라, lunch_box를 가리키는 '손가락'이 생깁니다.
-waiter = iter(lunch_box)
-
-# 3. waiter는 "Sandwich" 그 자체가 아닙니다.
-print(waiter) 
-# 결과: <list_iterator object at 0x...> (점원 객체라고 나옵니다.)
-
-# 4. 점원에게 "다음 거 줘!"라고 시킵니다.
-print(next(waiter)) # Sandwich (이제야 내용물이 나옵니다!)
-print(next(waiter)) # Apple (점원은 다음 위치를 기억하고 있습니다.)
+## 한 줄 요약
 
 ```
-
-- **`iter()`**: 데이터 보따리에서 전담 점원(Iterator)을 고용하는 명령입니다.
-- `next()`: 점원에게 다음 물건을 꺼내오라고 시키는 명령입니다.
+Iterable  = for 문에 넣을 수 있는 객체 (데이터 보따리)
+Iterator  = 데이터를 하나씩 꺼내주는 포인터 (손가락)
+```
 
 ---
-## 주의사항
 
-- **"Iterator는 리스트랑 똑같은 거 아닌가요?"**
-    - 아니요! 리스트는 모든 데이터를 **이미** 가지고 있는 사물함이고, Iterator는 요청할 때마다 데이터를 **꺼내주는 동작**에 집중합니다. 
-    - 인덱스 접근(`it[0]`)이 안 된다는 점이 가장 큰 차이입니다.
-        
-- **"한 번 다 읽은 Iterator를 다시 `for`문에 돌려도 되나요?"**
-    - 안 됩니다! Iterator는 한 번 소진되면 빈 껍데기가 됩니다. 
-    - 다시 읽으려면 `iter()` 함수로 새 Iterator를 만들어야 합니다.
+---
 
-- **"왜 Flink는 번거롭게 리스트가 아니라 Iterator로 주나요?"**
-    - 스트리밍 환경에서는 윈도우에 데이터가 얼마나 쌓일지 모릅니다. 
-    - 수백만 건이 올 수도 있는데 리스트로 줬다가 서버가 즉사하는 걸 막으려는 **Flink의 배려(Safety)** 입니다.
+# ① 핵심 개념
 
-- **"list(elements)를 하면 elements 안의 데이터는 어떻게 되나요?"**
-	- `list()` 함수가 내부적으로 Iterator가 끝날 때까지 `next()`를 호출해버립니다. 
-	- 따라서 `list(elements)`를 수행하고 난 뒤의 `elements`는 텅 비어버리게 됩니다.
+```
+Iterable (이터러블):
+  for 문에 넣을 수 있는 모든 객체
+  리스트 / 튜플 / 문자열 / 딕셔너리 / range() 등
+  데이터를 가지고 있는 "보따리"
+
+Iterator (이터레이터):
+  next() 로 하나씩 꺼낼 수 있는 객체
+  현재 위치를 기억하는 "손가락(포인터)"
+  일방통행 → 한 번 소진되면 재사용 불가
+
+관계:
+  Iterable → iter() → Iterator
+  Iterator → next() → 값 하나씩
+```
+
+## 도시락 비유
+
+```
+Iterable = 도시락통 (내용물 전체 보관)
+Iterator = 젓가락  (하나씩 꺼내는 동작)
+
+도시락통(Iterable) 이 있어도
+젓가락(Iterator) 없이는 꺼낼 수 없음
+for 문 = 내부적으로 젓가락을 자동으로 만들어서 사용
+```
+
+---
+
+---
+
+# ② 기본 사용법
+
+```python
+# Iterable → for 문에 바로 사용 가능
+my_list = [1, 2, 3]
+
+for item in my_list:
+    print(item)    # 1 / 2 / 3
+
+# 문자열도 Iterable
+for char in "Hello":
+    print(char)    # H / e / l / l / o
+```
+
+## iter() / next() 직접 사용
+
+```python
+lunch_box = ["Sandwich", "Apple", "Juice"]
+
+# iter() → Iterable 에서 Iterator 생성
+waiter = iter(lunch_box)
+print(waiter)         # <list_iterator object at 0x...>
+                      # 내용물이 아니라 "포인터" 객체
+
+# next() → 하나씩 꺼내기
+print(next(waiter))   # Sandwich
+print(next(waiter))   # Apple
+print(next(waiter))   # Juice
+print(next(waiter))   # StopIteration 예외 발생!
+```
+
+```
+for 문 내부 동작:
+  for item in my_list: 는 사실 아래와 동일
+
+  _iter = iter(my_list)
+  while True:
+      try:
+          item = next(_iter)
+          # 본문 실행
+      except StopIteration:
+          break
+```
+
+---
+
+---
+
+# ③ Iterable vs Iterator 차이 ⭐️
+
+```python
+my_list = [1, 2, 3]
+
+# Iterable
+iter(my_list)         # ✅ 가능 → Iterator 반환
+my_list[0]            # ✅ 인덱스 접근 가능
+for x in my_list:     # ✅ 반복 가능 (여러 번 해도 됨)
+    pass
+for x in my_list:     # ✅ 다시 반복 가능
+    pass
+
+# Iterator
+it = iter(my_list)
+next(it)              # ✅ 1
+it[0]                 # ❌ TypeError: 인덱스 접근 불가
+for x in it:          # ✅ 남은 것만 (2, 3)
+    pass
+for x in it:          # ❌ 아무것도 안 나옴 (이미 소진)
+    pass
+```
+
+|구분|Iterable|Iterator|
+|---|---|---|
+|인덱스 접근|✅|❌|
+|재사용|✅ (몇 번이든)|❌ (일회용)|
+|`iter()` 호출|→ Iterator 반환|→ 자기 자신 반환|
+|`next()` 호출|❌|✅|
+|메모리|전체 보관|현재 위치만|
+
+---
+
+---
+
+# ④ 판별법
+
+```python
+# Iterable 판별
+def is_iterable(obj):
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
+
+is_iterable([1, 2, 3])   # True
+is_iterable("hello")     # True
+is_iterable(123)          # False (정수는 Iterable 아님)
+
+# hasattr 로 확인
+hasattr([1,2,3], '__iter__')   # True
+hasattr(123, '__iter__')       # False
+```
+
+---
+
+---
+
+# ⑤ **iter** / **next** — 내부 동작 원리
+
+```python
+# Iterable 은 __iter__ 메서드를 가짐
+# Iterator 는 __iter__ + __next__ 둘 다 가짐
+
+class MyIterator:
+    def __init__(self, data):
+        self.data = data
+        self.index = 0
+
+    def __iter__(self):
+        return self          # 자기 자신 반환
+
+    def __next__(self):
+        if self.index >= len(self.data):
+            raise StopIteration   # 끝나면 예외
+        value = self.data[self.index]
+        self.index += 1
+        return value
+
+it = MyIterator([10, 20, 30])
+print(next(it))   # 10
+print(next(it))   # 20
+for x in it:      # 나머지 30
+    print(x)
+```
+
+---
+
+---
+
+# ⑥ 일회용성 주의 ⭐️
+
+```python
+my_list = [1, 2, 3]
+it = iter(my_list)
+
+# 일부 소비
+next(it)   # 1 꺼냄
+next(it)   # 2 꺼냄
+
+# 나머지만 남음
+list(it)   # [3]  ← 1, 2 는 이미 소진
+
+# 다시 시도
+list(it)   # []   ← 완전히 빈 껍데기
+```
+
+```python
+# ⚠️ list(elements) 함정
+# Iterator 를 list() 로 변환하면 내부적으로 next() 를 끝까지 호출
+# → Iterator 소진됨
+
+def process(elements):
+    result = list(elements)   # ← 여기서 elements 소진!
+    total = sum(elements)     # ← elements 가 비어서 0 나옴!
+    return result, total
+
+# ✅ 해결
+def process(elements):
+    result = list(elements)   # 리스트로 변환
+    total = sum(result)       # result 사용
+    return result, total
+```
+
+---
+
+---
+
+# ⑦ 왜 필요한가 — 메모리 효율 ⭐️
+
+```
+리스트 방식:
+  [1, 2, 3, ... 1억] 전체를 메모리에 올림
+  → 1억 개 × 8바이트 = 800MB 필요 → 서버 폭발
+
+Iterator 방식:
+  현재 위치(포인터) 만 메모리에 유지
+  next() 호출할 때마다 하나씩 계산
+  → 메모리 거의 0에 가까움
+
+Lazy Evaluation (게으른 평가):
+  미리 다 만들지 않고
+  필요할 때만 계산해서 가져옴
+  → 끝을 알 수 없는 실시간 스트림에 필수
+```
+
+## Flink 실무 연결
+
+```python
+# PyFlink ProcessWindowFunction 에서
+# elements 는 리스트가 아닌 Iterator 로 전달됨
+
+def process(key, context, elements, out):
+    # ❌ 이렇게 하면 elements 소진 후 total = 0
+    result = list(elements)
+    total = sum(elements)
+
+    # ✅ list 로 한 번만 변환 후 재사용
+    element_list = list(elements)
+    total = sum(e.value for e in element_list)
+    count = len(element_list)
+
+# Flink 가 리스트 대신 Iterator 를 주는 이유:
+#   윈도우 데이터가 수백만 건이 될 수 있음
+#   리스트로 주면 메모리 즉사
+#   → Iterator 로 안전하게 전달
+```
+
+---
+
+---
+
+# 자주 하는 실수
+
+|실수|원인|해결|
+|---|---|---|
+|소진된 Iterator 재사용|일회용|`iter()` 로 새로 생성|
+|`list(elements)` 후 `sum(elements)`|elements 소진|`result = list(elements)` 후 `sum(result)`|
+|Iterator 에 인덱스 접근|Iterator 는 인덱스 없음|`list(it)` 로 변환 후 접근|
+|`for` 문 두 번 돌렸는데 두 번째 빈 값|Iterator 소진|Iterable 로 `for` / Iterator 재생성|

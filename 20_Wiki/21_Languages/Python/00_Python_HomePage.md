@@ -93,13 +93,13 @@ JSON 처리의 핵심
 
 >[[Linux_Python_Env]] 참고 
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Modules_Imports]]|import / from / **init**.py / 패키지 / 별칭 as|
-|[[Python_Entry_Point]]|if **name** == '**main**' / 모듈 vs 스크립트|
-|[[Python_Sys_Module]]|sys.argv / sys.path / sys.exit / 표준입출력|
-|[[Python_Virtual_Env]]|venv / pip / requirements.txt / activate|
-|[[Python_Regex]]|re.search / findall / sub / group / 패턴 문법|
+| 노트                         | 핵심 개념                                     |
+| -------------------------- | ----------------------------------------- |
+| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as |
+| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트    |
+| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력    |
+| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate  |
+| [[Python_Regex]]           | re.search / findall / sub / group / 패턴 문법 |
 
 ---
 
@@ -150,7 +150,8 @@ Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해하기
 
 |노트|핵심 개념|
 |---|---|
-|[[Python_Classes_Objects]]|class / self / **init** / **str** / @staticmethod / @classmethod|
+|[[Python_Classes_Objects]]|class / self / **init** / **str** / **repr** / @staticmethod / @classmethod|
+|[[Python_Inheritance]]|상속 / super() / 오버라이딩 / 다형성 / 추상 클래스 (ABC)|
 
 ---
 
@@ -164,11 +165,11 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 
 ### 함수 고급
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Decorators]]|@ 골뱅이 / @task / @wraps / TaskFlow API / 클로저|
-|[[Python_Iterables_Iterators]]|iter / next / **iter** / **next**|
-|[[Python_Generators_Yield]]|yield / generator / lazy evaluation / 메모리 절약|
+| 노트                             | 핵심 개념                                                |
+| ------------------------------ | ---------------------------------------------------- |
+| [[Python_Decorators]]          | @ 골뱅이 / @task / @wraps / TaskFlow API / 클로저,porperty |
+| [[Python_Iterables_Iterators]] | iter / next / **iter** / **next**                    |
+| [[Python_Generators_Yield]]    | yield / generator / lazy evaluation / 메모리 절약         |
 
 ### 날짜 & 시간
 
@@ -216,9 +217,9 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 파이썬이 데이터베이스 / 클라우드와 대화하기
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Database_Connect]]|psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall|
+| 노트                          | 핵심 개념                                                                |
+| --------------------------- | -------------------------------------------------------------------- |
+| [[Python_Database_Connect]] | psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall |
 
 ---
 

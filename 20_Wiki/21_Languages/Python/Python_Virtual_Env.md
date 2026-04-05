@@ -117,7 +117,7 @@ pip install -r requirements.txt
 
 ```bash
 # "캐시 남기지 말고(용량 절약), 리스트 파일 읽어서(한방에) 설치해라"
-pip install --no-cache-dir -r requirements.txt
+pip3 install --no-cache-dir -r requirements.txt
 ```
 
 

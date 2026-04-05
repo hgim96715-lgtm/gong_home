@@ -15,6 +15,8 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Python_Lists_Tuples]]"
   - "[[Python_DateTime]]"
+  - "[[Python_Decorators]]"
+  - "[[Python_Inheritance]]"
 ---
 # Python_Classes_Objects
 

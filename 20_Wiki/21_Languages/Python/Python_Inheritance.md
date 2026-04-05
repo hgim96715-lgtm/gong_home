@@ -1,19 +1,14 @@
 ---
 aliases:
-  - 데코레이터
-  - Decorator
-  - "@"
-  - TakFlow
+  - 상속
+  - inheritance
+  - super
 tags:
   - Python
-  - Airflow
 related:
-  - "[[Airflow_DAG_Skeleton]]"
-  - "[[Python_Functions]]"
-  - "[[Airflow_XComs]]"
-  - "[[Airflow_TaskFlow_API]]"
+  - "[[00_Python_HomePage]]"
   - "[[Python_Classes_Objects]]"
-  - "[[Python_Inheritance]]"
+  - "[[Python_Decorators]]"
 ---
 # Python_Decorators — 데코레이터
 
@@ -250,6 +245,166 @@ with DAG(dag_id='my_dag', ...) as dag:
 ```
 공통 태스크 (슬랙 알림, 전처리 등) 는
 utils.py 에 정의해두고 여러 DAG 에서 import 해서 쓰는 것이 고수 방식
+```
+
+---
+
+---
+
+# ⑦ @property — 클래스 속성 제어 ⭐️
+
+```
+@property    = Getter  값을 가져올 때 실행
+@속성.setter = Setter  값을 저장할 때 유효성 검사
+@속성.deleter = Deleter 값을 지울 때 실행
+
+메서드인데 속성처럼 .으로 접근 가능
+괄호 () 없이 호출
+```
+
+## 기본 — @property (Getter)
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self._radius = radius   # _ 는 "직접 접근 말아줘" 관례
+
+    @property
+    def radius(self):
+        return self._radius
+
+c = Circle(5)
+c.radius       # 5  ← 메서드인데 () 없이 호출
+c.radius()     # ❌ TypeError — property 는 () 붙이면 에러
+```
+
+## @속성.setter — 쓰기 + 유효성 검사
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self._radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if value < 0:
+            raise ValueError("반지름은 0 이상이어야 합니다")
+        self._radius = value
+
+c = Circle(5)
+c.radius = 10     # setter 실행 → self._radius = 10
+c.radius = -1     # ValueError: 반지름은 0 이상이어야 합니다
+```
+
+```
+setter 없으면:
+  c.radius = 10  → AttributeError (읽기 전용)
+
+setter 있으면:
+  c.radius = 10  → setter 메서드 실행
+```
+
+## @속성.deleter — 삭제
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self._radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.deleter
+    def radius(self):
+        print("radius 삭제됨")
+        del self._radius
+
+c = Circle(5)
+del c.radius    # deleter 실행 → "radius 삭제됨"
+```
+
+## 계산된 속성 — 저장 없이 계산해서 반환
+
+```python
+class Circle:
+    def __init__(self, radius):
+        self._radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if value < 0:
+            raise ValueError("반지름은 0 이상이어야 합니다")
+        self._radius = value
+
+    @property
+    def area(self):                        # 저장 안 하고 계산만
+        return 3.14159 * self._radius ** 2
+
+    @property
+    def diameter(self):
+        return self._radius * 2
+
+c = Circle(5)
+c.radius     # 5
+c.area       # 78.53975  ← 매번 계산해서 반환
+c.diameter   # 10
+```
+
+```
+area / diameter 는 따로 저장 안 함
+radius 바뀌면 area / diameter 도 자동으로 최신값 반환
+
+vs 일반 속성:
+  self.area = 3.14 * r ** 2   → radius 바뀌어도 area 는 안 바뀜
+  @property area              → radius 바뀌면 다시 계산 ✅
+```
+
+## Getter / Setter / Deleter 한눈에
+
+```python
+class Temperature:
+    def __init__(self, celsius=0):
+        self._celsius = celsius
+
+    @property
+    def celsius(self):                     # Getter
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):              # Setter
+        if value < -273.15:
+            raise ValueError("절대영도 이하 불가")
+        self._celsius = value
+
+    @celsius.deleter
+    def celsius(self):                     # Deleter
+        del self._celsius
+
+    @property
+    def fahrenheit(self):                  # 계산된 속성
+        return self._celsius * 9/5 + 32
+
+t = Temperature(100)
+t.celsius      # 100       Getter 실행
+t.celsius = 0  # 0         Setter 실행
+t.fahrenheit   # 32.0      계산된 속성
+del t.celsius  #            Deleter 실행
+```
+
+```
+규칙:
+  세 메서드의 이름이 전부 같아야 함 (celsius)
+  @property → @celsius.setter → @celsius.deleter 순서로 정의
+  순서 바뀌면 에러
 ```
 
 ---
