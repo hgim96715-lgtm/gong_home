@@ -4,6 +4,10 @@ aliases:
   - 그룹 관리
   - useradd
   - usermod
+  - UID
+  - GID
+  - groupadd
+  - groupdel
 tags:
   - Linux
 related:
@@ -12,7 +16,6 @@ related:
   - "[[Linux_Superuser]]"
   - "[[Linux_SSH]]"
 ---
-
 # Linux_User_Group — 사용자 & 그룹 관리
 
 ## 한 줄 요약
@@ -144,11 +147,104 @@ sudo usermod -U gong                    # 계정 잠금 해제 (Unlock)
 
 # ④ 그룹 생성 / 삭제 / 수정
 
+## groupadd — 그룹 생성
+
 ```bash
-sudo groupadd mygroup              # 그룹 생성
+sudo groupadd research             # 그룹 생성
 sudo groupadd -g 2000 mygroup      # GID 지정하며 생성
-sudo groupdel mygroup              # 그룹 삭제
+
+# 생성 확인 → /etc/group 에서 확인
+grep research /etc/group
+# research:x:5003:
+#   ↑이름   ↑비밀번호 ↑GID ↑멤버(비어있음)
+```
+
+```
+/etc/group 형식:
+  그룹명 : 비밀번호 : GID : 멤버목록
+  research:x:5003:labex,gong
+```
+
+```
+⚠️ sudo 없으면 permission denied
+   그룹 관리는 반드시 관리자 권한 필요
+```
+
+## usermod -aG — 보조 그룹에 사용자 추가 ⭐️
+
+```bash
+sudo usermod -aG research labex
+
+# 추가 확인
+grep research /etc/group
+# research:x:5003:labex  ← 멤버에 labex 추가됨
+
+groups labex
+# labex : labex sudo ssl-cert public research  ← 전체 그룹 목록
+```
+
+```
+-a = Append (기존 그룹 유지하며 추가)
+-G = 보조 그룹 지정
+
+-a 없이 -G 만 쓰면:
+  sudo usermod -G research labex
+  → labex 가 기존에 속한 sudo / docker 등 전부 제거됨!
+  → research 만 남음 → 매우 위험!
+
+반드시 -aG 세트로 사용
+```
+
+## 멤버십 확인 — grep / groups
+
+```bash
+# 특정 그룹에 누가 있는지
+grep research /etc/group
+# research:x:5003:labex
+
+# 특정 사용자가 어느 그룹에 있는지
+groups labex
+# labex : labex sudo ssl-cert public research
+
+# /etc/group 전체에서 사용자 검색
+grep labex /etc/group
+# sudo:x:27:labex
+# ssl-cert:x:121:labex
+# labex:x:5000:
+# public:x:5002:labex
+# research:x:5003:labex
+```
+
+```
+grep vs groups:
+  grep 그룹명 /etc/group  → 그룹에 어떤 멤버가 있는지
+  groups 사용자명         → 사용자가 어떤 그룹에 속하는지
+```
+
+## groupdel — 그룹 삭제
+
+```bash
+sudo groupdel research
+
+# 삭제 확인 → 아무것도 안 나오면 성공
+grep research /etc/group
+# (아무 출력 없음)
+```
+
+```
+주의:
+  사용자의 기본 그룹(Primary Group)은 삭제 불가
+  → 해당 사용자가 있으면 먼저 사용자 삭제 또는 기본 그룹 변경
+
+  그룹 삭제 후 파일 소유권:
+  → 해당 그룹이 소유한 파일의 GID 가 숫자로 남음
+```
+
+## groupmod — 그룹 수정
+
+```bash
 sudo groupmod -n newname oldname   # 그룹 이름 변경
+sudo groupmod -g 3000 mygroup      # GID 변경
 ```
 
 ---
@@ -178,17 +274,137 @@ id gong
 ---
 
 ---
+# ⑥ UID / GID 완전 정리 ⭐️
 
-# ⑥ UID / GID 범위 규칙
+## UID — 사용자 식별 번호
 
 ```
-0          root (최고 권한)
-1 ~ 999    시스템 사용자 (데몬 / 서비스용)
-1000 ~     일반 사용자 (사람이 쓰는 계정)
+UID = User ID
+리눅스가 사용자를 구분하는 숫자
+이름이 아닌 UID 로 실제 권한 처리
 
-/sbin/nologin 셸:
-  시스템 사용자는 로그인 불가
-  mysql / nginx / kafka 등 서비스 계정에 사용
+범위:
+  0          root (최고 권한 / 슈퍼유저)
+  1 ~ 999    시스템 사용자 (데몬 / 서비스용 / 사람이 아님)
+  1000 ~     일반 사용자 (사람이 쓰는 계정)
+```
+
+```bash
+id gong
+# uid=1001(gong)   ← UID 1001 = 일반 사용자
+id root
+# uid=0(root)      ← UID 0 = root
+
+cat /etc/passwd | grep gong
+# gong:x:1001:1001::/home/gong:/bin/bash
+#        ↑UID ↑GID
+```
+
+**출력 결과 상세 분석** 
+
+|**항목**|**예시**|**의미**|
+|---|---|---|
+|**사용자 이름**|`gong`|로그인 시 사용하는 아이디|
+|**비밀번호**|`x`|실제 암호는 `/etc/shadow`에 암호화되어 저장됨을 의미|
+|**UID**|`1001`|**사용자 고유 번호** (User ID)|
+|**GID**|`1001`|**기본 그룹 번호** (Primary Group ID)|
+|**코멘트**|(비어있음)|사용자 설명 (이름, 전화번호 등 - 보통 생략)|
+|**홈 디렉토리**|`/home/gong`|로그인 시 사용자가 위치하게 될 개인 폴더|
+|**기본 쉘**|`/bin/bash`|사용자가 명령어를 입력할 때 사용하는 인터프리터|
+
+## GID — 그룹 식별 번호
+
+```
+GID = Group ID
+그룹을 구분하는 숫자
+사용자는 기본 그룹(Primary) 1개 + 보조 그룹(Secondary) 여러 개 가질 수 있음
+
+범위:
+  0          root 그룹
+  1 ~ 999    시스템 그룹
+  1000 ~     일반 그룹
+```
+
+```bash
+cat /etc/group | grep docker
+# docker:x:999:gong
+#  ↑이름 ↑비번↑GID↑멤버
+```
+
+| **항목**      | **예시**   | **의미**                                 |
+| ----------- | -------- | -------------------------------------- |
+| **그룹 이름**   | `docker` | 시스템에서 사용하는 그룹의 명칭                      |
+| **그룹 비밀번호** | `x`      | 과거에는 사용했으나 현재는 `x`로 표시 (보안상 생략)        |
+| **GID**     | `999`    | **그룹 고유 번호** (Group ID)                |
+| groupdel**그룹 멤버**   | `gong`   | 이 그룹을 **보조 그룹**으로 사용하는 사용자 명단 (쉼표로 구분) |
+
+## Primary Group vs Secondary Group
+
+```
+Primary Group (기본 그룹):
+  사용자가 파일 생성 시 자동으로 부여되는 그룹
+  /etc/passwd 의 GID 필드
+  useradd 시 자동으로 사용자명과 같은 그룹 생성
+
+Secondary Group (보조 그룹):
+  추가로 속한 그룹 (권한 확장용)
+  usermod -aG 로 추가
+  docker / sudo / 팀 그룹 등
+```
+
+```bash
+id gong
+# uid=1001(gong) gid=1001(gong) groups=1001(gong),999(docker),27(sudo)
+#                ↑Primary GID   ↑Secondary Groups (전부 포함)
+```
+
+## UID / GID 로 파일 소유권 확인
+
+
+```bash
+ls -l
+# -rw-r--r-- 1 gong gong 1234 Apr 6 file.txt
+#              ↑소유자 ↑소유그룹
+
+# 실제로는 이름이 아닌 UID/GID 로 저장됨
+# 사용자 삭제하면 이름 대신 숫자로 표시됨
+ls -l
+# -rw-r--r-- 1 1001 1001 1234 Apr 6 file.txt  ← 사용자 삭제 후
+```
+
+## UID / GID 직접 지정
+
+```bash
+# UID 지정하며 생성
+sudo useradd -u 1500 myuser
+
+# GID 지정하며 그룹 생성
+sudo groupadd -g 2000 mygroup
+
+# 특정 그룹으로 생성
+sudo useradd -u 1500 -g 2000 myuser
+
+# 현재 시스템에서 사용 중인 UID 확인
+cat /etc/passwd | awk -F: '{print $3}' | sort -n
+```
+
+## /sbin/nologin 셸
+
+```
+시스템 사용자는 로그인 불가하도록 셸을 nologin 으로 설정
+mysql / nginx / kafka 등 서비스 계정에 사용
+
+로그인 시도하면:
+  "This account is currently not available" 출력 후 차단
+```
+
+```bash
+# 서비스 계정 생성 예시
+sudo useradd -r -s /sbin/nologin kafka
+# -r  시스템 계정 (UID 1000 미만 자동 할당)
+
+cat /etc/passwd | grep kafka
+# kafka:x:998:998::/home/kafka:/sbin/nologin
 ```
 
 ---
