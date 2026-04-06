@@ -320,6 +320,94 @@ text[start:end]   # 'Python'
 ```
 
 ---
+---
+# 플래그 (Flags) ⭐️
+
+```
+함수의 마지막 인자로 전달
+검색 방식을 수정하는 옵션
+여러 개 동시에 쓸 때 | 로 연결
+```
+
+## 주요 플래그 목록
+
+|플래그|단축|의미|
+|---|---|---|
+|`re.IGNORECASE`|`re.I`|대소문자 무시|
+|`re.MULTILINE`|`re.M`|^ $ 를 각 줄 시작/끝에 적용|
+|`re.DOTALL`|`re.S`|`.` 이 줄바꿈 포함 모든 문자 매칭|
+|`re.VERBOSE`|`re.X`|패턴에 주석과 공백 허용 (가독성)|
+
+## re.IGNORECASE — 대소문자 무시 ⭐️
+
+
+```python
+text = "Hello PYTHON python PyThOn"
+
+# 플래그 없음 → 정확히 'python' 만 찾음
+re.findall(r"python", text)             # ['python']
+
+# re.IGNORECASE → 대소문자 무관
+re.findall(r"python", text, re.IGNORECASE)  # ['PYTHON', 'python', 'PyThOn']
+re.findall(r"python", text, re.I)           # 동일 (단축형)
+
+# 개수 세기
+len(re.findall(r'p', "Python Programming", re.IGNORECASE))  # 2
+#  P (Python) + p (Programming) → 대소문자 무시해서 둘 다 카운트
+
+# search 에서도 동일
+re.search(r"python", "PYTHON", re.I)    # Match 반환
+re.sub(r"python", "java", text, flags=re.I)
+# 'Hello java java java'  ← 전부 치환
+```
+
+```
+re.sub 에서 플래그 전달할 때:
+  re.sub(패턴, 바꿀값, 문자열, flags=re.I)  ← flags= 키워드 필수
+  re.sub(패턴, 바꿀값, 문자열, re.I)        ← 네 번째 인자는 count 라서 ❌
+```
+
+## re.MULTILINE — 여러 줄 처리
+
+
+```python
+text = """첫 번째 줄
+두 번째 줄
+세 번째 줄"""
+
+# 기본: ^ 는 전체 문자열의 시작만
+re.findall(r"^\S+", text)              # ['첫']  ← 첫 줄만
+
+# MULTILINE: ^ 가 각 줄의 시작
+re.findall(r"^\S+", text, re.M)        # ['첫', '두', '세']  ← 각 줄 첫 단어
+re.findall(r"^\S+", text, re.MULTILINE)  # 동일
+```
+
+## re.DOTALL — 줄바꿈 포함
+
+```python
+text = "시작\n중간\n끝"
+
+# 기본: . 은 줄바꿈 매칭 안 함
+re.search(r"시작.끝", text)        # None  ← \n 때문에 실패
+
+# DOTALL: . 이 \n 도 포함
+re.search(r"시작.+끝", text, re.S) # Match  ← \n 도 매칭
+```
+
+## 여러 플래그 동시 사용
+
+```python
+# | 로 연결
+re.findall(r"^python", text, re.I | re.M)
+# 대소문자 무시 + 각 줄 시작 적용
+```
+
+---
+
+
+
+---
 
 ---
 
@@ -349,20 +437,24 @@ text[start:end]   # 'Python'
 # 자주 하는 실수
 
 ```python
-# ① .group() 전에 None 체크 안 함
+#  .group() 전에 None 체크 안 함
 m = re.search(r"\d+", "abc")
 m.group()   # AttributeError: 'NoneType' → if m: 먼저 체크
 
-# ② findall 에 .group() 쓰려 함
+#  findall 에 .group() 쓰려 함
 result = re.findall(r"\d+", text)
 result.group()   # AttributeError: list has no .group()
 # findall 은 이미 리스트 → for 문으로 바로 사용
 
-# ③ r"" 안 붙임
+#  r"" 안 붙임
 re.search("\d+", text)   # \d 를 탈출문자로 해석 → 오동작
 re.search(r"\d+", text)  # ✅
 
-# ④ match 로 중간값 찾으려 함
+#  re.sub 에서 플래그 위치 실수
+re.sub(r"python", "java", text, re.I)     # ❌ 4번째는 count 인자
+re.sub(r"python", "java", text, flags=re.I)  # ✅ flags= 키워드 필수
+
+#  match 로 중간값 찾으려 함
 re.match(r"\d+", "abc123")  # None → search 써야 함
 ```
 

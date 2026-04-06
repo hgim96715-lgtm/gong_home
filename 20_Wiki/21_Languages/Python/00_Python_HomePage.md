@@ -93,13 +93,13 @@ JSON 처리의 핵심
 
 >[[Linux_Python_Env]] 참고 
 
-| 노트                         | 핵심 개념                                     |
-| -------------------------- | ----------------------------------------- |
-| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as |
-| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트    |
-| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력    |
-| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate  |
-| [[Python_Regex]]           | re.search / findall / sub / group / 패턴 문법 |
+| 노트                         | 핵심 개념                                               |
+| -------------------------- | --------------------------------------------------- |
+| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as           |
+| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트              |
+| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력              |
+| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate            |
+| [[Python_Regex]]           | import re/re.search / findall / sub / group / 패턴 문법 |
 
 ---
 
