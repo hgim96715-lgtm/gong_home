@@ -373,3 +373,145 @@ print(solution(10, 3))  # 3
   __add__    : obj1 + obj2 할 때 동작
   __floordiv__: obj1 // obj2 할 때 동작
 ```
+
+---
+# @dataclass — 클래스를 간결하게 ⭐️
+
+```
+__init__ / __repr__ / __eq__ 를 자동으로 만들어주는 데코레이터
+반복적인 보일러플레이트 코드 제거
+데이터를 담는 클래스(DTO, VO) 만들 때 특히 유용
+```
+
+## 기본 사용
+
+python
+
+```python
+from dataclasses import dataclass
+
+# 기존 클래스 방식
+class User:
+    def __init__(self, name: str, age: int):
+        self.name = name
+        self.age = age
+
+    def __repr__(self):
+        return f"User(name={self.name}, age={self.age})"
+
+# dataclass 방식 — 훨씬 간결
+@dataclass
+class User:
+    name: str
+    age: int
+
+# 자동으로 생성되는 것:
+#   __init__(self, name, age)
+#   __repr__ → "User(name='gong', age=28)"
+#   __eq__   → name 과 age 가 같으면 == True
+
+u1 = User("gong", 28)
+u2 = User("gong", 28)
+print(u1)        # User(name='gong', age=28)
+print(u1 == u2)  # True ← __eq__ 자동 생성
+```
+
+## 기본값 설정
+
+```python
+@dataclass
+class Config:
+    host: str = "localhost"
+    port: int = 5432
+    debug: bool = False
+
+c = Config()                    # 기본값 사용
+c = Config(host="prod-db")      # 일부만 지정
+c = Config("prod-db", 5435, True)  # 전부 지정
+```
+
+## asdict() — 딕셔너리로 변환 ⭐️
+
+
+```python
+from dataclasses import dataclass, asdict
+
+@dataclass
+class Hospital:
+    hpid: str
+    hpname: str
+    hvec: int
+
+h = Hospital("A1100001", "삼성서울병원", -26)
+
+# 딕셔너리로 변환
+d = asdict(h)
+print(d)
+# {'hpid': 'A1100001', 'hpname': '삼성서울병원', 'hvec': -26}
+
+# JSON 직렬화할 때 바로 활용
+import json
+json.dumps(asdict(h))
+# '{"hpid": "A1100001", "hpname": "삼성서울병원", "hvec": -26}'
+```
+
+```
+asdict 활용:
+  Kafka 메시지로 보낼 때
+  DB INSERT 할 때 딕셔너리로 변환
+  API 응답 JSON 만들 때
+```
+
+## field() — 고급 설정
+
+
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class Pipeline:
+    name: str
+    tags: list = field(default_factory=list)   # 리스트 기본값
+    meta: dict = field(default_factory=dict)   # 딕셔너리 기본값
+    _id: str = field(default="", repr=False)   # repr 에서 제외
+
+# ⚠️ 리스트/딕셔너리는 default= 직접 못 씀
+# @dataclass
+# class Bad:
+#     tags: list = []   # ❌ ValueError → field(default_factory=list) 사용
+```
+
+## frozen=True — 불변 객체
+
+```python
+@dataclass(frozen=True)
+class Point:
+    x: float
+    y: float
+
+p = Point(1.0, 2.0)
+p.x = 3.0   # ❌ FrozenInstanceError (수정 불가)
+
+# 해시 가능 → 딕셔너리 키 / 세트 원소로 사용 가능
+d = {p: "좌표"}
+```
+
+## 일반 클래스 vs dataclass
+
+|구분|일반 클래스|@dataclass|
+|---|---|---|
+|`__init__`|직접 작성|자동 생성|
+|`__repr__`|직접 작성|자동 생성|
+|`__eq__`|직접 작성|자동 생성|
+|메서드|자유롭게|자유롭게|
+|용도|복잡한 로직|데이터 담는 용도|
+
+```
+언제 dataclass 쓰나:
+  데이터를 담는 클래스 (DTO / 설정값 / API 응답 파싱)
+  __init__ 코드가 반복될 때
+  asdict() 로 JSON 변환이 필요할 때
+
+언제 일반 클래스 쓰나:
+  복잡한 로직 / 상속 / 프로퍼티가 필요할 때
+```

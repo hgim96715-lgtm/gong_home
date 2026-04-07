@@ -24,208 +24,120 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Python_Error_Handling]]"
   - "[[Python_URL_Parsing]]"
----
-# Python_Requests_Methods
-
-## 개념 한 줄 요약
-
-> **GET : "보여줘!" (Read) — POST : "처리해줘!" (Write/Create)** 둘 다 `Response` 객체를 반환한다.
-
-|구분|GET|POST|
-|---|---|---|
-|**비유**|엽서 (내용이 보임)|편지봉투 (내용이 숨겨짐)|
-|**데이터 위치**|URL 뒤 `?key=value`|요청 Body 안|
-|**용도**|조회 (뉴스, 날씨, API)|생성/변경 (로그인, 결제)|
-|**멱등성**|O (몇 번 호출해도 서버 불변)|X (호출할 때마다 서버 변경)|
-
+  - "[[Python_Selenium]]"
 ---
 
----
 
-# ① GET / POST 기본 형태
+# Python_Requests_Methods — HTTP 요청
 
-```python
-import requests
+## 한 줄 요약
 
-# GET: params 로 URL 뒤에 붙임
-r = requests.get(
-    "https://httpbin.org/get",
-    params={"key1": "value1", "key2": "value2"},
-    timeout=10
-)
-# 실제 요청 URL: https://httpbin.org/get?key1=value1&key2=value2
-
-# POST: data (Form) 또는 json (JSON) 으로 Body 에 숨김
-r = requests.post(
-    "https://httpbin.org/post",
-    data={"username": "my_id", "password": "secret_pw"},
-    timeout=10
-)
-
-# POST: JSON 형식으로 보낼 때
-r = requests.post(
-    "https://httpbin.org/post",
-    json={"name": "Alice", "age": 30},  # Content-Type 자동으로 application/json 설정
-    timeout=10
-)
+```
+requests.get()   → 데이터 조회 (Read)
+requests.post()  → 데이터 생성/전송 (Write)
+둘 다 Response 객체 반환
 ```
 
 ---
 
 ---
 
-# ② 파라미터 4대장
+# ① GET vs POST
+
+```
+GET   → "보여줘" — 데이터 조회
+POST  → "처리해줘" — 데이터 생성 / 로그인 / 결제
+
+GET:
+  데이터가 URL 뒤에 붙음 (?key=value)
+  눈에 보임 → 인증 토큰 절대 GET 으로 보내면 안 됨
+  몇 번 호출해도 서버 변화 없음 (멱등성 O)
+
+POST:
+  데이터가 Body 안에 숨겨짐
+  로그인 / 결제 / 파일 업로드 등
+  호출할 때마다 서버 변화 가능 (멱등성 X)
+```
+
+---
+
+---
+
+# ② 기본 사용법
+
+## GET — params
+
+```python
+import requests
+
+r = requests.get(
+    "https://api.example.com/trains",
+    params={
+        "serviceKey": "API_KEY",
+        "run_ymd": "20260308",
+        "pageNo": 1,          # int 그대로 → requests 가 자동으로 "1" 변환
+    },
+    timeout=10
+)
+# 실제 URL: ?serviceKey=API_KEY&run_ymd=20260308&pageNo=1
+```
+
+## POST — data / json
+
+```python
+# Form 데이터 (HTML form 처럼)
+r = requests.post(
+    "https://example.com/login",
+    data={"username": "myid", "password": "1234"},
+    timeout=10
+)
+
+# JSON 데이터 (API 에 데이터 보낼 때)
+r = requests.post(
+    "https://api.example.com/data",
+    json={"name": "gong", "age": 28},  # Content-Type 자동으로 application/json
+    timeout=10
+)
+```
+
+## 파라미터 4가지 정리
 
 |파라미터|용도|위치|
 |---|---|---|
 |`params`|GET 쿼리스트링|URL 뒤|
 |`data`|POST Form 데이터|Body|
-|`json`|POST JSON 데이터|Body (Content-Type 자동 설정)|
-|`headers`|신분증 / 메타데이터|요청 헤더|
-|`timeout`|최대 대기 시간 (초)|—|
-
-## params 의 숫자 자동 변환 ⭐️
-
-> API 공식 문서에 `string` 이라고 적혀 있어도 `params` 에 숫자(int) 를 그대로 넣어도 완벽하게 작동한다.
-
-```python
-# API 문서에 pageNo, numOfRows 가 string 이라고 명시돼 있어도
-params = {
-    "serviceKey" : API_KEY,
-    "pageNo"     : 1,      # int 그대로 넣어도 OK
-    "numOfRows"  : 100,    # int 그대로 넣어도 OK
-    "dataType"   : "JSON",
-    "run_ymd"    : "20260308",
-}
-```
-
-```
-requests 가 서버로 보내기 직전에
-params 딕셔너리의 모든 값을 자동으로 문자열(str) 로 변환한다.
-
-1     ->  "1"
-100   ->  "100"
-True  ->  "True"
-
-실제 전송 URL: ?pageNo=1&numOfRows=100&...
-```
-
-```
-그래서:
-str(pageNo) 로 직접 변환할 필요 없음
-"1" 로 바꿀지 1 로 놔둘지 고민할 필요 없음
-가독성을 위해 숫자는 숫자 타입 그대로 쓰는 게 더 깔끔
-```
-
----
-## params 의 함정 — 특수문자 인코딩 ⭐
-
->️`params={}` 는 편리하지만 **특수문자가 포함된 파라미터 이름** 에서 문제가 생긴다.
-
-```python
-# 이렇게 넘기면
-params = {"cond[run_ymd::EQ]": "20260308"}
-
-# requests 가 파라미터 이름까지 인코딩해버림
-# 실제 전송: ?cond%5Brun_ymd%3A%3AEQ%5D=20260308
-#                ↑ [ → %5B   ] → %5D   : → %3A
-# -> 서버가 알아보지 못하고 400 Bad Request 반환
-```
-
-```text
-원인: requests 는 params 딕셔너리의 key 도 URL 인코딩 대상으로 처리함. 
-[] :: 같은 특수문자가 key 에 포함되면 전부 %XX 로 변환됨.
-```
-
-```python
-# 해결: URL 을 직접 f-string 으로 조립
-query_str = f"pageNo=1&numOfRows=100&cond[run_ymd::EQ]=20260308"
-url = f"{base_url}/{endpoint}?serviceKey={api_key}&returnType=JSON&{query_str}"
-
-# 실제 전송: ?serviceKey=...&returnType=JSON&pageNo=1&cond[run_ymd::EQ]=20260308
-# 대괄호가 그대로 유지됨 -> 서버가 정상 처리
-```
-
-```text
-언제 params={} 를 쓰고 언제 직접 조립하나?
-
-파라미터 이름이 평범한 영문/숫자  -> params={} 그냥 사용
-파라미터 이름에 [] :: 등 특수문자 -> f-string 직접 조립
-```
-
->[[02_API_Producer]] 코레일 V2 API 에서 실제로 겪은 문제. [[Python_URL_Parsing]] 인코딩 참고
-
-
----
-
-# ③ API 문서 읽기 — 필수 vs 선택 파라미터
-
-## 별표(*) 가 전부다
-
-```
-API 문서에서 파라미터 이름 옆 별표(*) 유무만 확인하면 됨
-
-serviceKey *   <- * 있음 = 필수 (안 넣으면 응답 자체를 안 해줌)
-pageNo         <- * 없음 = 선택 (안 넣으면 서버 기본값으로 처리)
-numOfRows      <- * 없음 = 선택
-run_ymd        <- * 없음 = 선택
-dptre_stn_cd   <- * 없음 = 선택
-```
-
-```
-식당 주문 비유:
-필수(*): 메뉴 자체 (없으면 주문 불가)
-선택  : 추가 토핑 (안 고르면 기본으로 나옴)
-```
-
-## 함수 파라미터에 뭘 넣어야 하나 ⭐️
-
-```
-함수 파라미터 = "호출할 때마다 바뀌는 값" 만 넣는다.
-
-넣어야 하는 것  : 호출할 때마다 달라지는 값 (날짜, 역 코드 등)
-넣지 않아도 되는 것: 항상 고정인 값 (serviceKey, dataType, pageNo 등)
-                    -> params 딕셔너리 안에 하드코딩
-```
-
-```python
-# ❌ 처음에 헷갈려서 이렇게 짜고 싶었던 것
-def get_train_schedule(self, serviceKey, pageNo, numOfRows, dataType, run_ymd, dptre_stn_cd):
-    ...
-# 호출할 때마다 serviceKey, pageNo, dataType 을 매번 넘겨줘야 해서 불편
-
-# ✅ 올바른 방식
-def get_train_schedule(self, run_ymd: str, dptre_stn_cd: str = "0001") -> list:
-    params = {
-        "serviceKey" : self.api_key,   # 항상 고정 -> 함수 밖에서 관리
-        "pageNo"     : 1,              # 항상 고정 -> params 에 하드코딩
-        "numOfRows"  : 100,            # 항상 고정 -> params 에 하드코딩
-        "dataType"   : "JSON",         # 항상 고정 -> params 에 하드코딩
-        "run_ymd"    : run_ymd,        # 호출마다 다름 -> 파라미터로 받음
-        "dptre_stn_cd": dptre_stn_cd,  # 기본값 있지만 바꿀 수 있음 -> 기본값 파라미터
-    }
-```
-
-## 파라미터 분류 기준
-
-|분류|넣는 곳|예시|
-|---|---|---|
-|항상 고정|`params` 딕셔너리에 하드코딩|`pageNo=1`, `dataType="JSON"`|
-|호출마다 다름|함수 파라미터 (필수)|`run_ymd`|
-|보통 고정인데 가끔 바꿀 수 있음|함수 파라미터 (기본값 지정)|`dptre_stn_cd="0001"`|
-|인증 키|`self.api_key` 또는 `.env`|`serviceKey`|
+|`json`|POST JSON 데이터|Body (Content-Type 자동)|
+|`headers`|인증 / 메타데이터|요청 헤더|
+|`timeout`|최대 대기 시간(초)|—|
 
 ---
 
 ---
 
-# ④ headers — 신분증
+# ③ headers — 인증 & 메타데이터 ⭐️
+
+```
+headers = 요청에 붙이는 메타데이터
+  누가 요청하는지 (인증)
+  어떤 형식으로 보내는지 / 받고 싶은지
+  서버가 요청자를 식별하는 정보
+```
+
+## 자주 쓰는 헤더
 
 ```python
 headers = {
-    "Authorization": f"Bearer {API_TOKEN}",   # API 인증 토큰
-    "Accept": "application/json",              # JSON 형식으로 받겠다
-    "Content-Type": "application/json",        # 내가 보내는 것도 JSON
+    # 인증 (가장 중요)
+    "Authorization": f"Bearer {API_TOKEN}",
+
+    # 내가 보내는 데이터 형식
+    "Content-Type": "application/json",
+
+    # 받고 싶은 데이터 형식
+    "Accept": "application/json",
+
+    # 브라우저인 척 (봇 차단 우회)
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
 }
 
 r = requests.get(url, headers=headers, timeout=10)
@@ -233,230 +145,290 @@ r = requests.get(url, headers=headers, timeout=10)
 
 ## Authorization 형식
 
-```text
-Bearer 토큰   # OAuth, JWT 등 대부분의 API
-token 토큰    # GitHub API
-Basic 토큰    # ID:PW 를 Base64 인코딩한 것
+```python
+# Bearer 토큰 — OAuth / JWT (가장 많이 씀)
+"Authorization": f"Bearer {token}"
+
+# API Key 방식 (서비스마다 다름)
+"Authorization": f"token {github_token}"   # GitHub
+"x-api-key": api_key                       # AWS API Gateway 등
+
+# Basic 인증 — ID:PW 방식
+import base64
+credentials = base64.b64encode(b"id:password").decode()
+"Authorization": f"Basic {credentials}"
 ```
 
->`params` 에 토큰을 넣으면 URL 에 그대로 노출된다. 
->서버 로그, 브라우저 기록에 남아서 유출 위험. 인증 정보는 **반드시 headers 의 Authorization** 에 넣어야 한다.
+```
+⚠️ 인증 토큰은 반드시 headers 에 넣기
+   params 에 넣으면 URL 에 그대로 노출됨
+   서버 로그 / 브라우저 기록에 남아서 보안 위험
+```
 
----
----
-# ⑤ timeout — 필수 안전장치
+## 공공데이터 API 헤더 패턴
 
 ```python
-# timeout 없으면 서버가 응답할 때까지 영원히 대기
-# 파이프라인 전체가 멈추는 대참사 발생
+# 공공데이터포털은 serviceKey 를 params 에 넣음 (서비스마다 다름)
+params = {"serviceKey": API_KEY, "dataType": "JSON", ...}
 
-# 연결 10초, 응답 30초 각각 설정
-r = requests.get(url, timeout=(10, 30))
-
-# 둘 다 같은 값으로 설정
-r = requests.get(url, timeout=10)
+# 일반 REST API 는 headers 에 넣음
+headers = {"Authorization": f"Bearer {API_TOKEN}"}
 ```
 
+---
+
+---
+
+# ④ timeout — 필수 안전장치 ⭐️
+
+```
+timeout 없으면 → 서버 응답 때까지 영원히 대기
+→ 파이프라인 전체가 멈추는 대참사
+
+항상 설정 필수
+```
+
+```python
+# 10초 안에 응답 없으면 Timeout 예외
+r = requests.get(url, timeout=10)
+
+# 연결 대기 / 응답 대기 각각 설정
+r = requests.get(url, timeout=(5, 30))
+#                               ↑  ↑
+#                             연결  응답
+```
 
 ---
 
 ---
 
-# ⑥ requests.Session — 같은 서버에 반복 호출할 때 ⭐️
+# ⑤ Session — 반복 호출 최적화 ⭐️
 
-> 매번 `requests.get()` 을 호출하면 매번 새로운 TCP 연결을 맺는다. `Session` 을 쓰면 연결을 재사용해서 **속도가 빠르고**, headers / auth 를 한 번만 설정하면 된다. API 를 반복 호출하는 Producer 에서 필수.
+```
+매번 requests.get() → 매번 새로운 TCP 연결 맺음 (느림)
+Session 사용 → 연결 재사용 + 공통 설정 한 번만 (빠름)
+
+Session 장점:
+  TCP 연결 재사용 → 속도 향상
+  headers / auth 한 번만 설정 → 반복 코드 제거
+  쿠키 자동 유지 → 로그인 세션 유지
+```
+
+## 기본 사용
 
 ```python
 import requests
 
-# Session 없이: 매 요청마다 연결 새로 맺음
+# Session 없이 — headers 매번 반복
 r1 = requests.get(url1, headers=headers, timeout=10)
-r2 = requests.get(url2, headers=headers, timeout=10)  # headers 반복
+r2 = requests.get(url2, headers=headers, timeout=10)   # 반복!
+r3 = requests.get(url3, headers=headers, timeout=10)   # 반복!
 
-# Session 사용: 연결 재사용 + 공통 설정 한 번만
+# Session 사용 — 한 번만 설정
 session = requests.Session()
 session.headers.update({
     "Authorization": f"Bearer {API_TOKEN}",
     "Accept": "application/json",
 })
 
-# session.get() 안에 들어갈 수 있는 것들
-session.get(
-    url,                           # 필수: 요청 URL
-    params={"key": "value"},       # 선택: 쿼리스트링 파라미터
-    headers={"X-Extra": "info"},   # 선택: 추가 헤더 (Session 헤더에 병합됨)
-    timeout=10,                    # 선택: 대기 시간
-)
+r1 = session.get(url1, timeout=10)                     # 깔끔
+r2 = session.get(url2, params={"page": 2}, timeout=10) # 파라미터만 추가
+r3 = session.get(url3, timeout=5)                      # 이 요청만 timeout 다르게
+```
 
-# 자주 쓰는 패턴
-r1 = session.get(url1)                                   # Session 설정 그대로
-r2 = session.get(url2, params={"run_ymd": "20260308"})   # 파라미터만 추가
-r3 = session.get(url3, timeout=5)                        # 이 요청만 timeout 다르게
+## with 문 사용 (권장)
 
-# with 문으로 자동 종료 (권장)
+```python
+# with 문 → 블록 끝나면 자동으로 연결 종료
 with requests.Session() as session:
-    session.headers.update({"Authorization": f"Bearer {API_TOKEN}"})
-    r = session.get(url, params={"key": "value"}, timeout=10)
-    data = r.json()
+    session.headers.update({
+        "Authorization": f"Bearer {API_TOKEN}",
+        "Accept": "application/json",
+    })
+
+    for date in dates:
+        r = session.get(url, params={"run_ymd": date}, timeout=10)
+        r.raise_for_status()
+        data = r.json()
 ```
 
-## Session 활용 — 공공데이터 API 반복 호출
+## Session 헤더 + 개별 헤더 병합
 
 ```python
-import requests
-import os
-from dotenv import load_dotenv
+session = requests.Session()
+session.headers.update({"Authorization": "Bearer TOKEN"})
 
-load_dotenv()
-API_KEY = os.getenv("TRAIN_API_KEY")
-BASE_URL = "http://apis.data.go.kr/1613000/TrainInfoService"
+# 개별 요청에 헤더 추가 → Session 헤더에 병합됨
+r = session.get(url, headers={"X-Custom": "value"})
+# 실제 전송 헤더: Authorization + X-Custom 둘 다
+```
 
-def fetch_train_data(dates: list) -> list:
-    results = []
+## 클래스에서 Session 쓰는 패턴
 
-    with requests.Session() as session:
-        # 공통 파라미터 (매 요청마다 반복할 것들)
-        base_params = {
-            "serviceKey" : API_KEY,
-            "pageNo"     : 1,
-            "numOfRows"  : 100,
-            "dataType"   : "JSON",
-            "dptre_stn_cd": "0001",
-        }
+```python
+class TrainAPI:
+    def __init__(self):
+        self.base_url = "https://api.example.com"
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {os.getenv('API_TOKEN')}",
+            "Accept": "application/json",
+        })
 
-        for date in dates:
-            params = {**base_params, "run_ymd": date}  # 날짜만 바꿔서 요청
-            r = session.get(f"{BASE_URL}/getStrtpntAlocFndTrainInfo",
-                            params=params, timeout=10)
-            r.raise_for_status()
-            results.append(r.json())
+    def get_schedule(self, date: str):
+        r = self.session.get(
+            f"{self.base_url}/schedule",
+            params={"run_ymd": date},
+            timeout=10
+        )
+        r.raise_for_status()
+        return r.json()
 
-    return results
+    def get_realtime(self, date: str, train_no: str):
+        r = self.session.get(
+            f"{self.base_url}/realtime",
+            params={"run_ymd": date, "trn_no": train_no},
+            timeout=10
+        )
+        r.raise_for_status()
+        return r.json()
+
+# 사용
+api = TrainAPI()
+schedule = api.get_schedule("20260308")   # Session 재사용
+realtime = api.get_realtime("20260308", "00051")   # 연결 그대로 사용
 ```
 
 ---
 
 ---
 
-# ⑦ 예외 처리 — requests.exceptions ⭐️
+# ⑥ params 특수문자 함정 ⭐️
+
+```
+params={} 는 key 도 URL 인코딩함
+[] :: 같은 특수문자가 key 에 있으면 서버가 못 알아봄
+```
 
 ```python
-from requests.exceptions import (
-    RequestException,   # 모든 requests 예외의 부모 클래스
-    ConnectionError,    # 네트워크 연결 실패
-    Timeout,            # timeout 초과
-    HTTPError,          # 4xx, 5xx 응답 (raise_for_status 에서 발생)
-    JSONDecodeError,    # 응답이 JSON 이 아닐 때
-)
+# ❌ params 에 특수문자 포함된 key
+params = {"cond[run_ymd::EQ]": "20260308"}
+# 실제 전송: ?cond%5Brun_ymd%3A%3AEQ%5D=20260308  ← 서버가 모름
+
+# ✅ URL 직접 조립
+query = "cond[run_ymd::EQ]=20260308&pageNo=1"
+url = f"{base_url}?serviceKey={api_key}&{query}"
+# 실제 전송: ?serviceKey=...&cond[run_ymd::EQ]=20260308  ← 정상
 ```
 
-## 예외 계층 구조
-
 ```
-RequestException          <- 최상위 (이것 하나로 전부 잡을 수 있음)
-├── ConnectionError       <- 서버 연결 자체 실패 (DNS, 네트워크)
-├── Timeout               <- 설정한 timeout 초과
-├── HTTPError             <- raise_for_status() 가 던지는 예외
-└── JSONDecodeError       <- r.json() 실패 (응답이 HTML/XML 이거나 빈 값)
+언제 params={} vs 직접 조립:
+  key 가 평범한 영문/숫자  → params={} 사용
+  key 에 [] :: 특수문자    → f-string 직접 조립
 ```
 
-## raise_for_status() — 상태코드 자동 검사 ⭐️
+---
 
-> `requests.get()` 은 4xx, 5xx 에러 응답이 와도 **예외를 발생시키지 않는다.** `r.raise_for_status()` 를 호출해야 비로소 HTTPError 가 발생한다.
+---
+
+# ⑦ 예외 처리 ⭐️
+
+## raise_for_status()
 
 ```python
-r = requests.get(url, params=params, timeout=10)
+r = requests.get(url, timeout=10)
 
-# raise_for_status() 없이는 에러 응답을 모르고 지나침
-print(r.status_code)  # 404 가 와도 그냥 진행됨
-print(r.json())       # 에러 응답을 정상 응답처럼 처리하는 대참사
-
-# raise_for_status() 호출하면
+# 없으면 → 404 / 500 와도 모르고 지나침
+# 있으면 → 4xx / 5xx 에서 HTTPError 발생
 r.raise_for_status()
-# 200 OK          -> 아무 일도 안 일어남 (통과)
-# 400 Bad Request -> HTTPError 발생
-# 401 Unauthorized-> HTTPError 발생
-# 404 Not Found   -> HTTPError 발생
-# 500 Server Error-> HTTPError 발생
-```
 
-```
-상태코드 범위:
-2xx (200~299) -> 통과
-4xx (400~499) -> HTTPError (클라이언트 잘못)
-5xx (500~599) -> HTTPError (서버 잘못)
+# 200~299  → 통과
+# 400~499  → HTTPError (내 잘못)
+# 500~599  → HTTPError (서버 잘못)
 ```
 
 ## 실전 예외 처리 패턴
 
 ```python
-import requests
 from requests.exceptions import RequestException, Timeout, JSONDecodeError
 
-def fetch_api(url: str, params: dict) -> dict | None:
+def fetch(url: str, params: dict) -> dict | None:
     try:
         r = requests.get(url, params=params, timeout=10)
-        r.raise_for_status()  # 4xx, 5xx 이면 HTTPError 발생
-
-        # 간혹 API 오류 시 정상(200) 응답이지만
-        # body 가 XML 또는 HTML 로 반환되어 JSON 디코딩 에러 발생
-        # -> JSONDecodeError 로 따로 잡아줘야 함
+        r.raise_for_status()
         return r.json()
 
     except Timeout:
-        print(f"[Timeout] {url} 응답 없음 (10초 초과)")
+        print("응답 시간 초과")
         return None
 
     except JSONDecodeError:
         # 공공데이터 API 에서 자주 발생
-        # API 키 오류 -> XML 에러 메시지 반환
-        # 트래픽 초과 -> HTML 반환
-        print(f"[JSONDecodeError] JSON 이 아님: {r.text[:200]}")
+        # API 키 오류 → 200 OK 이지만 XML 반환
+        print(f"JSON 파싱 실패: {r.text[:200]}")
         return None
 
     except RequestException as e:
-        # ConnectionError, HTTPError 등 나머지 전부 잡음
-        print(f"[RequestException] {type(e).__name__}: {e}")
+        print(f"요청 실패: {type(e).__name__}: {e}")
         return None
 ```
 
-## JSONDecodeError 가 나는 상황
+## 예외 계층
 
-```python
-# 공공데이터 API 에서 자주 발생하는 케이스:
-# 1. API 키 오류   -> 200 OK 이지만 XML 에러 메시지 반환
-# 2. 트래픽 초과   -> HTML 응답 반환
-# 3. 서버 점검 중  -> 빈 응답
-
-# XML 반환 예시 (공공데이터 API 키 오류)
-# <?xml version="1.0" encoding="UTF-8"?>
-# <OpenAPI_ServiceResponse>
-#   <cmmMsgHeader>
-#     <errMsg>SERVICE KEY IS NOT REGISTERED ERROR.</errMsg>
-#   </cmmMsgHeader>
-# </OpenAPI_ServiceResponse>
-
-# 디버깅: r.text 로 원본 응답 먼저 확인
-r = requests.get(url, params=params, timeout=10)
-print(r.status_code)  # 200 인데도 XML 이 올 수 있음
-print(r.text[:300])   # 원본 텍스트 확인
-
-try:
-    data = r.json()
-except JSONDecodeError:
-    print("JSON 파싱 실패. 원본 응답:", r.text[:200])
+```
+RequestException       ← 이것 하나로 전부 잡을 수 있음
+├── ConnectionError    ← 서버 연결 실패
+├── Timeout            ← timeout 초과
+├── HTTPError          ← raise_for_status() 에서 발생
+└── JSONDecodeError    ← r.json() 실패
 ```
 
 ---
 
 ---
 
-# 초보자 실수 체크리스트
+# ⑧ API 함수 파라미터 설계 ⭐️
 
-| 실수                         | 원인              | 해결                                 |
-| -------------------------- | --------------- | ---------------------------------- |
-| 인증 토큰을 `params` 에 넣음       | URL 에 노출됨       | `headers["Authorization"]` 에 넣기    |
-| `timeout` 미설정              | 무한 대기           | 항상 `timeout=10` 이상 설정              |
-| `r.json()` 에서 에러           | 응답이 JSON 이 아님   | `JSONDecodeError` 처리 + `r.text` 확인 |
-| 반복 호출에 매번 `requests.get()` | 매번 새 연결         | `requests.Session()` 사용            |
-| `raise_for_status()` 미호출   | 4xx 에러를 모르고 지나침 | 항상 호출 후 처리                         |
+```
+함수 파라미터 = "호출할 때마다 바뀌는 값" 만
+고정값은 함수 안 params 에 하드코딩
+```
+
+```python
+# ❌ 고정값까지 파라미터로 받으면
+def get_schedule(self, serviceKey, pageNo, dataType, run_ymd):
+    ...
+# 호출할 때마다 serviceKey, pageNo 등 매번 넘겨야 함
+
+# ✅ 바뀌는 값만 파라미터로
+def get_schedule(self, run_ymd: str, stn_cd: str = "0001") -> list:
+    params = {
+        "serviceKey":  self.api_key,   # 항상 고정 → 안에 하드코딩
+        "pageNo":      1,              # 항상 고정
+        "dataType":    "JSON",         # 항상 고정
+        "run_ymd":     run_ymd,        # 호출마다 다름 → 파라미터
+        "dptre_stn_cd": stn_cd,        # 가끔 바꿈 → 기본값 파라미터
+    }
+```
+
+|분류|넣는 곳|예시|
+|---|---|---|
+|항상 고정|params 딕셔너리|`pageNo=1` / `dataType="JSON"`|
+|호출마다 다름|함수 파라미터 (필수)|`run_ymd`|
+|가끔 바꿈|함수 파라미터 (기본값)|`stn_cd="0001"`|
+|인증 키|`self.api_key` / `.env`|`serviceKey`|
+
+---
+
+---
+
+# 자주 하는 실수
+
+|실수|원인|해결|
+|---|---|---|
+|토큰을 `params` 에 넣음|URL 에 노출됨|`headers["Authorization"]` 에 넣기|
+|`timeout` 미설정|무한 대기|항상 `timeout=10` 설정|
+|`raise_for_status()` 빠짐|에러 응답 모르고 지나침|항상 호출|
+|`r.json()` 에러|응답이 XML/HTML|`JSONDecodeError` 처리 + `r.text` 확인|
+|반복 호출에 `requests.get()` 매번|매번 새 연결|`Session` 사용|
+|params key 에 특수문자|인코딩 됨|f-string 직접 조립|

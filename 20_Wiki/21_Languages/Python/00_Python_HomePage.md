@@ -93,13 +93,14 @@ JSON 처리의 핵심
 
 >[[Linux_Python_Env]] 참고 
 
-| 노트                         | 핵심 개념                                               |
-| -------------------------- | --------------------------------------------------- |
-| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as           |
-| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트              |
-| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력              |
-| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate            |
-| [[Python_Regex]]           | import re/re.search / findall / sub / group / 패턴 문법 |
+| 노트                         | 핵심 개념                                                   |
+| -------------------------- | ------------------------------------------------------- |
+| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as               |
+| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트                  |
+| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력                  |
+| [[Python_Argparse]]        | argparse / --옵션 / type / default / choices / store_true |
+| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate                |
+| [[Python_Regex]]           | import re/re.search / findall / sub / group / 패턴 문법     |
 
 ---
 
@@ -130,13 +131,16 @@ JSON 처리의 핵심
 
 >CS Basics [[CS_HTTP_Basics]] , [[CS_TCP_IP]], [[CS_REST_API_Methods]] ,[[Serialization_JSON_XML]] 참고 
 
-| 노트                           | 핵심 개념                                              |
-| ---------------------------- | -------------------------------------------------- |
-| [[Python_Requests_Methods]]  | requests.get / post / params / headers / timeout / |
-| [[Python_Requests_Response]] | status_code / .json() / raise_for_status           |
-| [[HTTP_Status_Codes]]        | 200 / 404 / 500 / 429 Too Many                     |
-| [[Python_URL_Parsing]]       | urlencode / quote / unquote / urlparse             |
-| [[Python_ElementTree]]       | XML 파싱 / fromstring / findtext / find / findall    |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Requests_Methods]]|requests.get / post / params / headers / timeout / XML 파싱(ET)|
+|[[Python_Requests_Response]]|status_code / .json() / raise_for_status|
+|[[HTTP_Status_Codes]]|200 / 404 / 500 / 429 Too Many|
+|[[Python_URL_Parsing]]|urlencode / quote / unquote / urlparse|
+|[[Python_ElementTree]]|XML 파싱 / fromstring / findtext / find / findall|
+|[[Python_Web_Scraping]]|requests / BeautifulSoup / HTML 파싱 / CSS 선택자 / find / select|
+|[[Python_Selenium]]|selenium / webdriver / By / WebDriverWait / JS 렌더링 / 동적 크롤링|
+|[[Python_OCR]]|EasyOCR / Tesseract / Google Vision / 이미지 텍스트 추출|
 
 ---
 
@@ -148,10 +152,10 @@ JSON 처리의 핵심
 Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해하기
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Classes_Objects]]|class / self / **init** / **str** / **repr** / @staticmethod / @classmethod|
-|[[Python_Inheritance]]|상속 / super() / 오버라이딩 / 다형성 / 추상 클래스 (ABC)|
+| 노트                         | 핵심 개념                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| [[Python_Classes_Objects]] | class / self / **init** / **str** / **repr** / @staticmethod / @classmethod/dataclass |
+| [[Python_Inheritance]]     | 상속 / super() / 오버라이딩 / 다형성 / 추상 클래스 (ABC)                                             |
 
 ---
 
