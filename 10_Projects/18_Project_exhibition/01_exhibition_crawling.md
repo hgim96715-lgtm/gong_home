@@ -69,16 +69,16 @@ python main.py --mode crawl --scroll 5 --no-ocr  # 빠르게
 
 ### 3. 가격 필드 문제 (해결 필요)
 
-**현재 로직:**
+**실제 가격 구조 (매우 복잡):**
 
-```python
-if "성인" in name:
-    ex.price_adult = price
-elif "청소년" in name or "어린이" in name:
-    ex.price_youth = price
-elif "얼리버드" in name or "TICKET" in name or "입장권" in name:
-    ex.price_adult = price  # fallback
-```
+| 유형    | 예시                             |
+| ----- | ------------------------------ |
+| 단일가   | 얼리버드 15,000원 (구분 없음)           |
+| 연령 분리 | 성인 20,000 / 청소년 15,000         |
+| 할인 분리 | 얼리버드 성인 13,800 / 단일권 성인 15,000 |
+| 카드 할인 | 신한카드 성인 14,000 (30% 할인)        |
+| 패키지   | 5매권 50,000 (1인 가격 아님)          |
+| 기간권   | 3일권 41,000 / 1일권 20,000        |
 
 **문제점:**
 
@@ -104,9 +104,7 @@ elif "얼리버드" in name or "TICKET" in name or "입장권" in name:
 
 ### 4. dbt에서 해결할 방법 (TODO)
 
-```sql
-
-```
+>"가격 구조가 얼리버드, 카드할인, 패키지 등 복잡해서 **raw 테이블에는 첫 번째 가격**을 저장하고, **dbt staging에서 price_type 컬럼**으로 정가/할인/단일가를 분류하면?
 
 ---
 
