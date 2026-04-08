@@ -36,7 +36,7 @@
 | 노트                      | 핵심 개념                                             |
 | ----------------------- | ------------------------------------------------- |
 | [[Linux_File_Commands]] | cat / head / tail / less / wc / sort / uniq / cut |
-| [[Linux_Vim_Nano]]      | vim / nano / 모드 전환 / 저장·종료 / 이동·검색 / 상황별 선택       |
+| [[Linux_Vim_Nano]]      | vi/vim / nano / 모드 전환 / 저장·종료 / 이동·검색 / 상황별 선택    |
 | [[Linux_Redirection]]   | 표준 입출력 / > >> < / pipe \| / tee / 2>&1            |
 | [[Linux_Grep]]          | grep / -i -n -v -r -E / 정규식 / 파이프 조합              |
 | [[Linux_Stream_Editor]] | sed — 치환·삭제·삽입 / 정규표현식 / 캡처그룹                     |
