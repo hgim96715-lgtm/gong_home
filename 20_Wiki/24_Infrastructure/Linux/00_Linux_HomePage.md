@@ -19,7 +19,7 @@
 | [[CS_Operating_System]]  | OS 역할 / 프로세스·스레드 / 스케줄링 / 메모리 / inode / 데드락      |
 | [[Linux_Overview]]       | 커널 / 쉘 / 배포판 / Windows vs Linux                  |
 | [[Linux_Filesystem]]     | 디렉토리 트리 / /etc /var /home /usr 역할 / 절대경로 vs 상대경로 |
-| [[Linux_Basic_Commands]] | ls / cd / pwd / mkdir / rm / cp / mv / man       |
+| [[Linux_Basic_Commands]] | ls / cd / pwd / mkdir / rm / cp / mv / man/touch |
 
 ---
 
