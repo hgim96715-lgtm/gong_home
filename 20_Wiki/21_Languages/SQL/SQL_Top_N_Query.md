@@ -12,6 +12,7 @@ related:
   - "[[SQL_ORDER_BY]]"
   - "[[SQL_SubQuery]]"
   - "[[SQL_Window_Functions]]"
+  - "[[SQL_Stored_Function]]"
 ---
 # SQL Top-N 쿼리 — 상위 N개 데이터 추출하기
 
