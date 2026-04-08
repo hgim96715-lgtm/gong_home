@@ -37,10 +37,10 @@ python3 --version
 
 ### 흐름 제어
 
-| 노트                         | 핵심 개념                                                      |
-| -------------------------- | ---------------------------------------------------------- |
-| [[Python_Control_Flow]]    | if / for / while / for-else / break / continue/월러스 연산자(:=) |
-| [[Python_Looping_Helpers]] | range / enumerate / zip / unpacking                        |
+| 노트                         | 핵심 개념                                                                      |
+| -------------------------- | -------------------------------------------------------------------------- |
+| [[Python_Control_Flow]]    | if / for / while / for-else / break / continue/월러스 연산자(:=)/ Truthy / Falsy |
+| [[Python_Looping_Helpers]] | range / enumerate / zip / unpacking                                        |
 
 ### 함수
 

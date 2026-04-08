@@ -53,22 +53,150 @@ else:
     print("대기 중...")
 ```
 
-## Truthy / Falsy
+----
+---
+# ① -1 ️ Truthy / Falsy ⭐
+
+## Falsy 값 전체 목록
 
 ```
-0         → False
-0이 아닌 수 → True  (1, -1, 100 전부)
-빈 문자열  → False
-빈 리스트  → False
-None       → False
+False 로 판단되는 것:
+  0          정수 0
+  0.0        실수 0
+  ""         빈 문자열
+  []         빈 리스트
+  ()         빈 튜플
+  {}         빈 딕셔너리
+  set()      빈 세트
+  None       None
+  False      False 자체
+
+True 로 판단되는 것:
+  위 외의 모든 값
+  1 / -1 / 100 / "hello" / [1] / {"a": 1} / (1,) 등
 ```
+
+## if 조건에서 활용
+
 
 ```python
-n = 3
-if n % 2:     # 나머지가 1 → True → 홀수
-    print("홀수")
-else:         # 나머지가 0 → False → 짝수
-    print("짝수")
+# 빈 리스트 체크
+lst = []
+if not lst:           # not [] = not False = True
+    print("비어있음")
+
+lst = [1, 2, 3]
+if lst:               # [1,2,3] = True
+    print("값 있음")
+
+# None 체크
+value = None
+if not value:
+    print("None 이거나 빈 값")
+
+# 빈 문자열 체크
+s = ""
+if not s:
+    print("빈 문자열")
+```
+
+## or 연산 — 기본값 패턴 ⭐️
+
+```
+A or B:
+  A 가 Truthy  → A 반환
+  A 가 Falsy   → B 반환
+
+핵심: or 는 "첫 번째 Truthy 값" 을 반환
+```
+
+
+```python
+# or 기본값 패턴
+result = [] or [-1]
+# [] 는 Falsy → [-1] 반환
+# result = [-1]
+
+result = [1, 2] or [-1]
+# [1, 2] 는 Truthy → [1, 2] 반환
+# result = [1, 2]
+
+# None 대체
+name = None or "기본값"
+# name = "기본값"
+
+name = "gong" or "기본값"
+# name = "gong"
+```
+
+## 실전 패턴 — sorted(...) or [-1] ⭐️
+
+
+```python
+# divisor 의 배수만 골라서 정렬
+# 없으면 [-1] 반환
+
+arr = [5, 9, 7, 10]
+divisor = 3
+
+result = sorted([n for n in arr if n % divisor == 0]) or [-1]
+# 3의 배수: [] (없음)
+# [] or [-1] → [-1]   ← 빈 리스트이므로 Falsy
+# result = [-1]
+
+arr = [5, 9, 7, 10]
+divisor = 5
+result = sorted([n for n in arr if n % divisor == 0]) or [-1]
+# 5의 배수: [5, 10]
+# [5, 10] or [-1] → [5, 10]  ← Truthy 이므로 그대로
+# result = [5, 10]
+```
+
+```
+왜 이게 되냐:
+  sorted([...])  → 조건 만족하는 값 없으면 빈 리스트 []
+  []             → Falsy
+  [] or [-1]     → or 에서 [] 가 Falsy 이므로 [-1] 반환
+
+  if 없이 한 줄로 "결과 없으면 [-1]" 처리 가능
+```
+
+
+```python
+# 다양한 or 기본값 패턴
+max(arr) if arr else 0        # 전통적인 방식
+max(arr or [0])               # or 활용
+
+# 딕셔너리에서
+value = d.get("key") or "없음"
+
+# 함수 반환값
+def get_data():
+    result = fetch()
+    return result or []       # None 이면 빈 리스트 반환
+```
+
+## and 연산
+
+```
+A and B:
+  A 가 Falsy   → A 반환 (B 확인 안 함)
+  A 가 Truthy  → B 반환
+
+핵심: and 는 "첫 번째 Falsy 값" 을 반환 / 전부 Truthy 면 마지막 값
+```
+
+
+```python
+[] and [1, 2]      # [] (첫 번째가 Falsy → 즉시 반환)
+[1] and [2, 3]     # [2, 3] (첫 번째 Truthy → 두 번째 반환)
+1 and 2 and 3      # 3 (전부 Truthy → 마지막 값)
+```
+
+
+```python
+# 실전: 조건 있을 때만 처리
+data and process(data)   # data 있을 때만 process 실행
 ```
 
 ## True if ... else False — 불필요한 패턴 ⭐️
@@ -119,6 +247,7 @@ is_ok = True if score >= 60 else False
 # ✅
 is_ok = score >= 60
 ```
+
 
 ---
 
