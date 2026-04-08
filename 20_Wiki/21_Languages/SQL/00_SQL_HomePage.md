@@ -180,12 +180,14 @@ SQLD 1과목 핵심 영역
 DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 ```
 
-| 노트                                | 핵심 개념                                                 |
-| --------------------------------- | ----------------------------------------------------- |
-| [[SQL_DML_CRUD]]                  | INSERT / UPDATE / DELETE / MERGE / UPSERT/ON CONFLICT |
-| [[SQL_Database_Transactions_TCL]] | COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK   |
-| [[SQL_DDL_Create]]                | CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS  |
-| [[SQL_DCL_Grant_Revoke]]          | GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE   |
+|노트|핵심 개념|
+|---|---|
+|[[SQL_DML_CRUD]]|INSERT / UPDATE / DELETE / MERGE / UPSERT|
+|[[SQL_Database_Transactions_TCL]]|COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK|
+|[[SQL_DDL_Create]]|CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS|
+|[[SQL_DCL_Grant_Revoke]]|GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE|
+|[[SQL_Stored_Function]]|CREATE FUNCTION / plpgsql / RETURN QUERY / IF-THEN / OFFSET|
+
 
 ---
 
