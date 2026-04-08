@@ -31,12 +31,12 @@ ETL vs ELT / dbt 가 왜 나왔는지
 dbt 프로젝트의 구조와 동작 원리 이해
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[DBT_Project_Structure]]|dbt_project.yml / models / seeds / tests / macros 폴더 구조|
-|[[DBT_Models]]|SELECT 만 쓰는 변환 모델 / .sql 파일 / ref() / source()|
-|[[DBT_Materializations]]|table / view / incremental / ephemeral 차이|
-|[[DBT_Sources]]|sources.yml / source() 함수 / freshness 체크|
+| 노트                        | 핵심 개념                                                   |
+| ------------------------- | ------------------------------------------------------- |
+| [[DBT_Project_Structure]] | dbt_project.yml / models / seeds / tests / macros 폴더 구조 |
+| [[DBT_Models]]            | SELECT 만 쓰는 변환 모델 / .sql 파일 / ref() / source()          |
+| [[DBT_Materializations]]  | table / view / incremental / ephemeral 차이               |
+| [[DBT_Sources]]           | sources.yml / source() 함수 / freshness 체크                |
 
 ---
 
