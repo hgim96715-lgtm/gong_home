@@ -9,6 +9,7 @@ related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_Shell_Script]]"
   - "[[Linux_Vim_Nano]]"
+  - "[[Linux_Find]]"
 ---
 
 # Linux_Environment_Variables — 환경변수
@@ -69,8 +70,10 @@ zsh -c 'echo $MY_VAR'     # hello (전달됨)
 ```
 
 ## `$$`  현재 셸의 PID (프로세스 ID)
+
 자식 셸에 들어가면 PID 가 바뀜
 → PID 가 바뀌었다 = 새 프로세스(새 셸) 진입 확인
+
 ```bash
 # 현재 bash PID 확인
 echo $$           # 123
@@ -215,7 +218,7 @@ ll            # ls -la 와 동일
 gs            # git status 와 동일
 ```
 
-## 확인 / 해제
+## 확인 / 해제 (alias / unalias)
 
 ```bash
 # 전체 별칭 목록 확인
