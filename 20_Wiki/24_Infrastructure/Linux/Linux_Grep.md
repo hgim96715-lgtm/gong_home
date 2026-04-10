@@ -27,8 +27,26 @@ grep = Global Regular Expression Print
 
 ```bash
 grep '패턴' 파일
-grep '패턴' 파일1 파일2
-명령어 | grep '패턴'    # 파이프로 stdin 입력
+grep '패턴' 파일1 파일2      # 여러 파일 동시 검색 → 파일명도 출력됨
+명령어 | grep '패턴'          # 파이프로 stdin 입력
+```
+
+```bash
+# 단일 파일
+grep labex /etc/passwd
+
+# 여러 파일 동시 검색 — 파일명이 앞에 붙음
+sudo grep labex /etc/passwd /etc/shadow /etc/group
+# /etc/passwd:labex:x:1000:1000:...
+# /etc/shadow:labex:$6$...
+# /etc/group:labex:x:1000:
+# ↑ 파일명:내용 형식으로 출력
+```
+
+```
+권한 주의:
+  /etc/shadow 같은 파일은 sudo 없으면 Permission denied
+  반드시 sudo grep 으로 실행
 ```
 
 ---
@@ -66,10 +84,61 @@ grep 'ERROR' app.log
 
 # 대소문자 무시
 grep -i 'error' app.log
+```
 
-# 줄 번호 포함
+## -n — 줄 번호 표시 ⭐️
+
+```bash
 grep -n 'ERROR' app.log
 # 42:ERROR: connection failed
+# ↑줄번호:내용
+
+# 여러 파일에서 줄 번호 포함
+sudo grep -n labex /etc/passwd /etc/shadow /etc/group
+# /etc/passwd:32:labex:x:1000:...
+# ↑파일명      :줄번호:내용
+```
+
+```
+결과 해석:
+  /etc/passwd:32:labex...
+  → /etc/passwd 파일의 32번째 줄에 labex 존재
+
+  활용:
+    vim +32 /etc/passwd  ← 32번째 줄로 바로 이동해서 열기
+    디버깅 / 설정 수정 시 정확한 위치 바로 파악 가능
+```
+
+## ^ $ 앵커 — 줄 위치 매칭 ⭐️
+
+```bash
+# 어디에 있든 root 검색
+grep root /etc/passwd
+# root:x:0:0:root:/root:/bin/bash
+# myroot:x:1001:...          ← 의도치 않은 결과 포함
+
+# 줄이 root 로 시작하는 것만
+grep ^root /etc/passwd
+# root:x:0:0:root:/root:/bin/bash  ← root 계정만
+
+# 줄이 bash 로 끝나는 것만
+grep bash$ /etc/passwd
+# root:x:0:0:root:/root:/bin/bash
+# labex:x:1000:1000::/home/labex:/bin/bash
+
+# 빈 줄만 찾기 (^ 와 $ 사이 아무것도 없음)
+grep ^$ file.txt
+
+# 빈 줄 제외
+grep -v ^$ file.txt
+```
+
+```
+앵커 사용 효과:
+  grep root       → root, myroot, root123 전부 매칭
+  grep ^root      → root 로 시작하는 줄만
+  grep bash$      → bash 로 끝나는 줄만
+  → 검색 정확도 비약적 향상
 ```
 
 ## -w — 단어 단위 매칭 ⭐️
@@ -130,7 +199,8 @@ grep -E 'ERROR|WARN' app.log
 # -e 로 여러 패턴
 grep -e 'ERROR' -e 'WARN' app.log
 
-# 둘 다 동일한 결과
+# 실전: 로그에서 여러 레벨 동시
+grep -E 'ERROR|WARN|FAIL' app.log
 ```
 
 ## 주변 줄 포함 (-A -B -C)
@@ -169,6 +239,23 @@ grep -r 'def ' --include='*.py' ./
 
 # ④ 정규식 패턴
 
+## 기본 정규식 (BRE) ⭐️
+
+```bash
+# . 임의의 문자 1개
+grep 'ro.' /etc/passwd        # ro 뒤에 문자 1개 (roa, rob, ro1 ...)
+
+# * 앞 문자 0회 이상
+grep 'roo*' /etc/passwd       # ro 뒤에 o 가 없거나(ro) / 있거나(roo, rooo)
+```
+
+```
+주의: 정규식의 * 는 파일 검색의 * 와 다름!
+  find *.txt       → 모든 txt 파일 (쉘 와일드카드)
+  grep 'ab*' file  → ab, a, abb, abbb (앞 문자 0회 이상)
+  정규식에서 "모든 문자" = .* (점 + 별)
+```
+
 ```bash
 # ^ 줄 시작
 grep '^ERROR' app.log         # ERROR 로 시작하는 줄
@@ -176,11 +263,8 @@ grep '^ERROR' app.log         # ERROR 로 시작하는 줄
 # $ 줄 끝
 grep 'failed$' app.log        # failed 로 끝나는 줄
 
-# . 임의의 문자 1개
-grep 'er.or' app.log          # error, er_or, er1or ...
-
-# * 앞 문자 0회 이상
-grep 'ab*c' data.txt          # ac, abc, abbc ...
+# ^$ 빈 줄
+grep '^$' file.txt            # 빈 줄만
 
 # [] 문자 클래스
 grep '[0-9]' data.txt         # 숫자 포함 줄
@@ -201,16 +285,23 @@ grep -E '[0-9]+' data.txt     # 숫자 1개 이상
 grep -E 'colou?r' data.txt    # color 또는 colour
 
 # {n} 정확히 n회
-grep -E '[0-9]{3}' data.txt   # 숫자 3개
+grep -E 'o{2}' /etc/passwd    # o 가 정확히 2번 (oo)
 
 # {n,m} n~m회
 grep -E '[0-9]{2,4}' data.txt # 숫자 2~4개
 
 # | OR
-grep -E 'cat|dog' data.txt    # cat 또는 dog
+grep -E 'root|Root' /etc/passwd   # root 또는 Root
+grep -E 'ERROR|WARN|FAIL' app.log # 여러 레벨 동시
 
 # () 그룹
 grep -E '(ERROR|WARN): ' app.log
+```
+
+```
+-E 없이 {} | + ? 쓰면:
+  그냥 일반 문자로 취급 → 원하는 결과 안 나옴
+  확장 정규식 쓸 땐 반드시 -E 붙이기
 ```
 
 ---
