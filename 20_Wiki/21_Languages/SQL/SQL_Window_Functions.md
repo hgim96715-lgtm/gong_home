@@ -178,6 +178,7 @@ WHERE rn = 1;
 ```
 "연속된 년도에 수상한 기간은 몇 년인가?"
 "연속으로 출석한 구간은?"
+"연속으로 3번 이상 나타나는 숫자는?"
 
 이런 문제를 Gaps and Islands(간격과 섬) 문제라고 부름
   섬(Island)   = 연속된 데이터 구간
@@ -186,6 +187,8 @@ WHERE rn = 1;
 ROW_NUMBER() 를 쓰면 순위를 매기는 게 아니라
 연속 구간을 그룹으로 묶는 데 활용할 수 있음
 ```
+
+## 패턴 1 — 단일 ROW_NUMBER(): year - rn
 
 ## 왜 year - ROW_NUMBER() 가 연속 구간이 되는가
 
@@ -220,14 +223,11 @@ grouped AS (
         grp,
         MIN(year) AS start_year,
         MAX(year) AS end_year,
-        COUNT(*)  AS consecutive_years   -- 연속 기간
+        COUNT(*)  AS consecutive_years
     FROM numbered
     GROUP BY grp
 )
-SELECT
-    start_year,
-    end_year,
-    consecutive_years
+SELECT start_year, end_year, consecutive_years
 FROM grouped
 ORDER BY start_year;
 
@@ -237,22 +237,139 @@ ORDER BY start_year;
 -- 2015        2016      2   ← 2년 연속
 ```
 
+---
+
+## 패턴 2 — 이중 ROW_NUMBER(): 같은 값이 연속으로 등장하는 구간 ⭐️
+
 ```
-단계별 이해:
+단일 rn 패턴: 값 자체가 1씩 증가하는 연속 (연도, 날짜)
+이중 rn 패턴: 특정 값이 연속으로 반복되는 경우 (숫자, 문자열)
 
-1단계 (numbered):
-  각 행에 ROW_NUMBER 부여 + year - rn 으로 그룹 키 생성
+예시:
+  [1, 1, 2, 1, 1, 1, 2, 2]
+  → 1이 연속으로 3번 이상 나오는 구간은?
+  → 날짜가 아닌 값의 연속 등장 → 이중 ROW_NUMBER 필요
+```
 
-2단계 (grouped):
-  같은 grp 끼리 묶어서
-  시작년도 / 끝년도 / 기간 계산
+## 왜 ROW_NUMBER() 두 번 차이가 연속 그룹인가 ⭐️
 
-3단계:
-  연속 구간별 결과 출력
+```
+핵심 원리:
+  전체 rn: 전체 행 기준 순번 (1, 2, 3, 4, 5, 6, 7, 8)
+  값별 rn: 같은 값 안에서 순번 (값이 같은 것끼리 1, 2, 3...)
+
+  연속 구간이면: 전체 rn 과 값별 rn 이 같은 속도로 증가
+              → 두 rn 의 차이 = 항상 같은 값
+
+  연속이 끊기면: 다른 값이 끼어들면 전체 rn 만 증가
+              → 두 rn 의 차이 = 달라짐
+
+예시 (Logs 테이블: id, num):
+
+  id  num  전체_rn  num별_rn  전체_rn - num별_rn
+  1    1      1        1           0  ← 같은 값 → 같은 그룹
+  2    1      2        2           0  ←
+  3    2      3        1           2  ← 다른 그룹 (num 바뀜)
+  4    1      4        3           1  ← 또 다른 그룹 (num=1 이지만 끊겼음)
+  5    1      5        4           1  ←
+  6    1      6        5           1  ←
+  7    2      7        2           5  ← 또 다른 그룹
+  8    2      8        3           5  ←
+
+  차이가 같은 행끼리 = 연속된 구간
+  num=1 이 두 번 등장해도 (1,2행) vs (4,5,6행) 다른 그룹으로 분리됨!
 ```
 
 ```sql
--- 응용: 선수별 연속 출전 구간
+-- 연속으로 3번 이상 등장하는 숫자 찾기 (LeetCode 180)
+WITH row_id AS (
+    SELECT
+        num,
+        ROW_NUMBER() OVER (ORDER BY id) AS total_rn,          -- 전체 순번
+        ROW_NUMBER() OVER (PARTITION BY num ORDER BY id) AS num_rn  -- num별 순번
+    FROM Logs
+),
+grouped AS (
+    SELECT
+        num,
+        total_rn - num_rn AS grp    -- 두 rn 의 차이 = 연속 그룹 키
+    FROM row_id
+)
+SELECT DISTINCT num AS ConsecutiveNums
+FROM grouped
+GROUP BY num, grp
+HAVING COUNT(*) >= 3;    -- 같은 값이 연속으로 3번 이상
+```
+
+## 더 짧게 — 인라인으로 한 번에 ⭐️
+
+```sql
+-- ROW_NUMBER() 두 개를 SELECT 안에서 바로 빼기
+WITH row_id AS (
+    SELECT
+        num,
+        ROW_NUMBER() OVER (ORDER BY id)
+        - ROW_NUMBER() OVER (PARTITION BY num ORDER BY id) AS row_num
+        --  ↑ 전체 순번                ↑ num별 순번
+        --  두 rn 차이를 CTE 에서 바로 계산
+    FROM Logs
+)
+SELECT num AS ConsecutiveNums
+FROM row_id
+GROUP BY num, row_num
+HAVING COUNT(*) >= 3;
+```
+
+```
+두 버전 비교:
+
+  긴 버전 (CTE 2개):
+    total_rn / num_rn 을 따로 컬럼으로 빼서 확인 가능
+    디버깅 / 이해하기 쉬움
+
+  짧은 버전 (인라인):
+    SELECT 안에서 바로 차이 계산
+    코드 간결
+    중간 과정 안 보임 → 이해는 어렵지만 실전에서 자주 씀
+
+  결과 동일 → 익숙한 것 사용
+```
+
+## 단계별 이해
+
+```
+1단계 (row_id):
+  total_rn: 전체 id 기준 순번
+  num_rn:   같은 num 안에서 순번
+  total_rn - num_rn = 연속 그룹 키
+
+2단계 (grouped):
+  같은 num + 같은 grp = 연속 구간
+
+3단계:
+  HAVING COUNT(*) >= 3 → 3번 이상 연속
+  DISTINCT → 여러 구간에서 조건 만족해도 중복 제거
+```
+
+## 두 패턴 비교 ⭐️
+
+|구분|단일 rn (year - rn)|이중 rn (total_rn - num_rn)|
+|---|---|---|
+|데이터 유형|값 자체가 1씩 증가 (연도/날짜)|특정 값이 반복 등장|
+|연속 기준|값이 순서대로 1씩 증가|같은 값이 끊김 없이 나열|
+|예시|연도 연속 수상|숫자/문자 연속 등장|
+
+```sql
+-- 단일 rn — 연도/날짜 기반 연속
+year - ROW_NUMBER() OVER (ORDER BY year)
+
+-- 이중 rn — 값의 연속 등장
+ROW_NUMBER() OVER (ORDER BY id)
+- ROW_NUMBER() OVER (PARTITION BY num ORDER BY id)
+```
+
+```sql
+-- 응용: 선수별 연속 출전 구간 (단일 rn)
 WITH numbered AS (
     SELECT
         player_name,
@@ -268,20 +385,15 @@ SELECT
     COUNT(*) AS consecutive_years
 FROM numbered
 GROUP BY player_name, grp
-HAVING COUNT(*) >= 2   -- 2회 이상 연속만
+HAVING COUNT(*) >= 2
 ORDER BY player_name, start_year;
 ```
 
 ```
-PARTITION BY 추가 → 선수별로 각각 그룹 계산
-HAVING COUNT(*) >= 2 → 1회짜리 단독 수상 제외
-
 LAG 와 비교:
   LAG     → "연속인지 아닌지" 판단 (간격 비교)
-  year-rn → "연속 구간을 하나의 그룹으로 묶기"
-
-  LAG 로 연속 여부 판단 → 그룹별 기간 집계 필요
-  year-rn 패턴 → 한 번에 그룹화 + 집계 가능
+  year-rn → "연속 구간을 하나의 그룹으로 묶기" (값이 1씩 증가)
+  이중 rn → "같은 값이 연속으로 등장하는 구간 묶기"
 ```
 
 ## RANK() — 공동 순위 허용, 번호 건너뜀 (올림픽 메달 방식)
@@ -437,9 +549,10 @@ FROM 사원테이블;
 |`LAST_VALUE()`|파티션 내 마지막 값 ⚠️ 범위 지정 필수|
 
 ---
+
 ## LAG() — 이전 행 가져오기
 
-### LAG() 괄호 안에 뭘 넣나 ⭐️
+## LAG() 괄호 안에 뭘 넣나 ⭐️
 
 ```
 LAG(① 컬럼, ② 몇 칸 전, ③ NULL 대체값)
@@ -448,7 +561,6 @@ LAG(① 컬럼, ② 몇 칸 전, ③ NULL 대체값)
 ②  몇 행 이전        생략 가능 (기본값 1 = 바로 윗줄)
 ③  없으면 뭘로 채울지  생략 가능 (기본값 NULL)
 ```
-
 
 ```sql
 LAG(접속자수)           -- 바로 윗줄 값 / 없으면 NULL
@@ -562,7 +674,6 @@ LAG(매출) OVER (ORDER BY 날짜)
 
 ## LEAD() — 다음 행 가져오기
 
-
 ```sql
 -- LAG 와 구조 동일, 방향만 반대
 SELECT 접속일자, 접속자수,
@@ -571,7 +682,6 @@ FROM 트래픽로그;
 ```
 
 ## FIRST_VALUE() — 파티션 내 첫 번째 값
-
 
 ```sql
 SELECT 접속일자, 접속자수,
@@ -582,7 +692,6 @@ FROM 트래픽로그;
 ## LAST_VALUE() — 파티션 내 마지막 값 ⚠️
 
 > 윈도우 기본 범위는 "현재 행까지". 그냥 쓰면 자기 자신을 마지막 값으로 출력한다. **`UNBOUNDED FOLLOWING` 으로 범위를 끝까지 열어야 한다.**
-
 
 ```sql
 SELECT 접속일자, 접속자수,
