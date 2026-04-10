@@ -12,6 +12,7 @@ related:
   - "[[DBT_Project_Structure]]"
 ---
 
+
 # DBT_Sources — 원본 테이블 관리
 
 ## 한 줄 요약
@@ -147,30 +148,109 @@ dbt source freshness
 
 ---
 
-# ④ 테스트 추가
+# ④ 테스트 추가 ⭐️
+
+```
+sources.yml 에서 테스트 = 원본 데이터 품질 자동 검사
+dbt test 실행 시 자동으로 확인
+데이터가 기대한 대로 들어왔는지 검증
+```
+
+## 내장 테스트 4가지
+
+```yaml
+tests:
+  - unique          # 중복 없음 (PK 검증)
+  - not_null        # NULL 없음 (필수값 검증)
+  - accepted_values # 허용된 값만 (enum 검증)
+      values: ['placed', 'shipped', 'completed']
+  - relationships   # FK 관계 검증 (다른 테이블과 연결)
+      to: ref('stg_customers')
+      field: customer_id
+```
+
+## columns 전체 작성 — 실전 예시 ⭐️
 
 ```yaml
 version: 2
 
 sources:
-  - name: jaffle_shop
-    database: raw
-    schema: jaffle_shop
+  - name: raw
+    description: "인터파크 전시 크롤링 Raw 데이터"
+    schema: public
     tables:
-      - name: orders
+      - name: raw_exhibitions
+        description: "전시 정보 (크롤링 원본)"
         columns:
-          - name: order_id
+          - name: id
+            description: "PK (auto increment)"
             tests:
               - unique
               - not_null
+
+          - name: exhibition_id
+            description: "인터파크 전시 ID"
+            tests:
+              - unique
+              - not_null
+
+          - name: title
+            description: "전시 제목"
+            tests:
+              - not_null
+
+          - name: subtitle
+            description: "부제목"
+            # 선택값 → 테스트 없어도 됨
+
+          - name: venue
+            description: "전시 장소"
+
           - name: status
+            description: "전시 상태"
             tests:
               - accepted_values:
-                  values: ['placed', 'shipped', 'completed', 'return_pending', 'returned']
+                  values: ['진행중', '예정', '종료']
+
+          - name: start_date
+            description: "전시 시작일"
+
+          - name: end_date
+            description: "전시 종료일"
+
+          - name: price
+            description: "관람 요금 (원)"
+
+          - name: crawled_at
+            description: "크롤링 수집 시각"
+            tests:
+              - not_null
+```
+
+## columns 다 써야 하나?
+
+```
+필수 아님 → 중요한 컬럼 위주로 작성 권장
+
+테스트 추가할 컬럼 우선:
+  PK (id, exhibition_id)   → unique + not_null
+  상태값 (status)           → accepted_values
+  필수 입력값               → not_null
+
+나머지 컬럼:
+  description 만 적어도 됨
+  테스트 없어도 무방
+  빈 컬럼 아예 생략해도 됨
 ```
 
 ```bash
-dbt test --select source:jaffle_shop   # 소스 테스트만 실행
+# 소스 테스트 실행
+dbt test --select source:raw
+
+# 결과 예시:
+# PASS unique_raw_exhibitions_exhibition_id ✅
+# PASS not_null_raw_exhibitions_exhibition_id ✅
+# FAIL accepted_values_raw_exhibitions_status  ❌ (예상 밖 값 발견)
 ```
 
 ---
@@ -184,12 +264,12 @@ version: 2
 
 sources:
   - name: jaffle_shop
-    description: "Jaffle Shop 의 운영 DB"
+    description: "Jaffle Shop 의 운영 DB"     # 소스 설명
     database: raw
     schema: jaffle_shop
     tables:
       - name: orders
-        description: "고객 주문 데이터"
+        description: "고객 주문 데이터"          # 테이블 설명
         columns:
           - name: order_id
             description: "주문 고유 ID"
@@ -197,9 +277,17 @@ sources:
             description: "고객 ID (customers 테이블 참조)"
           - name: amount
             description: "주문 금액 (센트 단위)"
+
+      - name: rental
+        description: "Rental transactions"   # 영어도 가능
+        columns:
+          - name: rental_id
+            description: "렌탈 고유 ID"
+          - name: rental_date
+            description: "렌탈 시작 날짜"
 ```
 
-```text
+```
 description 작성 기준:
   source 수준  → 이 데이터는 어디서 왔는지 (시스템 설명)
   table 수준   → 이 테이블이 무엇을 담는지
