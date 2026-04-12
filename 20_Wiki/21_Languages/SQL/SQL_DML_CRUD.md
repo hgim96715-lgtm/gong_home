@@ -142,6 +142,96 @@ WHERE 사번 = 102;
 -- 행(Row) 전체 삭제 / 컬럼명 안 씀
 ```
 
+## DELETE + JOIN / USING — 다른 테이블 참조해서 삭제 ⭐️
+
+```
+같은 테이블 / 다른 테이블의 값을 기준으로
+조건에 맞는 행만 골라서 삭제
+
+MySQL 과 PostgreSQL 문법이 다름
+```
+
+## MySQL — DELETE + JOIN
+
+```sql
+-- 중복 이메일 제거 (id 가 큰 것 삭제)
+DELETE p1
+FROM Person p1
+JOIN Person p2
+ON p1.email = p2.email
+AND p1.id > p2.id;
+```
+
+```
+DELETE 뒤에 별칭을 써서 어떤 테이블에서 삭제할지 지정
+p1 = 삭제 대상 / p2 = 비교 기준
+같은 email 중 id 가 큰 것(나중에 들어온 중복) 삭제
+```
+
+## PostgreSQL — DELETE + USING
+
+```sql
+-- 중복 이메일 제거 (id 가 큰 것 삭제)
+DELETE FROM Person p1
+USING Person p2
+WHERE p1.email = p2.email
+AND p1.id > p2.id;
+```
+
+```
+PostgreSQL 은 JOIN 대신 USING 키워드 사용
+DELETE FROM 삭제테이블
+USING 참조테이블
+WHERE 조건
+
+Self JOIN 패턴:
+  같은 테이블을 두 번 참조
+  p1 = 삭제 대상 / p2 = 비교 기준
+```
+
+## MySQL vs PostgreSQL 비교
+
+```sql
+-- MySQL
+DELETE p1
+FROM Person p1
+JOIN Person p2 ON p1.email = p2.email AND p1.id > p2.id;
+
+-- PostgreSQL
+DELETE FROM Person p1
+USING Person p2
+WHERE p1.email = p2.email AND p1.id > p2.id;
+```
+
+|구분|MySQL|PostgreSQL|
+|---|---|---|
+|문법|`DELETE 별칭 FROM ... JOIN`|`DELETE FROM ... USING`|
+|참조 방법|JOIN|USING|
+|삭제 대상 지정|DELETE 뒤 별칭|DELETE FROM 테이블|
+
+## 실전 패턴 — 중복 제거
+
+```sql
+-- 같은 email 중 id 가 작은 것만 남기기
+-- (id 가 큰 중복 제거 → 가장 먼저 등록된 것 유지)
+
+-- PostgreSQL
+DELETE FROM Person p1
+USING Person p2
+WHERE p1.email = p2.email
+AND p1.id > p2.id;
+
+-- 결과 확인
+SELECT * FROM Person;
+-- 각 email 당 id 가 가장 작은 행만 남음
+```
+
+```
+문제 키워드:
+  "중복 제거" / "이메일 중복" / "최초 등록만 유지"
+  → DELETE + Self JOIN (MySQL) / DELETE + USING (PostgreSQL)
+```
+
 ---
 
 ---
