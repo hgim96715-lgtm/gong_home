@@ -36,6 +36,30 @@ ls -l
 # drwxr-xr-x  4  root  root  4096  Jan 25  ssl/
 ```
 
+## ls -ld — 디렉토리 자체 정보 ⭐️
+
+```bash
+ls -l RandD
+# → 디렉토리 안의 파일 목록 출력
+
+ls -ld RandD
+# drwxrwxr-x 2 labex research 6 Jun 26 RandD
+# → 디렉토리 자체의 권한 / 소유자 / 그룹 출력
+
+ls -ld /etc
+# drwxr-xr-x 100 root root 4096 Apr 9 /etc
+```
+
+```
+-d 플래그 역할:
+  없으면  → 디렉토리 안의 내용 목록
+  있으면  → 디렉토리 자체의 정보
+
+소유권 변경 전후 확인할 때:
+  sudo chown labex:research RandD
+  ls -ld RandD    ← 변경 결과 확인
+```
+
 ## 7개 구역 해석
 
 ```
@@ -124,6 +148,42 @@ chmod u+x,g-w file.txt   # 소유자 실행 추가 + 그룹 쓰기 제거
 700  민감한 디렉토리 (소유자만 접근)
 775  팀 공용 디렉토리 (소유자+그룹 전체 / 기타 읽기+실행)
 777  ❌ 절대 금지 (모든 사람이 모든 것 가능)
+```
+
+## 디렉토리에서 권한 의미 ⭐️
+
+```
+파일과 디렉토리에서 권한 동작이 다름:
+
+파일:
+  r = 파일 내용 읽기 (cat / vim 읽기)
+  w = 파일 내용 수정
+  x = 파일 실행 (./script.sh)
+
+디렉토리:
+  r = 디렉토리 목록 보기 (ls)
+  w = 디렉토리 안에 파일 생성/삭제
+  x = 디렉토리 진입 (cd)  ← 핵심!
+```
+
+```bash
+# x 권한 없으면 cd 자체가 안 됨
+chmod 644 mydir/        # x 제거
+cd mydir                # -bash: cd: mydir: Permission denied
+
+chmod 755 mydir/        # x 복구
+cd mydir                # 정상 진입
+
+# r 없어도 x 있으면 진입은 됨 (ls 만 안 됨)
+chmod 100 mydir/        # x 만 있음
+cd mydir                # 진입 OK
+ls                      # Permission denied (목록 못 봄)
+```
+
+```
+실무에서 디렉토리는 보통 755 또는 775:
+  r+x = 들어가고 목록도 볼 수 있음
+  w 는 소유자/그룹만 (파일 생성/삭제)
 ```
 
 ---

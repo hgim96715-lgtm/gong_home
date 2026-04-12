@@ -78,16 +78,16 @@ Kafka / Spark 컨테이너 운영의 기초
 리눅스 마스터 1급 비중 가장 높은 영역
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_File_Permissions]]|권한 개념 (rwx) / chmod / chown / chgrp / umask / SUID / SGID / Sticky bit|
-|[[Linux_Superuser]]|root 개념 / sudo / su / sudoers / /etc/hosts|
-|[[Linux_User_Group]]|사용자·그룹 관리 / useradd / usermod / groupadd / passwd / /etc/passwd /etc/shadow|
-|[[Linux_SSH]]|공개키 암호화 개념 / ssh / scp / ssh-keygen / authorized_keys / config|
-|[[Linux_OpenSSL]]|암호화 개념 / rand / dgst / enc / 인증서 / AES / RSA|
-|[[Linux_Firewall]]|패킷 필터링 개념 / iptables / ufw / firewalld / 체인|
-|[[Linux_PAM]]|플러그인 인증 구조 / /etc/pam.d / 모듈 유형|
-|[[Linux_SELinux]]|강제 접근 통제 개념 / SELinux / AppArmor / 컨텍스트|
+| 노트                         | 핵심 개념                                                                       |
+| -------------------------- | --------------------------------------------------------------------------- |
+| [[Linux_File_Permissions]] | 권한 개념 (rwx) / chmod / chown / chgrp / umask / SUID / SGID / Sticky bit      |
+| [[Linux_Superuser]]        | root 개념 / sudo / su / sudoers / /etc/hosts                                  |
+| [[Linux_User_Group]]       | 사용자·그룹 관리 / useradd / usermod / groupadd / passwd / /etc/passwd /etc/shadow |
+| [[Linux_SSH]]              | 공개키 암호화 개념 / ssh / scp / ssh-keygen / authorized_keys / config              |
+| [[Linux_OpenSSL]]          | 암호화 개념 / rand / dgst / enc / 인증서 / AES / RSA                                |
+| [[Linux_Firewall]]         | 패킷 필터링 개념 / iptables / ufw / firewalld / 체인                                 |
+| [[Linux_PAM]]              | 플러그인 인증 구조 / /etc/pam.d / 모듈 유형                                             |
+| [[Linux_SELinux]]          | 강제 접근 통제 개념 / SELinux / AppArmor / 컨텍스트                                     |
 
 ---
 
