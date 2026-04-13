@@ -310,7 +310,170 @@ ls -l
 
 ---
 
-# ⑥ 실무 에러 패턴
+# ⑥ umask — 새 파일 기본 권한 제어 ⭐️
+
+```
+umask = 새 파일 / 디렉토리 생성 시 자동으로 제거할 권한 지정
+
+기본 최대 권한:
+  파일       666 (rw-rw-rw-)
+  디렉토리   777 (rwxrwxrwx)
+
+실제 권한 = 기본 최대 권한 - umask
+```
+
+## umask 계산
+
+```
+umask 022 (기본값):
+  파일:      666 - 022 = 644 (rw-r--r--)
+  디렉토리:  777 - 022 = 755 (rwxr-xr-x)
+
+umask 027 (보안 강화):
+  파일:      666 - 027 = 640 (rw-r-----)
+  디렉토리:  777 - 027 = 750 (rwxr-x---)
+
+027 의 의미:
+  0 → 소유자 권한 그대로
+  2 → 그룹 쓰기 권한 제거
+  7 → 기타 모든 권한 제거
+```
+
+## 사용법
+
+```bash
+# 현재 umask 확인
+umask
+# 0022
+
+# umask 변경 (현재 세션만 적용)
+umask 027
+
+# 파일 생성 후 확인
+touch schedule.odt
+ls -l schedule.odt
+# -rw-r----- 1 labex research 0 Jun 26 schedule.odt
+#  ↑ 640 (666 - 027)
+
+# 디렉토리 생성 후 확인
+mkdir testdir
+ls -ld testdir
+# drwxr-x--- 1 labex research 0 Jun 26 testdir
+#  ↑ 750 (777 - 027)
+```
+
+## 영구 적용 — .bashrc
+
+```bash
+# ~/.bashrc 에 추가
+echo 'umask 027' >> ~/.bashrc
+source ~/.bashrc   # 즉시 적용
+```
+
+```
+umask 없이 치면   → 현재 세션만 적용
+~/.bashrc 에 추가 → 로그인할 때마다 자동 적용
+```
+
+---
+
+---
+
+# ⑦ Sticky Bit — 공용 디렉토리 보호 ⭐️
+
+```
+문제:
+  디렉토리에 w(쓰기) 권한이 있으면
+  내가 만들지 않은 파일도 삭제 가능
+  → 공용 디렉토리에서 팀원 파일을 실수로 삭제하는 대참사!
+
+해결:
+  Sticky Bit 설정
+  → 파일 소유자 또는 디렉토리 소유자만 삭제/이름변경 가능
+  → 다른 사람이 만든 파일은 건드릴 수 없음
+```
+
+## 설정 방법
+
+```bash
+# 4자리 8진수 앞에 1 붙이기
+chmod 1771 RandD
+#      ↑ Sticky Bit
+
+# 기호 모드
+chmod +t RandD
+```
+
+## chmod 770 vs chmod 1771 ⭐️
+
+```
+chmod 770  → rwxrwx---
+  소유자: rwx / 그룹: rwx / 기타: ---
+
+chmod 1771 → rwxrwx--t
+  소유자: rwx / 그룹: rwx / 기타: --t
+
+chmod 1771 을 나중에 치면 770 이 완전히 덮어써짐
+  770 의 기타=--- 가 1771 의 기타=--t 로 바뀜
+  기타에 실행(x) 가 생기는 대신 Sticky Bit 추가됨
+  
+770 만 필요하고 기타는 완전 차단하고 싶다면:
+  chmod 1770 RandD  ← Sticky + 770
+  # rwxrwx--T  (T=실행권한 없는 스티키)
+```
+
+## ls -l 로 확인
+
+```bash
+ls -ld RandD
+# drwxrwx--t 2 labex research 4096 Jun 26 RandD
+#          ↑
+#    t = Sticky Bit 설정됨 (기타에 x 있음)
+#    T = Sticky Bit 설정됨 (기타에 x 없음)
+```
+
+```
+소문자 t:
+  기타(o) 에 x 권한이 있는 상태에서 스티키 설정
+  drwxrwx--t
+
+대문자 T:
+  기타(o) 에 x 권한 없는 상태에서 스티키 설정
+  drwxrwx--T
+```
+
+## 팀 협업 공용 디렉토리 완성 패턴
+
+```bash
+sudo groupadd research
+sudo usermod -aG research labex
+mkdir ~/project/RandD
+sudo chgrp research ~/project/RandD   # 또는 chown :research
+chmod 770 ~/project/RandD             # 소유자+그룹 전체 / 기타 차단
+chmod +t ~/project/RandD              # Sticky Bit 추가 (770 유지하면서)
+ls -ld ~/project/RandD
+# drwxrwx--T  labex  research  RandD
+```
+
+```
+770 유지하면서 Sticky 추가:
+  chmod +t      → 기존 권한 유지 + 스티키만 추가 ✅
+  chmod 1771    → 기존 권한 덮어씀 (기타=x 추가됨)
+
+기타 차단 + 스티키 원하면:
+  chmod 770 먼저 → chmod +t 추가
+  또는 chmod 1770 한 번에
+```
+
+## /tmp 가 Sticky Bit 를 쓰는 이유
+
+
+```bash
+ls -ld /tmp
+# drwxrwxrwt  root  root  /tmp
+#          ↑ 모든 사람이 쓸 수 있지만
+#            자기 파일만 삭제 가능
+```
 
 ```
 Permission denied 원인 3가지:
@@ -336,10 +499,13 @@ Permission denied 원인 3가지:
 
 # 자주 하는 실수
 
-|실수|원인|해결|
-|---|---|---|
-|`chmod 777`|"귀찮아서"|`755` 또는 `644` 사용|
-|`chmod -R 777 /`|실수로 루트 전체|경로 세 번 확인 / `-R` 신중하게|
-|`usermod` 후 즉시 적용 안 됨|세션 미반영|재로그인 또는 `newgrp 그룹명`|
-|그룹만 바꾸려고 `chgrp` 찾음|명령어 모름|`chown :그룹명 파일` 로 대체|
-|`-R` 없이 디렉토리 변경|하위 파일 미반영|`chown -R` 사용|
+| 실수                                    | 원인            | 해결                    |
+| ------------------------------------- | ------------- | --------------------- |
+| `chmod 777`                           | "귀찮아서"        | `755` 또는 `644` 사용     |
+| `chmod -R 777 /`                      | 실수로 루트 전체     | 경로 세 번 확인 / `-R` 신중하게 |
+| `usermod` 후 즉시 적용 안 됨                 | 세션 미반영        | 재로그인 또는 `newgrp 그룹명`  |
+| 그룹만 바꾸려고 `chgrp` 찾음                   | 명령어 모름        | `chown :그룹명 파일` 로 대체  |
+| `-R` 없이 디렉토리 변경                       | 하위 파일 미반영     | `chown -R` 사용         |
+| `chmod 770` 후 `chmod 1771` 로 기타에 x 생김 | 1771 이 전체 덮어씀 | `chmod +t` 로 스티키만 추가  |
+| umask 변경이 재로그인 후 사라짐                  | 세션만 적용됨       | `~/.bashrc` 에 추가      |
+| Sticky Bit `T` vs `t` 헷갈림             | 대소문자 차이 모름    | 소문자=기타x있음 / 대문자=기타x없음 |
