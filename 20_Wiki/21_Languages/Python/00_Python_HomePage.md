@@ -142,6 +142,16 @@ JSON 처리의 핵심
 |[[Python_Selenium]]|selenium / webdriver / By / WebDriverWait / JS 렌더링 / 동적 크롤링|
 |[[Python_OCR]]|EasyOCR / Tesseract / Google Vision / 이미지 텍스트 추출|
 
+###  API 크롤링 
+
+> HTML을 파싱하는 대신, 사이트가 내부적으로 쓰는 API를 직접 호출하는 방식 
+> 인터파크 전시 프로젝트에서 Selenium 스크롤 15개 한계 → API 호출 500개+로 전환한 핵심 기법 관련 실습 → [[01_exhibition_crawling]]
+
+| 노트                              | 핵심 개념                                                          |
+| ------------------------------- | -------------------------------------------------------------- |
+| [[Python_API_Crawling]]         | DevTools로 API 발굴 / Session 재사용 / 페이지네이션 / 중복 제거 / dataclass 매핑 |
+| [[Python_API_Rate_Limit_Retry]] | time.sleep / 지수 백오프 / 429 처리 / retry 패턴                        |
+
 ---
 
 ---
