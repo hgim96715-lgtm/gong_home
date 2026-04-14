@@ -42,14 +42,14 @@ related:
 
 ## DB별 함수 한눈에 비교
 
-|기능|PostgreSQL 🐘|Oracle 🔴|MSSQL 🟩|
-|---|---|---|---|
-|현재 시간|`NOW()`|`SYSDATE`|`GETDATE()`|
-|날짜 더하기|`+ INTERVAL '1 month'`|`ADD_MONTHS()`|`DATEADD(month, 1, ...)`|
-|날짜 차이|`AGE()` / `-`|`MONTHS_BETWEEN()` / `-`|`DATEDIFF()`|
-|날짜 추출|`EXTRACT()`|`EXTRACT()`|`DATEPART()`|
-|포맷 변환|`TO_CHAR()`|`TO_CHAR()`|`FORMAT()` / `CONVERT()`|
-|날짜 자르기|`DATE_TRUNC()`|`TRUNC()`|`DATETRUNC()`|
+|기능|PostgreSQL 🐘|MySQL 🐬|Oracle 🔴|MSSQL 🟩|
+|---|---|---|---|---|
+|현재 시간|`NOW()`|`NOW()` / `CURDATE()`|`SYSDATE`|`GETDATE()`|
+|날짜 더하기|`+ INTERVAL '1 day'` (따옴표)|`DATE_ADD(날짜, INTERVAL 1 DAY)` (따옴표 없음)|`ADD_MONTHS()`|`DATEADD(month, 1, ...)`|
+|날짜 차이|`날짜 - 날짜` / `- INTERVAL '1 day'` / `AGE()`|`DATEDIFF(최근, 과거)`|`MONTHS_BETWEEN()` / `-`|`DATEDIFF(단위, 과거, 최근)`|
+|날짜 추출|`EXTRACT()`|`YEAR()` / `MONTH()` / `DAY()`|`EXTRACT()`|`DATEPART()`|
+|포맷 변환|`TO_CHAR()`|`DATE_FORMAT()`|`TO_CHAR()`|`FORMAT()` / `CONVERT()`|
+|날짜 자르기|`DATE_TRUNC()`|`DATE_FORMAT()` 활용|`TRUNC()`|`DATETRUNC()`|
 
 ---
 
@@ -57,12 +57,12 @@ related:
 
 # ① 현재 시간 구하기
 
-| DB                 | 함수                                | 반환값     |
-| ------------------ | --------------------------------- | ------- |
-| PostgreSQL / MySQL | `NOW()` 또는 `CURRENT_TIMESTAMP`    | 날짜 + 시간 |
-| PostgreSQL / MySQL | `CURRENT_DATE`                    | 날짜만     |
-| Oracle             | `SYSDATE`                         | 날짜 + 시간 |
-| MSSQL              | `GETDATE()` / `CURRENT_TIMESTAMP` | 날짜 + 시간 |
+|DB|함수|반환값|
+|---|---|---|
+|PostgreSQL / MySQL|`NOW()` 또는 `CURRENT_TIMESTAMP`|날짜 + 시간|
+|PostgreSQL / MySQL|`CURRENT_DATE`|날짜만|
+|Oracle|`SYSDATE`|날짜 + 시간|
+|MSSQL|`GETDATE()` / `CURRENT_TIMESTAMP`|날짜 + 시간|
 
 ```sql
 -- 🐘 PostgreSQL / MySQL
@@ -86,6 +86,7 @@ SELECT CURRENT_TIMESTAMP;   -- GETDATE()와 동일
 |DB|월 더하기|일 더하기|
 |---|---|---|
 |PostgreSQL|`+ INTERVAL '1 month'`|`+ INTERVAL '3 days'` 또는 `+ 3`|
+|MySQL|`+ INTERVAL 1 DAY`|`DATE_ADD(날짜, INTERVAL 1 DAY)`|
 |Oracle|`ADD_MONTHS(날짜, 1)`|`날짜 + 3`|
 |MSSQL|`DATEADD(month, 1, 날짜)`|`DATEADD(day, 3, 날짜)`|
 
@@ -94,6 +95,12 @@ SELECT CURRENT_TIMESTAMP;   -- GETDATE()와 동일
 SELECT NOW() + INTERVAL '1 month';        -- 1달 뒤
 SELECT NOW() - INTERVAL '1 year';         -- 1년 전
 SELECT '2026-02-24'::DATE + 3;            -- 3일 뒤
+
+-- 🐬 MySQL
+SELECT NOW() + INTERVAL 1 DAY;            -- 1일 뒤
+SELECT NOW() - INTERVAL 1 MONTH;          -- 1달 전
+SELECT DATE_ADD('2026-02-24', INTERVAL 3 DAY);   -- 3일 뒤
+SELECT DATE_SUB('2026-02-24', INTERVAL 1 YEAR);  -- 1년 전
 
 -- 🔴 Oracle
 SELECT ADD_MONTHS(SYSDATE, 1) FROM DUAL;  -- 1달 뒤
@@ -107,9 +114,158 @@ SELECT DATEADD(day, 3, GETDATE());        -- 3일 뒤
 SELECT DATEADD(hour, 1, GETDATE());       -- 1시간 뒤
 ```
 
+## MySQL vs PostgreSQL INTERVAL 문법 ⭐️
+
+```
+PostgreSQL 과 MySQL 둘 다 INTERVAL 지원
+문법 형식만 다름:
+
+PostgreSQL: INTERVAL '1 day'   ← 따옴표 안에 숫자+단위
+MySQL:      INTERVAL 1 DAY     ← 따옴표 없이 숫자 단위 분리
+```
+
+```sql
+-- PostgreSQL INTERVAL (따옴표 필수)
+날짜 + INTERVAL '1 day'
+날짜 - INTERVAL '1 month'
+날짜 + INTERVAL '3 days'   -- 복수형 허용
+
+-- MySQL INTERVAL (따옴표 없음)
+DATE_ADD(날짜, INTERVAL 1 DAY)
+DATE_SUB(날짜, INTERVAL 1 MONTH)
+날짜 + INTERVAL 1 DAY      -- 이 형태도 가능
+```
+
+## PostgreSQL 날짜 차이 방법 3가지 ⭐️
+
+```sql
+-- 방법 1: 그냥 빼기 (정수 반환 / 일수)
+SELECT '2026-02-24'::DATE - '2026-02-20'::DATE;
+-- 4  (정수, 일수)
+
+-- 방법 2: INTERVAL 빼기 (특정 날짜에서 기간 빼기)
+SELECT NOW() - INTERVAL '1 day';       -- 어제
+SELECT NOW() - INTERVAL '1 month';     -- 한 달 전
+SELECT NOW() - INTERVAL '7 days';      -- 7일 전
+
+-- 방법 3: AGE() (사람이 읽기 좋은 형태)
+SELECT AGE('2026-02-24', '1990-05-01');
+-- 35 years 9 mons 23 days
+```
+
+```
+AGE() 없어도 됨:
+  날짜 - 날짜          → 일수 차이 (정수)
+  날짜 - INTERVAL '1 day' → 날짜에서 기간 빼기
+
+AGE() 쓸 때:
+  "35 years 9 mons" 형태 출력 목적
+  나이 / 재직기간 계산
+
+실무:
+  조건 필터링 → 날짜 - INTERVAL '1 day' 가 더 간결
+  출력 목적   → AGE() 또는 EXTRACT 로 숫자 추출
+```
+
+## MySQL DATEDIFF — 날짜 차이 ⭐️
+
+```sql
+-- MySQL DATEDIFF(최근날짜, 과거날짜) → 정수 (일수)
+SELECT DATEDIFF('2026-02-24', '2026-02-20');   -- 4
+
+-- MSSQL DATEDIFF(단위, 과거, 최근) ← 순서 반대!
+SELECT DATEDIFF(day, '2026-02-20', '2026-02-24');  -- 4
+```
+
+```
+MySQL  vs MSSQL DATEDIFF 순서 주의:
+  MySQL : DATEDIFF(최근, 과거)   ← 최근이 먼저
+  MSSQL : DATEDIFF(단위, 과거, 최근) ← 과거가 먼저
+
+MySQL 에서 순서 바꾸면 음수 반환:
+  DATEDIFF('2026-02-20', '2026-02-24') → -4
+```
+
+## LAG() + 날짜 연속 판별 패턴 ⭐️
+
+```
+연속된 날짜인지 판별:
+  PostgreSQL → LAG(date) + INTERVAL '1 day' 비교
+  MySQL      → DATEDIFF(현재날짜, 이전날짜) = 1 비교
+```
+
+```sql
+-- PostgreSQL: INTERVAL 로 연속 판별
+WITH cte AS (
+    SELECT
+        recordDate,
+        LAG(recordDate) OVER (ORDER BY recordDate) AS prev_date
+    FROM Weather
+)
+SELECT recordDate
+FROM cte
+WHERE recordDate = prev_date + INTERVAL '1 day';  -- 바로 다음 날인지
+```
+
+```sql
+-- MySQL: DATEDIFF 로 연속 판별
+WITH cte AS (
+    SELECT
+        recordDate,
+        LAG(recordDate) OVER (ORDER BY recordDate) AS prev_date
+    FROM Weather
+)
+SELECT recordDate
+FROM cte
+WHERE DATEDIFF(recordDate, prev_date) = 1;  -- 차이가 정확히 1일
+```
+
+```
+두 방법 비교:
+
+  PostgreSQL:
+    recordDate = prev_date + INTERVAL '1 day'
+    → 이전 날짜에 1일 더한 것과 현재 날짜가 같은지
+
+  MySQL:
+    DATEDIFF(recordDate, prev_date) = 1
+    → 두 날짜 차이가 정확히 1인지
+
+  결과 동일 / DB 에 맞는 문법 선택
+```
+
+## MySQL 날짜 함수 정리
+
+```sql
+-- 현재 날짜 / 시각
+SELECT CURDATE();           -- 2026-02-24  (날짜만)
+SELECT NOW();               -- 2026-02-24 10:30:00
+SELECT CURRENT_DATE;        -- CURDATE() 와 동일
+
+-- 날짜 추출
+SELECT YEAR('2026-02-24');    -- 2026
+SELECT MONTH('2026-02-24');   -- 2
+SELECT DAY('2026-02-24');     -- 24
+SELECT DAYOFWEEK('2026-02-24'); -- 1:일 ~ 7:토
+
+-- 포맷 변환
+SELECT DATE_FORMAT(NOW(), '%Y-%m-%d');          -- 2026-02-24
+SELECT DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'); -- 2026-02-24 10:30:00
+SELECT DATE_FORMAT(NOW(), '%Y-%m');             -- 2026-02
+```
+
+```
+MySQL DATE_FORMAT 포맷:
+  %Y = 4자리 연도    %y = 2자리 연도
+  %m = 2자리 월      %M = 월 영문이름
+  %d = 2자리 일
+  %H = 24시간 시     %h = 12시간 시
+  %i = 분            %s = 초
+```
+
 ---
 
-##  INTERVAL 연산 후 시간(00:00) 제거하기 ⭐️
+## ⚠️ INTERVAL 연산 후 시간(00:00) 제거하기 ⭐️
 
 `DATE + INTERVAL` 을 하면 결과가 **TIMESTAMP** 로 반환되어 뒤에 `00:00:00` 이 붙는다.
 
@@ -154,7 +310,7 @@ SELECT (NOW() - INTERVAL '1 year')::DATE AS one_year_ago;
 
 >**💡 재직 기간 조건 해석법** "기준일 기준 N년 이상 재직" 조건은 항상 아래 공식으로 바꿔 생각한다.
 
-```text
+```sql
 재직 기간 조건   →  입사일 ≤ 기준일 − 기간
 
 "2년 이상 재직"   →  hire_date ≤ 2021-12-31 − 2년   →  hire_date ≤ 2019-12-31
@@ -163,17 +319,15 @@ SELECT (NOW() - INTERVAL '1 year')::DATE AS one_year_ago;
 
 >왜 `<=` 인가: 입사일이 **오래될수록(작을수록)** 재직 기간이 길다. "2년 이상"이 되려면 입사일이 기준일에서 2년을 뺀 날짜보다 **같거나 더 과거** 여야 한다.
 
+>**💡 핵심 암기법** `DATE ± INTERVAL` → 결과가 TIMESTAMP 로 튀어나온다 → 뒤에 `::DATE` 로 다시 잡아준다
 
+```sql
+('기준날짜'::DATE  ±  INTERVAL 'N unit')::DATE
+ ─────────────────────────────────────────────
+        연산 전체를 괄호로 감싸고
+        맨 끝에 ::DATE 를 한 번 더!
+```
 
-
-> **💡 핵심 암기법** `DATE ± INTERVAL` → 결과가 TIMESTAMP 로 튀어나온다 → 뒤에 `::DATE` 로 다시 잡아준다
-
- ```
- ('기준날짜'::DATE  ±  INTERVAL 'N unit')::DATE
-  ─────────────────────────────────────────────
-         연산 전체를 괄호로 감싸고
-         맨 끝에 ::DATE 를 한 번 더!
- ```
 
 ---
 
@@ -224,6 +378,7 @@ SELECT SYSDATE + 1/24/60*10 FROM DUAL; -- 10분 뒤
 |---|---|---|
 |PostgreSQL|`AGE(최근, 과거)`|INTERVAL (예: 35 years 9 mons)|
 |PostgreSQL|`DATE - DATE`|정수 (일수)|
+|MySQL|`DATEDIFF(최근, 과거)`|정수 (일수)|
 |Oracle|`MONTHS_BETWEEN(최근, 과거)`|실수 (개월 수)|
 |Oracle|`날짜 - 날짜`|실수 (일수)|
 |MSSQL|`DATEDIFF(단위, 과거, 최근)`|정수|
@@ -235,6 +390,11 @@ SELECT AGE('2026-02-24', '1990-05-01');
 
 SELECT '2026-02-24'::DATE - '2026-02-20'::DATE;
 -- 4 (일수 차이)
+
+-- 🐬 MySQL
+SELECT DATEDIFF('2026-02-24', '2026-02-20');
+-- 4 (일수 차이)
+-- MySQL DATEDIFF = 최근 - 과거 순서 (결과가 양수)
 
 -- 🔴 Oracle
 SELECT MONTHS_BETWEEN(SYSDATE, '1990-05-01') FROM DUAL;
@@ -250,6 +410,146 @@ SELECT DATEDIFF(hour, '2026-02-24 09:00', GETDATE()); -- 시간 차이
 ```
 
 > ⚠️ **MSSQL `DATEDIFF` 순서 주의!** `DATEADD` 와 다르게 **과거 날짜가 먼저, 최근 날짜가 나중** 에 들어간다. 순서가 바뀌면 **음수** 가 나온다.
+
+## MySQL DATEDIFF vs PostgreSQL 날짜 빼기
+
+```
+MySQL:
+  DATEDIFF(날짜1, 날짜2)  →  날짜1 - 날짜2  (일수)
+  단위 없음 → 항상 일 단위
+
+PostgreSQL:
+  날짜1 - 날짜2  →  정수 (일수)
+  단위 없음 → 항상 일 단위
+
+MSSQL:
+  DATEDIFF(단위, 과거, 최근)  →  단위 지정 필수 (day/month/hour...)
+```
+
+---
+
+---
+
+# ③-1 LAG() + 날짜 비교 — 연속 날짜 / 하루 차이 ⭐️
+
+```
+연속된 날짜인지 확인 = 현재 날짜 - 이전 날짜 = 1
+LAG() 으로 이전 행 날짜를 가져와서 비교
+
+PostgreSQL vs MySQL 문법 차이가 있음
+```
+
+## PostgreSQL — INTERVAL 비교
+
+```sql
+-- LAG() 로 이전 행 날짜 가져오기
+SELECT
+    recordDate,
+    LAG(recordDate) OVER (ORDER BY recordDate) AS prev_date
+FROM Weather;
+
+-- 연속 날짜 조건 (하루 차이)
+-- PostgreSQL: INTERVAL '1 day' 로 비교
+WHERE recordDate = prev_date + INTERVAL '1 day'
+```
+
+```sql
+-- 실전: 어제보다 기온이 높은 날 찾기 (LeetCode 197)
+WITH daily AS (
+    SELECT
+        id,
+        recordDate,
+        temperature,
+        LAG(recordDate)    OVER (ORDER BY recordDate) AS prev_date,
+        LAG(temperature)   OVER (ORDER BY recordDate) AS prev_temp
+    FROM Weather
+)
+SELECT id
+FROM daily
+WHERE recordDate = prev_date + INTERVAL '1 day'   -- 연속 날짜 확인
+  AND temperature > prev_temp;                     -- 기온 비교
+```
+
+## MySQL — DATEDIFF 비교
+
+```sql
+-- MySQL: INTERVAL '1 day' 도 되지만
+-- DATEDIFF 로 비교하는 게 더 명확
+WHERE DATEDIFF(recordDate, prev_date) = 1
+```
+
+```sql
+-- 실전: 어제보다 기온이 높은 날 찾기 (MySQL 버전)
+WITH daily AS (
+    SELECT
+        id,
+        recordDate,
+        temperature,
+        LAG(recordDate)  OVER (ORDER BY recordDate) AS prev_date,
+        LAG(temperature) OVER (ORDER BY recordDate) AS prev_temp
+    FROM Weather
+)
+SELECT id
+FROM daily
+WHERE DATEDIFF(recordDate, prev_date) = 1   -- 연속 날짜 확인
+  AND temperature > prev_temp;              -- 기온 비교
+```
+
+## PostgreSQL vs MySQL 연속 날짜 비교
+
+```sql
+-- PostgreSQL
+WHERE recordDate = prev_date + INTERVAL '1 day'
+
+-- MySQL (방법 1 — INTERVAL)
+WHERE recordDate = prev_date + INTERVAL 1 DAY
+--                                      ↑ 따옴표 없음 (MySQL 문법)
+
+-- MySQL (방법 2 — DATEDIFF)
+WHERE DATEDIFF(recordDate, prev_date) = 1
+```
+
+```
+PostgreSQL:
+  INTERVAL '1 day'   ← 따옴표 + 단위 문자열
+  DATE - DATE        ← 정수 반환 (= 1 비교 가능)
+
+MySQL:
+  INTERVAL 1 DAY     ← 따옴표 없이 숫자 + 단위
+  DATEDIFF()         ← 명시적 함수 호출
+
+주의:
+  DATEDIFF(a, b) = a - b 순서
+  DATEDIFF(recordDate, prev_date) = 1
+  → recordDate 가 prev_date 보다 1일 뒤
+```
+
+## Self JOIN 으로 대체 (LAG 없이)
+
+```sql
+-- LAG 지원 안 되는 환경에서 Self JOIN 사용
+-- MySQL (Self JOIN 버전)
+SELECT w1.id
+FROM Weather w1
+JOIN Weather w2
+  ON DATEDIFF(w1.recordDate, w2.recordDate) = 1
+ AND w1.temperature > w2.temperature;
+
+-- PostgreSQL (Self JOIN 버전)
+SELECT w1.id
+FROM Weather w1
+JOIN Weather w2
+  ON w1.recordDate = w2.recordDate + INTERVAL '1 day'
+ AND w1.temperature > w2.temperature;
+```
+
+```
+LAG() vs Self JOIN:
+  LAG()      → 코드 간결 / 현대적 / 권장
+  Self JOIN  → 구버전 DB 호환 / LAG 없을 때
+
+둘 다 결과 동일
+```
 
 ---
 
@@ -267,20 +567,23 @@ SELECT DATEDIFF(hour, '2026-02-24 09:00', GETDATE()); -- 시간 차이
 
 ```sql
 -- 🐘 PostgreSQL / 🔴 Oracle
-SELECT EXTRACT(YEAR FROM NOW());   -- 2026
-SELECT EXTRACT(MONTH FROM NOW());  -- 2
-SELECT EXTRACT(DOW FROM NOW());    -- 요일 (0:일 ~ 6:토, PostgreSQL 전용)
+SELECT EXTRACT(YEAR  FROM NOW());    -- 2026
+SELECT EXTRACT(MONTH FROM NOW());    -- 3
+SELECT EXTRACT(DAY   FROM NOW());    -- 13
+SELECT EXTRACT(HOUR  FROM NOW());    -- 시간 (0~23)
+SELECT EXTRACT(DOW   FROM NOW());    -- 요일 (0:일 ~ 6:토, PostgreSQL 전용)
+SELECT EXTRACT(ISODOW FROM NOW());   -- 요일 (1:월 ~ 7:일, ISO 기준, PostgreSQL 전용)
+SELECT EXTRACT(EPOCH FROM NOW());    -- 유닉스 타임스탬프 (초 단위 정수)
 
 -- 🟩 MSSQL
-SELECT DATEPART(YEAR, GETDATE());  -- 2026
-SELECT DATEPART(dw, GETDATE());    -- 요일 (1:일 ~ 7:토 ← Postgres 와 숫자 다름!)
-SELECT YEAR(GETDATE());            -- 단축 함수
+SELECT DATEPART(YEAR, GETDATE());    -- 2026
+SELECT DATEPART(dw,   GETDATE());    -- 요일 (1:일 ~ 7:토 ← Postgres 와 숫자 다름!)
+SELECT YEAR(GETDATE());              -- 단축 함수
 ```
 
----
 ## DOW vs ISODOW — 요일 추출 비교 ⭐️
 
-```text
+```
 DOW   (Day Of Week)     → 일요일 시작
   0:일  1:월  2:화  3:수  4:목  5:금  6:토
 
@@ -292,7 +595,6 @@ ISODOW (ISO Day Of Week) → 월요일 시작 (ISO 8601 표준)
   ORDER BY ISODOW 그대로 쓰면 월/화/수/목/금/토/일 순서 자동 완성
 ```
 
----
 ## ⚠️ 요일 정렬 함정 — 한국어 레이블 + ORDER BY
 
 ```
@@ -301,7 +603,6 @@ ORDER BY weekday → 가나다순 정렬 (금,목,수,월,토,화,일)
                    요일 순서가 아님!
 → 요일 정렬은 반드시 숫자 컬럼(ISODOW) 으로 해야 함
 ```
-
 
 ```sql
 -- ❌ 한국어 레이블 컬럼으로 정렬 → 가나다순
@@ -321,7 +622,6 @@ ORDER BY weekday;   -- ❌ 금/목/수/월/토/화/일 가나다순!
 -- ✅ 숫자 컬럼으로 정렬 → 월/화/수/목/금/토/일
 ORDER BY EXTRACT(ISODOW FROM measured_at);
 ```
-
 
 ```sql
 -- ✅ 실전 패턴 — 한국어 표시 + 올바른 정렬
@@ -372,7 +672,6 @@ FM (Fill Mode) 을 앞에 붙이면 공백 패딩 제거
   'FMDay' → "Monday" / "Tuesday" / "Wednesday"  ← 공백 없이 딱 맞게
 ```
 
-
 ```sql
 -- 공백 패딩 확인
 SELECT TO_CHAR(NOW(), 'Day') = 'Monday';     -- FALSE ("Monday   " ← 공백 있어서!)
@@ -415,7 +714,6 @@ SELECT TO_CHAR(NOW(), 'HH24:MI');        -- "09:05" (앞 0 유지 — 보통 이
   MSSQL          → FM 없음 → TRIM() 사용
 ```
 
----
 ## ⚠️ VARCHAR 컬럼에는 EXTRACT 바로 못 씀 — ::TIMESTAMP 필수
 
 ```
@@ -423,7 +721,6 @@ EXTRACT 는 DATE / TIMESTAMP 타입에만 동작
 VARCHAR 컬럼에 바로 쓰면 에러 or 엉뚱한 값
 → 반드시 ::TIMESTAMP (또는 ::DATE) 로 캐스팅 먼저
 ```
-
 
 ```sql
 -- train_schedule 의 trn_plan_dptre_dt 는 VARCHAR
@@ -442,7 +739,6 @@ GROUP BY hour
 ORDER BY hour ASC;
 ```
 
----
 ## EXTRACT(EPOCH FROM ...) — 초 단위 변환
 
 ```
@@ -583,17 +879,17 @@ WHERE trn_plan_dptre_dt::DATE IN (
 
 ### 날짜 포맷
 
-| 포맷      | 의미                  | 예시 출력            |
-| ------- | ------------------- | ---------------- |
-| `YYYY`  | 4자리 연도              | `2026`           |
-| `YY`    | 2자리 연도              | `26`             |
-| `MM`    | 2자리 월 (01~12)       | `03`             |
-| `DD`    | 2자리 일 (01~31)       | `16`             |
-| `D`     | 요일 숫자 (1:일~7:토)     | `2`              |
-| `Day`   | 요일 영문 전체 이름         | `Monday` (공백 패딩) |
-| `FMDay` | 요일 영문 전체 이름 (공백 없음) | `Monday`         |
-| `Dy`    | 요일 3글자 약어           | `Mon`            |
-| `Dy`    | 요일 3글자 약어           | `Mon`            |
+|포맷|의미|예시 출력|
+|---|---|---|
+|`YYYY`|4자리 연도|`2026`|
+|`YY`|2자리 연도|`26`|
+|`MM`|2자리 월 (01~12)|`03`|
+|`DD`|2자리 일 (01~31)|`16`|
+|`D`|요일 숫자 (1:일~7:토)|`2`|
+|`Day`|요일 영문 전체 이름|`Monday` (공백 패딩)|
+|`FMDay`|요일 영문 전체 이름 (공백 없음)|`Monday`|
+|`Dy`|요일 3글자 약어|`Mon`|
+|`Dy`|요일 3글자 약어|`Mon`|
 
 ### 시간 포맷 ⭐️ — HH vs HH24, MM vs MI
 
@@ -615,7 +911,6 @@ WHERE trn_plan_dptre_dt::DATE IN (
 ```
 
 ### 자주 쓰는 조합
-
 
 ```sql
 TO_CHAR(NOW(), 'YYYY-MM-DD')           -- 2026-03-16
@@ -772,7 +1067,7 @@ SELECT TO_DATE('2024-01-01', 'YYYY-MM-DD') + 1 FROM DUAL;  -- Oracle
 
 ## ② INTERVAL 연산 후 00:00:00 이 붙어요 ⭐️
 
-위 섹션 [[SQL_Date_Functions#INTERVAL 연산 후 시간(00 00) 제거하기 ⭐️|NTERVAL 연산 후 시간(00 00) 제거하기]] 참고
+위 섹션 [INTERVAL 연산 후 시간 제거하기](https://claude.ai/chat/09c89072-1332-44ab-9662-f57d38b75168#%E2%9A%A0%EF%B8%8F-interval-%EC%97%B0%EC%82%B0-%ED%9B%84-%EC%8B%9C%EA%B0%840000-%EC%A0%9C%EA%B1%B0%ED%95%98%EA%B8%B0-%E2%AD%90%EF%B8%8F) 참고
 
 ```sql
 -- 핵심만 기억: 결과 전체를 괄호로 감싸고 ::DATE 를 붙인다
@@ -784,11 +1079,25 @@ SELECT ('20211231'::DATE - INTERVAL '3 month')::DATE;
 
 ## ③ 타임존 때문에 날짜가 달라져요
 
-서버 시간이 UTC 인데 한국(KST, +9) 기준으로 쿼리를 짜면, 오전 9시 이전 데이터는 **'어제'** 로 잡힌다.
+서버/Docker 시간이 UTC 인데 한국(KST, +9) 기준으로 쿼리를 짜면, 오전 9시 이전 데이터는 **'어제'** 로 잡힌다.
 
 ```sql
--- ✅ 타임존 명시
-SELECT NOW() AT TIME ZONE 'Asia/Seoul';
+-- ❌ 컨테이너 기본 UTC 시각
+SELECT NOW()::TIME;                               -- 05:10 (한국은 14:10인데)
+
+-- ✅ KST 명시
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::TIME;   -- 14:10
+SELECT (NOW() AT TIME ZONE 'Asia/Seoul')::DATE;   -- KST 기준 날짜
+```
+
+```
+실전 사례: Docker 컨테이너 안에서 진행률 계산
+  plan_dep = '14:00' (KST 로 저장된 값)
+  NOW()::TIME = 05:10 (UTC)
+  05:10 - 14:00 = 음수 → GREATEST(..., 0) = 0%
+
+  해결: (NOW() AT TIME ZONE 'Asia/Seoul')::TIME 사용
+  → [[05_Superset_Dashboard]] 진행률 계산 참고
 ```
 
 ---
@@ -817,6 +1126,7 @@ D-Day 계산할 거라면 둘 다 `::DATE` 로 맞춰서 빼는 게 안전하다
 월 전체를 조회하려면 반드시 **범위 조건(`>=`, `<`)** 이나 **`TO_CHAR` 변환** 을 사용하자.
 
 ---
+
 ## ⑥ VARCHAR 컬럼에 EXTRACT 썼더니 에러가 나요
 
 ```
@@ -837,3 +1147,5 @@ SELECT EXTRACT(HOUR FROM plan_dep::TIME) FROM train_realtime;
 -- ✅ VARCHAR 날짜컬럼 → ::TIMESTAMP 후 EXTRACT
 SELECT EXTRACT(HOUR FROM trn_plan_dptre_dt::TIMESTAMP) FROM train_schedule;
 ```
+
+---
