@@ -56,15 +56,15 @@ CPU / 메모리 / 디스크 자원을 모니터링하고 제어
 Kafka / Spark 컨테이너 운영의 기초
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_Process]]|프로세스 개념 / ps / top / htop / kill / signal|
-|[[Linux_Background_Jobs]]|포그라운드 vs 백그라운드 / & / fg / bg / jobs / nohup|
-|[[Linux_Systemctl]]|데몬(daemon) 개념 / systemctl / service / 부팅 자동 시작|
-|[[Linux_Disk]]|파일시스템 마운트 / df / du / lsblk / fdisk / fsck|
-|[[Linux_Memory]]|가상 메모리 / free / vmstat / /proc/meminfo / swap|
-|[[Linux_Log]]|로그 시스템 구조 / journalctl / syslog / dmesg / logrotate|
-|[[Linux_Performance]]|성능 분석 / sar / iostat / strace / ltrace|
+| 노트                        | 핵심 개념                                               |
+| ------------------------- | --------------------------------------------------- |
+| [[Linux_Process]]         | 프로세스 개념 / ps / top / htop / kill / signal           |
+| [[Linux_Background_Jobs]] | 포그라운드 vs 백그라운드 / & / fg / bg / jobs / nohup         |
+| [[Linux_Systemctl]]       | 데몬(daemon) 개념 / systemctl / service / 부팅 자동 시작      |
+| [[Linux_Disk]]            | 파일시스템 마운트 / df / du / lsblk / fdisk / fsck          |
+| [[Linux_Memory]]          | 가상 메모리 / free / vmstat / /proc/meminfo / swap       |
+| [[Linux_Log]]             | 로그 시스템 구조 / journalctl / syslog / dmesg / logrotate |
+| [[Linux_Performance]]     | 성능 분석 / sar / iostat / strace / ltrace              |
 
 ---
 
