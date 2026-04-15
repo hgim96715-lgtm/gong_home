@@ -17,25 +17,13 @@ related:
   - "[[SQL_WITH_CTE]]"
   - "[[SQL_View]]"
 ---
-# SQL 서브쿼리 (SubQuery)
+# SQL_SubQuery
 
-## 개념 한 줄 요약
-
-> **"쿼리 안의 쿼리. 괄호 `()` 안에서 먼저 실행되어 메인 쿼리를 보조하는 하위 쿼리."**
+> **쿼리 안의 쿼리. 괄호 `()` 안에서 먼저 실행되어 메인 쿼리를 보조하는 하위 쿼리.**
 
 ---
 
-## 왜 필요한가?
-
-"평균 급여보다 많이 받는 사람을 찾아줘" 라고 할 때, 평균을 구하고 → 메모하고 → 다시 쿼리를 짜는 번거로움을 없애준다. 서브쿼리를 쓰면 DB 가 내부 쿼리를 먼저 실행하고, 그 결과로 메인 쿼리를 한 번에 처리한다.
-
----
-
----
-
-# ① 위치에 따른 3가지 분류
-
-> 서브쿼리는 **"어느 절(Clause)에 위치하느냐"** 에 따라 이름과 규칙이 완전히 달라진다.
+## 위치에 따른 3가지 분류
 
 |위치|이름|특징|
 |---|---|---|
@@ -45,397 +33,351 @@ related:
 
 ---
 
-## A. 스칼라 서브쿼리 — SELECT 절
+## 스칼라 서브쿼리 — SELECT 절
 
-> **반드시 1행 1열(단일 값)** 만 반환해야 한다. 컬럼 자리에 들어가는 모든 곳에 사용 가능.
+반드시 **1행 1열(단일 값)** 만 반환. 컬럼 자리가 올 수 있는 모든 곳에 사용 가능.
 
 ```sql
--- ① SELECT 절: 옆에 회사 평균 급여를 나란히 보여주기 (VLOOKUP 스타일)
+-- SELECT 절: 평균 급여를 옆에 나란히
 SELECT
     직원명,
     급여,
-    (SELECT AVG(급여) FROM 직원) AS 전체평균급여   -- 컬럼처럼 동작
+    (SELECT AVG(급여) FROM 직원) AS 전체평균급여
 FROM 직원;
 
--- ② UPDATE SET 절: 계산된 값으로 일괄 업데이트
+-- WHERE 절: 동적 기준값으로 필터링
+SELECT 직원명 FROM 직원
+WHERE 급여 > (SELECT AVG(급여) FROM 직원);
+
+-- UPDATE SET 절: 계산된 값으로 일괄 업데이트
 UPDATE 부서
 SET 최고급여 = (
-    SELECT MAX(급여)
-    FROM 직원
+    SELECT MAX(급여) FROM 직원
     WHERE 직원.부서코드 = 부서.부서코드
 )
 WHERE 부서코드 = 100;
-
--- ③ WHERE 절: 동적인 기준값으로 필터링
-SELECT 직원명 FROM 직원
-WHERE 급여 > (SELECT AVG(급여) FROM 직원);
 ```
 
-> **스칼라 서브쿼리는 SELECT 절에서만 쓰는 게 아니다.** 컬럼명이나 상수값이 올 수 있는 자리라면 어디든 들어갈 수 있다.
+> SELECT 절에서만 쓰는 게 아니다. 값이 올 수 있는 자리라면 어디든 가능.
 
 ---
 
-## B. 인라인 뷰 — FROM 절
+## 인라인 뷰 — FROM 절
 
-> **가상 테이블처럼 동작.** 메모리에 임시로 올려두고 쓰기 때문에 **별칭이 반드시 필요하다.**
+가상 테이블처럼 동작. **별칭이 반드시 필요**하다.
 
 ```sql
-SELECT
-    e.직원명,
-    t.부서_최대급여
+SELECT e.직원명, t.부서_최대급여
 FROM 직원 e
 JOIN (
     SELECT 부서코드, MAX(급여) AS 부서_최대급여
     FROM 직원
     GROUP BY 부서코드
-) t                         -- 🚨 별칭(t) 필수! 없으면 에러
+) t                          -- 별칭 필수
   ON e.부서코드 = t.부서코드;
 ```
 
-> **왜 별칭이 필수인가?** FROM 절의 테이블은 이름으로 참조해야 하는데, 서브쿼리 자체는 이름이 없다. 
-> 별칭이 없으면 메인 쿼리에서 이 가상 테이블을 참조할 방법이 없어서 에러가 발생한다. Oracle 은 생략 가능하지만 표준을 위해 항상 붙이는 습관을 들이는 게 좋다.
+> 별칭이 없으면 메인 쿼리에서 이 가상 테이블을 참조할 방법이 없어서 에러.
 
-## 인라인 뷰는 JOIN 만이 아니다 ⭐️
-
-```
-인라인 뷰를 처음 보면 "JOIN 이랑만 쓰는 거 아냐?" 라고 생각하기 쉬운데
-FROM (서브쿼리) 별칭 만으로도 그냥 SELECT 가능
-
-FROM 안에 테이블 대신 쿼리 결과를 넣는 것
-JOIN 은 선택 / 단독 FROM 으로도 사용 가능
-```
-
-## 패턴 1 — Window 함수 결과를 WHERE 로 필터링 ⭐️
-
-```
-Window 함수는 WHERE 절에서 직접 쓸 수 없음
-→ 인라인 뷰 안에서 Window 함수 실행
-→ 바깥 쿼리에서 WHERE 로 필터링
-
-이걸 몰라서 이렇게 짜지 못하는 경우가 많음
-```
+### 인라인 뷰는 JOIN 없이도 쓴다
 
 ```sql
--- ✅ 인라인 뷰 + Window 함수 (JOIN 없이 단독 FROM)
+-- Window 함수 결과를 WHERE 로 필터링할 때
+-- (Window 함수는 WHERE 절에 직접 쓸 수 없어서 이 패턴 필수)
 SELECT developer, platform, sales
 FROM (
     SELECT
         c.name AS developer,
         p.name AS platform,
-        SUM(sales_na + sales_eu + sales_jp + sales_other) AS sales,
+        SUM(sales) AS sales,
         RANK() OVER (
             PARTITION BY c.name
-            ORDER BY SUM(sales_na + sales_eu + sales_jp + sales_other) DESC
+            ORDER BY SUM(sales) DESC
         ) AS rnk
     FROM games g
     JOIN companies c ON g.developer_id = c.company_id
     JOIN platforms p ON g.platform_id  = p.platform_id
     GROUP BY c.name, p.name
-) t              -- 별칭 필수
-WHERE rnk = 1;   -- 바깥에서 Window 함수 결과로 필터링 (동점 전부 포함)
+) t
+WHERE rnk = 1;   -- 바깥에서 Window 함수 결과로 필터링
 ```
-
-```
-흐름:
-  안쪽: 집계(GROUP BY) + RANK() 계산 → 가상 테이블 t 완성
-  바깥: t 에서 rnk = 1 인 행만 남김
-
-JOIN 없이 FROM (서브쿼리) t 만으로
-안쪽의 모든 컬럼을 바깥에서 바로 사용 가능
-```
-
-## 패턴 2 — 가공한 데이터를 다시 집계
 
 ```sql
--- 안쪽: 월별 매출 계산
--- 바깥: 100만 이상인 달만 카운트
+-- 집계 후 다시 집계
 SELECT COUNT(*) AS month_count
 FROM (
     SELECT
         DATE_TRUNC('month', order_date) AS month,
         SUM(amount) AS monthly_sales
     FROM orders
-    GROUP BY DATE_TRUNC('month', order_date)
+    GROUP BY 1
 ) t
 WHERE monthly_sales >= 1000000;
 ```
 
-## 패턴 3 — 최신 데이터만 걸러서 다시 조회
-
-```sql
--- er_realtime 에서 가장 최근 데이터만 뽑아서 포화 병원 조회
-SELECT hpname, hvec
-FROM (
-    SELECT hpid, hpname, hvec
-    FROM er_realtime
-    WHERE created_at = (SELECT MAX(created_at) FROM er_realtime)
-) latest
-WHERE hvec <= 0
-ORDER BY hvec ASC;
-```
-
-## 언제 인라인 뷰를 써야 하는가
-
-```
-① Window 함수 결과로 WHERE 필터링
-   RANK() / ROW_NUMBER() 결과를 WHERE 에 바로 쓸 수 없음
-   → 인라인 뷰로 감싸고 바깥에서 필터링
-
-② 집계 후 다시 집계
-   GROUP BY 한 결과를 다시 GROUP BY 할 때
-   → 안쪽 1차 집계 → 바깥 2차 집계
-
-③ 복잡한 쿼리를 단계별로 나누기
-   CTE(WITH) 와 같은 역할
-   CTE 를 못 쓰는 환경에서 대체
-```
-
-## 인라인 뷰 vs CTE(WITH) 비교
+### 인라인 뷰 vs CTE
 
 ```sql
 -- 인라인 뷰
-SELECT developer, platform, sales
-FROM (
-    SELECT ..., RANK() OVER (...) AS rnk FROM ...
-) t
+SELECT * FROM (SELECT ..., RANK() OVER (...) AS rnk FROM ...) t
 WHERE rnk = 1;
 
 -- CTE (가독성 더 좋음)
 WITH ranked AS (
     SELECT ..., RANK() OVER (...) AS rnk FROM ...
 )
-SELECT developer, platform, sales
-FROM ranked
-WHERE rnk = 1;
+SELECT * FROM ranked WHERE rnk = 1;
 ```
 
-```
-둘 다 결과 동일
-CTE  → 가독성 좋음 (복잡한 쿼리일수록 권장)
-인라인 뷰 → 구버전 DB / CTE 지원 안 할 때 사용
-```
+결과 동일. CTE는 가독성, 인라인 뷰는 구버전 DB 호환성.
 
 ---
 
-## C. 중첩 서브쿼리 — WHERE / HAVING 절
+## 중첩 서브쿼리 — WHERE / HAVING 절
 
-> **메인 쿼리의 데이터를 조건으로 필터링할 때 사용.**
+반환 행 수에 따라 쓸 수 있는 연산자가 달라진다.
 
-```sql
-SELECT 직원명, 급여
-FROM 직원
-WHERE 급여 > (SELECT AVG(급여) FROM 직원);   -- 평균보다 큰 사람만
-```
-
----
-
----
-
-# ② 중첩 서브쿼리 완전 해부
-
-## A. 반환 형태에 따른 분류
-
-> 서브쿼리가 반환하는 결과 크기에 따라 쓸 수 있는 **연산자가 달라진다.**
-
-### 단일행 서브쿼리 (Single-Row)
-
-결과가 **무조건 1건**. 일반 비교 연산자 사용 가능.
-
-|사용 가능 연산자|`=` `>` `<` `>=` `<=` `<>`|
-|---|---|
+### 단일행 → `{text}=` `>` `<` `>=` `<=` `<>`
 
 ```sql
 SELECT 직원명 FROM 직원
 WHERE 부서코드 = (SELECT 부서코드 FROM 부서 WHERE 부서명 = '개발부');
---              ↑ 결과가 1건이므로 = 사용 가능
+-- 서브쿼리 결과가 반드시 1건이어야 함. 여러 건이면 에러.
 ```
 
----
-
-### 다중행 서브쿼리 (Multi-Row)
-
-결과가 **2건 이상**. `{text}=` 를 쓰면 에러 발생!
-
-|사용 가능 연산자|`IN` `ANY` `ALL` `EXISTS`|
-|---|---|
+### 다중행 → `IN` `ANY` `ALL` `EXISTS`
 
 ```sql
 SELECT 부서명 FROM 부서
-WHERE 부서코드 IN (SELECT 부서코드 FROM 직원 WHERE 급여 >= 100000000);
---              ↑ 결과가 여러 건이므로 IN 사용 (= 쓰면 ORA-01427 에러!)
+WHERE 부서코드 IN (SELECT 부서코드 FROM 직원 WHERE 급여 >= 10000000);
+-- 결과가 여러 건 → IN 사용. = 쓰면 에러 발생.
 ```
 
-> **단일행 연산자 vs 다중행 연산자 호환성:** 단일행 결과에 `IN` 같은 다중행 연산자를 써도 문제없다. 
-> 하지만 다중행 결과에 `{text}=` 같은 단일행 연산자를 쓰면 **에러 발생.** → 애매하면 `IN` 을 쓰는 게 안전하다.
+> 단일행 연산자(`{text}=`)를 다중행 결과에 쓰면 에러. 애매하면 `IN`이 안전.
 
 ---
 
-### EXISTS / NOT EXISTS — 존재 여부만 따진다
+## IN / ANY / ALL 완전 정리 ⭐️
 
-> **EXISTS 는 서브쿼리 결과에서 행이 하나라도 존재하면 TRUE, 없으면 FALSE.** 값이 아니라 **존재 여부(TRUE/FALSE)** 만 따진다.
+### IN — 집합에 포함되는가
 
 ```sql
--- "주문한 적 있는 고객만 출력"
+WHERE id IN ('001', '002', '003')
+-- id = '001' OR id = '002' OR id = '003' 과 동일
+
+WHERE id IN (SELECT exhibition_id FROM raw_exhibitions WHERE is_active = TRUE)
+```
+
+### ANY — 하나라도 만족하면 TRUE
+
+```sql
+-- = ANY : IN 과 완전히 동일
+WHERE id = ANY(ARRAY['001', '002', '003'])
+WHERE id = ANY(SELECT exhibition_id FROM ...)   -- 서브쿼리도 가능
+
+-- < ANY : 서브쿼리 결과 중 최솟값보다 작으면 TRUE
+WHERE price < ANY(SELECT price FROM exhibitions WHERE location = '서울')
+-- → 서울 전시 중 가장 싼 것보다 저렴한 전시
+
+-- > ANY : 서브쿼리 결과 중 최댓값보다 크면 TRUE
+WHERE price > ANY(SELECT price FROM exhibitions WHERE location = '서울')
+-- → 서울 전시 중 가장 비싼 것보다 비싼 전시
+```
+
+### ALL — 모든 값과 비교해서 전부 만족해야 TRUE
+
+```sql
+-- != ALL : 리스트의 모든 값과 다름 → NOT IN 과 동일 (NULL 안전)
+WHERE id != ALL(ARRAY['001', '002', '003'])
+WHERE id != ALL(%s)   -- psycopg2: 리스트 그대로 전달 가능
+
+-- > ALL : 서브쿼리 결과 중 최댓값보다 크면 TRUE
+WHERE price > ALL(SELECT price FROM exhibitions WHERE location = '서울')
+-- → 서울 전시 중 가장 비싼 것보다도 비싼 전시
+
+-- < ALL : 서브쿼리 결과 중 최솟값보다 작으면 TRUE
+WHERE price < ALL(SELECT price FROM exhibitions WHERE location = '서울')
+-- → 서울 전시 중 가장 싼 것보다도 저렴한 전시
+```
+
+### ANY / ALL 동등 표현
+
+| 구문                  | 동등 표현                 |
+| ------------------- | --------------------- |
+| `{text}= ANY(서브쿼리)` | `IN (서브쿼리)`           |
+| `!= ALL(배열/서브쿼리)`   | `NOT IN (...)`        |
+| `> ALL(서브쿼리)`       | `> (SELECT MAX(...))` |
+| `< ALL(서브쿼리)`       | `< (SELECT MIN(...))` |
+| `> ANY(서브쿼리)`       | `> (SELECT MIN(...))` |
+| `< ANY(서브쿼리)`       | `< (SELECT MAX(...))` |
+
+```
+직관적으로 외우는 법:
+  ALL  → "모두를 이겨야" → 가장 센 것(MAX) 기준
+  ANY  → "하나라도 이기면" → 가장 약한 것(MIN) 기준
+```
+
+### NOT IN 대신 `!= ALL` 을 쓰는 이유 — NULL 안전성
+
+```sql
+-- NOT IN: 리스트에 NULL 하나라도 있으면 전체 결과 0건
+WHERE id NOT IN ('001', NULL, '003')
+-- = id != '001' AND id != NULL AND id != '003'
+--                   ↑ 항상 UNKNOWN → 전체 AND가 UNKNOWN → 0건
+
+-- != ALL: NULL 있어도 정상 작동
+WHERE id != ALL(ARRAY['001', NULL, '003'])
+-- 내부적으로 NULL을 무시하고 비교
+```
+
+```python
+# psycopg2에서 != ALL 사용
+active_ids = ['001', '002', '003']
+
+# NOT IN 방식 — 1개일 때 ('001') 문법 오류 위험
+cur.execute("WHERE id NOT IN %s", (tuple(active_ids),))
+
+# != ALL 방식 — 개수 무관, 리스트 그대로 전달
+cur.execute("WHERE id != ALL(%s)", (active_ids,))
+```
+
+---
+
+## EXISTS / NOT EXISTS — 존재 여부만 확인
+
+EXISTS는 서브쿼리 결과의 **값이 뭔지 관심 없음.** "행이 존재하는가?" 만 체크.
+
+```sql
+-- 주문한 적 있는 고객만
 SELECT 고객명 FROM 고객 c
 WHERE EXISTS (
     SELECT 1 FROM 주문 o WHERE o.고객ID = c.고객ID
 );
 
--- "한 번도 주문 안 한 고객만 출력"
+-- 한 번도 주문 안 한 고객만
 SELECT 고객명 FROM 고객 c
 WHERE NOT EXISTS (
     SELECT 1 FROM 주문 o WHERE o.고객ID = c.고객ID
 );
 ```
 
----
-
-### SELECT 1 이 뭐야? — 가짜 값의 정체
-
-> EXISTS 는 서브쿼리 결과의 **값이 뭔지 전혀 관심 없다.** "행이 존재하는가?" 만 체크하기 때문에 SELECT 절에 뭘 써도 동작은 동일하다.
+### SELECT 1 이 뭐야?
 
 ```sql
--- 아래 4개는 완전히 동일하게 동작한다
+-- 아래 4개는 완전히 동일하게 동작
 WHERE EXISTS (SELECT 1    FROM 주문 WHERE 고객ID = c.고객ID)
 WHERE EXISTS (SELECT 'X'  FROM 주문 WHERE 고객ID = c.고객ID)
 WHERE EXISTS (SELECT NULL FROM 주문 WHERE 고객ID = c.고객ID)
 WHERE EXISTS (SELECT *    FROM 주문 WHERE 고객ID = c.고객ID)
 ```
 
-```
-EXISTS 의 관심사:
-"조건에 맞는 행이 1개라도 있나?" → TRUE
-"조건에 맞는 행이 하나도 없나?" → FALSE
+EXISTS는 값을 보지 않으므로 SELECT 뒤에 뭘 써도 동일. → 의도를 명확히 전달하는 가장 가벼운 `SELECT 1`이 관례.
 
-SELECT 뒤에 뭘 쓰든 그 값은 보지도 않음
-→ 어차피 안 볼 거, 가장 가벼운 숫자 1 을 쓰는 게 관례
-```
-
-|SELECT 절|EXISTS 동작|이유|
-|---|:-:|---|
-|`SELECT *`|동일|모든 컬럼 가져오지만 값 안 봄|
-|`SELECT 1`|동일|숫자 1 만 반환, 가장 가벼움 ✅|
-|`SELECT 'X'`|동일|문자 X 반환, 값 안 봄|
-|`SELECT NULL`|동일|NULL 반환해도 존재 여부만 체크|
-
-> **왜 `SELECT 1` 을 쓰는가?** `SELECT *` 은 모든 컬럼을 가져오는 신호라 옵티마이저가 불필요한 작업을 할 수도 있다. `SELECT 1` 은 "나는 값에 관심 없고 행 존재 여부만 본다" 는 의도를 명확히 전달하는 관례적 작성법이다. 현대 DB 에서는 성능 차이가 없지만 **가독성과 의도 전달** 면에서 `SELECT 1` 을 선호한다.
-
----
-
-### EXISTS 해석하는 법 — SELECT 1 은 무시하고 WHERE 조건만 읽어라
+### EXISTS 읽는 법
 
 ```
 EXISTS  (SELECT 1 FROM 테이블 WHERE 조건)
 → "테이블에서 조건에 맞는 행이 있으면"
 
-NOT EXISTS (SELECT 1 FROM 테이블 WHERE 조건)
-→ "테이블에서 조건에 맞는 행이 없으면"
+→ SELECT 1 은 무시하고 WHERE 조건만 읽으면 됨
 ```
 
-```sql
--- 단계별로 읽는 법
-SELECT 고객명 FROM 고객 c        -- ① 고객 테이블에서 고객명을 뽑는데
-WHERE EXISTS (                   -- ② 존재하면 출력해라
-    SELECT 1 FROM 주문 o         -- ③ SELECT 1 은 무시. 주문 테이블에서
-    WHERE o.고객ID = c.고객ID    -- ④ 이 고객의 주문 기록이 있는지 확인
-);
--- → "주문 기록이 있는 고객만 출력해라"
-
-SELECT 고객명 FROM 고객 c
-WHERE NOT EXISTS (               -- "존재하지 않으면 출력해라"
-    SELECT 1 FROM 주문 o         -- SELECT 1 무시
-    WHERE o.고객ID = c.고객ID    -- 이 고객의 주문 기록이 없는지 확인
-);
--- → "한 번도 주문 안 한 고객만 출력해라"
-```
-
-```
-핵심 공식:
-SELECT 1 은 항상 무시 → WHERE 뒤 조건만 해석
-EXISTS     = "~가 있으면"
-NOT EXISTS = "~가 없으면"
-```
-
----
-
-### EXISTS vs IN — 언제 뭘 쓸까?
-
-```sql
--- IN: 서브쿼리 결과 집합과 값 비교
-WHERE 고객ID IN (SELECT 고객ID FROM 주문)
-
--- EXISTS: 연관 서브쿼리로 행 존재 여부 확인
-WHERE EXISTS (SELECT 1 FROM 주문 WHERE 주문.고객ID = 고객.고객ID)
-```
+### EXISTS vs IN
 
 |구분|`IN`|`EXISTS`|
 |---|---|---|
-|비교 방식|값 비교 (집합에 포함 여부)|존재 여부 (TRUE/FALSE)|
-|NULL 처리|NULL 있으면 UNKNOWN 함정|NULL 무관 (존재만 체크)|
-|적합한 상황|서브쿼리 결과가 작을 때|서브쿼리 결과가 클 때|
+|비교 방식|값 비교 (집합 포함 여부)|존재 여부 (TRUE/FALSE)|
+|NULL 처리|NULL 있으면 UNKNOWN 함정|NULL 무관|
+|적합한 상황|서브쿼리 결과 작을 때|서브쿼리 결과 클 때|
 |연관 서브쿼리|가능하지만 비효율|주로 연관 서브쿼리와 사용|
 
 ---
 
-### 다중 컬럼 서브쿼리 (Multi-Column)
+## IN 핵심 동작 원리
 
-결과가 **여러 컬럼 세트.** 컬럼 쌍을 묶어서 비교할 때 사용.
+**"왼쪽 컬럼이 주어다."** 오른쪽 서브쿼리는 집합만 제공.
 
 ```sql
--- (부서코드, 급여) 두 쌍이 완벽히 일치하는 사람만 필터링
-SELECT 직원명, 부서코드, 급여
-FROM 직원
-WHERE (부서코드, 급여) IN (
-    SELECT 부서코드, MAX(급여) FROM 직원 GROUP BY 부서코드
-);
+WHERE COL2 IN (SELECT COL1 FROM T)
+-- "COL2의 값이 서브쿼리 결과 집합에 있는가?" 만 본다
+-- COL1이 뭔지는 비교에 전혀 영향 없음
 ```
 
-> ⚠️ **SQL Server(MSSQL) 에서는 이 문법 지원 안 함.** MSSQL 에서는 `EXISTS` 또는 인라인 뷰 + `JOIN` 으로 우회해야 한다.
+### 다중 컬럼 IN — AND / OR 논리
+
+```sql
+-- 단일 컬럼: OR
+WHERE COL1 IN ('a', 'b')
+= COL1='a' OR COL1='b'
+
+-- 다중 컬럼: 쌍 내부는 AND, 쌍끼리는 OR
+WHERE (COL1, COL2) IN (('a', 1), ('b', 2))
+= (COL1='a' AND COL2=1) OR (COL1='b' AND COL2=2)
+```
+
+> ⚠️ SQL Server(MSSQL)에서는 다중 컬럼 IN 지원 안 함 → EXISTS나 JOIN으로 우회.
 
 ---
 
-## B. 연관성에 따른 분류
+## NULL 함정 정리 ⭐️
 
-### 비연관 서브쿼리 (Uncorrelated) — 독립 실행
+```
+IN → NULL 행만 못 찾음 (나머지 정상)
+NOT IN → 리스트에 NULL 하나라도 있으면 전체 0건!
+```
 
-서브쿼리가 메인 쿼리와 전혀 무관하게 **혼자서 먼저 한 번만 실행.**
+**이유 — 드 모르간 법칙으로 변환**
+
+```sql
+-- NOT IN → NOT(OR) → AND 로 변환됨
+WHERE COL1 NOT IN ('a', NULL, 'b')
+= NOT(COL1='a' OR COL1=NULL OR COL1='b')
+= COL1!='a' AND COL1!=NULL AND COL1!='b'
+--              ↑ 항상 UNKNOWN
+-- AND는 하나라도 UNKNOWN이면 전체 UNKNOWN → 0건!
+```
+
+**해결법**
+
+```sql
+-- NOT IN 사용 시 반드시 NULL 제거
+WHERE 부서코드 NOT IN (
+    SELECT 부서코드 FROM 직원 WHERE 부서코드 IS NOT NULL
+)
+
+-- 또는 != ALL 로 교체 (NULL 안전)
+WHERE 부서코드 != ALL(SELECT 부서코드 FROM 직원)
+```
+
+| |NULL 있을 때 영향|
+|---|---|
+|`IN`|NULL 행만 못 찾음. 나머지 정상|
+|`NOT IN`|리스트에 NULL 하나라도 있으면 **전체 0건**|
+|`!= ALL`|NULL 있어도 정상 작동 ← 권장|
+
+---
+
+## 연관 vs 비연관 서브쿼리
+
+### 비연관 (Uncorrelated) — 독립 실행, 1번만
 
 ```sql
 SELECT 직원명 FROM 직원
 WHERE 급여 > (SELECT AVG(급여) FROM 직원);
---            ↑ 메인 쿼리와 상관없이 독립적으로 실행 가능
+-- 서브쿼리가 메인 쿼리와 무관 → 1번만 실행
 ```
 
-```
-실행 순서:
-① (SELECT AVG(급여) FROM 직원) 딱 1번 실행 → 결과: 5000
-② WHERE 급여 > 5000 으로 필터링
-```
-
----
-
-### 연관 서브쿼리 (Correlated) — 메인 쿼리 행마다 반복 실행
-
-서브쿼리가 **메인 쿼리의 컬럼 값을 참조**해야만 실행 가능.
+### 연관 (Correlated) — 메인 쿼리 행마다 반복
 
 ```sql
-SELECT e1.직원명, e1.부서코드, e1.급여
+SELECT e1.직원명, e1.급여
 FROM 직원 e1
 WHERE e1.급여 > (
     SELECT AVG(e2.급여)
     FROM 직원 e2
-    WHERE e2.부서코드 = e1.부서코드   -- 메인 쿼리의 e1.부서코드 를 참조!
+    WHERE e2.부서코드 = e1.부서코드   -- 메인 쿼리 컬럼 참조
 );
-```
-
-```
-실행 순서:
-① 메인 쿼리에서 행 1개 읽음 (e1.부서코드 = 100)
-② 서브쿼리 실행: WHERE 부서코드 = 100 의 AVG 계산
-③ 비교 후 통과/탈락 결정
-④ 메인 쿼리에서 행 1개 읽음 (e1.부서코드 = 200)
-⑤ 서브쿼리 실행: WHERE 부서코드 = 200 의 AVG 계산
-⑥ ... (행 수만큼 반복) → 데이터 많으면 느림!
+-- e1 행 하나마다 서브쿼리 1번 실행 → 데이터 많으면 느림
 ```
 
 |구분|실행 횟수|속도|
@@ -445,341 +387,27 @@ WHERE e1.급여 > (
 
 ---
 
----
-
-# ③ IN 서브쿼리 완전 정복 — SQLD 킬러 함정 ⭐️
-
-## IN 의 핵심 작동 원리
-
-> **`A IN (SELECT B ...)` = "A 의 값이 B 결과 집합에 포함되는가?"** 다른 컬럼은 절대 자동 비교되지 않는다.
-
-```
-잘못된 이해 ❌:
-"같은 행에서 COL1 과 COL2 를 비교하는 것"
-
-올바른 이해 ✅:
-"COL2 의 값 하나하나를 서브쿼리 결과 집합에 대입해서 포함 여부 확인"
-```
-
----
-
-## SQLD 기출 완전 분석 — SQLD_13 문제
+## 자주 하는 실수
 
 ```sql
-SELECT COUNT(DISTINCT COL1)
-FROM SQLD_13
-WHERE COL2 IN (SELECT COL1 FROM SQLD_13);
-```
-
-### SQLD_13 테이블
-
-|COL1|COL2|
-|---|---|
-|1|1|
-|1|3|
-|2|2|
-|3|NULL|
-
----
-
-### STEP 1 — 서브쿼리 먼저 실행
-
-```sql
-SELECT COL1 FROM SQLD_13
-```
-
-```
-COL1 결과 집합: {1, 1, 2, 3}
-IN 에서는 집합처럼 중복 제거 → {1, 2, 3}
-```
-
----
-
-### STEP 2 — WHERE 조건을 행 단위로 대입
-
-> **"COL2 의 값이 {1, 2, 3} 에 포함되는가?"** 를 각 행마다 확인.
-
-|행|COL1|COL2|COL2 IN {1,2,3}?|통과?|
-|---|---|---|:-:|:-:|
-|1|1|1|1 ∈ {1,2,3}|✅|
-|2|1|3|3 ∈ {1,2,3}|✅|
-|3|2|2|2 ∈ {1,2,3}|✅|
-|4|3|NULL|NULL ∈ {1,2,3}|❌ (NULL 은 항상 UNKNOWN)|
-
----
-
-### STEP 3 — COUNT(DISTINCT COL1) 계산
-
-```
-통과한 행: 행1(COL1=1), 행2(COL1=1), 행3(COL1=2)
-
-DISTINCT COL1 → {1, 2}
-COUNT({1, 2}) = 2
-```
-
-> **정답: 2**
-
----
-
-### 왜 COL1=3 인 행(행4)이 제외되었는가?
-
-```
-행4: COL1=3, COL2=NULL
-
-WHERE COL2 IN (서브쿼리) 를 평가할 때:
-NULL IN {1, 2, 3} = UNKNOWN (NULL 은 = 비교 자체가 불가능)
-
-UNKNOWN 은 TRUE 가 아니므로 → WHERE 조건 탈락!
-```
-
-**핵심 착각 포인트:**
-
-```
-❌ 잘못된 생각:
-"행4 는 COL1=3 이고, 서브쿼리 결과에 3 이 있으니까 통과되겠지?"
-
-✅ 실제 동작:
-IN 은 오직 COL2(왼쪽) 값만 집합과 비교한다.
-COL1 이 뭔지는 전혀 관계없다.
-행4 의 COL2=NULL 이 집합에 포함되는지만 본다.
-→ NULL 은 집합 비교 불가 → 탈락
-```
-
----
-
-## 다중 컬럼 IN — 가장 많이 착각하는 부분 ⭐️
-
-> **단일 컬럼 IN 은 OR, 다중 컬럼 IN 은 쌍 내부가 AND 다.**
-
-```
-❌ 잘못된 이해:
-(COL1, COL2) IN ((1000, 2000))
-= COL1=1000 OR COL1=2000 OR COL2=1000 OR COL2=2000
-
-✅ 올바른 이해:
-(COL1, COL2) IN ((1000, 2000))
-= COL1=1000 AND COL2=2000
-```
-
-|COL1|COL2|통과?|이유|
-|---|---|:-:|---|
-|1000|2000|✅|COL1=1000 AND COL2=2000 동시 만족|
-|1000|9999|❌|COL2 가 2000 이 아님|
-|9999|2000|❌|COL1 이 1000 이 아님|
-|3000|4000|❌|둘 다 불일치|
-
-```sql
--- 쌍이 여러 개: 쌍 내부는 AND, 쌍끼리는 OR
-WHERE (COL1, COL2) IN ((1000, 2000), (3000, 4000))
-= (COL1=1000 AND COL2=2000) OR (COL1=3000 AND COL2=4000)
-```
-
-|구문|동작 방식|
-|---|---|
-|`COL1 IN (1000, 2000)`|COL1=1000 **OR** COL1=2000|
-|`(COL1, COL2) IN ((1000, 2000))`|COL1=1000 **AND** COL2=2000|
-|`(COL1, COL2) IN ((1000, 2000), (3000, 4000))`|(COL1=1000 AND COL2=2000) **OR** (COL1=3000 AND COL2=4000)|
-
-```
-암기 공식:
-괄호 한 쌍 (값1, 값2) = AND 로 묶인 하나의 세트
-쌍과 쌍 사이           = OR
-```
-
----
-
-## IN / NOT IN 과 NULL — SQLD 단골 함정
-
-```
-IN     =  OR 의 축약
-NOT IN =  NOT(OR)  →  드 모르간 법칙으로 AND 로 변환
-
-NOT(A OR B) = NOT A AND NOT B   ← 드 모르간 법칙
-```
-
-```sql
--- IN → OR
-WHERE COL1 IN ('a', 'b')
-= COL1='a' OR COL1='b'
-
--- NOT IN → NOT(OR) → AND
-WHERE COL1 NOT IN ('a', 'b')
-= NOT(COL1='a' OR COL1='b')
-= COL1!='a' AND COL1!='b'
-```
-
----
-
-### NULL 이 있을 때 각각 어떻게 되나
-
-**IN (OR) — NULL 행만 못 찾음 (부분 문제)**
-
-```
-WHERE COL1 IN ('a', NULL, 'b')
-= COL1='a' OR COL1=NULL OR COL1='b'
-              ↑
-         항상 UNKNOWN (= 로 NULL 비교 불가)
-
-OR 는 하나라도 TRUE 면 통과
-→ 'a', 'b' 행은 정상 출력
-→ COL1=NULL 인 행만 탈락
-```
-
-**NOT IN (AND) — 리스트에 NULL 하나라도 있으면 전체 0건 ⚠️**
-
-```
-WHERE COL1 NOT IN ('a', NULL, 'b')
-= COL1!='a' AND COL1!=NULL AND COL1!='b'
-                 ↑
-            항상 UNKNOWN
-
-AND 는 하나라도 UNKNOWN 이면 전체 UNKNOWN
-→ 모든 행 탈락 → 결과 0건
-```
-
----
-
-### 다중 컬럼 NOT IN — 드 모르간 2단계 적용
-
-```sql
-(COL1, COL2) IN ((a,b), (c,d))
-= (COL1=a AND COL2=b) OR (COL1=c AND COL2=d)
---  쌍 내부 AND          쌍끼리 OR
-```
-
-여기에 NOT 씌우면:
-
-```
-NOT( (COL1=a AND COL2=b) OR (COL1=c AND COL2=d) )
-
-1단계: OR → AND
-= NOT(COL1=a AND COL2=b) AND NOT(COL1=c AND COL2=d)
-
-2단계: 안쪽 AND → OR
-= (COL1!=a OR COL2!=b) AND (COL1!=c OR COL2!=d)
-```
-
----
-
-### 한눈에 정리
-
-|          | 단일 컬럼                     | 다중 컬럼                                           |
-| -------- | ------------------------- | ----------------------------------------------- |
-| `IN`     | `COL1='a' OR COL1='b'`    | `(COL1=a AND COL2=b) OR (COL1=c AND COL2=d)`    |
-| `NOT IN` | `COL1!='a' AND COL1!='b'` | `(COL1!=a OR COL2!=b) AND (COL1!=c OR COL2!=d)` |
-
-
-```
-NOT 을 씌우면 드 모르간 법칙으로
-OR  → AND
-AND → OR
-전부 반전된다
-```
-
-| |NULL 있을 때 영향|
-|---|---|
-|`IN`|NULL 행만 못 찾음. 나머지 정상|
-|`NOT IN`|리스트에 NULL 하나라도 있으면 **전체 0건**|
-
-```sql
--- NOT IN 안전하게 쓰기: 반드시 NULL 제거
-WHERE COL2 NOT IN (SELECT COL1 FROM T WHERE COL1 IS NOT NULL)
-```
-
----
-
-## SQLD IN 문제 풀이 공식
-
-```
-① 서브쿼리를 먼저 계산해서 결과 집합을 구한다
-         ↓
-② "왼쪽 컬럼(COL2) 의 값이 집합에 있는가?" 로 바꿔 읽는다
-         ↓
-③ 각 행의 왼쪽 컬럼 값을 집합에 대입한다
-         ↓
-④ NULL 이 있으면 무조건 UNKNOWN → 탈락
-         ↓
-⑤ 통과한 행들로 최종 집계
-```
-
-> **"왼쪽 컬럼이 주어다."** 오른쪽 서브쿼리는 집합만 제공하고, 비교는 항상 왼쪽 컬럼이 한다. 헷갈리면 소리 내서 읽기: **"COL2 가 {1,2,3} 에 있니?"**
-
----
-
----
-
-# ④ 자주 하는 실수
-
-## ORA-01427: single-row subquery returns more than one row
-
-```sql
--- ❌ 에러: 서브쿼리가 여러 건 반환하는데 = 를 사용
+-- 다중행에 = 사용 → 에러
 WHERE 부서코드 = (SELECT 부서코드 FROM 직원 WHERE 급여 > 5000)
-
--- ✅ 해결: IN 으로 변경
+-- ✅ 수정
 WHERE 부서코드 IN (SELECT 부서코드 FROM 직원 WHERE 급여 > 5000)
-```
 
-## 인라인 뷰 별칭 누락
-
-```sql
--- ❌ 에러: 별칭 없음 (PostgreSQL · MySQL · MSSQL 에서 에러)
+-- 인라인 뷰 별칭 누락 → 에러
 SELECT * FROM (SELECT 부서코드, MAX(급여) FROM 직원 GROUP BY 부서코드)
-
--- ✅ 해결: 별칭 추가
+-- ✅ 수정
 SELECT * FROM (SELECT 부서코드, MAX(급여) FROM 직원 GROUP BY 부서코드) t
-```
 
-## NOT IN 에서 NULL 함정
-
-```sql
--- ❌ 위험: 서브쿼리 결과에 NULL 이 있으면 결과 0건
+-- NOT IN + NULL 함정 → 결과 0건
 WHERE 부서코드 NOT IN (SELECT 부서코드 FROM 직원)
-
--- ✅ 안전: NULL 제거 후 비교
+-- ✅ 수정
 WHERE 부서코드 NOT IN (SELECT 부서코드 FROM 직원 WHERE 부서코드 IS NOT NULL)
+-- 또는
+WHERE 부서코드 != ALL(SELECT 부서코드 FROM 직원)
 ```
 
 ---
 
 ---
-
-# 핵심 요약 카드
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│  서브쿼리 위치별 이름:                                         │
-│  SELECT 절 → 스칼라 서브쿼리 (1행 1열 필수)                   │
-│  FROM 절   → 인라인 뷰 (별칭 필수)                            │
-│  WHERE 절  → 중첩 서브쿼리 (결과 형태에 따라 연산자 선택)       │
-│                                                              │
-│  단일행 결과 → = > < 등 사용 가능                             │
-│  다중행 결과 → IN ANY ALL EXISTS 사용 (= 쓰면 에러!)           │
-│                                                              │
-│  IN 작동 원리:                                                │
-│  A IN (SELECT B) = "A 의 값이 B 결과 집합에 있는가?"           │
-│  → 왼쪽 컬럼이 주어. 다른 컬럼 자동 비교 절대 없음             │
-│                                                              │
-│  IN 풀이 공식:                                                │
-│  ① 서브쿼리 먼저 실행 → 결과 집합 구하기                      │
-│  ② 왼쪽 컬럼 값을 집합에 행 단위로 대입                       │
-│  ③ NULL 은 무조건 UNKNOWN → 탈락                             │
-│  ④ 통과한 행으로 최종 집계                                    │
-│                                                              │
-│  NULL 함정:                                                   │
-│  COL IN (..., NULL) → 없는 값은 UNKNOWN                      │
-│  NOT IN 서브쿼리에 NULL 있으면 → 전체 결과 0건!               │
-│                                                              │
-│  비연관: 서브쿼리 1번 실행 → 빠름                             │
-│  연관:   메인 쿼리 행마다 반복 실행 → 느림                     │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 관련 노트
-
-- [[SQL_WHERE_Operators]] — IN · ANY · ALL · EXISTS 연산자
-- [[SQL_NULL_Handling]] — NULL 과 비교 연산
-- [[SQL_Top_N_Query]] — ROWNUM · LIMIT (인라인 뷰 활용)
-- [[SQL_Window_Functions]] — 서브쿼리 대신 윈도우 함수로 해결

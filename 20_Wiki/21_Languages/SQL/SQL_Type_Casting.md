@@ -253,10 +253,3 @@ SELECT TO_DATE('2026/02/24', 'YYYY/MM/DD') FROM DUAL;
 ```
 
 ---
-
-## 관련 노트
-
-- [[SQL_DDL_Create]] — 데이터 타입 종류 (VARCHAR · NUMBER · DATE)
-- [[SQL_Date_Functions]] — TO_CHAR · TO_DATE 날짜 포맷 상세
-- [[SQL_String_Functions]] — 문자 변환 함수
-- [[SQL_NULL_Functions]] — COALESCE · NVL 타입 주의사항

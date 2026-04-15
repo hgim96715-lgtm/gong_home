@@ -1,5 +1,5 @@
 
->목표: SQLD 자격증 + 데이터 엔지니어 실무 SQL Oracle · PostgreSQL 병행 학습
+>목표: SQLD 자격증 + 데이터 엔지니어 실무 SQL, MySQL · Oracle · PostgreSQL 병행 학습
 
 ---
 ---
