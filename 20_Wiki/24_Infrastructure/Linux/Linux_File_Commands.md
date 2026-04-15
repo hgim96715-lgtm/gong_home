@@ -19,6 +19,7 @@ related:
   - "[[Linux_Basic_Commands]]"
 ---
 
+
 # Linux_File_Commands — 파일 내용 보기 & 처리
 
 ## 한 줄 요약
@@ -260,7 +261,6 @@ paste - - -
 세로로 늘어진 데이터를 N개씩 묶어서 가로로 배치할 때
 ```
 
-
 ```bash
 # 입력:
 # 1
@@ -281,10 +281,14 @@ echo -e "1\n2\n3\n4\n5\n6" | paste - - -
 # 1    2    3
 # 4    5    6
 
-# 구분자 지정
+# 구분자 지정 (-d 옵션)
 echo -e "1\n2\n3\n4\n5\n6" | paste -d ',' - - -
 # 1,2,3
 # 4,5,6
+
+echo -e "1\n2\n3\n4\n5\n6" | paste -d ';' - - -
+# 1;2;3
+# 4;5;6
 ```
 
 ```
@@ -329,9 +333,8 @@ echo -e "1\n2\n3\n4\n5\n6" | paste - - - | sed 's/\t/;/g'
 sed 's/\t/;/g' 방법:
   paste 가 탭으로 출력 → sed 가 탭을 ; 로 치환
   paste 이후 후처리 / 다른 변환과 조합할 때 유용
-```
-
   → [[Linux_Sed]] 참고
+```
 
 ---
 
@@ -370,3 +373,74 @@ cat ids.txt | paste -s -d '\t'
 |`uniq`|중복 처리|`-c` 횟수 `-d` 중복만|
 |`cut`|컬럼 추출|`-d` 구분자 `-f` 필드|
 |`paste`|파일/줄 붙이기|`-d` 구분자 `-s` 직렬화|
+
+---
+
+---
+
+# 파일 확장자 정리 ⭐️
+
+```
+리눅스는 확장자가 필수는 아님
+하지만 관행적으로 쓰는 확장자 알아두면 편함
+```
+
+## 일반 문서
+
+|확장자|의미|
+|---|---|
+|`.txt`|텍스트 파일|
+|`.md`|Markdown|
+|`.csv`|Comma Separated Values|
+|`.json`|JSON 데이터|
+|`.xml`|XML 데이터|
+|`.odt`|OpenDocument Text (LibreOffice Writer)|
+|`.pdf`|PDF 문서|
+
+## 백업 / 임시 파일
+
+|확장자|의미|예시|
+|---|---|---|
+|`.bak`|백업 파일|`config.bak`|
+|`.backup`|백업 파일|`fstab.backup`|
+|`.orig`|원본 파일|`nginx.conf.orig`|
+|`.tmp`|임시 파일|`process.tmp`|
+|`.old`|이전 버전|`script.old`|
+|`.swp`|vim 임시 파일 (vim 충돌 시 생성)|`.file.swp`|
+
+## 압축
+
+|확장자|도구|
+|---|---|
+|`.tar`|tar 아카이브 (묶기만)|
+|`.tar.gz` / `.tgz`|tar + gzip|
+|`.tar.bz2`|tar + bzip2|
+|`.gz`|gzip 단독|
+|`.zip`|zip|
+
+## 스크립트 / 코드
+
+|확장자|언어|
+|---|---|
+|`.sh`|셸 스크립트|
+|`.py`|Python|
+|`.sql`|SQL|
+|`.yml` / `.yaml`|YAML|
+
+```bash
+# 백업 패턴 실무 예시
+cp /etc/fstab /etc/fstab.bak     # 편집 전 백업
+cp nginx.conf nginx.conf.orig    # 원본 보존
+```
+
+```
+.odt 가 뭔가:
+  OpenDocument Text = LibreOffice / OpenOffice 워드 파일
+  MS Word 의 .docx 와 비슷한 역할
+  touch schedule.odt = 이름만 odt 인 빈 파일 생성
+
+.bak 이 뭔가:
+  backup 의 약자
+  중요 파일 수정 전 복사본 만들 때 관행적으로 사용
+  리눅스가 특별히 처리하는 건 아님 — 그냥 이름
+```

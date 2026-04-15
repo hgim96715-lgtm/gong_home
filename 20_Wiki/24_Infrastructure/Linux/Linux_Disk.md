@@ -81,6 +81,30 @@ w    # 저장 후 종료 (write)
 q    # 저장 없이 종료
 ```
 
+## 파티션 장치명 동적으로 찾기 ⭐️
+
+```bash
+# 파티션 이름 자동 감지 (환경마다 다를 수 있음)
+PARTITION_DEVICE=$(lsblk -lno NAME /dev/sdb | grep p1 | head -1)
+echo "Partition device: /dev/$PARTITION_DEVICE"
+
+# 심볼릭 링크로 고정
+sudo ln -s /dev/$PARTITION_DEVICE /dev/sdb1
+lsblk /dev/sdb1
+```
+
+```
+왜 필요한가:
+  환경에 따라 파티션명이 sdb1 이 아닌 sdb1p1 등으로 다를 수 있음
+  lsblk 로 실제 이름 확인 후 변수로 저장
+  스크립트에서 동적으로 처리할 때 유용
+
+$(...) = 명령어 치환 (Command Substitution)
+  명령어 실행 결과를 변수에 저장
+  PARTITION_DEVICE = lsblk 결과에서 p1 포함된 첫 번째 행
+```
+
+
 ## 파티션 테이블 갱신
 
 ```bash

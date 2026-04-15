@@ -16,6 +16,8 @@ related:
   - "[[Linux_Filesystem]]"
   - "[[Linux_Redirection]]"
 ---
+
+
 # Linux_Basic_Commands — 기본 명령어
 
 ## 한 줄 요약
@@ -52,7 +54,7 @@ ls -l
 ```
 
 ```
-①          ② ③    ④    ⑤     ⑥    ⑦       ⑧
+① ② ③  ④    ⑤     ⑥   ⑦           ⑧
 -rw-r--r-- 1 user group 1234 Apr 4 10:00 file.txt
 
 ①  파일 타입 + 권한
@@ -248,7 +250,29 @@ cp 와 달리 -r 없어도 디렉토리 이동 가능
 
 ---
 
-# ⑧ man — 명령어 매뉴얼
+# ⑧ whoami / id — 현재 사용자 확인
+
+```bash
+whoami          # 현재 사용자명
+# labex
+
+id              # UID / GID / 소속 그룹 전부
+# uid=1000(labex) gid=1000(labex) groups=1000(labex),27(sudo)
+
+id labex        # 특정 사용자 정보
+```
+
+```
+스크립트에서 현재 유저 기반 처리
+sudo -i 로 root 가 됐는지 확인
+CURRENT_USER=$(whoami)  # 변수로 저장
+```
+
+---
+
+---
+
+# ⑨ man — 명령어 매뉴얼
 
 ```bash
 man ls               # ls 매뉴얼
@@ -273,7 +297,7 @@ man 보기 불편하면:
 
 ---
 
-# ⑨ touch — 파일 생성 / 타임스탬프 갱신
+# ⑩ touch — 파일 생성 / 타임스탬프 갱신
 
 ```
 touch 역할:
@@ -316,7 +340,7 @@ echo "내용" > 파일 vs touch:
 
 ---
 
-# ⑩ inode — 파일 고유 식별 번호 ⭐️
+# ⑪ inode — 파일 고유 식별 번호 ⭐️
 
 ```
 inode = 파일 시스템에서 파일의 고유 번호
@@ -337,7 +361,7 @@ ls -i source_file
 
 ---
 
-# ⑪ ln — 링크 생성
+# ⑫ ln — 링크 생성
 
 ```
 링크 = 파일을 가리키는 또 다른 이름
@@ -432,7 +456,7 @@ cat filec   # 기존 내용 (과거 inode 유지)
 
 ---
 
-# ⑫ cp / mv 와 inode 변화 ⭐️
+# ⑬ cp / mv 와 inode 변화 ⭐️
 
 ```
 cp → 새 inode 할당 (데이터 전체 복사)

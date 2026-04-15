@@ -10,6 +10,9 @@ tags:
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_User_Group]]"
+  - "[[Linux_File_Types]]"
+  - "[[Linux_OpenSSL]]"
+  - "[[Linux_Shell_Script]]"
 ---
 # Superuser — sudo · su · root
 
@@ -194,7 +197,65 @@ vi 사용 시:
 
 ---
 
-# ④ /etc/sudoers — sudo 권한 설정
+# ⑤ 현재 사용자 확인 — whoami / id
+
+```bash
+whoami         # 현재 사용자명 출력
+# labex
+
+id             # UID / GID / 소속 그룹 전부
+# uid=1000(labex) gid=1000(labex) groups=1000(labex),27(sudo)
+
+id labex       # 특정 사용자 정보
+```
+
+```
+whoami 활용:
+  sudo 명령 후 현재 내가 누구인지 확인
+  스크립트에서 현재 유저 기반 처리
+  sudo -i 로 root 가 됐는지 확인
+```
+
+```bash
+# sudo -i 전후 비교
+whoami         # labex
+sudo -i
+whoami         # root  ← root 로 전환됨
+exit
+whoami         # labex  ← 복귀
+```
+
+---
+
+---
+
+# ⑥ sudo 로 만든 파일 소유권 주의 ⭐️
+
+```
+sudo 로 명령 실행 → 생성된 파일 소유자 = root
+나중에 수정 / 삭제 시 Permission denied
+```
+
+```bash
+sudo tar -cvf ~/backup.tar /home
+ls -l ~/backup.tar
+# -rw-r--r-- 1 root root 10240 backup.tar
+#              ↑ 소유자가 root!
+
+# 소유권 내 계정으로 되돌리기
+sudo chown $USER:$USER ~/backup.tar
+ls -l ~/backup.tar
+# -rw-r--r-- 1 labex labex 10240 backup.tar
+```
+
+```
+원칙:
+  홈 디렉토리(~) 에서는 sudo 없이 작업
+  /etc / /var / /usr 등 시스템 영역만 sudo
+
+  sudo 로 만든 파일 내가 다루려면:
+  → sudo chown $USER:$USER 파일명
+```
 
 ```
 누가 sudo 를 쓸 수 있는지 정의하는 파일
