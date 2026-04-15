@@ -6,9 +6,8 @@ tags:
   - Python
 related:
   - "[[00_Python_HomePage]]"
-  - "[[Python_API_Crawling]]"
-  - "[[Python_Error_Handling]]"
-  - "[[HTTP_Status_Codes]]"
+  - "[[Python_Database_Connect]]"
+  - "[[SQL_DML_CRUD#⑤ ON CONFLICT — PostgreSQL UPSERT ⭐️]]"
 ---
 
 

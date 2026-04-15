@@ -6,126 +6,92 @@ tags:
 related:
   - "[[00_Python_HomePage]]"
   - "[[Python_API_Rate_Limit_Retry]]"
+  - "[[Python_Requests_Methods]]"
+  - "[[Python_Classes_Objects]]"
+  - "[[Python_JSON]]"
+  - "[[Python_Database_Connect]]"
+---
+# Python_API_Crawling
+
+
 ---
 
----
+## HTML 크롤링 vs API 크롤링
 
-## 왜 API 크롤링인가
+|항목|HTML 크롤링 (BS4 / Selenium)|API 크롤링|
+|---|---|---|
+|수집 방식|HTML 파싱|JSON 직접 수신|
+|JS 렌더링|Selenium 필요|불필요|
+|수집량|화면에 보이는 것만|pageSize × pages 자유 설정|
+|속도|느림|빠름|
+|깨지는 조건|HTML 구조 변경|API 스펙 변경|
+|발굴 방법|—|DevTools → Network → Fetch/XHR|
 
-인터파크 전시 프로젝트에서 처음에는 Selenium으로 화면을 스크롤하며 수집했다.
-
-```
-Selenium 스크롤 방식
-→ Swiper 컴포넌트에 보이는 것만 수집
-→ 최대 15~16개 한계
-→ 서울 지역만 노출
-```
-
-브라우저 DevTools를 열어보니 화면을 렌더링할 때 내부 API를 호출하고 있었다.
-
-```
-API 직접 호출 방식
-→ pageSize=50, page=1~N 자유 설정
-→ 전국 500개+ 수집 가능
-→ 응답이 JSON이라 파싱 불필요
-```
+> 대부분의 현대 웹사이트는 React/Vue 기반이라 내부 API가 반드시 존재한다. HTML을 파싱하기 전에 먼저 API가 있는지 DevTools로 확인할 것.
 
 ---
 
 ## Step 1 — DevTools로 API 발굴
 
-### 순서
-
 ```
 1. 크롤링할 페이지를 Chrome에서 열기
 2. F12 → Network 탭
-3. 상단 필터에서 Fetch/XHR 선택
-4. 페이지를 새로고침하거나 버튼 클릭 (다음 페이지, 더보기 등)
-5. 목록에 뜨는 요청 중 JSON을 반환하는 것 찾기
+3. 상단 필터: [Fetch/XHR] 선택  ← 핵심 (All 말고)
+4. 페이지 새로고침 또는 "더보기 / 다음 페이지" 클릭
+5. 목록에서 JSON 반환하는 요청 찾기
 6. Headers 탭 → Request URL, Query String Parameters 확인
-7. Preview 탭 → 응답 데이터 구조 확인
+7. Preview 탭 → 응답 JSON 구조 확인
 ```
 
-### 인터파크 예시
+### API 요청인지 확인하는 기준
 
 ```
-Request URL:
-https://tickets.interpark.com/contents/api/goods/genre
-    ?genre=EXHIBIT
-    &page=2
-    &pageSize=25
-    &sort=DAILY_RANKING
-    &subCategory=08002
-    &subCategory=08016
+✅ API 요청 (찾는 것)
+  Sec-Fetch-Dest: empty
+  Content-Type: application/json
+  :path: /api/... 또는 /v1/...
+
+❌ HTML 페이지 요청 (API 아님)
+  Sec-Fetch-Dest: document
+  :path: /contents/main
 ```
 
-> `subCategory`가 배열 파라미터 → requests에서 리스트로 넘기면 자동 처리됨
-
-### 찾은 API가 진짜인지 확인
+### 찾은 API 빠르게 검증
 
 ```python
 import requests, json
 
-url = "https://tickets.interpark.com/contents/api/goods/genre"
-params = {
-    "genre": "EXHIBIT",
-    "page": 1,
-    "pageSize": 5,
-    "sort": "WEEKLY_RANKING",
-}
-headers = {
-    "User-Agent": "Mozilla/5.0 ...",
-    "Referer": "https://tickets.interpark.com/contents/genre/exhibition"
-}
-
-response = requests.get(url, params=params, headers=headers, timeout=10)
-print(response.status_code)                        # 200이면 성공
-print(json.dumps(response.json(), indent=2, ensure_ascii=False)[:1000])
-```
-
-```text
-URL: https://tickets.interpark.com/contents/api/goods/genre?genre=EXHIBIT&page=1&pageSize=10&region=SEOUL&sort=WEEKLY_RANKING
-```
-
-```json
-요청
-:method: GET
-:scheme: https
-:authority: tickets.interpark.com
-:path: /contents/api/goods/genre?genre=EXHIBIT&page=1&pageSize=10&region=SEOUL&sort=WEEKLY_RANKING
-Accept: application/json, text/plain, */*
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: ko-KR,ko;q=0.9
-Cookie: TodayGoodsList=26005049,Y4001507; _gcl_au=1.1.428742523.1776062210; _kmpid=km|interpark.com|1776062210858|f001a173-f1c1-4f09-908b-341d41b41d8e; tbid=c378208e-a252-4f37-905d-b9e8b14acce3; pcid=177606220980143604
-Priority: u=3, i
-Referer: https://tickets.interpark.com/contents/genre/exhibition
-Sec-Fetch-Dest: empty
-Sec-Fetch-Mode: cors
-Sec-Fetch-Site: same-origin
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15
+response = requests.get(
+    "https://example.com/api/items",
+    params={"page": 1, "size": 5},
+    headers={"User-Agent": "Mozilla/5.0", "Referer": "https://example.com"},
+    timeout=10
+)
+print(response.status_code)   # 200 이면 성공
+print(json.dumps(response.json(), indent=2, ensure_ascii=False)[:500])
 ```
 
 ---
 
 ## Step 2 — Session 재사용
 
-`requests.get()`을 매번 호출하면 TCP 연결을 매번 새로 맺는다. `Session`을 쓰면 연결을 유지하고(Keep-Alive), 헤더를 한 번만 설정한다.
+`requests.get()`은 매번 TCP 연결을 새로 맺는다. `Session`을 쓰면 연결을 유지(Keep-Alive)하고 헤더를 한 번만 설정한다.
 
 ```python
 import requests
 
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 ...",
     "Accept": "application/json",
-    "Referer": "https://tickets.interpark.com/contents/genre/exhibition"
+    "Referer": "https://example.com",
 })
 
-# 이후 session.get()으로 호출 — 헤더 자동 포함
+# 이후 session.get() 으로 호출 — 헤더 자동 포함
 response = session.get(url, params=params, timeout=10)
 ```
 
-### Session vs requests.get 비교
+### Session vs requests.get
 
 |항목|`requests.get()`|`Session`|
 |---|---|---|
@@ -133,162 +99,237 @@ response = session.get(url, params=params, timeout=10)
 |헤더 설정|매번 넘겨야 함|한 번만 설정|
 |쿠키 유지|❌|✅ 자동 유지|
 |속도|느림|빠름|
-|적합한 상황|단발성 1~2회 요청|페이지네이션, 반복 호출|
+|적합한 상황|단발성 1~2회|페이지네이션, 반복 호출|
 
 ---
 
 ## Step 3 — 페이지네이션 루프
 
-### 기본 패턴
-
 ```python
+import time
+
 all_items = []
 page = 1
 
 while page <= max_pages:
     params = {
-        "genre": "EXHIBIT",
         "page": page,
-        "pageSize": 50,
-        "sort": "WEEKLY_RANKING",
+        "size": 50,
+        # ... 사이트별 파라미터 추가
     }
 
     response = session.get(API_URL, params=params, timeout=10)
     response.raise_for_status()
     data = response.json()
 
-    # 응답 구조가 list인지 dict인지 방어 처리
+    # 응답 구조가 list / dict 로 사이트마다 다름 → 방어 처리
     if isinstance(data, list):
         items = data
     elif isinstance(data, dict):
-        items = data.get("list") or data.get("data", {}).get("list", [])
+        items = (
+            data.get("list")                          # {"list": [...]}
+            or data.get("items")                      # {"items": [...]}
+            or data.get("data", {}).get("list", [])   # {"data": {"list": [...]}}
+            or []
+        )
     else:
         items = []
 
-    if not items:          # 빈 페이지 → 수집 종료
-        print("더 이상 항목이 없습니다.")
+    if not items:   # 빈 페이지 → 수집 종료
         break
 
     all_items.extend(items)
-    print(f"페이지 {page}: {len(items)}개 수집")
+    print(f"페이지 {page}: {len(items)}개 / 누계 {len(all_items)}개")
     page += 1
-    time.sleep(0.3)        # 서버 부하 방지 → [[Python_API_Rate_Limit_Retry]] 참고
+    time.sleep(0.3)   # 서버 부하 방지 → [[Python_API_Rate_Limit_Retry]]
 ```
 
 ### 종료 조건 3가지
 
-|조건|처리 방법|
+|조건|처리|
 |---|---|
 |빈 페이지 반환|`if not items: break`|
 |최대 페이지 도달|`while page <= max_pages`|
-|에러 발생|`except` 블록에서 `break`|
+|에러 발생|`except` 에서 `break` 또는 `continue`|
 
-### 응답 구조가 매번 다를 때 방어 처리
+### 사이트마다 다른 응답 구조
 
 ```python
-# API마다 응답 구조가 다름 → 순서대로 시도
-if isinstance(data, list):
-    items = data                              # 바로 리스트
-elif isinstance(data, dict):
-    items = (
-        data.get("list")                      # {"list": [...]}
-        or data.get("data", {}).get("list", [])  # {"data": {"list": [...]}}
-    )
+# 사이트 A: 바로 리스트
+[{"id": 1}, {"id": 2}]
+
+# 사이트 B: dict 안에 list
+{"list": [...], "total": 100}
+
+# 사이트 C: 중첩 dict
+{"data": {"list": [...], "page": 1}}
+
+# 사이트 D: 커서 기반 (오프셋 아닌 토큰)
+{"items": [...], "nextCursor": "abc123"}
 ```
 
-> 첫 페이지 응답을 print해서 구조 먼저 확인하는 것이 좋음
+> 첫 페이지 응답을 `print(json.dumps(data, indent=2))` 로 구조 먼저 확인할 것
 
 ---
 
 ## Step 4 — 중복 제거
 
-페이지 경계에서 같은 항목이 중복으로 내려오는 경우가 있다.
-
 ```python
-# 방법 1 — seen set (순서 보장, 가장 일반적)
+# 방법 1 — seen set (순서 보존) ← 권장
 seen = set()
 unique = []
 for item in all_items:
-    if item["exhibition_id"] not in seen:
-        seen.add(item["exhibition_id"])
+    key = item["id"]   # 사이트마다 PK 필드명 다름
+    if key not in seen:
+        seen.add(key)
         unique.append(item)
 
-# 방법 2 — set comprehension (순서 불보장, 간결)
-unique = list({item["exhibition_id"]: item for item in all_items}.values())
+# 방법 2 — dict comprehension (간결, 순서 불보장)
+unique = list({item["id"]: item for item in all_items}.values())
 ```
 
-> 인터파크 프로젝트에서는 방법 1 사용 (수집 순서가 랭킹 순서이므로 보존 필요)
+> 방법 1 추천: 수집 순서(랭킹 순서 등)를 보존해야 할 때
 
 ---
 
 ## Step 5 — dataclass 매핑
 
-API 응답 dict를 바로 쓰면 오타, 누락, 타입 오류가 생기기 쉽다. `dataclass`로 구조를 정의해두면 안전하고 자동완성도 된다.
+API 응답 dict를 바로 쓰면 오타·누락·타입 오류가 생기기 쉽다. `dataclass`로 구조를 명시해두면 안전하고 IDE 자동완성도 된다.
 
 ```python
 from dataclasses import dataclass, asdict
 from datetime import datetime
 
 @dataclass
-class Exhibition:
-    exhibition_id: str
-    title:         str
-    venue:         str  = None
-    location:      str  = None
-    start_date:    str  = None
-    end_date:      str  = None
-    image_url:     str  = None
-    detail_url:    str  = None
-    rank:          str  = None
-    age_limit:     str  = None
-    crawled_at:    str  = None
+class Item:
+    item_id:    str            # 기본값 없음 → 필수 인자
+    name:       str            # 기본값 없음 → 필수 인자
+    price:      int  = None    # 기본값 None → 선택 인자
+    category:   str  = None    # 기본값 None → 선택 인자
+    created_at: str  = None    # 기본값 None → 선택 인자
 
     def __post_init__(self):
-        # 자동으로 수집 시각 삽입
-        if self.crawled_at is None:
-            self.crawled_at = datetime.now().isoformat()
+        if self.created_at is None:
+            self.created_at = datetime.now().isoformat()
 
     def to_dict(self) -> dict:
         return asdict(self)
 ```
 
-### API 응답 → dataclass 변환
+---
+
+### `= None` 이 의미하는 것
+
+dataclass 필드에서 `{text}= None` 은 세 가지 의미를 동시에 가진다.
 
 ```python
-for item in items:
-    goods_code = item.get("goodsCode")
-    if not goods_code:
-        continue                         # PK 없으면 skip
-
-    # 날짜 포맷 변환: YYYYMMDD → YYYY-MM-DD
-    start_date = item.get("startDate", "")
-    if start_date and len(start_date) == 8:
-        start_date = f"{start_date[:4]}-{start_date[4:6]}-{start_date[6:]}"
-
-    # 이미지 URL 보정: // → https://
-    image_url = item.get("posterImageUrl") or item.get("imageUrl", "")
-    if image_url.startswith("//"):
-        image_url = f"https:{image_url}"
-
-    # 랭킹 포맷 변환
-    week_rank = item.get("weekRank")
-    rank = f"주간 {week_rank}위" if week_rank else None
-
-    ex = Exhibition(
-        exhibition_id = str(goods_code),
-        title         = item.get("goodsName", ""),
-        venue         = item.get("placeName", ""),
-        location      = item.get("regionName"),
-        start_date    = start_date,
-        image_url     = image_url,
-        detail_url    = f"https://tickets.interpark.com/goods/{goods_code}",
-        rank          = rank,
-        age_limit     = item.get("rateName"),
-    )
-    results.append(ex)
+@dataclass
+class Item:
+    item_id: str          # 기본값 없음 → 반드시 전달 (필수)
+    name:    str          # 기본값 없음 → 반드시 전달 (필수)
+    price:   int = None   # 기본값 None → 안 넘겨도 됨 (선택)
+    url:     str = None   # 기본값 None → 안 넘겨도 됨 (선택)
 ```
 
-### dict vs dataclass 비교
+**① Optional — 있을 수도 없을 수도 있는 필드**
+
+```python
+# API 응답에 없는 경우 → None 유지 → DB에 NULL로 저장
+item = Item(item_id="001", name="상품A")
+print(item.price)   # None (값이 없다는 의미)
+print(item.url)     # None
+```
+
+**② 기본값 — 인스턴스 생성 시 생략 가능**
+
+```python
+# price, url 없이도 생성 가능
+item = Item(item_id="001", name="상품A")           # ✅
+item = Item(item_id="001", name="상품A", price=15000)  # ✅ 넘길 수도 있음
+```
+
+**③ 미확정 상태 — 나중에 다른 소스로 채울 예정인 필드**
+
+```python
+# 목록 API에서 기본값 채우고
+item = Item(item_id="001", name="상품A")
+
+# 상세 API / Selenium 에서 추가 필드 채움
+item.price = get_price_from_detail(item.item_id)
+item.url   = build_url(item.item_id)
+```
+
+**필드 선언 규칙 — 순서 주의**
+
+```python
+@dataclass
+class Item:
+    # ✅ 올바른 순서: 기본값 없는 필드 → 기본값 있는 필드
+    item_id: str
+    name:    str
+    price:   int = None
+    url:     str = None
+
+    # ❌ 오류: 기본값 있는 필드 뒤에 기본값 없는 필드 불가
+    # price:   int = None
+    # name:    str          ← TypeError 발생
+```
+
+**None 체크 패턴**
+
+```python
+if item.price is None:
+    print("가격 정보 없음")
+else:
+    print(f"가격: {item.price}원")
+
+# DB 저장 시 None → NULL 자동 처리 (psycopg2, SQLAlchemy 모두)
+```
+
+---
+
+## Step 6 — API 응답 → dataclass 변환 패턴
+
+실전에서 자주 나오는 변환 처리:
+
+```python
+for data in items:
+    # PK 없으면 skip
+    pk = data.get("id") or data.get("goodsCode") or data.get("itemNo")
+    if not pk:
+        continue
+
+    # 날짜 포맷: YYYYMMDD → YYYY-MM-DD
+    raw_date = data.get("startDate", "")
+    start_date = (
+        f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:]}"
+        if raw_date and len(raw_date) == 8 else None
+    )
+
+    # URL 보정: // → https://
+    image_url = data.get("imageUrl", "")
+    if image_url.startswith("//"):
+        image_url = "https:" + image_url
+
+    # 문자열 숫자 → int ("15,000" → 15000)
+    price_raw = data.get("price", "")
+    price = int(price_raw.replace(",", "")) if price_raw else None
+
+    # 빈 문자열도 None 처리 (DB에 빈 문자열 저장 방지)
+    category = data.get("category") or None
+
+    item = Item(
+        item_id    = str(pk),
+        name       = data.get("name", ""),
+        price      = price,
+        start_date = start_date,
+        image_url  = image_url,
+        category   = category,
+    )
+    results.append(item)
+```
+
+### dict vs dataclass
 
 |항목|dict|dataclass|
 |---|---|---|
@@ -296,52 +337,86 @@ for item in items:
 |기본값|매번 `.get("key", default)`|선언부에 한 번만|
 |직렬화|그대로 사용|`asdict(obj)`|
 |`__post_init__`|❌|✅ 초기화 후처리 가능|
-|타입 힌트|❌|✅|
+|None 필드 명시|❌ 암묵적|✅ 구조가 명확함|
 
 ---
 
 ## 전체 흐름 정리
 
 ```
-DevTools
-  └─ Fetch/XHR에서 API URL + 파라미터 확인
+DevTools → Fetch/XHR 에서 API URL + 파라미터 확인
        │
        ▼
-Session 생성
-  └─ headers (User-Agent, Referer) 한 번만 설정
+Session 생성 — headers 한 번만 설정
        │
        ▼
-페이지네이션 루프  ←──────────────┐
-  ├─ params에 page 번호 증가       │
-  ├─ session.get() 호출            │
-  ├─ 응답 구조 방어 파싱           │
-  ├─ items 없으면 break            │
-  └─ time.sleep(0.3) ─────────────┘
+페이지네이션 루프 ─────────────────────┐
+  params page 증가                     │
+  session.get() 호출                   │
+  응답 구조 방어 파싱                  │
+  items 없으면 break                   │
+  time.sleep(0.3) ─────────────────────┘
        │
        ▼
-중복 제거 (seen set)
+중복 제거 (seen set, 순서 보존)
        │
        ▼
-dataclass 매핑
-  └─ 날짜 포맷 / URL 보정 / 랭킹 포맷
+dataclass 매핑 (날짜 / URL / 타입 / None 처리)
        │
        ▼
-PostgreSQL 적재 → [[Python_Database_Connect]]
+DB 적재 / 파일 저장
 ```
 
 ---
 
-## 자주 쓰는 API 파라미터 패턴
+## 자주 쓰는 파라미터 패턴
 
 ```python
-# 배열 파라미터 (requests가 자동으로 ?a=1&a=2 로 변환)
-params = {"subCategory": ["08002", "08016"]}
+# 오프셋 페이지네이션
+params = {"page": 1, "size": 50}
+params = {"page": 1, "pageSize": 50}
+params = {"offset": 0, "limit": 50}
+
+# 배열 파라미터 (requests가 ?a=1&a=2 로 자동 변환)
+params = {"category": ["001", "002"]}
+
+# 정렬
+params = {"sort": "WEEKLY_RANKING"}
+params = {"orderBy": "createdAt", "direction": "DESC"}
 
 # 날짜 범위
 params = {"startDate": "20260101", "endDate": "20261231"}
-
-# 정렬 + 페이지
-params = {"sort": "DAILY_RANKING", "page": 1, "pageSize": 50}
 ```
+
+---
+
+## 목록 API + 상세 API 분리 패턴
+
+많은 사이트가 목록과 상세를 분리된 API로 제공한다. 목록 API에서 ID를 수집하고, 상세 API로 필드를 보완하는 전략이 일반적이다.
+
+```python
+LIST_API   = "https://example.com/api/items"          # 목록
+DETAIL_API = "https://example.com/api/items/{id}"     # 단건 상세
+
+# 전략
+items = get_list(max_pages=10)          # ID + 기본 필드 수집
+for item in items:
+    detail = get_detail(item["id"])     # 주소, 시간, 이미지 등 보완
+    price  = get_price_selenium(url)    # Selenium 필요한 것만 최소화
+    time.sleep(0.3)
+```
+
+> 상세 API가 있으면 Selenium 사용을 최소화할 수 있다. DevTools에서 상세 페이지를 열었을 때 호출되는 API를 추가로 찾아볼 것.
+
+---
+
+## 프로젝트 적용 사례
+
+|프로젝트|목록 API|상세 API|Selenium 용도|
+|---|---|---|---|
+|인터파크 전시|`/contents/api/goods/genre`|`/v1/goods/{id}/summary`|가격 팝업만|
+|(다음 프로젝트)|—|—|—|
+
+> 인터파크 전시 상세 → [[01_exhibition_crawling]]
 
 ---

@@ -222,7 +222,6 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 |[[Python_UUID]]|uuid4 / 분산 환경 PK / 충돌 없는 식별자|
 
 ---
-
 ---
 
 ## Level 8. 외부 시스템 연결
@@ -236,5 +235,4 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 | [[Python_Database_Connect]] | psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall |
 
 ---
-
 ---

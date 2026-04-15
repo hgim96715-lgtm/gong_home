@@ -385,8 +385,6 @@ __init__ / __repr__ / __eq__ 를 자동으로 만들어주는 데코레이터
 
 ## 기본 사용
 
-python
-
 ```python
 from dataclasses import dataclass
 
@@ -431,7 +429,6 @@ c = Config("prod-db", 5435, True)  # 전부 지정
 ```
 
 ## asdict() — 딕셔너리로 변환 ⭐️
-
 
 ```python
 from dataclasses import dataclass, asdict
