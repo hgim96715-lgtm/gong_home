@@ -8,6 +8,9 @@ aliases:
   - integer
   - timestamp
   - boolean
+  - JSONB
+  - JSON
+  - INDEX
 tags:
   - SQL
 related:
@@ -52,18 +55,18 @@ related:
 
 > **SQLD 시험은 Oracle 기준.** 시험엔 `VARCHAR2`, `NUMBER` 를, 실무엔 `VARCHAR`, `INTEGER`, `TEXT` 를 쓴다.
 
-|종류|SQLD / Oracle|PostgreSQL|설명|
-|---|---|---|---|
-|고정 문자|`CHAR(n)`|`CHAR(n)`|n자리 고정. 남으면 공백으로 채움|
-|가변 문자|`VARCHAR2(n)`|`VARCHAR(n)`|입력한 만큼만 저장|
-|제한없는 문자|`CLOB`|`TEXT`|PostgreSQL TEXT 는 크기 제한 없음 ⭐️|
-|정수|`NUMBER(n)`|`INTEGER` / `BIGINT`|PostgreSQL 은 정수 전용 타입 있음|
-|소수|`NUMBER(p,s)`|`NUMERIC(p,s)`|p: 전체 자릿수, s: 소수점 자릿수|
-|날짜만|`DATE`|`DATE`|년-월-일만 저장|
-|날짜+시간|`TIMESTAMP`|`TIMESTAMP`|시간까지 저장|
-|날짜+시간+타임존|없음|`TIMESTAMPTZ`|글로벌 서비스라면 무조건 이거 ⭐️|
-|고유 식별자|없음|`UUID`|분산환경 PK 로 최적 ⭐️|
-|논리형|없음|`BOOLEAN`|TRUE / FALSE|
+| 종류        | SQLD / Oracle | PostgreSQL           | 설명                            |
+| --------- | ------------- | -------------------- | ----------------------------- |
+| 고정 문자     | `CHAR(n)`     | `CHAR(n)`            | n자리 고정. 남으면 공백으로 채움           |
+| 가변 문자     | `VARCHAR2(n)` | `VARCHAR(n)`         | 입력한 만큼만 저장                    |
+| 제한없는 문자   | `CLOB`        | `TEXT`               | PostgreSQL TEXT 는 크기 제한 없음 ⭐️ |
+| 정수        | `NUMBER(n)`   | `INTEGER` / `BIGINT` | PostgreSQL 은 정수 전용 타입 있음      |
+| 소수        | `NUMBER(p,s)` | `NUMERIC(p,s)`       | p: 전체 자릿수, s: 소수점 자릿수         |
+| 날짜만       | `DATE`        | `DATE`               | 년-월-일만 저장                     |
+| 날짜+시간     | `TIMESTAMP`   | `TIMESTAMP`          | 시간까지 저장                       |
+| 날짜+시간+타임존 | 없음            | `TIMESTAMPTZ`        | 글로벌 서비스라면 무조건 이거 ⭐️           |
+| 고유 식별자    | 없음            | `UUID`               | 분산환경 PK 로 최적 ⭐️               |
+| 논리형       | 없음            | `BOOLEAN`            | TRUE / FALSE                  |
 
 ---
 
@@ -241,4 +244,156 @@ SELECT 0.1::NUMERIC + 0.2::NUMERIC; -- 결과: 0.3 ✅
 ```
 
 ---
+---
+# ④ JSONB — JSON 데이터 저장 타입
 
+## 한 줄 요약
+
+> **"JSON 을 파싱해서 바이너리로 저장하는 타입. 검색·인덱싱이 가능해서 TEXT 에 JSON 넣는 것보다 훨씬 강력하다."**
+
+---
+
+## JSON vs JSONB 차이
+
+|항목|`JSON`|`JSONB`|
+|---|---|---|
+|저장 방식|텍스트 그대로|파싱 후 바이너리로|
+|쓰기 속도|빠름|약간 느림 (파싱 비용)|
+|읽기 / 검색|느림|**빠름** ⭐️|
+|인덱스|❌ 불가|✅ 가능|
+|공백 / 키 순서|원문 그대로 보존|❌ 정규화됨 (순서 바뀔 수 있음)|
+|실무 선택|거의 안 씀|**거의 항상 JSONB** ⭐️|
+
+```
+JSON 을 쓰는 경우:
+  원문 그대로 보존이 필수일 때 (로그 포맷 등)
+  쓰기만 하고 검색은 거의 없을 때
+
+JSONB 를 쓰는 경우:
+  저장 후 특정 키로 검색·필터가 필요할 때
+  인덱스를 걸어서 성능을 높이고 싶을 때
+  → 대부분의 실무 케이스 = JSONB
+```
+
+---
+
+## JSONB 연산자
+
+```sql
+-- 예시 데이터
+-- prices_raw = '[{"name": "성인", "price": 23000}, {"name": "어린이", "price": 18000}]'
+
+-- → 특정 인덱스 요소 접근 (배열)
+SELECT prices_raw -> 0                  FROM raw_exhibitions;
+-- 결과: {"name": "성인", "price": 23000}   (JSON 타입)
+
+-- ->> 텍스트로 꺼내기
+SELECT prices_raw -> 0 ->> 'name'       FROM raw_exhibitions;
+-- 결과: 성인  (TEXT 타입)
+
+SELECT prices_raw -> 0 ->> 'price'      FROM raw_exhibitions;
+-- 결과: 23000 (TEXT — 숫자 쓰려면 ::INTEGER 변환 필요)
+
+-- @> 포함 여부 확인 (필터 조건으로 활용)
+SELECT * FROM raw_exhibitions
+WHERE prices_raw @> '[{"name": "성인"}]';
+-- 성인 가격이 있는 전시만 조회
+```
+
+|연산자|의미|반환 타입|
+|---|---|---|
+|`->`|키 / 인덱스로 요소 접근|JSONB|
+|`-->`|키 / 인덱스로 요소 접근 (텍스트 반환)|TEXT|
+|`@>`|왼쪽이 오른쪽을 포함하는가?|BOOLEAN|
+|`?`|해당 키가 존재하는가?|BOOLEAN|
+
+---
+
+## JSONB 에 인덱스 걸기
+
+```sql
+-- GIN 인덱스 — JSONB 전용 (포함 검색 @> 에 효과적)
+CREATE INDEX idx_prices_gin
+    ON raw_exhibitions USING GIN (prices_raw);
+
+-- 이후 @> 조건 쿼리가 빠르게 동작
+SELECT * FROM raw_exhibitions
+WHERE prices_raw @> '[{"name": "성인"}]';
+```
+
+---
+
+## 실전 패턴 — dbt 파싱 전 원문 보관
+
+```sql
+-- 크롤러: API 응답 JSON 을 그대로 넣음
+INSERT INTO raw_exhibitions (exhibition_id, prices_raw)
+VALUES ('26002594', '[{"name":"성인","price":23000},{"name":"어린이","price":18000}]'::JSONB);
+
+-- dbt staging 에서 파싱
+SELECT
+    exhibition_id,
+    (elem ->> 'name')::TEXT    AS price_name,
+    (elem ->> 'price')::INTEGER AS price_amount
+FROM raw_exhibitions,
+     LATERAL jsonb_array_elements(prices_raw) AS elem;
+```
+
+> `TEXT` 에 JSON 문자열로 저장하면 위 연산자와 `jsonb_array_elements` 를 쓸 수 없음 → 반드시 `JSONB` 타입으로 선언
+
+---
+
+---
+
+# ⑤ INDEX — 컬럼에 목차 달기
+
+## 한 줄 요약
+
+> **"특정 컬럼에 미리 정렬된 주소록을 만들어두어 조회 속도를 높이는 구조. 데이터 타입은 아니지만 컬럼 설계 시 함께 결정한다."**
+
+---
+
+## 인덱스가 필요한 타입 vs 불필요한 타입
+
+```
+인덱스 효과가 큰 타입:
+  VARCHAR / TEXT — 문자열 검색 (WHERE name = '...' / LIKE '...')
+  DATE / TIMESTAMP — 날짜 범위 조회 (BETWEEN / >= / <=)
+  INTEGER / NUMERIC — 숫자 범위 / 정렬
+
+인덱스 효과가 작은 타입:
+  BOOLEAN — 값이 TRUE/FALSE 두 개뿐
+             → 테이블 절반을 스캔하므로 효과 미미
+             → Partial Index 로 보완 (WHERE is_active = TRUE)
+  JSONB — 일반 B-tree 인덱스 불가
+          → GIN 인덱스 (jsonb 전용) 사용해야 함
+```
+
+---
+
+## 타입별 인덱스 선택
+
+| 타입                    | 인덱스 종류     | 비고                             |
+| --------------------- | ---------- | ------------------------------ |
+| `VARCHAR` / `TEXT`    | B-tree     | 기본 (LIKE '앞%' 만 효과, '%앞' 은 ❌)  |
+| `INTEGER` / `NUMERIC` | B-tree     | 범위 조건에 효과적                     |
+| `DATE` / `TIMESTAMP`  | B-tree     | 날짜 범위 조건에 효과적                  |
+| `JSONB`               | **GIN**    | `@>` 포함 검색에 사용                 |
+| `TEXT` (전문 검색)        | **GIN**    | `tsvector` 기반 전문 검색            |
+| `BOOLEAN`             | Partial 권장 | `WHERE col = TRUE` 로 범위 좁혀서 생성 |
+
+```sql
+-- VARCHAR 에 기본 B-tree
+CREATE INDEX idx_ex_location ON raw_exhibitions (location);
+
+-- JSONB 에 GIN 인덱스
+CREATE INDEX idx_prices_gin ON raw_exhibitions USING GIN (prices_raw);
+
+-- BOOLEAN 에 Partial Index
+CREATE INDEX idx_ex_active ON raw_exhibitions (start_date)
+WHERE is_active = TRUE;
+```
+
+> 인덱스 상세 → [[PostgreSQL_Setup#⑦ INDEX — 검색 속도 높이기]] 참고
+
+---

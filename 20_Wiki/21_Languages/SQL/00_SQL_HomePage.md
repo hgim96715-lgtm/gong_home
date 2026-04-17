@@ -97,14 +97,14 @@ SQLD 1과목 핵심 영역
 
 ### 기초 조회 및 필터링
 
-|노트|핵심 개념|
-|---|---|
-|[[Concept_What_is_SQL]]|집합적 사고방식 / 선언형 언어 / DDL·DML·DCL·TCL|
-|[[Concept_Table_Anatomy]]|행(Row) / 열(Column) / 도메인|
-|[[SQL_SELECT_FROM]]|SELECT / FROM / 별칭(AS) / *|
-|[[SQL_Data_Types]]|VARCHAR / NUMBER / DATE / BOOLEAN / NULL|
-|[[SQL_Filtering_WHERE]]|BETWEEN / IN / LIKE / ILIKE / IS NULL / AND·OR|
-|[[SQL_ORDER_BY]]|ASC / DESC / NULL 정렬 / 다중 정렬|
+| 노트                        | 핵심 개념                                                        |
+| ------------------------- | ------------------------------------------------------------ |
+| [[Concept_What_is_SQL]]   | 집합적 사고방식 / 선언형 언어 / DDL·DML·DCL·TCL                          |
+| [[Concept_Table_Anatomy]] | 행(Row) / 열(Column) / 도메인                                     |
+| [[SQL_SELECT_FROM]]       | SELECT / FROM / 별칭(AS) / *                                   |
+| [[SQL_Data_Types]]        | VARCHAR / NUMBER / DATE / BOOLEAN / NULL/JSONB/INDX/NUMBERIC |
+| [[SQL_Filtering_WHERE]]   | BETWEEN / IN / LIKE / ILIKE / IS NULL / AND·OR               |
+| [[SQL_ORDER_BY]]          | ASC / DESC / NULL 정렬 / 다중 정렬                                 |
 
 ### 함수와 NULL
 
@@ -180,13 +180,13 @@ SQLD 1과목 핵심 영역
 DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[SQL_DML_CRUD]]|INSERT / UPDATE / DELETE / MERGE / UPSERT|
-|[[SQL_Database_Transactions_TCL]]|COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK|
-|[[SQL_DDL_Create]]|CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS|
-|[[SQL_DCL_Grant_Revoke]]|GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE|
-|[[SQL_Stored_Function]]|CREATE FUNCTION / plpgsql / RETURN QUERY / IF-THEN / OFFSET|
+| 노트                                | 핵심 개념                                                           |
+| --------------------------------- | --------------------------------------------------------------- |
+| [[SQL_DML_CRUD]]                  | INSERT / UPDATE / DELETE / MERGE / UPSERT                       |
+| [[SQL_Database_Transactions_TCL]] | COMMIT / ROLLBACK / BEGIN / ACID / SAVEPOINT / LOCK             |
+| [[SQL_DDL_Create]]                | CREATE / DROP / ALTER / TRUNCATE / CONSTRAINT / CTAS/COMMENT ON |
+| [[SQL_DCL_Grant_Revoke]]          | GRANT / REVOKE / ROLE / WITH GRANT OPTION / CASCADE             |
+| [[SQL_Stored_Function]]           | CREATE FUNCTION / plpgsql / RETURN QUERY / IF-THEN / OFFSET     |
 
 
 ---
@@ -196,11 +196,11 @@ DB 구조 만들기 / 데이터 삽입·수정 / 권한 통제
 ## PostgreSQL 실습 환경
 
 
-|노트|핵심 개념|
-|---|---|
-|[[PostgreSQL_Setup]]|Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리|
-|[[Python_Database_Connect]]|psycopg2 / execute_values / sqlalchemy / .env|
-|[[Airflow_Hooks]]|PostgresHook / execute_values UPSERT / copy_expert|
+| 노트                          | 핵심 개념                                                   |
+| --------------------------- | ------------------------------------------------------- |
+| [[PostgreSQL_Setup]]        | Docker 환경 세팅 / DataGrip 연결 / 권한·소유권 관리/INDEX -검색속도 높이기  |
+| [[Python_Database_Connect]] | psycopg2 / execute_values / sqlalchemy / .env           |
+| [[Airflow_Hooks]]           | PostgresHook / execute_values UPSERT / copy_expert      |
 
 
 ---

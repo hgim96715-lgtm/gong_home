@@ -266,41 +266,161 @@ psql      CLI (터미널에서 타이핑)
 # 컨테이너 내부 psql 접속
 docker exec -it <container_name> psql -U <유저명> -d <DB명>
 
-# 예시 (train 프로젝트)
-docker exec -it train-postgres psql -U train_user -d train_db
-#               ↑ 컨테이너 이름    ↑ DB 유저       ↑ DB 이름
-#               (Docker)          (.env)            (.env)
+# 예시 (exhibition 프로젝트)
+docker exec -it exhibition-postgres psql -U postgres -d exhibition_db
+#                 ↑ 컨테이너 이름              ↑ DB 유저        ↑ DB 이름
+#                 (Docker)                  (.env)          (.env)
 ```
 
 ```
 ⚠️ container_name ≠ DB명
-  train-postgres  → Docker 컨테이너 이름
-  train_db        → PostgreSQL 안의 데이터베이스 이름
+  exhibition-postgres  → Docker 컨테이너 이름 (docker-compose.yml 의 container_name)
+  exhibition_db        → PostgreSQL 안의 데이터베이스 이름 (.env 의 POSTGRES_DB)
 ```
 
 ```bash
 # 접속 성공 시 프롬프트
-train_db=#    ← 여기서 SQL 입력
+exhibition_db=#    ← 여기서 SQL 또는 메타 명령어 입력
 ```
 
+---
+
+## psql 메타 명령어 — \로 시작하는 단축 명령어
+
+```
+SQL 문법이 아님
+psql 클라이언트가 직접 처리하는 명령어
+세미콜론(;) 안 붙여도 됨
+백슬래시(\)로 시작
+```
+
+### \d 계열 — 구조 확인
+
+|명령어|뭘 보여주나|
+|---|---|
+|`\dt`|테이블 목록|
+|`\dt+`|테이블 목록 + 크기 + 설명|
+|`\d 테이블명`|컬럼명 / 타입 / 제약조건|
+|`\d+ 테이블명`|`\d` + 인덱스 / 크기 / COMMENT ON 내용|
+|`\di`|인덱스 목록|
+|`\di+`|인덱스 목록 + 크기|
+|`\dv`|뷰 목록|
+|`\dn`|스키마 목록|
+|`\ds`|시퀀스 목록 (SERIAL 컬럼이 만드는 것)|
+
+```
++ 를 붙이면 더 상세한 정보가 추가되는 패턴
+\d → \d+  /  \dt → \dt+  /  \di → \di+  모두 동일한 방식
+```
+
+### \d vs \d+ 차이 — COMMENT ON 확인
+
+```bash
+\d raw_exhibitions
+```
+
+```
+ Column        | Type         | Nullable | Default
+---------------+--------------+----------+--------
+ id            | integer      | not null |
+ exhibition_id | varchar(50)  | not null |
+ title         | varchar(500) | not null |
+ prices_raw    | jsonb        |          |
+```
+
+```bash
+\d+ raw_exhibitions
+```
+
+```
+ Column        | Type         | Nullable | Default | Description
+---------------+--------------+----------+---------+-------------------------------------
+ id            | integer      | not null |         |
+ exhibition_id | varchar(50)  | not null |         | goodsCode — 인터파크 전시 고유 ID
+ title         | varchar(500) | not null |         |
+ prices_raw    | jsonb        |          |         | /v1/goods/{goodsCode}/prices/group
+                                                              ↑
+                                              COMMENT ON 으로 저장한 내용이 여기 표시됨
+Indexes:
+    "idx_ex_location" btree (location)
+    "idx_ex_active_period" btree (is_active, start_date, end_date)
+    "idx_ex_week_rank" btree (week_rank) WHERE week_rank IS NOT NULL
+```
+
+```
+\d+  를 쓰면 한 번에 확인 가능한 것:
+  컬럼 구조
+  인덱스 목록
+  COMMENT ON 내용 (Description 컬럼)
+  테이블 크기
+```
+
+### DB / 유저 / 권한 확인
+
+|명령어|뭘 보여주나|
+|---|---|
+|`\l`|DB 목록 + 소유자 + 권한|
+|`\du`|유저 목록 + 역할 + 슈퍼유저 여부|
+|`\dp 테이블명`|특정 테이블 권한 목록|
+|`\conninfo`|현재 접속 정보 (DB명 / 유저 / 포트)|
+|`\c DB명`|다른 DB 로 전환|
+
+### 기타
+
+|명령어|동작|
+|---|---|
+|`\q`|psql 종료|
+|`\i 파일경로`|외부 SQL 파일 실행|
+|`\e`|외부 편집기 열기 (긴 쿼리 작성할 때)|
+|`\timing`|쿼리 실행 시간 표시 ON/OFF|
+|`\x`|결과를 세로로 표시 (컬럼 많을 때 유용)|
+
+```bash
+# \x 예시 — 컬럼이 많아서 가로로 안 보일 때
+\x
+SELECT * FROM raw_exhibitions LIMIT 1;
+
+# 출력:
+-[ RECORD 1 ]--+-----------------------------
+id             | 1
+exhibition_id  | 26002594
+title          | ［얼리버드 40%］ 페르난도 보테로展
+venue          | 예술의전당 한가람디자인미술관
+...
+```
+
+---
+
+## 자주 쓰는 실전 패턴
+
 ```sql
--- 테이블 목록
+-- 테이블 목록 확인
 \dt
 
--- 테이블 컬럼 구조 확인
-\d 테이블명
+-- 특정 테이블 구조 + 인덱스 + COMMENT 한 번에
+\d+ raw_exhibitions
 
--- 데이터 확인
-SELECT * FROM 테이블명 LIMIT 10;
+-- 인덱스 제대로 생성됐는지 확인
+\di
 
--- 현재 접속 정보
+-- 현재 어떤 DB 에 접속 중인지 확인
 \conninfo
+
+-- 데이터 몇 건인지 빠르게 확인
+SELECT COUNT(*) FROM raw_exhibitions;
+
+-- 최근 적재된 데이터 확인
+SELECT exhibition_id, title, crawled_at
+FROM raw_exhibitions
+ORDER BY crawled_at DESC
+LIMIT 5;
 
 -- 접속 종료
 \q
 ```
 
 > [[Docker_Container_Interaction]] , [[Docker_Compose_Commands]] 참조
+
 
 ---
 
@@ -475,6 +595,159 @@ down -v 불필요 (psql 직접):
   새 테이블 추가                → CREATE TABLE (psql 에서 바로 실행)
 ```
 
+---
+
+---
+
+# ⑦ INDEX — 검색 속도 높이기
+
+## 한 줄 요약
+
+> **"책의 목차. 특정 컬럼에 미리 정렬된 주소록을 만들어두어 조회 속도를 높이는 구조."**
+
+---
+
+## 왜 필요한가?
+
+```
+인덱스 없을 때 → Full Table Scan
+테이블 전체를 처음부터 끝까지 읽음
+데이터 10만 건이면 10만 번 비교
+
+인덱스 있을 때 → Index Scan
+미리 정렬된 주소록에서 위치만 찾아감
+```
+
+```sql
+-- 인덱스 없는 상태
+SELECT * FROM raw_exhibitions WHERE location = '서울';
+-- → 전체 스캔 (느림)
+
+-- 인덱스 생성 후
+CREATE INDEX idx_ex_location ON raw_exhibitions (location);
+SELECT * FROM raw_exhibitions WHERE location = '서울';
+-- → 인덱스 통해 바로 접근 (빠름)
+```
+
+---
+
+## 기본 문법
+
+```sql
+-- 단일 컬럼 인덱스
+CREATE INDEX 인덱스명 ON 테이블명 (컬럼명);
+
+-- 복합 인덱스 (여러 컬럼 동시 조건)
+CREATE INDEX 인덱스명 ON 테이블명 (컬럼1, 컬럼2, 컬럼3);
+
+-- Partial Index (조건 있는 부분 인덱스)
+CREATE INDEX 인덱스명 ON 테이블명 (컬럼명)
+WHERE 조건;
+
+-- 인덱스 삭제
+DROP INDEX 인덱스명;
+
+-- 인덱스 확인
+\di 테이블명   -- psql
+-- 또는
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'raw_exhibitions';
+```
+
+---
+
+## 복합 인덱스 — 컬럼 순서가 중요하다
+
+```sql
+CREATE INDEX idx_ex_active_period
+    ON raw_exhibitions (is_active, start_date, end_date);
+```
+
+```
+이 인덱스가 동작하는 쿼리:
+  WHERE is_active = TRUE                          ✅ (첫 번째 컬럼)
+  WHERE is_active = TRUE AND start_date = '...'   ✅ (첫 + 두 번째)
+  WHERE is_active = TRUE AND start_date = '...' AND end_date = '...'  ✅ (전체)
+
+이 인덱스가 동작하지 않는 쿼리:
+  WHERE start_date = '...'   ❌ (첫 번째 컬럼 빠짐)
+  WHERE end_date = '...'     ❌ (첫 번째 컬럼 빠짐)
+
+→ 복합 인덱스는 왼쪽부터 순서대로 써야 효과 있음
+```
+
+---
+
+## Partial Index — 불필요한 행은 인덱스에서 제외
+
+```sql
+-- week_rank 가 NULL 인 행은 조회할 일이 없음
+-- → 인덱스 크기를 줄여 효율 높임
+CREATE INDEX idx_ex_week_rank
+    ON raw_exhibitions (week_rank)
+    WHERE week_rank IS NOT NULL;
+
+-- is_active = TRUE 인 것만 자주 조회
+CREATE INDEX idx_ex_active
+    ON raw_exhibitions (location)
+    WHERE is_active = TRUE;
+```
+
+---
+
+## 언제 만들고 언제 만들지 말아야 하나
+
+|만들어야 할 때|만들지 말아야 할 때|
+|---|---|
+|WHERE 에 자주 등장하는 컬럼|데이터가 적은 테이블 (수백 건 이하)|
+|JOIN 의 ON 절에 쓰이는 컬럼|거의 조회 안 하는 컬럼|
+|ORDER BY 에 자주 쓰이는 컬럼|카디널리티가 낮은 컬럼 (TRUE/FALSE 같은 것)|
+|카디널리티가 높은 컬럼 (값 종류가 많을수록 효과적)|모든 컬럼에 다 만들면 쓰기 속도 저하|
+
+```
+카디널리티(Cardinality) = 컬럼의 값 종류 수
+
+높음: exhibition_id (값이 전부 다름) → 인덱스 효과 최대
+낮음: is_active (TRUE/FALSE 두 가지) → 인덱스 효과 적음
+      → 낮은 카디널리티는 Partial Index 로 보완
+```
+
+---
+
+## 단점 — 공짜가 아니다
+
+```
+INSERT / UPDATE / DELETE 할 때
+데이터 변경 → 인덱스도 같이 갱신 필요
+→ 쓰기 속도 감소 + 저장 공간 추가 사용
+
+실무 원칙:
+  조회가 압도적으로 많은 컬럼만 인덱스 생성
+  크롤러처럼 INSERT 가 잦은 경우 인덱스 최소화
+```
+
+---
+
+## 인덱스가 실제로 쓰이는지 확인 — EXPLAIN
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM raw_exhibitions
+WHERE is_active = TRUE
+  AND start_date <= CURRENT_DATE
+  AND end_date >= CURRENT_DATE;
+```
+
+```
+출력 예시:
+  Index Scan using idx_ex_active_period on raw_exhibitions
+  → ✅ 인덱스 사용 중
+
+  Seq Scan on raw_exhibitions
+  → ❌ 인덱스 무시하고 전체 스캔 중
+     (데이터가 너무 적거나, 조건이 인덱스와 안 맞을 때)
+```
 ---
 
 ---

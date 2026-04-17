@@ -190,30 +190,19 @@ ON DELETE CASCADE;  -- ← 여기에 옵션을 붙인다
 | **대상**        | **데이터 (행)**                              | **제약 조건 (구조)**                                     |
 | **주요 동작**     | 부모 테이블의 행 삭제 시, 이를 참조하는 자식 테이블의 행도 함께 삭제 | 테이블 삭제 시, 해당 테이블을 참조하고 있는 모든 외래 키(FK) 제약 조건을 먼저 삭제 |
 | **자식 데이터 상태** | 함께 삭제됨                                   | 그대로 유지됨 (제약 조건만 사라짐)                               |
-| **주요 목적**     | 참조 무결성 유지를 위한 자동 삭제                      | 제약 조건으로 인해 테이블 삭제가 안 되는 상황 해결                      |
-
-```sql
--- CASCADE (FK 옵션): 데이터(행) 를 지울 때의 동작 규칙
-FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
-ON DELETE CASCADE;
--- departments 의 행 삭제 → employees 의 해당 행도 같이 삭제
-
--- CASCADE CONSTRAINTS (DDL 옵션): 테이블 구조를 날릴 때 사용
-DROP TABLE departments CASCADE CONSTRAINTS;  -- Oracle
-DROP TABLE departments CASCADE;              -- PostgreSQL
+| **주요 목적**     | 참조 무결성 유지를 위한 자동 삭제                      | 제약 조건으로 인해 테이블 삭제가 안 되는 상황 해결                                                                                    ADE (FK 옵션): 데이터(행) 를 지울 때의 동작 규칙
+FOREIGN KEY (dept_id) REFERENCES d| ------------------------------------------------------------------------------ | --------------------------------------------------------------- |TRAINTS (DDL 옵션): 테                                                               P TABLE departments CASCADE CONSTRAINTS;  -- Oracle
+DROP TABLE departments CASCADE;              -- Pos                                              greSQL
 -- departments 테이블 삭제
 -- + employees 의 FK 제약조건도 자동 삭제
--- (employees 테이블과 데이터는 그대로 살아있음)
-```
-
-```text
+-- (empl [[SQL_DDL_Create]]<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br> ext
 CASCADE CONSTRAINTS 없이 DROP TABLE departments
 → ❌ 에러: employees 가 참조 중이라 삭제 불가
 
-CASCADE CONSTRAINTS 붙이고 DROP TABLE departments
+CASCADE CO                                                       붙이고 DROP TABLE departments
 → ✅ departments 테이블 삭제
    + employees 의 FK 제약조건(구조)도 삭제
-   (employees 의 데이터는 그대로)
+   (employ                                                        그대로)
 ```
 
 ----
@@ -664,19 +653,97 @@ ALTER TABLE 사원 RENAME TO 직원;
 ```
 
 ---
+---
+
+# ⑥ COMMENT ON — 메타데이터 주석 달기
+
+## 한 줄 요약
+
+> **"테이블·컬럼에 설명을 붙이는 DDL 명령어. 코드가 아닌 DB 자체에 저장되는 문서."**
+
+```sql
+-- 문법
+COMMENT ON TABLE  테이블명        IS '설명';
+COMMENT ON COLUMN 테이블명.컬럼명 IS '설명';
+```
 
 ---
 
-# Oracle vs PostgreSQL 문법 차이 한눈에 보기
+## 왜 쓰나?
 
-|작업|Oracle (SQLD)|PostgreSQL (실무)|
-|---|:-:|:-:|
-|가변 문자 타입|`VARCHAR2(n)`|`VARCHAR(n)`|
-|숫자 타입|`NUMBER(p,s)`|`NUMERIC(p,s)`|
-|날짜 리터럴|`TO_DATE('2021-12-31', 'YYYY-MM-DD')`|`'2021-12-31'::DATE`|
-|타입 자동 변환|관대함 (숫자→문자 자동)|엄격함 (명시 권장)|
-|컬럼 속성 변경|`MODIFY`|`ALTER COLUMN … TYPE`|
-|테이블 이름 변경|`RENAME A TO B`|`ALTER TABLE A RENAME TO B`|
-|DROP + FK 강제 삭제|`CASCADE CONSTRAINTS`|`CASCADE`|
+```
+DataGrip 같은 툴에서 컬럼에 마우스를 올리면 설명이 바로 표시됨
+→ 코드를 열지 않아도 "이 컬럼이 뭔지" 즉시 파악 가능
+
+팀 프로젝트에서 신규 합류자가 스키마를 볼 때
+init.sql 을 열지 않아도 DB 툴에서 바로 파악 가능
+```
+
+---
+
+## 실전 예시
+
+```sql
+-- 테이블 주석
+COMMENT ON TABLE raw_exhibitions
+    IS '인터파크 전시 Summary API 원본 적재 테이블';
+
+COMMENT ON TABLE raw_exhibition_prices
+    IS '/v1/goods/{goodsCode}/prices/group 정규화 테이블';
+
+-- 컬럼 주석
+COMMENT ON COLUMN raw_exhibitions.exhibition_id
+    IS 'goodsCode — 인터파크 전시 고유 ID (PK)';
+
+COMMENT ON COLUMN raw_exhibitions.prices_raw
+    IS '/v1/goods/{goodsCode}/prices/group 원문 JSONB — dbt 에서 파싱';
+
+COMMENT ON COLUMN raw_exhibitions.week_rank
+    IS 'weekRank (숫자형) — rank 텍스트 컬럼과 병행 보관';
+```
+
+---
+
+## 주석 확인 방법
+
+```sql
+-- 테이블 주석 확인
+SELECT obj_description('raw_exhibitions'::regclass);
+
+-- 컬럼 주석 확인
+SELECT
+    col.attname        AS 컬럼명,
+    pg_catalog.col_description(col.attrelid, col.attnum) AS 주석
+FROM pg_catalog.pg_attribute col
+WHERE col.attrelid = 'raw_exhibitions'::regclass
+  AND col.attnum > 0
+  AND NOT col.attisdropped;
+```
+
+```bash
+# psql 에서 빠르게 확인
+\d+ raw_exhibitions   -- ← 컬럼 옆에 주석이 같이 표시됨
+```
+
+>`\d+`란? [[PostgreSQL_Setup#④ psql — PostgreSQL 전용 CLI 클라이언트]]
+
+---
+
+## DB 별 차이
+
+|DB|문법|비고|
+|---|---|---|
+|PostgreSQL|`COMMENT ON TABLE / COLUMN`|표준|
+|Oracle|`COMMENT ON TABLE / COLUMN`|PostgreSQL 동일|
+|MySQL|`CREATE TABLE ... COMMENT='설명'` (테이블 단위)|컬럼은 정의 안에 인라인|
+
+```sql
+-- MySQL 컬럼 주석 방식 (참고)
+CREATE TABLE 사원 (
+    이름 VARCHAR(50) COMMENT '직원 이름'
+);
+```
+
+> **SQLD 시험:** COMMENT ON 문법 자체보다 "DDL 에 속한다" 는 분류 개념 출제 가능
 
 ---
