@@ -212,6 +212,8 @@ def fetch(endpoint: str) -> dict | None:
     ...
 ```
 
+> 타입 힌트 문법 → [[Python_Type_Checking#typing 모듈]] 참고
+
 ---
 
 ---

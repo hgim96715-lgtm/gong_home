@@ -89,7 +89,7 @@ Docker나 동료의 컴퓨터에서 이 파일을 보고 한 방에 설치합니
 
 ```bash
 # "-r: 이 파일(requirements.txt)을 읽어서(read) 다 설치해줘"
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ---

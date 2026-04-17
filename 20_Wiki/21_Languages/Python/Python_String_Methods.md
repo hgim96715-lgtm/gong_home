@@ -14,6 +14,8 @@ aliases:
   - maketrans
   - chr
   - swapcase
+  - readlines
+  - splitlines
 tags:
   - Python
 related:
@@ -439,7 +441,73 @@ is_number("1,000")  # False  <- 쉼표 때문에
 
 ---
 ---
-# ⑪ 문자열 반복 — * 연산자 ⭐️
+# ⑪ splitlines() — 줄바꿈으로 쪼개기 ⭐️
+
+```
+HTML / 파일 텍스트 처리 시 줄바꿈 기준으로 쪼갤 때 사용
+split("\n") 과 다르게 \r\n / \r 도 전부 자동 처리
+```
+
+```python
+text = "line1\nline2\r\nline3\rline4"
+
+text.split("\n")    # ['line1', 'line2\r', 'line3\rline4']  ← \r 남음!
+text.splitlines()   # ['line1', 'line2', 'line3', 'line4']   ← 전부 처리 ✅
+```
+
+## split vs splitlines 차이
+
+```
+split("\n"):
+  \n 만 기준으로 자름
+  Windows 줄바꿈 \r\n 이면 \r 이 남음
+  HTML / API 응답 처리 시 버그 유발 가능
+
+splitlines():
+  \n / \r\n / \r 전부 자동 처리
+  파일 / HTML / API 응답 처리에 안전
+```
+
+## 실전 패턴 — HTML 텍스트 정제 ⭐️
+
+```python
+import re
+
+template = "<h1>제목</h1><br/>내용1<br>내용2<p>단락</p>"
+
+# 1. <br> 태그를 줄바꿈으로 변환
+clean = re.sub(r"<br\s*/?>", "\n", template)
+
+# 2. 나머지 HTML 태그 전부 제거
+clean = re.sub(r"<[^>]+>", "", clean)
+
+# 3. 줄 단위로 쪼개고 공백 제거 + 빈 줄 제거
+lines = [l.strip() for l in clean.splitlines() if l.strip()]
+# ['제목', '내용1', '내용2', '단락']
+```
+
+```
+각 단계 역할:
+  re.sub(<br>, \n)          → 줄바꿈 기준점 만들기
+  re.sub(<[^>]+>, "")        → 태그 전부 제거
+  splitlines()               → 줄 단위로 쪼개기
+  l.strip()                  → 각 줄 앞뒤 공백 제거
+  if l.strip()               → 빈 줄 제거 (strip 후 빈 문자열이면 False)
+```
+
+## keepends 옵션
+
+```python
+text = "line1\nline2\nline3"
+text.splitlines()           # ['line1', 'line2', 'line3']
+text.splitlines(keepends=True)  # ['line1\n', 'line2\n', 'line3']  ← 줄바꿈 유지
+```
+
+---
+
+---
+
+# ⑫ 문자열 반복 — * 연산자 ⭐️
 
 ```
 문자열 * n  = 문자열을 n번 반복
@@ -451,6 +519,8 @@ is_number("1,000")  # False  <- 쉼표 때문에
 
 ## 기본 사용
 
+python
+
 ```python
 "수박" * 3       # '수박수박수박'
 "ha" * 4        # 'hahahaha'
@@ -459,6 +529,8 @@ is_number("1,000")  # False  <- 쉼표 때문에
 ```
 
 ## 반복 + 슬라이싱 패턴 ⭐️
+
+python
 
 ```python
 # 길이 n 만큼 "수박수박..." 만들기
@@ -485,7 +557,9 @@ def water_melon(n):
   for 루프 + if 없이 한 줄로 해결
 ```
 
-## 다른 활용 패턴n
+## 다른 활용 패턴
+
+python
 
 ```python
 # 구분선 만들기

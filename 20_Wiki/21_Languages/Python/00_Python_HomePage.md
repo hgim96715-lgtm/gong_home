@@ -19,11 +19,11 @@ python3 --version
 
 ### 변수 & 자료형
 
-| 노트                         | 핵심 개념                                              |
-| -------------------------- | -------------------------------------------------- |
-| [[Python_Variables_Types]] | str / int / bool / float / type 변환 / f-string/repr |
-| [[Python_Type_Checking]]   | type / isinstance / 상속 고려 여부/repr/값의 진짜 모습         |
-| [[Python_Membership_In]]   | in / not in / == 완전일치                              |
+| 노트                         | 핵심 개념                                                             |
+| -------------------------- | ----------------------------------------------------------------- |
+| [[Python_Variables_Types]] | str / int / bool / float / type 변환 / f-string/repr                |
+| [[Python_Type_Checking]]   | type / isinstance / 상속 고려 여부 / typing 모듈 / List·Dict·Any·Optional |
+| [[Python_Membership_In]]   | in / not in / == 완전일치                                             |
 
 ### 문자열 처리
 
@@ -145,7 +145,7 @@ JSON 처리의 핵심
 ###  API 크롤링 
 
 > HTML을 파싱하는 대신, 사이트가 내부적으로 쓰는 API를 직접 호출하는 방식 
-> 인터파크 전시 프로젝트에서 Selenium 스크롤 15개 한계 → API 호출 500개+로 전환한 핵심 기법 관련 실습 → [[01_exhibition_crawling]]
+> 인터파크 전시 프로젝트에서 Selenium 스크롤 15개 한계 → API 호출 500개+로 전환한 핵심 기법 관련 실습 → [[01_docker_init.sql]]
 
 | 노트                              | 핵심 개념                                                          |
 | ------------------------------- | -------------------------------------------------------------- |
@@ -230,9 +230,9 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 파이썬이 데이터베이스 / 클라우드와 대화하기
 ```
 
-| 노트                          | 핵심 개념                                                                |
-| --------------------------- | -------------------------------------------------------------------- |
-| [[Python_Database_Connect]] | psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall |
+| 노트                          | 핵심 개념                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| [[Python_Database_Connect]] | psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall/psycopg2.extras |
 
 ---
 ---
