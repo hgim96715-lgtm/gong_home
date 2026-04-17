@@ -163,14 +163,14 @@ Docker 네트워크 트러블슈팅 / 서비스 포트 확인에 매일 사용
 리눅스 마스터 1급 시스템 프로그래밍 영역 20%
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_Boot_Process]]|BIOS / UEFI → GRUB → 커널 로딩 → init → systemd 전체 부팅 흐름|
-|[[Linux_Runlevel]]|Runlevel 0~6 개념 / systemd target / 기본 타겟 변경|
-|[[Linux_Kernel]]|커널 역할 / 모듈 구조 / lsmod / modprobe / insmod / 커널 컴파일|
-|[[Linux_LVM]]|물리볼륨 / 볼륨그룹 / 논리볼륨 개념 / pvcreate / vgcreate / lvcreate|
-|[[Linux_RAID]]|RAID 개념 / 0(스트라이핑) / 1(미러링) / 5 / 6 / mdadm|
-|[[Linux_Backup]]|백업 전략 / rsync / dump / restore / Amanda|
+| 노트                     | 핵심 개념                                                  |
+| ---------------------- | ------------------------------------------------------ |
+| [[Linux_Boot_Process]] | BIOS / UEFI → GRUB → 커널 로딩 → init → systemd 전체 부팅 흐름   |
+| [[Linux_Runlevel]]     | Runlevel 0~6 개념 / systemd target / 기본 타겟 변경            |
+| [[Linux_Kernel]]       | 커널 역할 / 모듈 구조 / lsmod / modprobe / insmod / 커널 컴파일     |
+| [[Linux_LVM]]          | 물리볼륨 / 볼륨그룹 / 논리볼륨 개념 / pvcreate / vgcreate / lvcreate |
+| [[Linux_RAID]]         | RAID 개념 / 0(스트라이핑) / 1(미러링) / 5 / 6 / mdadm            |
+| [[Linux_Backup]]       | 백업 전략 / rsync / dump / restore / Amanda                |
 
 ---
 
