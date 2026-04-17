@@ -221,6 +221,120 @@ math.sqrt(2)    # → 1.4142135623730951
 정수로 필요하면 int(math.sqrt(x)) 또는 x ** 0.5 사용
 ```
 
+## 완전 제곱수 판별 ⭐️
+
+```
+완전 제곱수 = 어떤 정수의 제곱인 수
+  1(1²), 4(2²), 9(3²), 16(4²), 25(5²) ...
+  제곱근이 정수로 딱 떨어지면 완전 제곱수
+```
+
+## 판별 방법 3가지
+
+```python
+import math
+
+i = 16
+
+# 방법 1 — math.sqrt % 1
+math.sqrt(i) % 1 == 0       # True  (4.0 % 1 == 0.0)
+
+# 방법 2 — i**0.5 소수점 비교
+int(i**0.5) == i**0.5       # True  (4 == 4.0)
+
+# 방법 3 — 제곱으로 역산
+int(i**0.5) ** 2 == i       # True  (4**2 == 16)
+```
+
+```
+i = 15 일 때 (완전 제곱수 아님):
+  math.sqrt(15) % 1         → 0.872... % 1 ≠ 0  → False
+  int(15**0.5) == 15**0.5   → 3 == 3.872...     → False
+  int(15**0.5) ** 2 == 15   → 3**2 = 9 ≠ 15    → False
+```
+
+## 실전 — 완전 제곱수면 빼고 아니면 더하기
+
+```python
+import math
+
+def solution(left, right):
+    answer = 0
+    for k in range(left, right + 1):
+        if math.sqrt(k) % 1 == 0:   # 완전 제곱수
+            answer -= k
+        else:
+            answer += k
+    return answer
+
+# 또는 i**0.5 버전
+def solution(left, right):
+    answer = 0
+    for i in range(left, right + 1):
+        if int(i**0.5) == i**0.5:   # 완전 제곱수
+            answer -= i
+        else:
+            answer += i
+    return answer
+```
+
+## 세 방법 비교
+
+|방법|코드|특징|
+|---|---|---|
+|`math.sqrt(i) % 1 == 0`|import 필요 / 읽기 좋음|가장 직관적|
+|`int(i**0.5) == i**0.5`|import 불필요|간결|
+|`int(i**0.5) ** 2 == i`|import 불필요|역산으로 검증 / 가장 안전|
+
+## 방법 3이 왜 가장 안전한가 ⭐️
+
+```
+부동소수점 오차 문제:
+  파이썬에서 큰 수의 제곱근을 float 로 계산하면
+  미세한 오차가 생길 수 있음
+
+  예시:
+  i = 999999999999
+  i**0.5           → 999999.9999995 (오차 발생)
+  int(i**0.5)      → 999999
+  int(i**0.5) == i**0.5  → False  ← 완전 제곱수가 아닌데 아닌 걸 잡음
+
+  방법 3 역산:
+  int(i**0.5) ** 2 == i
+  → 999999 ** 2 == 999999999999
+  → 999998000001 == 999999999999 → False  ← 정확하게 판별
+```
+
+```python
+# 방법 1 — math.sqrt % 1 (직관적)
+math.sqrt(i) % 1 == 0
+
+# 방법 2 — i**0.5 소수점 비교 (간결)
+int(i**0.5) == i**0.5
+
+# 방법 3 — 역산 (가장 안전) ⭐️
+int(i**0.5) ** 2 == i
+```
+
+## 실전 — 방법 3 버전
+
+```python
+def solution(left, right):
+    answer = 0
+    for i in range(left, right + 1):
+        if int(i**0.5) ** 2 == i:   # 완전 제곱수 (역산 / 가장 안전)
+            answer -= i
+        else:
+            answer += i
+    return answer
+```
+
+```
+코테 선택 기준:
+  빠르게 짜기   → int(i**0.5) == i**0.5  (방법 2)
+  안전하게 짜기 → int(i**0.5) ** 2 == i  (방법 3)
+  가독성 우선   → math.sqrt(i) % 1 == 0  (방법 1)
+```
 ---
 
 ---
