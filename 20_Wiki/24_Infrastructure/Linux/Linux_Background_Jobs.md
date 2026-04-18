@@ -10,7 +10,7 @@ tags:
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_Process]]"
-  - "[[Linux_Scheduling_Crontab]]"
+  - "[[Linux_Scheduling_Crontab_at]]"
 ---
 
 # Linux_Background_Jobs — 백그라운드 작업 제어

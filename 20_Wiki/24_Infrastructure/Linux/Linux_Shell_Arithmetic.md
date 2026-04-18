@@ -10,7 +10,7 @@ tags:
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_Shell_Script]]"
-  - "[[Linux_Scheduling_Crontab]]"
+  - "[[Linux_Scheduling_Crontab_at]]"
 ---
 # Linux_Shell_Arithmetic — 쉘 산술 연산
 
