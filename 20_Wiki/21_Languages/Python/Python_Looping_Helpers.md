@@ -159,6 +159,59 @@ def solution(n, control):
   sum + 제너레이터로 한 줄 처리
 ```
 
+## zip 중첩 — 행렬 연산 ⭐️
+
+```
+zip 을 이중으로 써서 행렬의 같은 위치 값 처리
+[[a,b],[c,d]] + [[e,f],[g,h]] → 같은 위치끼리 더하기
+```
+
+
+```python
+# 기본 풀이 — 이중 for 루프
+def solution(arr1, arr2):
+    answer = []
+    for i in range(len(arr1)):
+        row = []
+        for j in range(len(arr1[0])):
+            row.append(arr1[i][j] + arr2[i][j])
+        answer.append(row)
+    return answer
+
+# Pythonic 풀이 — zip 중첩 + 리스트 컴프리헨션 ⭐️
+def solution(arr1, arr2):
+    return [[c + d for c, d in zip(a, b)] for a, b in zip(arr1, arr2)]
+```
+
+```
+동작 원리:
+  zip(arr1, arr2)      → 같은 행끼리 묶음
+    [(행1A, 행1B), (행2A, 행2B), ...]
+
+  zip(a, b)            → 같은 열끼리 묶음 (행 안에서)
+    [(a[0], b[0]), (a[1], b[1]), ...]
+
+  c + d                → 같은 위치 값 더하기
+
+단계별로 보면:
+  A = [[1, 2], [3, 4]]
+  B = [[5, 6], [7, 8]]
+
+  zip(A, B) → ([1,2],[5,6]), ([3,4],[7,8])   ← 행 단위 묶음
+  zip(a, b) → (1,5), (2,6)                   ← 열 단위 묶음
+  c + d     → 6, 8                            ← 더하기
+  결과:  [[6, 8], [10, 12]]
+```
+
+```
+행렬 문제 패턴:
+  "같은 위치" 처리 → 인덱스 또는 zip
+  이중 반복문 → zip 중첩으로 압축 가능
+
+  기본 풀이: range(len) 이중 반복
+  Pythonic: zip 중첩 + 리스트 컴프리헨션
+```
+
 ---
 
 ---
