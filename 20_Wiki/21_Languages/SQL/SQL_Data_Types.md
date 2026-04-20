@@ -300,12 +300,12 @@ WHERE prices_raw @> '[{"name": "성인"}]';
 -- 성인 가격이 있는 전시만 조회
 ```
 
-|연산자|의미|반환 타입|
-|---|---|---|
-|`->`|키 / 인덱스로 요소 접근|JSONB|
-|`-->`|키 / 인덱스로 요소 접근 (텍스트 반환)|TEXT|
-|`@>`|왼쪽이 오른쪽을 포함하는가?|BOOLEAN|
-|`?`|해당 키가 존재하는가?|BOOLEAN|
+| 연산자   | 의미                      | 반환 타입   |
+| ----- | ----------------------- | ------- |
+| `->`  | 키 / 인덱스로 요소 접근          | JSONB   |
+| `-->` | 키 / 인덱스로 요소 접근 (텍스트 반환) | TEXT    |
+| `@>`  | 왼쪽이 오른쪽을 포함하는가?         | BOOLEAN |
+| `?`   | 해당 키가 존재하는가?            | BOOLEAN |
 
 ---
 
@@ -340,6 +340,148 @@ FROM raw_exhibitions,
 ```
 
 > `TEXT` 에 JSON 문자열로 저장하면 위 연산자와 `jsonb_array_elements` 를 쓸 수 없음 → 반드시 `JSONB` 타입으로 선언
+
+
+---
+
+## jsonb_array_elements() — 배열을 행으로 펼치기 ⭐️
+
+### 왜 필요한가
+
+```
+prices_raw = '[{"name":"성인","price":23000}, {"name":"청소년","price":18000}]'
+
+→ 이 배열 안의 각 원소를 행으로 꺼내야 집계(min/max/count)가 가능함
+→ 배열을 통째로 두면 내부 값으로 WHERE / GROUP BY 불가
+```
+
+### 기본 문법
+
+```sql
+FROM jsonb_array_elements(jsonb_컬럼) AS elem
+--                        ↑               ↑
+--               JSONB 배열 컬럼       행으로 나온 원소 이름 (별칭)
+```
+
+```sql
+-- prices_raw 배열을 행으로 펼치기
+SELECT elem
+FROM raw_exhibitions,
+     jsonb_array_elements(prices_raw) AS elem;
+
+-- 결과:
+-- {"name":"성인","price":23000,"type":"기본가","seat_grade":"입장권"}
+-- {"name":"청소년","price":18000,"type":"기본가","seat_grade":"입장권"}
+-- ↑ 배열 원소 하나씩 행이 됨
+```
+
+### 원소에서 값 꺼내기
+
+```sql
+SELECT
+    elem->>'name'              AS price_name,   -- TEXT
+    (elem->>'price')::INTEGER  AS price          -- TEXT → INTEGER 변환 필수
+FROM raw_exhibitions,
+     jsonb_array_elements(prices_raw) AS elem;
+
+-- "성인"    23000
+-- "청소년"  18000
+```
+
+```
+elem->>'key' 는 항상 TEXT 로 나옴
+숫자로 쓰려면 반드시 ::INTEGER / ::NUMERIC 변환 필요
+```
+
+### 집계 — 스칼라 서브쿼리 패턴 ⭐️
+
+```
+SELECT 절 안에 서브쿼리를 넣으면
+각 행(전시)마다 배열을 펼쳐서 집계한 값을 1개 컬럼으로 가져올 수 있음
+```
+
+```sql
+SELECT
+    exhibition_id,
+
+    -- 전체 최저가
+    (
+        SELECT min((elem->>'price')::INTEGER)
+        FROM jsonb_array_elements(prices_raw) AS elem
+        WHERE (elem->>'price')::INTEGER > 0
+    ) AS price_min,
+
+    -- 전체 최고가
+    (
+        SELECT max((elem->>'price')::INTEGER)
+        FROM jsonb_array_elements(prices_raw) AS elem
+        WHERE (elem->>'price')::INTEGER > 0
+    ) AS price_max,
+
+    -- 정상가(기본가) 기준 최저
+    (
+        SELECT min((elem->>'price')::INTEGER)
+        FROM jsonb_array_elements(prices_raw) AS elem
+        WHERE elem->>'type' = '기본가'
+          AND (elem->>'price')::INTEGER > 0
+    ) AS price_regular_min,
+
+    -- 가격 항목 수
+    (
+        SELECT count(*)
+        FROM jsonb_array_elements(prices_raw) AS elem
+        WHERE (elem->>'price')::INTEGER > 0
+    ) AS price_option_count
+
+FROM raw_exhibitions;
+```
+
+### LATERAL 패턴 — JOIN 방식
+
+```sql
+-- FROM 절에서 LATERAL 로 펼치면 한 번에 여러 컬럼 꺼낼 수 있음
+SELECT
+    e.exhibition_id,
+    elem->>'name'             AS price_name,
+    (elem->>'price')::INTEGER AS price,
+    elem->>'type'             AS price_type
+FROM raw_exhibitions e,
+     LATERAL jsonb_array_elements(e.prices_raw) AS elem
+WHERE (elem->>'price')::INTEGER > 0;
+
+-- 결과: 전시 1개당 가격 옵션 수만큼 행이 생김
+-- 26003180 | 얼리버드 티켓 | 15000 | 기본가할인
+-- 26002594 | 얼리버드 성인 | 13800 | 기본가할인
+-- 26002594 | 얼리버드 청소년 | 10800 | 기본가할인
+```
+
+```
+스칼라 서브쿼리 vs LATERAL:
+
+  스칼라 서브쿼리 (SELECT 절 안):
+    → 집계 결과 1개를 컬럼으로 붙임
+    → 전시 1행 → 최저가 1값
+
+  LATERAL (FROM 절):
+    → 배열을 행으로 완전히 펼침
+    → 전시 1행 → 가격 옵션 N행
+    → raw_exhibition_prices 같은 정규화 테이블 만들 때 사용
+```
+
+### 전체 흐름 요약
+
+```
+prices_raw (JSONB 배열 1컬럼)
+        │
+        ▼ jsonb_array_elements()
+elem 행 여러 개 (원소 하나씩)
+        │
+        ▼ ->>'key' + ::INTEGER
+숫자 / 문자로 꺼내기
+        │
+        ▼ min() / max() / count() / WHERE 조건
+집계 또는 필터링
+``` 
 
 ---
 
