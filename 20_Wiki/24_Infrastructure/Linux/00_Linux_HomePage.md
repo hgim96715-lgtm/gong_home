@@ -147,7 +147,7 @@ Docker 네트워크 트러블슈팅 / 서비스 포트 확인에 매일 사용
 | 노트                        | 핵심 개념                                               |
 | ------------------------- | --------------------------------------------------- |
 | [[Linux_Package_APT]]     | 패키지 관리자 개념 / apt / apt-get / dpkg / 저장소(repository) |
-| [[Linux_Package_RPM_DNF]] | rpm 구조 / yum / dnf / rpm 명령어 / spec 파일              |
+| [[Linux_Package_RPM_YUM_DNF]] | rpm 구조 / yum / dnf / rpm 명령어 / spec 파일              |
 | [[Linux_Compile_Install]] | 소스 컴파일 / ./configure / make / make install / 의존성    |
 | [[Linux_Python_Env]]      | pip / venv / pyenv / requirements.txt               |
 

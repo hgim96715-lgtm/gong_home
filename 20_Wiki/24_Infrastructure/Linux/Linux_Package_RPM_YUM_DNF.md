@@ -338,7 +338,7 @@ dnf  → RHEL 8+ / Fedora / Rocky Linux (최신)
      → yum 명령어도 dnf 로 alias 되어 있어 대부분 호환
 ```
 
-## 기본 명령어
+## 기본 설치/제거
 
 ```bash
 # 패키지 설치
@@ -347,10 +347,6 @@ sudo dnf install -y 패키지명    # -y 로 확인 없이 자동 설치
 
 # 패키지 제거
 sudo dnf remove 패키지명
-
-# 패키지 업데이트
-sudo dnf update 패키지명
-sudo dnf update                 # 전체 업데이트
 
 # 패키지 검색
 dnf search 키워드
@@ -361,21 +357,105 @@ dnf info 패키지명
 # 설치된 패키지 목록
 dnf list installed
 dnf list installed | grep python
+```
 
-# 저장소 목록
-dnf repolist
+## yum 조회 명령어 ⭐️
+
+```bash
+# 패키지 설치 여부 + 버전 확인
+sudo yum list bash
+# bash.x86_64   5.1.8-6.el9   @anaconda
+#                              ↑ @ 붙으면 이미 설치됨
+
+# 의존성 목록 확인
+sudo yum deplist bash
+# package: bash-5.1.8
+#   dependency: glibc >= 2.15
+#     provider: glibc-2.34
+```
+
+```
+@ 기호 의미:
+  @anaconda   → 초기 OS 설치 시 설치됨
+  @System     → 시스템에 이미 설치됨
+  @ 없음      → 저장소에 있지만 미설치
+
+yum deplist vs rpm -qR:
+  rpm -qR    → 설치된 패키지 의존성 (오프라인 가능)
+  yum deplist → 저장소 기준 의존성 (설치 전에도 확인 가능)
+```
+
+## yum 저장소 탐색
+
+```bash
+# 활성화된 저장소 목록
+sudo yum repolist
+# repo id          repo name
+# baseos          CentOS Stream 9 - BaseOS
+# appstream       CentOS Stream 9 - AppStream
+
+# 저장소에 있지만 미설치된 패키지 목록
+sudo yum list available
+
+# 와일드카드로 검색 (따옴표 필수)
+sudo yum list available 'kernel*'
+```
+
+```
+따옴표가 왜 필요한가:
+  kernel*  → 쉘이 먼저 해석 → 현재 디렉토리에서 kernel 로 시작하는 파일 찾음
+  'kernel*' → yum 에게 그대로 전달 → 패키지 이름으로 검색 ✅
+```
+
+## yum 업데이트 ⭐️
+
+```bash
+# 업데이트 가능한 패키지 확인 (실제 설치 안 함 — 안전)
+sudo yum check-update
+# curl.x86_64   7.76.1-29.el9   baseos
+
+# 특정 패키지만 업데이트
+sudo yum update curl
+
+# 전체 시스템 업데이트
+sudo yum update
+```
+
+```
+check-update 가 왜 중요한가:
+  운영 서버에서 무작정 update → 호환성 문제 발생 가능
+  먼저 check-update 로 뭐가 바뀌는지 확인
+  → 안전한 패키지만 선별해서 업데이트
+
+전체 yum update 주의:
+  운영 서버 → 반드시 스냅샷/백업 후 진행
+  개발/스테이징 서버에서 먼저 테스트
+```
+
+## yum downgrade — 구버전으로 되돌리기
+
+```bash
+# 구버전으로 강제 다운그레이드
+sudo yum downgrade -y curl
+
+# 특정 버전으로 지정
+sudo yum downgrade curl-7.76.1
 ```
 
 ## dnf vs apt 비교
 
-|기능|dnf (Red Hat 계열)|apt (Debian 계열)|
+|기능|dnf/yum (Red Hat 계열)|apt (Debian 계열)|
 |---|---|---|
 |설치|`dnf install`|`apt install`|
 |제거|`dnf remove`|`apt remove`|
+|업데이트 확인|`yum check-update`|`apt list --upgradable`|
 |업데이트|`dnf update`|`apt update && apt upgrade`|
 |검색|`dnf search`|`apt search`|
-|목록|`dnf list installed`|`dpkg -l`|
+|목록|`yum list installed`|`dpkg -l`|
+|의존성 확인|`yum deplist`|`apt-cache depends`|
+|저장소 목록|`yum repolist`|`apt-cache policy`|
 |저장소 갱신|자동|`apt update` 별도 필요|
+|다운그레이드|`yum downgrade`|`apt install 패키지=버전`|
 
 ---
 
