@@ -13,6 +13,8 @@ related:
   - "[[Linux_Archive]]"
 ---
 
+
+---
 # Linux_Compile_Install — 소스 코드 컴파일 설치
 
 ## 한 줄 요약
@@ -66,14 +68,16 @@ related:
 # ② 전체 흐름 ⭐️
 
 ```
-1. 소스 다운로드       wget / curl / git clone
-2. 압축 해제          tar -zxvf
-3. 소스 디렉토리 진입  cd 소스폴더
-4. 환경 확인          ./configure
-5. 컴파일             make
-6. 설치              sudo make install
-7. 확인              which 프로그램명
-8. (필요 시) 제거     sudo make uninstall
+1. 소스 다운로드        wget / curl / git clone
+2. 압축 해제           tar -zxvf
+3. 소스 디렉토리 진입   cd 소스폴더
+4. 환경 확인           ./configure
+5. 컴파일              make
+6. 설치               sudo make install
+7. 라이브러리 캐시 갱신  sudo ldconfig      ← 소스 설치 후 필수!
+8. 의존성 확인          ldd 실행파일
+9. 확인               which 프로그램명
+10. (필요 시) 제거      sudo make uninstall
 ```
 
 ---
@@ -358,7 +362,131 @@ sudo rpm -e 패키지명
 
 ---
 
-# ⑨ 전체 실전 예시
+# ⑨ 공유 라이브러리 — ldd / ldconfig ⭐️
+
+## 공유 라이브러리란
+
+```
+라이브러리 = 여러 프로그램이 공통으로 쓰는 코드 모음
+  정적 라이브러리 (.a)   → 실행파일 안에 포함 (크지만 독립적)
+  공유 라이브러리 (.so)  → 실행 시점에 외부에서 불러옴 (작지만 의존)
+
+.so 파일 = Shared Object
+  /usr/lib / /usr/local/lib 에 보관
+  여러 프로그램이 같은 .so 를 공유
+```
+
+## ldd — 실행파일 의존 라이브러리 확인 ⭐️
+
+```bash
+# 실행파일이 필요로 하는 .so 파일 목록
+ldd /bin/ping
+# linux-vdso.so.1 => (0x...)
+# libcap.so.2 => /lib/x86_64-linux-gnu/libcap.so.2
+# libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6
+# ld-linux-x86-64.so.2 => /lib64/ld-linux-x86-64.so.2
+
+ldd /usr/local/bin/pure-ftpd   # 소스 컴파일 설치 후 확인
+```
+
+```
+=> 기호 의미:
+  libcap.so.2 => /lib/x86_64-linux-gnu/libcap.so.2
+  ↑ 필요한 라이브러리   ↑ 실제 파일 위치
+
+  not found 가 뜨면 → 해당 라이브러리 설치 필요
+
+주요 라이브러리:
+  libc.so.6           = C 표준 라이브러리 (기본 OS 기능)
+  linux-vdso.so.1     = 커널이 메모리에 올리는 가상 라이브러리
+  ld-linux-x86-64.so.2 = 동적 링커 (다른 .so 를 로드하는 역할)
+```
+
+```bash
+# 에러 트러블슈팅: cannot open shared object file
+ldd ./myprogram
+# libmylib.so.1 => not found   ← 이게 문제!
+
+# 해결: 라이브러리 설치 후 ldconfig
+sudo apt install 라이브러리패키지
+sudo ldconfig
+```
+
+## find — 라이브러리 파일 위치 찾기
+
+```bash
+# /usr 하위에서 찾기
+sudo find /usr -name libc.so.6
+# /usr/lib/x86_64-linux-gnu/libc.so.6
+
+# 전체 파일시스템에서 찾기
+sudo find / -name libc.so.6
+
+# 커스텀 경로에 설치된 경우
+sudo find / -name "libmylib.so*"
+```
+
+```
+언제 씀:
+  비표준 경로(/opt 등)에 설치된 라이브러리 위치 파악
+  ldd 에서 not found 나왔을 때 실제 파일이 있는지 확인
+  find 로 나오는데 ldd 에서 못 찾으면 → ldconfig 캐시 갱신 필요
+```
+
+## ldconfig — 라이브러리 캐시 관리 ⭐️
+
+```
+리눅스가 .so 파일을 찾는 방법:
+  매번 디스크 전체를 find 로 찾으면 너무 느림
+  → /etc/ld.so.cache 에 미리 색인 저장
+  → 프로그램 실행 시 캐시 참조 → 빠르게 찾음
+
+소스 컴파일 설치 후 반드시 ldconfig:
+  make install → /usr/local/lib 에 .so 복사
+  하지만 캐시(/etc/ld.so.cache) 에는 아직 없음
+  → sudo ldconfig 로 캐시 갱신 → 인식됨
+```
+
+```bash
+# 캐시 갱신 (소스 설치 후 반드시 실행)
+sudo ldconfig
+
+# 상세 출력 (어떤 디렉토리 스캔하는지)
+sudo ldconfig -v
+sudo ldconfig -v | grep mylib  # 특정 라이브러리 확인
+
+# 현재 캐시에 등록된 라이브러리 목록
+ldconfig -p
+ldconfig -p | grep libc       # 특정 라이브러리 검색
+```
+
+```
+ldconfig -p vs find 차이:
+  find      = 디스크 실제 파일 검색 (느림 / 정확)
+  ldconfig -p = 캐시 목록 조회 (빠름 / 캐시 갱신 필요)
+
+  파일은 있는데(find 로 나옴) 프로그램이 못 찾음
+  → ldconfig -p 로 캐시 확인
+  → 캐시에 없으면 sudo ldconfig 로 갱신
+```
+
+## 비표준 경로 라이브러리 등록
+
+```bash
+# 방법 1: /etc/ld.so.conf.d/ 에 경로 추가
+echo "/opt/myapp/lib" | sudo tee /etc/ld.so.conf.d/myapp.conf
+sudo ldconfig   # 캐시 갱신
+
+# 방법 2: LD_LIBRARY_PATH 환경변수 (임시)
+export LD_LIBRARY_PATH=/opt/myapp/lib:$LD_LIBRARY_PATH
+# ~/.bashrc 에 추가하면 영구 적용
+```
+
+---
+
+---
+
+# ⑩ 전체 실전 예시
 
 ```bash
 # pure-ftpd 1.0.53 소스 컴파일 설치
@@ -377,7 +505,13 @@ make -j$(nproc)
 # 4. 설치
 sudo make install
 
-# 5. 확인
+# 5. 라이브러리 캐시 갱신 (소스 설치 후 필수)
+sudo ldconfig
+
+# 6. 의존 라이브러리 확인
+ldd /usr/local/bin/pure-ftpd
+
+# 7. 확인
 which pure-ftpd
 pure-ftpd --version
 
@@ -393,12 +527,12 @@ rm -r pure-ftpd-1.0.53
 
 # 자주 하는 실수
 
-|실수|원인|해결|
-|---|---|---|
-|`./configure` 에러|필요 라이브러리 없음|에러 메시지 확인 → apt/yum 으로 설치|
-|`./` 없이 `configure` 실행|PATH 에 없음|반드시 `./configure`|
-|`make install` 에 sudo 없음|시스템 폴더 쓰기 권한 없음|`sudo make install`|
-|설치 후 소스 폴더 삭제|용량 확보|`make uninstall` 전까지 보존|
-|`make uninstall` 안 됨|소스 폴더 없음|`--prefix` 로 설치 → `rm -rf` 로 제거|
-|컴파일 느림|단일 코어|`make -j$(nproc)` 병렬 빌드|
-|`configure: error: gcc not found`|빌드 도구 없음|`sudo apt install build-essential`|
+| 실수                                | 원인              | 해결                                 |
+| --------------------------------- | --------------- | ---------------------------------- |
+| `./configure` 에러                  | 필요 라이브러리 없음     | 에러 메시지 확인 → apt/yum 으로 설치          |
+| `./` 없이 `configure` 실행            | PATH 에 없음       | 반드시 `./configure`                  |
+| `make install` 에 sudo 없음          | 시스템 폴더 쓰기 권한 없음 | `sudo make install`                |
+| 설치 후 소스 폴더 삭제                     | 용량 확보           | `make uninstall` 전까지 보존            |
+| `make uninstall` 안 됨              | 소스 폴더 없음        | `--prefix` 로 설치 → `rm -rf` 로 제거    |
+| 컴파일 느림                            | 단일 코어           | `make -j$(nproc)` 병렬 빌드            |
+| `configure: error: gcc not found` | 빌드 도구 없음        | `sudo apt install build-essential` |
