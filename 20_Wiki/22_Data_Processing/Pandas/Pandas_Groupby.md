@@ -12,73 +12,123 @@ related:
   - "[[Pandas_Selection]]"
   - "[[00_Pandas_HomePage]]"
   - "[[Pandas_Apply_Map]]"
+  - "[[Pandas_Pivot]]"
+  - "[[Pandas_Inspection]]"
 ---
-## 개념 한 줄 요약
+# Pandas_Groupby
 
-**"데이터를 같은 종류끼리 '묶고(Group)', 계산 결과를 '새로운 이름(Named Agg)'으로 만들어내는 판다스의 가장 강력한 기능"**
-
----
-## 동작 원리 (Split-Apply-Combine)
-
-`groupby`는 내부적으로 3단계 과정을 거쳐 데이터를 요리합니다.
-
-1. **Split (나누기):** `category` 같은 기준 열(Key)을 잡고 데이터를 조각조각 나눕니다.
-2. **Apply (적용하기):** 각 조각마다 함수(`sum`, `count`, `mean`)를 적용해 계산합니다.
-3. **Combine (합치기):** 계산된 결과들을 다시 하나의 표(DataFrame)로 합칩니다.
+> **"데이터를 같은 종류끼리 묶고(Group), 계산 결과를 새로운 이름으로 만들어내는 판다스의 가장 강력한 기능"**
 
 ---
-## 핵심 문법: `agg` (이름 짓기와 계산을 동시에!) 
 
-가장 최신의, 그리고 가장 추천하는 **표준 문법**입니다.
-**"어떤 컬럼을, 어떻게 계산해서, 무슨 이름으로 저장할지"** 한 눈에 보입니다.
+## 동작 원리 (Split → Apply → Combine)
 
-### 문법 공식 (Syntax)
+`groupby`는 내부적으로 3단계로 동작해요.
 
-```python
- df.groupby('묶을_기준_컬럼').agg(
-     새로운_컬럼_이름=('계산할_대상_컬럼', '사용할_함수')
- )
+```
+① Split   : 기준 컬럼(Key)으로 데이터를 조각조각 나눔
+② Apply   : 각 조각마다 함수(sum, count, mean) 적용
+③ Combine : 결과들을 다시 하나의 DataFrame으로 합침
 ```
 
-### 실전 코드 (대시보드 예제)
+---
+
+## 핵심 문법: `agg` (Named Aggregation)
+
+가장 최신의, 가장 추천하는 표준 문법이에요. "어떤 컬럼을, 어떻게 계산해서, 무슨 이름으로 저장할지" 한눈에 보여요.
+
+### 문법 공식
 
 ```python
-# 1. 'category' 별로 묶어서
+df.groupby('묶을_기준_컬럼').agg(
+    새로운_컬럼_이름=('계산할_대상_컬럼', '사용할_함수')
+)
+```
+
+### 실전 코드
+
+```python
 grouped_df = df.groupby('category').agg(
-    
-    # "order_id를 세어서(count) -> '주문건수'라고 부르자"
-    주문건수=('order_id', 'count'),
-    
-    # "total_amount를 합쳐서(sum) -> '총매출액'이라고 부르자"
+
+    # "order_id를 세어서(count) → '주문건수'라고 부르자"
+    주문건수=('order_id',     'count'),
+
+    # "total_amount를 합쳐서(sum) → '총매출액'이라고 부르자"
     총매출액=('total_amount', 'sum'),
-    
-    # "price를 평균내서(mean) -> '평균단가'라고 부르자"
-    평균단가=('price', 'mean')
+
+    # "price를 평균내서(mean) → '평균단가'라고 부르자"
+    평균단가=('price',        'mean')
 )
 
-# 결과 확인
 print(grouped_df)
 ```
 
-- **장점:** 계산이 끝난 뒤에 `rename`을 또 할 필요가 없어 코드가 훨씬 간결해집니다.
+> 장점: 계산 후 `rename`을 따로 할 필요 없어서 코드가 훨씬 간결해요.
 
 ---
-## 마무리: `reset_index()`는 필수!
 
-`groupby`를 하고 나면, 우리가 묶었던 기준(`category`)이 **행 번호(Index)** 로 숨어버립니다. 
-차트를 그리거나 표로 보여주려면 다시 **일반 컬럼**으로 꺼내줘야 합니다.
+## 마무리: `reset_index()` 필수!
+
+`groupby` 후 기준 컬럼이 **인덱스로 숨어버려요.** 차트나 표로 쓰려면 다시 꺼내줘야 해요.
 
 ```python
-# 인덱스로 들어간 'category'를 다시 밖으로 끄집어냄
+# 인덱스로 숨어버린 'category'를 다시 일반 컬럼으로
 final_df = grouped_df.reset_index()
 
-# 이제 Streamlit에 바로 넣을 수 있는 완벽한 표가 됩니다!
-st.dataframe(final_df)
+# 이제 Streamlit에 바로 넣을 수 있음
+# st.dataframe(final_df)
 ```
 
 ---
-## 실전 팁 (Tip)
 
-- **함수 이름은 문자열로:** `'sum'`, `'mean'`, `'max'`, `'min'`, `'count'` 등은 따옴표로 감싸서 넣으세요.
-- **여러 컬럼으로 묶기:** `groupby(['category', 'date'])` 처럼 리스트로 넣으면, **"카테고리별 + 날짜별"** 통계를 한 번에 낼 수 있습니다.
-- **사용자 정의 함수:** 만약 내가 만든 함수(`my_func`)를 쓴다면 따옴표 없이 그냥 넣으세요. `agg(내점수=('score', my_func))`
+## 자주 쓰는 집계 함수
+
+|함수|의미|예시|
+|---|---|---|
+|`'count'`|개수 세기 (NaN 제외)|주문 건수|
+|`'sum'`|합계|총 매출|
+|`'mean'`|평균|평균 단가|
+|`'max'`|최댓값|최고 점수|
+|`'min'`|최솟값|최저가|
+|`'std'`|표준편차|변동성|
+|`'nunique'`|고유값 개수|방문한 사용자 수|
+
+---
+
+## 실전 팁
+
+```python
+# ① 함수 이름은 문자열로 (따옴표 필수)
+agg(건수=('id', 'count'))   # ✅
+agg(건수=('id', count))     # ❌ 에러
+
+# ② 여러 컬럼으로 묶기
+df.groupby(['category', 'date']).agg(...)
+# "카테고리별 + 날짜별" 통계를 한번에
+
+# ③ 사용자 정의 함수 (따옴표 없이)
+def my_func(x):
+    return x.max() - x.min()
+
+df.groupby('category').agg(범위=('price', my_func))
+
+# ④ count() 단독 사용 (세분류별 개수 확인)
+df.groupby("세분류코드명")["컬럼명"].count()
+```
+
+---
+
+## transform vs agg 차이
+
+```python
+# agg: 그룹별 1개 값으로 압축 (행 수 줄어듦)
+df.groupby('category')['price'].agg('mean')
+# category A → 100
+# category B → 200
+
+# transform: 원본과 같은 행 수 유지 (각 행에 그룹 통계 붙이기)
+df['category_mean'] = df.groupby('category')['price'].transform('mean')
+# 각 행에 자기 그룹의 평균이 붙음
+```
+
+---

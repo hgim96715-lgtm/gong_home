@@ -7,7 +7,7 @@ tags:
   - Numpy
 related:
   - "[[00_Numpy_HomePage]]"
-  - "[[Numpy_배열_생성_메서드]]"
+  - "[[Numpy_Array_creation]]"
   - "[[Python_Lists_Tuples]]"
 ---
 # 배열 인덱싱과 슬라이싱 (Indexing & Slicing)

@@ -11,8 +11,8 @@ tags:
   - Numpy
 related:
   - "[[00_Numpy_HomePage]]"
-  - "[[NumPy_개념과_ndarray_이해하기]]"
-  - "[[Numpy_배열_인덱싱과_슬라이싱]]"
+  - "[[Numpy_Indexing_slicing]]"
+  - "[[Numpy_Array_Basics]]"
 ---
 ## 한줄 요약 
 

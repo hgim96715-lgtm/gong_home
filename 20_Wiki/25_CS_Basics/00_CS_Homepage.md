@@ -1,12 +1,7 @@
 
-
-```
-목표: 코드가 돌아가는 원리를 이해하고
-     데이터 엔지니어로서 필요한 CS 개념을 탄탄하게
-```
+> 배워 나가야하는 CS 지식
 
 ---
-
 ---
 
 ## 1. 운영체제 & 시스템 (OS & System)
@@ -57,11 +52,11 @@ Kafka / Spark / Docker 이해의 기초
 API 연동 / 포트 / 프로토콜 이해
 ```
 
-| 노트                      | 핵심 개념                                                   |
-| ----------------------- | ------------------------------------------------------- |
-| [[CS_HTTP_Basics]]      | Request / Response / Header / Body / Status Code / 무상태성 |
-| [[CS_REST_API_Methods]] | GET / POST / PUT / DELETE / PATCH / 멱등성/endpoint        |
-| [[CS_TCP_IP]]           | TCP / UDP / 3-Way Handshake / 패킷 / 포트/소켓                |
+|노트|핵심 개념|
+|---|---|
+|[[CS_HTTP_Basics]]|Request / Response / Header / Body / Status Code / 무상태성|
+|[[CS_REST_API_Methods]]|GET / POST / PUT / DELETE / PATCH / 멱등성 / endpoint|
+|[[CS_TCP_IP]]|TCP / UDP / 3-Way Handshake / 패킷 / 포트 / 소켓|
 
 ---
 
@@ -121,19 +116,35 @@ SQL 문법을 넘어선 데이터 관리 이론
 
 ---
 
-## 7. 핵심 엔지니어링 원칙
+## 7. 수학 & 선형대수 기초
+
+```
+sklearn / numpy / spark MLlib 이해의 핵심 전제지식
+TF-IDF, cosine_similarity 가 왜 그렇게 동작하는지 이해하기
+```
+
+|노트|핵심 개념|
+|---|---|
+|[[CS_Vector_Matrix]]|벡터란 / 행렬이란 / 방향과 크기 / 1차원 vs 2차원 / TF-IDF 행렬 구조 / matrix[0] vs matrix[0:1]|
+|[[Numpy_Sparse_Matrix]]|희소 행렬 / (행, 열) 좌표 저장 / CSR 형식 / stored elements 읽기 / .toarray()|
+
+> 실전 적용 → [[Sklearn_TF_IDF]], [[Sklearn_Cosine_Similarity]]
+
+---
+
+---
+
+## 8. 핵심 엔지니어링 원칙
 
 ```
 개발자가 갖춰야 할 사고방식
 설계 결정의 기준이 되는 원칙들
 ```
 
-| 노트                  | 핵심 개념                                               |
-| ------------------- | --------------------------------------------------- |
-| [[Idempotent(멱등성)]] | 100번 실행해도 결과는 같아야 한다 / PUT vs POST / 데이터 엔지니어링 제1원칙 |
-| [[Trade_off]]       | 속도 vs 안정성 / 비용 vs 성능 / 공짜 점심은 없다                    |
-| [[Abstraction]]     | 복잡한 건 숨기고 단순하게 / 함수 / 클래스 / API / 캡슐화               |
-
----
+|노트|핵심 개념|
+|---|---|
+|[[Idempotent(멱등성)]]|100번 실행해도 결과는 같아야 한다 / PUT vs POST / 데이터 엔지니어링 제1원칙|
+|[[Trade_off]]|속도 vs 안정성 / 비용 vs 성능 / 공짜 점심은 없다|
+|[[Abstraction]]|복잡한 건 숨기고 단순하게 / 함수 / 클래스 / API / 캡슐화|
 
 ---
