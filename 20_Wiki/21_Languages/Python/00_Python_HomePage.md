@@ -215,11 +215,12 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 가짜 데이터를 만들어서 파이프라인 테스트하기
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Library_Faker]]|Faker / name / address / ip / locale|
-|[[Python_Mock_Data_Generator]]|Generator / yield / 배치 생성 패턴|
-|[[Python_UUID]]|uuid4 / 분산 환경 PK / 충돌 없는 식별자|
+| 노트                                 | 핵심 개념                                                     |
+| ---------------------------------- | --------------------------------------------------------- |
+| [[Python_Library_Faker]]           | Faker / name / address / ip / locale                      |
+| [[Python_Mock_Data_Generator]]     | Generator / yield / 배치 생성 패턴                              |
+| [[Python_UUID]]                    | uuid4 / 분산 환경 PK / 충돌 없는 식별자                              |
+| [[Python_Library_Deep_Translator]] | GoogleTranslator / source·target / 긴 텍스트 분할 번역 / 5000자 제한 |
 
 ---
 ---

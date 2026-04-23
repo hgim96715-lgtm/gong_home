@@ -34,11 +34,11 @@ related:
 
 > **"데이터를 순서대로 담는 기차 같은 자료구조."**
 
-| 구분     | List `[]`           | Tuple `()`          |
-| ------ | ------------------- | ------------------- |
-| **비유** | 화물 기차 (짐을 뺐다 꼈다 가능) | 밀봉된 기차 (출발하면 수정 불가) |
-| **특징** | Mutable (수정 가능)     | Immutable (수정 불가)   |
-| **용도** | 데이터 수집, 가공, 변환      | 설정값, 좌표, 함수 리턴값     |
+|구분|List `[]`|Tuple `()`|
+|---|---|---|
+|**비유**|화물 기차 (짐을 뺐다 꼈다 가능)|밀봉된 기차 (출발하면 수정 불가)|
+|**특징**|Mutable (수정 가능)|Immutable (수정 불가)|
+|**용도**|데이터 수집, 가공, 변환|설정값, 좌표, 함수 리턴값|
 
 ---
 
@@ -101,7 +101,7 @@ print(c)  # [1, 2, 3, 4] <- 새 리스트
 ```
 
 |방식|위치|동작|원본 변경|반환값|
-|---|---|---|---|---|
+|---|---|---|:-:|---|
 |`append(x)`|맨 뒤|x 를 통째로 추가|O|None|
 |`insert(i, x)`|i 번 자리|x 를 i 위치에 삽입|O|None|
 |`extend(b)`|맨 뒤|b 의 알맹이만 풀어서|O|None|
@@ -113,12 +113,12 @@ print(c)  # [1, 2, 3, 4] <- 새 리스트
 
 ---
 
-# ③ 삭제 — pop / del / remove / [:-n]
+# ③ 삭제 / 꺼내기 — pop / del / remove / clear / [:-n]
 
-| 구분      | `pop()` | `pop(0)` | `del`  | `remove()` | `clear()` | `[:-n]`   |
-| ------- | ------- | -------- | ------ | ---------- | --------- | --------- |
-| **기능**  | 맨 뒤 꺼내기 | 맨 앞 꺼내기  | 위치로 삭제 | 값으로 삭제     | 전체 비우기    | 뒤에서 n개 제거 |
-| **반환값** | 꺼낸 값    | 꺼낸 값     | 없음     | 없음         | 없음        | 새 리스트     |
+|구분|`pop()`|`pop(0)`|`del`|`remove()`|`clear()`|`[:-n]`|
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+|**기능**|맨 뒤 꺼내기|맨 앞 꺼내기|위치로 삭제|값으로 삭제|전체 비우기|뒤에서 n개 제거|
+|**반환값**|꺼낸 값|꺼낸 값|없음|없음|없음|새 리스트|
 
 ```python
 data = ["A", "B", "C", "D"]
@@ -171,7 +171,7 @@ print(answer)  # [1, 2, 3]
 
 ## pop 패턴 정리
 
-```text
+```
 data.pop()   <- 맨 뒤 꺼내기 = Stack (후입선출 LIFO)
 data.pop(0)  <- 맨 앞 꺼내기 = Queue (선입선출 FIFO)
 data.pop(i)  <- i 번째 꺼내기
@@ -195,18 +195,17 @@ votes.count("Apple")   # 3
 votes.count("Orange")  # 0  <- 없어도 에러 없이 0 반환
 ```
 
-> 단순히 "있냐 없냐" 확인은 `in` 연산자가 더 빠름.
->  `count` 는 끝까지 전부 훑기 때문.
+> 단순히 "있냐 없냐" 확인은 `in` 연산자가 더 빠름. `count` 는 끝까지 전부 훑기 때문.
 
 ```python
 "Apple" in votes   # True  <- 있냐 없냐만 볼 땐 이게 빠름
 ```
 
 ---
+
 ## isinstance — 타입 확인 ⭐️
 
->`type(x) == list` 보다 `isinstance(x, list)` 를 쓰는 것이 권장된다. 
->상속 관계까지 고려하기 때문.
+> `type(x) == list` 보다 `isinstance(x, list)` 를 쓰는 것이 권장된다. 상속 관계까지 고려하기 때문.
 
 ```python
 isinstance(대상, 타입)   # True / False 반환
@@ -222,9 +221,9 @@ isinstance(42, (int, float))   # True  <- int 또는 float 이면 True
 isinstance("hi", (int, float)) # False
 ```
 
-### 실전 패턴 — API 응답이 딕셔너리일 때 리스트로 통일
+## 실전 패턴 — API 응답이 딕셔너리일 때 리스트로 통일 ⭐️
 
-```text
+```
 공공데이터 API 의 함정:
 결과가 1개일 때    -> item 을 딕셔너리 하나로 반환  {"trn_no": "KTX001"}
 결과가 여러 개일 때 -> item 을 리스트로 반환        [{"trn_no": "KTX001"}, ...]
@@ -245,10 +244,9 @@ for train in items:
     print(train["trn_no"])  # 항상 리스트로 다룰 수 있음
 ```
 
->딕셔너리 .get() 체이닝 패턴은 [[Python_Dictionaries#.get() 체이닝 — 중첩 딕셔너리 안전하게 파고들기 ⭐️|get 과 get 체이닝]] 참고
----
+> 딕셔너리 .get() 체이닝 패턴은 [[Python_Dictionaries]] 참고
 
-## index — 위치 찾기 (자주 까먹는 것) ⭐️
+---
 
 ```python
 data = ["A", "B", "C", "A"]
@@ -301,9 +299,7 @@ scores 의 30 -> sorted_scores.index(30) = 1 -> 1+1 = 2등
 
 > sorted() 자세한 옵션은 [[Python_Sorting_Logic]] 참고
 
-> 동점자 주의: 같은 값이 여러 개면 `index()` 는 가장 앞 위치만 반환. 동점자를 같은 순위로 처리할 때는 이 패턴으로 충분.
->  동점자를 각각 다른 순위로 처리해야 하면 `enumerate` 패턴 사용.
->  딕셔너리도 가능 [[Python_Dictionaries#⑨ 실전 패턴 — 등수 계산]] 참고 
+> 동점자 주의: 같은 값이 여러 개면 `index()` 는 가장 앞 위치만 반환. 동점자를 같은 순위로 처리할 때는 이 패턴으로 충분. 동점자를 각각 다른 순위로 처리해야 하면 `enumerate` 패턴 사용.
 
 ### 뒤에서부터 찾기
 
@@ -355,8 +351,12 @@ print(new_nums)  # [1, 2, 3]
 ---
 
 ---
+
 # ⑤-2 뒤집기 — reversed / [:​:-1] / .reverse()
 
+```
+뒤집는 방법 3가지 — 상황마다 다름
+```
 
 ```python
 data = [1, 2, 3, 4, 5]
@@ -380,7 +380,6 @@ mix = data.reverse()    # mix = None ← 실수 주의
 |`[::-1]`|❌|새 리스트/문자열|✅|
 |`reversed()`|❌|이터레이터|✅ (단, list/str 변환 필요)|
 |`.reverse()`|✅|None|❌|
-
 
 ```python
 # 문자열 뒤집기
@@ -433,7 +432,8 @@ for x in reversed(data):
   각 자리 숫자로 변환 필요     → list(map(int, reversed(str(n))))
 ```
 
-----
+---
+
 ---
 
 # ⑥ 슬라이싱 — [시작:끝:간격]
@@ -482,10 +482,9 @@ def solution(my_string, s, e):
 # 앞부분 그대로 + 구간만 뒤집기 + 뒷부분 그대로
 ```
 
+##  [시작:​:간격] — n번째마다 건너뛰기
 
-## `[시작:​:간격]` — n번째마다 건너뛰기
-
-```text
+```
 [start:end:step] 에서 end 를 생략하면 끝까지라는 뜻
 [start::step]  →  start 인덱스부터 끝까지, step 간격으로
 
@@ -516,6 +515,14 @@ result = arr[code-1::code]   # 리스트 반환
 result = cipher[code-1::code]   # 문자열 반환 (더 간결)
 ```
 
+```
+cipher[code-1::code] 분해:
+  code-1  → 시작 인덱스 (3번째 = index 3)
+  (비어있음) → 끝까지
+  code    → step 간격 (4칸씩)
+  → index 3, 7, 11, 15... 위치의 문자만 뽑음
+```
+
 ## 문자열은 리스트로 안 바꿔도 슬라이싱 가능
 
 ```
@@ -542,7 +549,7 @@ arr[0] = 'J'
 ''.join(arr)    # 'Jello'
 ```
 
-```text
+```
 list() 변환이 필요한 경우:
   문자 수정이 필요할 때만
 
@@ -563,7 +570,6 @@ deque.rotate() 없이 슬라이싱으로 회전 구현
 |오른쪽 (뒤 → 앞)|`A[-1] + A[:-1]`|`"hello"` → `"ohell"`|
 |왼쪽 (앞 → 뒤)|`A[1:] + A[0]`|`"hello"` → `"elloh"`|
 
-
 ```python
 A = "hello"
 
@@ -575,7 +581,6 @@ A[-1] + A[:-1]
 A[1:] + A[0]
 # 'ello' + 'h' = 'elloh'
 ```
-
 
 ```python
 # 리스트도 동일
@@ -632,7 +637,7 @@ b * 2 = "hellohello"
   "world"  → "hellohello" 에 없음  ❌
 ```
 
-> `deque.rotate()` 상세 → [[Python_Collections_Modules#② deque — 양방향 큐 ⭐️]] 참고
+> `deque.rotate()` 상세 → [[Python_Collections_Counter#② deque — 양방향 큐]] 참고
 
 ---
 
@@ -678,8 +683,108 @@ def solution(date1, date2):
 ```
 
 ---
+---
+
+# ⑧-2 [-1:] — 빈 리스트 안전한 마지막 원소 비교 ⭐️
+
+```
+문제:
+  answer[-1] → 리스트 비어있으면 IndexError
+  answer[-1:] → 비어있으면 [] 반환 → 에러 없음
+
+[-1:] = 마지막 원소를 리스트 형태로 가져오기
+  비어있으면  → []
+  원소 있으면 → [마지막값]
+```
+
+## 기본 동작
+
+```python
+a = [1, 2, 3]
+a[-1]     # 3          (정수)
+a[-1:]    # [3]        (리스트)
+
+b = []
+b[-1]     # IndexError ← 에러!
+b[-1:]    # []         ← 안전 ✅
+```
+
+## 실전 — 연속된 같은 값 제거 ⭐️
+
+```python
+# 방법 1 — len() + 인덱스 비교 (처음에 짜기 쉬운 방식)
+def solution(arr):
+    answer = []
+    for i in range(len(arr)):
+        if len(answer) == 0 or answer[-1] != arr[i]:
+            answer.append(arr[i])
+    return answer
+
+# 방법 2 — [-1:] 슬라이싱 (더 Pythonic) ⭐️
+def no_continuous(s):
+    a = []
+    for i in s:
+        if a[-1:] == [i]:   # 비어있으면 [] == [i] → False → append
+            continue
+        a.append(i)
+    return a
+```
+
+```
+방법 2 핵심:
+  a[-1:]      → a 가 비어있으면 []  / 있으면 [마지막값]
+  [i]         → 현재 값을 리스트로 감싸서 비교
+  [] == [i]   → False → continue 안 함 → append
+  [3] == [3]  → True  → continue (중복이니 건너뜀)
+
+  len() 체크 + 인덱스 비교를 한 줄로 대체
+```
+
+## 두 방법 비교
+
+```python
+arr = [1, 1, 2, 2, 3, 1, 1]
+
+# 방법 1
+if len(answer) == 0 or answer[-1] != arr[i]:
+    answer.append(arr[i])
+
+# 방법 2 (동일한 결과)
+if a[-1:] != [i]:
+    a.append(i)
+```
+
+```
+방법 1:
+  len() 로 빈 리스트 먼저 체크 → 직관적 / 의도 명확
+
+방법 2:
+  [-1:] 로 한 줄에 처리 → 간결
+  비어있으면 [] → 어떤 [i] 와도 다름 → 자동으로 append
+
+코테에서 둘 다 정답
+[-1:] 패턴 알아두면 조건 분기 줄일 수 있음
+```
+
+## [-1:] 활용 패턴 정리
+
+```python
+# 마지막 원소 안전하게 비교
+if a[-1:] != [x]:     # 마지막이 x 가 아니거나 비어있으면
+    a.append(x)
+
+if a[-1:] == [x]:     # 마지막이 x 와 같으면 (비어있으면 False)
+    continue
+
+# 마지막 원소 꺼내기 (빈 리스트여도 에러 없음)
+last = a[-1:]         # [] 또는 [마지막값]
+last = a[-1:][0] if a else None   # None 처리가 필요할 때
+```
 
 ---
+
+---
+
 # ⑨ 튜플 이어붙이기 — 실전 패턴
 
 ```
@@ -751,11 +856,195 @@ rows_extended = [r + (datetime.now(), status) for r in rows]
 활용:
   Airflow DAG 에서 배치 적재 시 updated_at 추가
   execute_values 로 DB 에 한 방에 넣을 때
+  → [[Airflow_Hooks#hook.get_conn() + execute_values]] 참고
 ```
 
->→ [[Airflow_Hooks#hook.get_conn() + execute_values — 대량 UPSERT ⭐️|hook.get_conn() + execute_values]] 참고
 
-----
+---
+
+---
+
+# ⑩ a[-1:] — 빈 리스트 안전 참조 ⭐️
+
+```
+a[-1]  → 리스트가 비어있으면 IndexError
+a[-1:] → 리스트가 비어있으면 [] 반환 (에러 없음)
+
+슬라이싱은 범위를 벗어나도 에러가 나지 않음
+→ 빈 리스트 체크 없이 바로 비교 가능
+```
+
+## 기본 동작
+
+```python
+a = [1, 2, 3]
+a[-1]    # 3       → 마지막 원소
+a[-1:]   # [3]     → 마지막 원소를 리스트로
+
+a = []
+a[-1]    # ❌ IndexError
+a[-1:]   # ✅ []   → 에러 없이 빈 리스트 반환
+```
+
+## 실전 패턴 — 연속 중복 제거 ⭐️
+
+```
+문제: 연속으로 같은 값이 오면 하나만 남기기
+  [1, 1, 3, 3, 0, 1, 1] → [1, 3, 0, 1]
+```
+
+```python
+# 방법 1 — if len(answer)==0 or 조건 (명시적)
+def solution(arr):
+    answer = []
+    for i in range(len(arr)):
+        if len(answer) == 0 or answer[-1] != arr[i]:
+            answer.append(arr[i])
+    return answer
+
+# 방법 2 — a[-1:] 슬라이싱 활용 (더 간결) ⭐️
+def no_continuous(s):
+    a = []
+    for i in s:
+        if a[-1:] == [i]:   # 빈 리스트여도 에러 없음
+            continue
+        a.append(i)
+    return a
+```
+
+```
+방법 2 동작 원리:
+
+  a = [] 일 때:
+    a[-1:]  = []
+    [i]     = [1]
+    [] == [1] → False → append 실행 ✅
+
+  a = [1] 일 때 i = 1:
+    a[-1:]  = [1]
+    [i]     = [1]
+    [1] == [1] → True → continue (중복 무시)
+
+  a = [1] 일 때 i = 3:
+    a[-1:]  = [1]
+    [i]     = [3]
+    [1] == [3] → False → append 실행
+```
+
+```
+방법 1 vs 방법 2:
+
+  방법 1: len(answer)==0 or answer[-1] != arr[i]
+    → 조건이 길지만 의도가 명확
+    → "비어있거나 마지막이 다르면 추가"
+
+  방법 2: a[-1:] == [i] 이면 continue
+    → 슬라이싱으로 빈 리스트 체크 생략
+    → 조건이 간결
+    → 코테에서 자주 쓰는 패턴
+```
+
+## a[-1:] 활용 패턴 정리
+
+```python
+# 빈 리스트일 때 기본값 처리
+a = []
+a[-1:] or [0]   # [0]  ← 빈 리스트는 Falsy
+
+a = [5]
+a[-1:] or [0]   # [5]
+
+# 마지막 원소와 비교
+stack = []
+stack[-1:] == [x]   # 비어있어도 False (에러 없음)
+```
+
+---
+
+---
+
+# ⑩ [-1:] 슬라이싱 — 빈 리스트 안전 비교 ⭐️
+
+```
+a[-1]   → 빈 리스트면 IndexError 발생
+a[-1:]  → 빈 리스트면 [] 반환 (에러 없음)
+
+마지막 원소를 리스트 형태로 가져오는 패턴
+→ 빈 리스트 체크 없이 바로 비교 가능
+```
+
+## 비교
+
+```python
+a = []
+
+a[-1]    # IndexError ← 빈 리스트에서 에러
+a[-1:]   # []         ← 에러 없이 빈 리스트 반환 ✅
+```
+
+## 실전 패턴 — 연속 중복 제거 ⭐️
+
+```python
+# 방법 1 — 직접 길이 체크 + 인덱스 비교
+def solution(arr):
+    answer = []
+    for i in range(len(arr)):
+        if len(answer) == 0 or answer[-1] != arr[i]:
+            answer.append(arr[i])
+    return answer
+
+# 방법 2 — a[-1:] 슬라이싱 활용 (더 간결)
+def no_continuous(s):
+    a = []
+    for i in s:
+        if a[-1:] == [i]:   # 빈 리스트면 [] == [i] → False → append
+            continue
+        a.append(i)
+    return a
+```
+
+```
+방법 2 핵심 원리:
+  a[-1:]       → 마지막 원소를 리스트로 가져옴
+  [i]          → 비교 대상도 리스트로 감싸기
+  == [i]       → 리스트 vs 리스트 비교
+
+  a 가 빈 리스트일 때:
+    a[-1:]  = []
+    [] == [i]  → False → append 실행 ✅ (에러 없음)
+
+  a 마지막이 같은 값일 때:
+    a[-1:]  = [i]
+    [i] == [i] → True → continue (중복 스킵)
+
+  a 마지막이 다른 값일 때:
+    a[-1:]  = [j]  (j ≠ i)
+    [j] == [i] → False → append 실행
+```
+
+## a[-1] vs a[-1:] 정리
+
+|표현|빈 리스트|반환 타입|용도|
+|---|---|---|---|
+|`a[-1]`|IndexError|원소 자체|값을 꺼낼 때|
+|`a[-1:]`|`[]` 반환|리스트|안전 비교할 때 ⭐️|
+
+```python
+# 패턴 확장 — 마지막 원소가 조건 만족 시
+stack = [1, 2, 3]
+
+# 안전하게 꺼내서 비교
+if stack[-1:] == [3]:
+    print("마지막이 3")
+
+# 빈 스택도 안전하게
+stack = []
+if stack[-1:] == [3]:   # [] == [3] → False → 에러 없음
+    print("마지막이 3")
+```
+
+---
+
 ---
 
 # 초보자 실수 체크리스트
@@ -770,3 +1059,9 @@ rows_extended = [r + (datetime.now(), status) for r in rows]
 |정렬 후 순위 못 구함|index() 패턴을 모름|`sorted_list.index(값) + 1`|
 |요소 1개 튜플이 문자열로 됨|콤마 누락|`("hello",)` 콤마 필수|
 |`reversed(str(n))` 바로 출력 안 됨|이터레이터라 바로 못 씀|`list(reversed(str(n)))` 또는 `"".join(reversed(str(n)))`|
+|빈 리스트에서 `a[-1]` → IndexError|인덱스 직접 접근|`a[-1:]` 슬라이싱 사용|
+|마지막 원소 비교 시 빈 리스트 체크 따로 필요|`if len(a)==0 or ...` 패턴|`a[-1:] == [값]` 으로 한 번에 처리|
+|빈 리스트에서 `a[-1]` 사용|IndexError|`a[-1:]` 슬라이싱 → 빈 리스트면 `[]` 반환|
+
+---
+
