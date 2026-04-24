@@ -15,6 +15,7 @@ related:
   - "[[SQL_Aggregate_GROUP_BY]]"
   - "[[SQL_CASE_WHEN]]"
 ---
+
 # SQL 윈도우 함수 (Window Functions)
 
 ## 개념 한 줄 요약
@@ -368,6 +369,119 @@ ROW_NUMBER() OVER (ORDER BY id)
 - ROW_NUMBER() OVER (PARTITION BY num ORDER BY id)
 ```
 
+## 패턴 3 — 조건 필터 후 연속 ID 그룹 ⭐️
+
+```
+문제 유형:
+  "조건을 만족하는 행 중에서
+   id 가 연속인 구간이 3개 이상인 것을 찾아라"
+
+핵심:
+  조건 필터링 → people >= 100
+  → 조건 만족한 행만 남긴 뒤
+  → id - ROW_NUMBER() 로 연속 그룹 키 생성
+  → COUNT() OVER(PARTITION BY 그룹키) 로 그룹 크기 계산
+  → 크기 >= 3 필터링
+```
+
+## 왜 LAG/LEAD 가 아닌 ROW_NUMBER 인가 ⭐️
+
+```
+처음 생각하기 쉬운 접근:
+  LAG/LEAD 로 이전/다음 행 비교
+  → "이전 id + 1 == 현재 id" 를 3번 연속 확인
+  → 가능하지만 복잡하고 정확한 그룹 경계 처리 어려움
+
+ROW_NUMBER 패턴이 더 나은 이유:
+  필터링 후 id - ROW_NUMBER() 로 한 번에 그룹 키 생성
+  COUNT() OVER() 로 그룹 크기 자동 계산
+  코드 간결 / 어떤 연속 구간도 처리 가능
+```
+
+## Stadium 문제 실전 ⭐️
+
+```
+조건:
+  id 가 연속된 3개 이상의 행
+  각 행의 people >= 100
+  visit_date 오름차순 출력
+```
+
+```sql
+-- 1단계: 조건 만족 행만 추출 + 연속 그룹 키 생성
+WITH three_peo AS (
+    SELECT
+        id,
+        visit_date,
+        people,
+        id - ROW_NUMBER() OVER (ORDER BY id) AS peo_th
+        --   ↑ 실제 id         ↑ 필터된 행 기준 순번
+        --   연속 id 이면 차이가 일정 → 같은 그룹
+    FROM Stadium
+    WHERE people >= 100   -- 조건 먼저 필터링!
+),
+
+-- 2단계: 그룹별 행 수 계산
+count_people AS (
+    SELECT
+        id, visit_date, people,
+        COUNT(*) OVER (PARTITION BY peo_th) AS cnt_people
+        --              ↑ 같은 그룹 키끼리 개수 셈
+    FROM three_peo
+)
+
+-- 3단계: 3개 이상인 그룹만 출력
+SELECT id, visit_date, people
+FROM count_people
+WHERE cnt_people >= 3
+ORDER BY visit_date;
+```
+
+## 단계별 동작 원리
+
+```
+원본 데이터 (Stadium):
+  id   people  visit_date
+  1    100      2023-01-01
+  2    109      2023-01-02
+  3    150      2023-01-03
+  4    99       2023-01-04    ← people < 100 제외
+  5    145      2023-01-05
+  6    1455     2023-01-06
+  7    199      2023-01-07
+
+1단계 — WHERE people >= 100 필터링 + 그룹 키:
+  id  ROW_NUMBER  id - rn   peo_th
+  1      1          0          0   ← 같은 그룹
+  2      2          0          0   ←
+  3      3          0          0   ←
+  5      4          1          1   ← 4 빠져서 새 그룹
+  6      5          1          1   ←
+  7      6          1          1   ←
+
+  id=4 (people=99) 가 빠지면서 rn 만 건너뜀
+  → id 5,6,7 의 차이가 1로 바뀜 → 별도 그룹
+
+2단계 — COUNT() OVER(PARTITION BY peo_th):
+  peo_th=0 → 3개 (id 1,2,3)
+  peo_th=1 → 3개 (id 5,6,7)
+
+3단계 — WHERE cnt_people >= 3:
+  전부 출력됨
+```
+
+```
+핵심 인사이트:
+  WHERE 로 조건 필터링 먼저
+  → 필터된 행만 남긴 상태에서 ROW_NUMBER 부여
+  → id - ROW_NUMBER 이 같으면 연속 id 였다는 뜻
+  → id=4 가 빠지면 5,6,7 의 rn 이 4,5,6 이 됨
+  → id - rn = 5-4=1, 6-5=1, 7-6=1 → 같은 그룹 ✅
+
+  만약 id=4 가 있었다면 5,6,7 의 rn 이 5,6,7 이 돼서
+  id - rn = 0, 0, 0 → 앞 그룹(1,2,3,4,5,6,7) 과 합쳐짐
+```
+
 ```sql
 -- 응용: 선수별 연속 출전 구간 (단일 rn)
 WITH numbered AS (
@@ -394,6 +508,7 @@ LAG 와 비교:
   LAG     → "연속인지 아닌지" 판단 (간격 비교)
   year-rn → "연속 구간을 하나의 그룹으로 묶기" (값이 1씩 증가)
   이중 rn → "같은 값이 연속으로 등장하는 구간 묶기"
+  패턴 3  → "조건 필터 후 연속 id 그룹 + COUNT로 크기 측정"
 ```
 
 ## RANK() — 공동 순위 허용, 번호 건너뜀 (올림픽 메달 방식)
