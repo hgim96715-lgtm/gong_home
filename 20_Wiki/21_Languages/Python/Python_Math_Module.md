@@ -9,12 +9,13 @@ related:
   - "[[Python_Random_Seed|랜덤 수 생성 (random)]]"
   - "[[Python_Builtin_Functions|기본 내장 함수 (sum, max, min)]]"
   - "[[00_Python_HomePage]]"
+  - "[[Python_Fractions_Module]]"
 ---
 # Python_Math_Module
 
 ## 개념 한 줄 요약
 
-> "기본 연산자(+, -, /)만으로 부족한 정밀한 계산이나 누적 연산을 처리하는 표준 라이브러리."
+> *_"기본 연산자(+, -, _, /)만으로 부족한 정밀한 계산이나 누적 연산을 처리하는 표준 라이브러리."__
 
 ```python
 import math  # 먼저 선언 필수
@@ -100,7 +101,91 @@ math.gcd(12, 8)  # → 4
 math.lcm(4, 6)   # → 12
 ```
 
-## 활용 — 분수 덧셈 직접 구현
+## 버전 주의 ⭐️
+
+```
+math.gcd  → Python 3.5+ (거의 어디서나 사용 가능)
+math.lcm  → Python 3.9+ (구버전 환경에서 없을 수 있음)
+
+코딩 테스트 플랫폼에 따라 Python 3.8 이하일 수 있음
+→ math.lcm 못 쓰는 상황에서 직접 구현 필요
+```
+
+## math.lcm 없을 때 — 직접 구현 ⭐️
+
+```python
+import math
+
+def solution(n, m):
+    # 최대공약수
+    ma_gc = math.gcd(n, m)
+
+    # 최소공배수 = (n * m) // 최대공약수
+    ma_lc = (n * m) // ma_gc
+
+    return [ma_gc, ma_lc]
+```
+
+```
+왜 (n * m) // gcd 인가:
+  두 수의 최소공배수 공식:
+  LCM(a, b) = (a × b) / GCD(a, b)
+
+  예시: n=4, m=6
+    gcd(4, 6) = 2
+    lcm = (4 × 6) // 2 = 24 // 2 = 12 ✅
+```
+
+## math 도 못 쓸 때 — 유클리드 호제법으로 직접 구현
+
+```python
+# 최대공약수 — 유클리드 호제법
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+# 최소공배수
+def lcm(a, b):
+    return (a * b) // gcd(a, b)
+
+# 사용
+print(gcd(12, 8))   # 4
+print(lcm(4, 6))    # 12
+```
+
+```
+유클리드 호제법 원리:
+  gcd(12, 8):
+    a=12, b=8  → a=8,  b=12%8=4
+    a=8,  b=4  → a=4,  b=8%4=0
+    b=0  → return a = 4  ✅
+
+  핵심: gcd(a, b) = gcd(b, a % b)
+  b 가 0 이 될 때까지 반복
+  b 가 0 이면 a 가 최대공약수
+```
+
+## 상황별 선택
+
+```python
+# Python 3.9+ 환경 → 둘 다 사용 가능
+import math
+math.gcd(n, m)
+math.lcm(n, m)
+
+# Python 3.5~3.8 환경 → lcm 직접 계산
+import math
+gcd = math.gcd(n, m)
+lcm = (n * m) // gcd
+
+# math import 불가 환경 → 유클리드 호제법 직접 구현
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+lcm = (n * m) // gcd(n, m)
+```
 
 ```python
 import math
@@ -335,6 +420,7 @@ def solution(left, right):
   안전하게 짜기 → int(i**0.5) ** 2 == i  (방법 3)
   가독성 우선   → math.sqrt(i) % 1 == 0  (방법 1)
 ```
+
 ---
 
 ---
