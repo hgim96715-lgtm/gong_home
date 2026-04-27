@@ -8,6 +8,7 @@ aliases:
   - While
   - 흐름 제어
   - 월러스 연산자
+  - iterable
 tags:
   - Python
 related:
@@ -16,6 +17,7 @@ related:
   - "[[Python_Looping_Helpers]]"
   - "[[Python_Lambda_Map]]"
   - "[[Python_Sorting_Logic]]"
+  - "[[Python_Itertools]]"
 ---
 # Python_Control_Flow — 제어문
 
@@ -53,9 +55,7 @@ else:
     print("대기 중...")
 ```
 
-----
----
-# ① -1 ️ Truthy / Falsy ⭐
+## Truthy / Falsy ⭐️
 
 ## Falsy 값 전체 목록
 
@@ -77,7 +77,6 @@ True 로 판단되는 것:
 ```
 
 ## if 조건에서 활용
-
 
 ```python
 # 빈 리스트 체크
@@ -110,7 +109,6 @@ A or B:
 핵심: or 는 "첫 번째 Truthy 값" 을 반환
 ```
 
-
 ```python
 # or 기본값 패턴
 result = [] or [-1]
@@ -130,7 +128,6 @@ name = "gong" or "기본값"
 ```
 
 ## 실전 패턴 — sorted(...) or [-1] ⭐️
-
 
 ```python
 # divisor 의 배수만 골라서 정렬
@@ -161,7 +158,6 @@ result = sorted([n for n in arr if n % divisor == 0]) or [-1]
   if 없이 한 줄로 "결과 없으면 [-1]" 처리 가능
 ```
 
-
 ```python
 # 다양한 or 기본값 패턴
 max(arr) if arr else 0        # 전통적인 방식
@@ -186,13 +182,11 @@ A and B:
 핵심: and 는 "첫 번째 Falsy 값" 을 반환 / 전부 Truthy 면 마지막 값
 ```
 
-
 ```python
 [] and [1, 2]      # [] (첫 번째가 Falsy → 즉시 반환)
 [1] and [2, 3]     # [2, 3] (첫 번째 Truthy → 두 번째 반환)
 1 and 2 and 3      # 3 (전부 Truthy → 마지막 값)
 ```
-
 
 ```python
 # 실전: 조건 있을 때만 처리
@@ -247,7 +241,6 @@ is_ok = True if score >= 60 else False
 # ✅
 is_ok = score >= 60
 ```
-
 
 ---
 
@@ -339,6 +332,79 @@ for i in range(5):          # 0 1 2 3 4
 for i in range(1, 6):       # 1 2 3 4 5
 for i in range(0, 10, 2):   # 0 2 4 6 8  (2씩 증가)
 for i in range(10, 0, -1):  # 10 9 8 ... 1  (역순)
+```
+
+## 중복 없는 조합 — range(i+1, ...) 패턴 ⭐️
+
+```
+같은 원소를 두 번 뽑지 않고
+순서가 다른 같은 조합도 한 번만 세고 싶을 때
+
+핵심: j 를 i+1 부터 시작 → i < j 항상 보장
+```
+
+```python
+# 문제: 3명의 합이 0인 조합 수 (삼총사)
+# number = [-2, 3, 0, 2, -5]
+
+# ❌ 잘못된 접근 — 값으로 순회 (중복 발생)
+for n1 in number:
+    for n2 in number:      # 같은 학생 다시 뽑힘
+        for n3 in number:
+            if n1+n2+n3 == 0:
+                answer += 1  # 순서만 다른 조합도 여러 번 카운트
+
+# ✅ 인덱스로 순회 — i < j < k 보장
+def solution(number):
+    answer = 0
+    for n1 in range(len(number)):
+        for n2 in range(n1 + 1, len(number)):    # n1 다음부터
+            for n3 in range(n2 + 1, len(number)): # n2 다음부터
+                if number[n1] + number[n2] + number[n3] == 0:
+                    answer += 1
+    return answer
+```
+
+```
+range(i+1, len(arr)) 패턴 원리:
+  n1=0 → n2=1,2,3,4  → n3 은 n2 다음부터
+  n1=1 → n2=2,3,4    → n3 은 n2 다음부터
+  ...
+
+  항상 n1 < n2 < n3 이 보장됨
+  → 같은 원소 중복 선택 없음
+  → 순서만 다른 중복 없음 (0,1,2) 와 (2,1,0) 을 다른 조합으로 세지 않음
+
+2중 반복도 동일 패턴:
+  for i in range(len(arr)):
+      for j in range(i+1, len(arr)):
+          # arr[i], arr[j] 쌍 (i < j 항상 보장)
+```
+
+## Pythonic 버전 — itertools.combinations ⭐️
+
+```python
+from itertools import combinations
+
+def solution(number):
+    return sum(1 for combo in combinations(number, 3) if sum(combo) == 0)
+
+# 또는
+def solution(number):
+    cnt = 0
+    for combo in combinations(number, 3):
+        if sum(combo) == 0:
+            cnt += 1
+    return cnt
+```
+
+```
+combinations(iterable, r):
+  iterable 에서 r개를 순서 없이 뽑는 모든 조합
+  중복 없음 / 순서 다른 조합은 하나로 처리
+  → range(i+1) 3중 for 를 한 줄로 대체
+
+  [[Python_Itertools]] 참고
 ```
 
 ## enumerate — 인덱스 + 값 동시에
@@ -490,6 +556,16 @@ for c in str(n):
 
 # ✅ 합계도 한 줄로
 sum(int(c) for c in str(n))
+```
+
+## ④ True if 조건 else False — 불필요한 패턴
+
+```python
+# ❌ 비교 결과가 이미 bool
+return True if x % sum_arr == 0 else False
+
+# ✅ 그대로 반환
+return x % sum(int(a) for a in str(x)) == 0
 ```
 
 ---

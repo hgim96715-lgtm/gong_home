@@ -1,15 +1,23 @@
 
->목표: Airflow · Spark · API 파이프라인을 직접 짤 수 있는 Python 실력
-
 ## 버전 확인 & 관리
 
 ```bash
 # 현재 버전 확인
 python3 --version
+
+# ET.Element | None 등 최신 문법 사용하려면 3.10+ 필요
 # 권장 버전: 3.11.x (안정적 + 속도 개선)
 ```
 
->버전 변경 방법 → [[Linux_Python_Env]] pyenv 섹션 참고
+```
+버전 변경 방법 → [[Linux_Python_Env]] pyenv 섹션 참고
+
+빠른 요약:
+  brew install pyenv
+  pyenv install 3.11.9
+  pyenv global 3.11.9
+  python3 --version   ← 확인
+```
 
 ---
 
@@ -19,47 +27,48 @@ python3 --version
 
 ### 변수 & 자료형
 
-| 노트                         | 핵심 개념                                                             |
-| -------------------------- | ----------------------------------------------------------------- |
-| [[Python_Variables_Types]] | str / int / bool / float / type 변환 / f-string/repr                |
-| [[Python_Type_Checking]]   | type / isinstance / 상속 고려 여부 / typing 모듈 / List·Dict·Any·Optional |
-| [[Python_Membership_In]]   | in / not in / == 완전일치                                             |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Variables_Types]]|str / int / bool / float / type 변환 / f-string|
+|[[Python_Type_Checking]]|type / isinstance / 상속 고려 여부|
+|[[Python_Membership_In]]|in / not in / == 완전일치|
 
 ### 문자열 처리
 
-| 노트                                 | 핵심 개념                                                  |
-| ---------------------------------- | ------------------------------------------------------ |
-| [[Python_String_Indexing_Slicing]] | Index / Slice / [:​:-1] / 음수 인덱스                       |
-| [[Python_String_Methods]]          | split / join / strip / startswith / endswith / isdigit |
-| [[Python_String_Search]]           | find / index / rfind / rindex / 없으면 -1 vs 에러           |
-| [[Python_String_Case_Replace]]     | upper / lower / replace / re.sub / 정규식 치환              |
-| [[Python_String_Formatting]]       | f-string / :<4 / :> / :^ / 소수점 / 날짜 포맷 / 천단위           |
+|노트|핵심 개념|
+|---|---|
+|[[Python_String_Indexing_Slicing]]|Index / Slice / [::-1] / 음수 인덱스|
+|[[Python_String_Methods]]|split / join / strip / startswith / endswith / isdigit|
+|[[Python_String_Search]]|find / index / rfind / rindex / 없으면 -1 vs 에러|
+|[[Python_String_Case_Replace]]|upper / lower / replace / re.sub / 정규식 치환|
+|[[Python_String_Formatting]]|f-string / :<4 / :> / :^ / 소수점 / 날짜 포맷 / 천단위|
 
 ### 흐름 제어
 
-| 노트                         | 핵심 개념                                                                      |
-| -------------------------- | -------------------------------------------------------------------------- |
-| [[Python_Control_Flow]]    | if / for / while / for-else / break / continue/월러스 연산자(:=)/ Truthy / Falsy |
-| [[Python_Looping_Helpers]] | range / enumerate / zip / unpacking                                        |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Control_Flow]]|if / for / while / for-else / break / continue|
+|[[Python_Looping_Helpers]]|range / enumerate / zip / unpacking|
 
 ### 함수
 
-| 노트                           | 핵심 개념                                 |
-| ---------------------------- | ------------------------------------- |
-| [[Python_Functions]]         | def / return / *args / **kwargs / 기본값 |
-| [[Python_Unpacking]]         | a, b = [1, 2] / *rest / _ / 중첩 언패킹    |
-| [[Python_Variable_Swapping]] | a, b = b, a / 임시변수 없이 교환              |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Functions]]|def / return / *args / **kwargs / 기본값|
+|[[Python_Unpacking]]|a, b = [1, 2] / *rest / _ / 중첩 언패킹|
+|[[Python_Variable_Swapping]]|a, b = b, a / 임시변수 없이 교환|
 
 ### 내장함수 & 수학
 
-| 노트                             | 핵심 개념                                                                  |
-| ------------------------------ | ---------------------------------------------------------------------- |
-| [[Python_Builtin_Functions]]   | max / min / sum / len / abs / ord / chr / pow/is_integer()/형변환/any/all |
-| [[Python_Sorting_Logic]]       | sort / sorted / key / lambda / reverse / 다중 정렬                         |
-| [[Python_Math_Module]]         | math.prod / ceil / floor / gcd / sqrt / pi                             |
-| [[Python_Fractions_Module]]    | Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지                                 |
-| [[Python_Statistics_Module]]   | mean / median / stdev / variance                                       |
-| [[Python_Collections_Modules]] | Counter / most_common / 딕셔너리 연산/deque/defaultdict/ namedtuple          |
+| 노트                             | 핵심 개념                                                               |
+| ------------------------------ | ------------------------------------------------------------------- |
+| [[Python_Builtin_Functions]]   | max / min / sum / len / abs / ord / chr / pow                       |
+| [[Python_Sorting_Logic]]       | sort / sorted / key / lambda / reverse / 다중 정렬                      |
+| [[Python_Math_Module]]         | math.prod / ceil / floor / gcd / sqrt / pi                          |
+| [[Python_Fractions_Module]]    | Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지                              |
+| [[Python_Statistics_Module]]   | mean / median / stdev / variance                                    |
+| [[Python_Collections_Modules]] | Counter / most_common / 딕셔너리 연산/deque/defaultdict/rotate/namedtuple |
+| [[Python_Itertools]]           | combinations / permutations / product / chain / groupby             |
 
 ---
 
@@ -72,14 +81,14 @@ python3 --version
 JSON 처리의 핵심
 ```
 
-| 노트                            | 핵심 개념                                                               |
-| ----------------------------- | ------------------------------------------------------------------- |
-| [[Python_Lists_Tuples]]       | [] / () / Mutable vs Immutable / append / pop,count/reversed/sorted |
-| [[Python_Lambda_Map]]         | lambda / map / filter / reduce                                      |
-| [[Python_List_Comprehension]] | [결과 for x in 리스트 if 조건] 한 줄 축약                                      |
-| [[Python_Dictionaries]]       | {} / .get() / .items() / .keys() / .values()                        |
-| [[Python_JSON]]               | json.loads / json.dumps / indent / 직렬화·역직렬화                         |
-| [[Python_Sets]]               | set / 교집합 & / 합집합 \| / 차집합 - / frozenset                            |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Lists_Tuples]]|[] / () / Mutable vs Immutable / append / pop|
+|[[Python_Lambda_Map]]|lambda / map / filter / reduce|
+|[[Python_List_Comprehension]]|[결과 for x in 리스트 if 조건] 한 줄 축약|
+|[[Python_Dictionaries]]|{} / .get() / .items() / .keys() / .values()|
+|[[Python_JSON]]|json.loads / json.dumps / indent / 직렬화·역직렬화|
+|[[Python_Sets]]|set / 교집합 & / 합집합 \| / 차집합 - / frozenset|
 
 ---
 
@@ -91,16 +100,14 @@ JSON 처리의 핵심
 남이 짠 코드를 가져다 쓰고, 내 코드를 정리하기
 ```
 
->[[Linux_Python_Env]] 참고 
-
-| 노트                         | 핵심 개념                                                   |
-| -------------------------- | ------------------------------------------------------- |
-| [[Python_Modules_Imports]] | import / from / **init**.py / 패키지 / 별칭 as               |
-| [[Python_Entry_Point]]     | if **name** == '**main**' / 모듈 vs 스크립트                  |
-| [[Python_Sys_Module]]      | sys.argv / sys.path / sys.exit / 표준입출력                  |
-| [[Python_Argparse]]        | argparse / --옵션 / type / default / choices / store_true |
-| [[Python_Virtual_Env]]     | venv / pip / requirements.txt / activate                |
-| [[Python_Regex]]           | import re/re.search / findall / sub / group / 패턴 문법     |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Modules_Imports]]|import / from / **init**.py / 패키지 / 별칭 as|
+|[[Python_Entry_Point]]|if **name** == '**main**' / 모듈 vs 스크립트|
+|[[Python_Sys_Module]]|sys.argv / sys.path / sys.exit / 표준입출력|
+|[[Python_Argparse]]|argparse / --옵션 / type / default / choices / store_true|
+|[[Python_Virtual_Env]]|venv / pip / requirements.txt / activate|
+|[[Python_Regex]]|re.search / findall / sub / group / 패턴 문법|
 
 ---
 
@@ -129,8 +136,6 @@ JSON 처리의 핵심
 
 ### API 요청 & 응답
 
->CS Basics [[CS_HTTP_Basics]] , [[CS_TCP_IP]], [[CS_REST_API_Methods]] ,[[Serialization_JSON_XML]] 참고 
-
 |노트|핵심 개념|
 |---|---|
 |[[Python_Requests_Methods]]|requests.get / post / params / headers / timeout / XML 파싱(ET)|
@@ -142,16 +147,6 @@ JSON 처리의 핵심
 |[[Python_Selenium]]|selenium / webdriver / By / WebDriverWait / JS 렌더링 / 동적 크롤링|
 |[[Python_OCR]]|EasyOCR / Tesseract / Google Vision / 이미지 텍스트 추출|
 
-###  API 크롤링 
-
-> HTML을 파싱하는 대신, 사이트가 내부적으로 쓰는 API를 직접 호출하는 방식 
-> 인터파크 전시 프로젝트에서 Selenium 스크롤 15개 한계 → API 호출 500개+로 전환한 핵심 기법 관련 실습 → [[01_docker_init.sql]]
-
-| 노트                              | 핵심 개념                                                          |
-| ------------------------------- | -------------------------------------------------------------- |
-| [[Python_API_Crawling]]         | DevTools로 API 발굴 / Session 재사용 / 페이지네이션 / 중복 제거 / dataclass 매핑 |
-| [[Python_API_Rate_Limit_Retry]] | time.sleep / 지수 백오프 / 429 처리 / retry 패턴                        |
-
 ---
 
 ---
@@ -162,10 +157,10 @@ JSON 처리의 핵심
 Airflow 오퍼레이터가 왜 이렇게 생겼는지 이해하기
 ```
 
-| 노트                         | 핵심 개념                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------- |
-| [[Python_Classes_Objects]] | class / self / **init** / **str** / **repr** / @staticmethod / @classmethod/dataclass |
-| [[Python_Inheritance]]     | 상속 / super() / 오버라이딩 / 다형성 / 추상 클래스 (ABC)                                             |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Classes_Objects]]|class / self / **init** / **str** / **repr** / @staticmethod / @classmethod|
+|[[Python_Inheritance]]|상속 / super() / 오버라이딩 / 다형성 / 추상 클래스 (ABC)|
 
 ---
 
@@ -179,11 +174,11 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 
 ### 함수 고급
 
-| 노트                             | 핵심 개념                                                |
-| ------------------------------ | ---------------------------------------------------- |
-| [[Python_Decorators]]          | @ 골뱅이 / @task / @wraps / TaskFlow API / 클로저,porperty |
-| [[Python_Iterables_Iterators]] | iter / next / **iter** / **next**                    |
-| [[Python_Generators_Yield]]    | yield / generator / lazy evaluation / 메모리 절약         |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Decorators]]|@ 골뱅이 / @task / @wraps / TaskFlow API / 클로저|
+|[[Python_Iterables_Iterators]]|iter / next / **iter** / **next**|
+|[[Python_Generators_Yield]]|yield / generator / lazy evaluation / 메모리 절약|
 
 ### 날짜 & 시간
 
@@ -215,14 +210,14 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 가짜 데이터를 만들어서 파이프라인 테스트하기
 ```
 
-| 노트                                 | 핵심 개념                                                     |
-| ---------------------------------- | --------------------------------------------------------- |
-| [[Python_Library_Faker]]           | Faker / name / address / ip / locale                      |
-| [[Python_Mock_Data_Generator]]     | Generator / yield / 배치 생성 패턴                              |
-| [[Python_UUID]]                    | uuid4 / 분산 환경 PK / 충돌 없는 식별자                              |
-| [[Python_Library_Deep_Translator]] | GoogleTranslator / source·target / 긴 텍스트 분할 번역 / 5000자 제한 |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Library_Faker]]|Faker / name / address / ip / locale|
+|[[Python_Mock_Data_Generator]]|Generator / yield / 배치 생성 패턴|
+|[[Python_UUID]]|uuid4 / 분산 환경 PK / 충돌 없는 식별자|
 
 ---
+
 ---
 
 ## Level 8. 외부 시스템 연결
@@ -231,9 +226,21 @@ Airflow 2.0 과 대용량 처리의 핵심 기능
 파이썬이 데이터베이스 / 클라우드와 대화하기
 ```
 
-| 노트                          | 핵심 개념                                                                                |
-| --------------------------- | ------------------------------------------------------------------------------------ |
-| [[Python_Database_Connect]] | psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall/psycopg2.extras |
+|노트|핵심 개념|
+|---|---|
+|[[Python_Database_Connect]]|psycopg2 / connect / cursor / .env / sqlalchemy / execute / fetchall|
 
 ---
+
 ---
+
+## 현재 완성된 노트
+
+```
+Level 1: [[Python_Control_Flow]] ✅  [[Python_Looping_Helpers]] ✅
+         [[Python_String_Search]] ✅  [[Python_String_Case_Replace]] ✅
+         [[Python_Sorting_Logic]] ✅
+Level 3: [[Python_Sys_Module]] ✅
+Level 5: [[Python_Classes_Objects]] ✅
+Level 6: [[Python_Decorators]] ✅
+```
