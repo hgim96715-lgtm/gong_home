@@ -67,17 +67,17 @@ FROM DEPT;
 
 ## 두 형태 비교
 
-|구분|구조|WHEN 뒤에 오는 것|범위 비교 가능?|
-|---|---|---|---|
-|SEARCHED CASE|`CASE WHEN 조건식 THEN`|`score >= 90` 같은 **조건식 전체**|✅ 가능|
-|SIMPLE CASE|`CASE 컬럼 WHEN 값 THEN`|`'NEW YORK'` 같은 **값만**|❌ `=` 비교만 가능|
+| 구분            | 구조                    | WHEN 뒤에 오는 것                | 범위 비교 가능?    |
+| ------------- | --------------------- | --------------------------- | ------------ |
+| SEARCHED CASE | `CASE WHEN 조건식 THEN`  | `score >= 90` 같은 **조건식 전체** | ✅ 가능         |
+| SIMPLE CASE   | `CASE 컬럼 WHEN 값 THEN` | `'NEW YORK'` 같은 **값만**      | ❌ `=` 비교만 가능 |
 
 > **SIMPLE CASE 치명적 한계:** 정확히 일치(`{text}=`) 비교만 가능하다. 대소 비교(`>`, `<`, `>=`) 가 필요하면 반드시 **SEARCHED CASE** 를 써야 한다.
 
 ```sql
 -- ❌ SIMPLE CASE 로 범위 비교 불가
 CASE score WHEN >= 90 THEN 'A'  -- 문법 에러!
- 
+
 -- ✅ 범위 비교는 SEARCHED CASE 만 가능
 CASE WHEN score >= 90 THEN 'A'
 ```
@@ -93,6 +93,83 @@ CASE WHEN score >= 90 THEN 'A'
 |`ELSE ''` 명시|NULL 이 아닌 **빈 문자열(공백)** 이 들어감|
 
 > `ELSE` 를 생략하면 데이터 빵꾸(NULL)의 주범이 된다. 항상 명시하는 습관을 들이자.
+
+## WHEN 안에서 AND / OR 조건 연결 ⭐️
+
+```
+하나의 WHEN 에 조건을 여러 개 연결할 때 AND / OR 사용
+여러 조건을 모두 만족해야 → AND
+여러 조건 중 하나만 만족 → OR
+```
+
+```sql
+-- 삼각형 판별 (세 조건 모두 만족해야 삼각형)
+SELECT x, y, z,
+    CASE
+        WHEN x + y > z
+         AND x + z > y
+         AND y + z > x
+        THEN 'Yes'
+        ELSE 'No'
+    END AS triangle
+FROM Triangle;
+```
+
+```
+흔한 실수:
+  조건 3개를 WHEN 3개로 나누면 하나만 만족해도 'Yes' 가 됨
+
+  ❌ 잘못된 방식
+  CASE
+      WHEN x + y > z THEN 'Yes'
+      WHEN x + z > y THEN 'Yes'   ← 둘 중 하나만 만족해도 'Yes'
+      WHEN y + z > x THEN 'Yes'
+      ELSE 'No'
+  END
+
+  ✅ 올바른 방식 — 하나의 WHEN 에 AND 로 연결
+  CASE
+      WHEN x + y > z
+       AND x + z > y
+       AND y + z > x THEN 'Yes'
+      ELSE 'No'
+  END
+```
+
+## WHEN 안에서 서브쿼리 — IN (SELECT ...) 패턴 ⭐️
+
+```
+CASE WHEN 조건 안에 서브쿼리를 넣을 수 있음
+"현재 값이 특정 목록에 있는가?" 를 확인할 때 사용
+```
+
+```sql
+-- Tree 노드 타입 분류 (Root / Inner / Leaf)
+SELECT
+    id,
+    CASE
+        WHEN p_id IS NULL
+            THEN 'Root'                         -- 부모 없음 → 루트
+        WHEN id IN (
+            SELECT p_id FROM Tree
+            WHERE p_id IS NOT NULL
+        )   THEN 'Inner'                        -- 자식이 있음 → 내부 노드
+        ELSE 'Leaf'                             -- 자식 없음 → 잎 노드
+    END AS type
+FROM Tree;
+```
+
+```
+IN (SELECT p_id FROM Tree) 동작 원리:
+  서브쿼리가 "모든 부모 id 목록" 을 반환
+  현재 id 가 그 목록에 있으면 → 내 아래에 자식이 있음 → Inner
+  없으면 → 자식 없음 → Leaf
+
+  판단 순서:
+  1. p_id IS NULL 체크 → Root
+  2. 내가 다른 노드의 부모인지 (id IN 부모목록) → Inner
+  3. 둘 다 아니면 → Leaf
+```
 
 ---
 
@@ -126,7 +203,7 @@ FROM students;
 -- ✅ 홀수 (마지막 'Unknown' 이 DEFAULT)
 DECODE(gender, 'M', 'Male', 'F', 'Female', 'Unknown')
 --              ↑     ↑      ↑     ↑         ↑
---              조건1  결과1  조건2  결과2    DEFAULT
+--           조건1  결과1  조건2  결과2    DEFAULT
 
 -- ⚠️ 짝수 (DEFAULT 없음 → 매칭 안 되면 NULL 반환)
 DECODE(gender, 'M', 'Male', 'F', 'Female')
@@ -135,8 +212,8 @@ DECODE(gender, 'M', 'Male', 'F', 'Female')
 -- ✅ 짝수이지만 마지막에 '' (빈 문자열) 로 DEFAULT 지정
 DECODE(gender, 'M', 'Male', 'F', 'Female', '')
 -- gender 가 'M' 도 'F' 도 아니면 → NULL 이 아닌 빈 문자열(공백) 출력
---                                          ↑
---                                      '' 는 NULL 이 아니라 빈 문자열이다!
+--                                    ↑
+--                                    '' 는 NULL 이 아니라 빈 문자열이다!
 ```
 
 > **치명적 단점:** `CASE WHEN` 처럼 대소 비교(`>`, `<`) 는 불가능. 오직 **정확히 일치(`{text}=`)** 할 때만 사용할 수 있다.
@@ -147,15 +224,15 @@ DECODE(gender, 'M', 'Male', 'F', 'Female', '')
 
 조건부 집계를 위해 태어난 최신 문법. 코드가 훨씬 직관적이다.
 
-### 문법 구조
+## 문법 구조
 
-```text
+```
 집계함수(*) FILTER (WHERE 조건)
     ↑                    ↑
   평소처럼 집계       이 조건일 때만 집계
 ```
 
-### COUNT + FILTER
+## COUNT + FILTER
 
 ```sql
 SELECT
@@ -163,15 +240,14 @@ SELECT
     COUNT(*) FILTER (WHERE credit NOT ILIKE '%gift%') AS non_gift_count,
     COUNT(*)                                           AS total_count
 FROM payments;
--- "COUNT 는 하되, 이 조건일 때만 세어줘"
 ```
 
-```text
+```
 ILIKE     → 대소문자 무시하고 패턴 매칭  ('Gift', 'GIFT', 'gift' 모두 잡음)
 NOT ILIKE → 패턴에 해당하지 않는 것만   ('gift' 가 포함되지 않은 행만)
 ```
 
-### SUM + FILTER
+## SUM + FILTER
 
 ```sql
 SELECT
@@ -182,7 +258,7 @@ FROM payments;
 -- "금액을 더하되, 기프트카드 결제만 / 일반 결제만 / 전체 따로따로 집계"
 ```
 
-### FILTER vs CASE WHEN 비교
+## FILTER vs CASE WHEN 비교
 
 ```sql
 -- ✅ FILTER (PostgreSQL 전용, 직관적)
@@ -193,12 +269,11 @@ SUM(CASE WHEN credit ILIKE '%gift%' THEN 1 ELSE 0 END)
 ```
 
 |방식|가독성|DB 호환|
-|---|---|---|
+|---|:-:|:-:|
 |`FILTER`|✅ 직관적|PostgreSQL 전용|
 |`CASE WHEN`|조금 길다|모든 DB ✅|
 
-> **SQLD 시험은 Oracle 기준 → CASE WHEN 으로 써야 한다.**
->  **PostgreSQL 실무 → FILTER 가 훨씬 간결하다.**
+> **SQLD 시험은 Oracle 기준 → CASE WHEN 으로 써야 한다.** **PostgreSQL 실무 → FILTER 가 훨씬 간결하다.**
 
 ---
 
@@ -264,8 +339,7 @@ FROM game_analytics;
 -- 조건 안 맞는 데이터가 0점으로 평균 계산(분모)에 포함 → 평균이 대폭락!
 ```
 
-> **SUM 에서는 `ELSE 0`, AVG 에서는 `ELSE NULL` (또는 ELSE 생략)** 
-> AVG 는 NULL 은 계산에서 제외하지만 0 은 포함해서 나누기 때문이다.
+> **SUM 에서는 `ELSE 0`, AVG 에서는 `ELSE NULL` (또는 ELSE 생략)** AVG 는 NULL 은 계산에서 제외하지만 0 은 포함해서 나누기 때문이다.
 
 ---
 
@@ -325,10 +399,12 @@ GROUP BY ad_name;
 |`CASE WHEN`|데이터를 **버리지 않고 표시만 함** (분모 유지)|
 
 ---
+
+---
+
 # ⑤ HAVING 안에서 CASE WHEN ⭐️
 
->**CASE WHEN 은 HAVING 안에서도 쓸 수 있다.** 
->특히 `COUNT(DISTINCT CASE WHEN ... END)` 패턴은 "특정 조건을 N개 이상 만족하는 그룹만 걸러낼 때" 강력하다.
+> **CASE WHEN 은 HAVING 안에서도 쓸 수 있다.** 특히 `COUNT(DISTINCT CASE WHEN ... END)` 패턴은 "특정 조건을 N개 이상 만족하는 그룹만 걸러낼 때" 강력하다.
 
 ## 패턴 공식
 
@@ -337,7 +413,7 @@ GROUP BY 기준컬럼
 HAVING COUNT(DISTINCT CASE WHEN 조건 THEN 그룹값 END) >= N
 ```
 
-```text
+```
 동작 원리:
 ① CASE WHEN 으로 조건에 맞는 행에만 값(그룹값)을 부여
 ② 조건에 안 맞으면 ELSE 없으니 NULL → COUNT 에서 자동 제외
@@ -361,9 +437,31 @@ HAVING COUNT(DISTINCT
 ) >= 2;
 ```
 
+```
+흐름:
+① 게임별로 GROUP BY
+② 각 플랫폼을 제조사(Sony/Nintendo/Microsoft)로 분류
+③ 조건에 안 맞는 플랫폼(PC 등)은 NULL → COUNT 에서 제외
+④ 제조사가 DISTINCT 기준 2개 이상인 게임만 남김
+
+예시:
+GTA V → PS4(Sony), X360(Microsoft)  → 제조사 2개  ✅ 남음
+Minecraft → PC, PS4(Sony)            → 제조사 1개  ❌ 제거
+```
+
+## 왜 ELSE 를 생략하는가?
+
+```sql
+-- ELSE 생략 → 조건 안 맞는 행 = NULL
+-- COUNT 는 NULL 을 세지 않음 → 자동으로 해당 행 제외
+
+-- ELSE 'Other' 를 넣으면?
+-- PC 같은 분류 외 플랫폼도 'Other' 로 집계에 포함됨 → 의도와 다른 결과
+```
+
 ## 언제 이 패턴을 쓰는가
 
-```text
+```
 "최소 N개 이상의 카테고리에 속하는 그룹만 추출"
 
 예시:
@@ -372,10 +470,9 @@ HAVING COUNT(DISTINCT
 - 2개 이상 제조사 플랫폼에 출시된 게임
 ```
 
->⚠️ **CTE 없이도 해결 가능하다.** 
->HAVING 안에 CASE WHEN 을 바로 넣으면 되기 때문에 서브쿼리나 CTE 로 먼저 분류한 뒤 다시 집계할 필요가 없다.
+> ⚠️ **CTE 없이도 해결 가능하다.** HAVING 안에 CASE WHEN 을 바로 넣으면 되기 때문에 서브쿼리나 CTE 로 먼저 분류한 뒤 다시 집계할 필요가 없다.
 
-
+---
 
 ---
 
@@ -405,3 +502,37 @@ HAVING COUNT(DISTINCT
 조건에 안 맞는 값이 0으로 평균 계산에 포함되어 **평균이 대폭락** 한다. AVG 에서는 반드시 `ELSE NULL` 또는 ELSE 를 생략해야 한다.
 
 ---
+
+# 핵심 요약 카드
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  SEARCHED CASE : CASE WHEN 조건식 THEN → 범위 비교 가능       │
+│  SIMPLE CASE   : CASE 컬럼 WHEN 값 THEN → = 비교만 가능       │
+│                                                              │
+│  ELSE 생략 → NULL / ELSE '' → 빈 문자열 (NULL 아님!)          │
+│  END 는 반드시 닫아야 한다                                    │
+│                                                              │
+│  DECODE(컬럼, 조건1, 결과1, ..., DEFAULT)                    │
+│  · 홀수 인수 → 마지막이 DEFAULT                              │
+│  · 짝수 인수 → DEFAULT 없음 (매칭 실패 시 NULL)               │
+│  · 마지막에 '' 추가 → NULL 아닌 빈 문자열 출력                │
+│  · = 비교만 가능, 범위 비교 불가                              │
+│                                                              │
+│  SUM(CASE WHEN 조건 THEN 1 ELSE 0 END) → 조건부 카운트        │
+│  AVG 에서는 ELSE 0 금지! → ELSE NULL 사용                     │
+│                                                              │
+│  비율 계산 → WHERE 금지! CASE WHEN 으로 분모 살려야 함         │
+│  정수 / 정수 = 0 → * 1.0 또는 ::float 로 해결                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 관련 노트
+
+- [[SQL_Window_Functions]] — ROW_NUMBER · RANK · DENSE_RANK (순위 함수)
+- [[SQL_GROUP_BY_HAVING]] — GROUP BY · HAVING (집계 필터)
+- [[SQL_Aggregate_Functions]] — COUNT · SUM · AVG · MAX · MIN
+- [[SQL_NULL_Functions]] — NVL · COALESCE · NULLIF (NULL 처리)
+- [[SQL_Type_Casting]] — 형변환 (`::float`, `CAST`)
