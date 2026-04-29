@@ -13,6 +13,7 @@ related:
   - "[[SQL_SELECT_FROM]]"
   - "[[SQL_Filtering_WHERE]]"
   - "[[00_SQL_HomePage]]"
+  - "[[SQL_SubQuery]]"
 ---
 # SQL CASE WHEN — 쿼리 속의 IF-ELSE 분기점
 
@@ -471,6 +472,156 @@ Minecraft → PC, PS4(Sony)            → 제조사 1개  ❌ 제거
 ```
 
 > ⚠️ **CTE 없이도 해결 가능하다.** HAVING 안에 CASE WHEN 을 바로 넣으면 되기 때문에 서브쿼리나 CTE 로 먼저 분류한 뒤 다시 집계할 필요가 없다.
+
+----
+---
+
+# ⑥ CASE WHEN 으로 출력 순서 바꾸기 ⭐️
+
+## 실제 데이터를 바꾸는 게 아니라 출력용 id 를 바꾸는 방식
+
+```
+발상의 전환:
+  "자리를 바꾼다" = 실제 데이터를 수정하는 것이 아님
+  SELECT 에서 id 를 재계산해서 ORDER BY 에 넘기면
+  마치 자리가 바뀐 것처럼 출력됨
+```
+
+## 연속 두 학생 자리 맞교환 문제
+
+```
+문제:
+  홀수 id → 다음 자리(id+1)로 이동
+  짝수 id → 이전 자리(id-1)로 이동
+  단, 마지막 학생이 홀수 id 이면 그대로
+
+  id=1 ↔ id=2 / id=3 ↔ id=4 / id=5 (마지막 홀수 → 그대로)
+```
+
+## 핵심 — CASE WHEN 조건 우선순위 ⭐️
+
+```sql
+CASE
+    WHEN id = (SELECT MAX(id) FROM Seat) AND id % 2 = 1 THEN id
+    -- ↑ 마지막 홀수 id 이면 그대로 유지
+    WHEN id % 2 = 1 THEN id + 1
+    -- ↑ 일반 홀수 → 다음 id로
+    ELSE id - 1
+    -- ↑ 짝수 → 이전 id로
+END
+```
+
+```
+WHEN 순서가 중요한 이유 ⭐️:
+  CASE 는 위에서 아래로 순서대로 검사
+  먼저 매칭되면 즉시 반환 (나머지 WHEN 검사 안 함)
+
+  만약 순서를 바꾸면:
+    WHEN id % 2 = 1 THEN id + 1   ← 이게 먼저
+    WHEN id = MAX AND id % 2 = 1  ← 여기까지 못 옴 (이미 위에서 잡힘!)
+
+  "더 구체적인 조건(특수 케이스)"을 앞에
+  "일반 조건"을 뒤에
+```
+
+## (SELECT MAX(id) FROM Seat) — 서브쿼리로 마지막 행 찾기
+
+```sql
+-- 마지막 id 찾기
+SELECT MAX(id) FROM Seat   -- 예: 5
+
+-- CASE WHEN 안에 서브쿼리 삽입
+WHEN id = (SELECT MAX(id) FROM Seat) AND id % 2 = 1 THEN id
+-- "현재 id 가 마지막 id 이고 홀수이면 그대로"
+```
+
+```
+왜 COUNT(*) 로 못 쓰나:
+  ❌ WHEN id = COUNT(*) → 집계 함수는 WHERE/CASE 에서 직접 비교 불가
+  ✅ WHEN id = (SELECT COUNT(*) FROM Seat) → 서브쿼리로 감싸면 가능
+  ✅ WHEN id = (SELECT MAX(id) FROM Seat) → MAX 로 마지막 id 파악
+```
+
+## 전체 쿼리 두 가지 방식
+
+```sql
+-- 방법 1: CTE 사용 (단계별로 명확)
+WITH change_id AS (
+    SELECT
+        id,
+        student,
+        CASE
+            WHEN id = (SELECT MAX(id) FROM Seat) AND id % 2 = 1 THEN id
+            WHEN id % 2 = 1 THEN id + 1
+            ELSE id - 1
+        END AS id_change
+    FROM Seat
+)
+SELECT id_change AS id, student
+FROM change_id
+ORDER BY id_change;
+
+-- 방법 2: 인라인 (더 간결)
+SELECT
+    CASE
+        WHEN id = (SELECT MAX(id) FROM Seat) AND id % 2 = 1 THEN id
+        WHEN id % 2 = 1 THEN id + 1
+        ELSE id - 1
+    END AS id,
+    student
+FROM Seat
+ORDER BY id;
+```
+
+## 단계별 동작 확인
+
+```
+Seat 테이블:
+  id | student
+   1 | Alice
+   2 | Bob
+   3 | Carol
+   4 | Dave
+   5 | Eve     ← 마지막, 홀수
+
+CASE 결과:
+  id=1: 홀수, 마지막 아님 → id+1 = 2
+  id=2: 짝수                → id-1 = 1
+  id=3: 홀수, 마지막 아님 → id+1 = 4
+  id=4: 짝수                → id-1 = 3
+  id=5: 홀수, 마지막 홀수  → id = 5 (그대로)
+
+ORDER BY id_change 로 정렬:
+  id=1 → Bob     (원래 id=2)
+  id=2 → Alice   (원래 id=1)
+  id=3 → Dave    (원래 id=4)
+  id=4 → Carol   (원래 id=3)
+  id=5 → Eve     (그대로)
+```
+
+## 패턴 정리
+
+```
+CASE WHEN 으로 출력 컬럼 값을 재계산
+→ ORDER BY 에 그 컬럼 사용
+→ 마치 데이터가 재배치된 것처럼 출력
+
+응용:
+  홀짝 자리 교환
+  특정 값을 맨 앞/뒤로 정렬
+  조건부 정렬 순서 지정
+```
+
+
+```sql
+-- 응용: 특정 상태를 맨 앞으로
+SELECT name, status
+FROM orders
+ORDER BY
+    CASE WHEN status = 'URGENT' THEN 0 ELSE 1 END,
+    created_at;
+-- URGENT 가 항상 먼저, 나머지는 날짜순
+```
 
 ---
 
