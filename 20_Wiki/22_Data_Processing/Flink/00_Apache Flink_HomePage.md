@@ -80,7 +80,7 @@ _무한한 스트림 데이터를 시간/개수 단위로 잘라서 처리하는
 
 _Flink가 "Stateful"한 이유. 장애가 발생해도 데이터를 잃지 않는 비결._
 
-- [[Flink_State]] : 상태 관리 Memory (`Keyed State`, `Operator State`, `ValueState`, `ListState`, `MapState`, `이벤트 간 기억`)
+- [[Flink_state]] : 상태 관리 Memory (`Keyed State`, `Operator State`, `ValueState`, `ListState`, `MapState`, `이벤트 간 기억`)
 - [[Flink_State_Persistence]] : 영구 저장과 복구 Safety
     - **Checkpoint** : Flink가 알아서 찍는 자동 스냅샷 (`장애 복구`, `checkpointInterval`, `Exactly-once`, `자동화`)
     - **Savepoint** : 사람이 직접 찍는 수동 스냅샷 (`배포`, `업그레이드`, `수동 트리거`, `버전 관리`)

@@ -12,7 +12,7 @@
 |노트|핵심 개념|
 |---|---|
 |[[Numpy_Array_Basics]]|`ndarray` / `dtype` / `shape` / `List vs ndarray` / 연속 메모리 / 벡터화|
-|[[Numpy_Array_Creation]]|`np.array` / `np.zeros` / `np.ones` / `np.arange` / `np.random` / `np.eye` / `tolist` / `linspace`|
+|[[Numpy_Array_creation]]|`np.array` / `np.zeros` / `np.ones` / `np.arange` / `np.random` / `np.eye` / `tolist` / `linspace`|
 
 ---
 
@@ -24,7 +24,7 @@
 
 |노트|핵심 개념|
 |---|---|
-|[[Numpy_Indexing_Slicing]]|`[행, 열]` / `[start:end:step]` / 음수 인덱스 / 다차원 슬라이싱|
+|[[Numpy_Indexing_slicing]]|`[행, 열]` / `[start:end:step]` / 음수 인덱스 / 다차원 슬라이싱|
 |[[Numpy_Boolean_Fancy_Indexing]]|Boolean Mask / 조건 필터링 / Fancy Indexing / `np.where` / 마스크 씌우기|
 
 ---
