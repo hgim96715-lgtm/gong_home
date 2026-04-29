@@ -19,6 +19,7 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Python_Math_Module]]"
   - "[[Python_Type_Checking]]"
+  - "[[Python_Unpacking]]"
 ---
 # Python_Builtin_Functions — 내장함수
 
@@ -85,6 +86,67 @@ sum(range(1, 6))                  # 1+2+3+4+5 = 15
 # 비교: a, b 정렬 후 사용 (Python_Variable_Swapping 패턴)
 if a > b: a, b = b, a
 sum(range(a, b+1))   # 동일 결과
+```
+
+## max / min 활용 — 두 값 정렬 패턴 ⭐️
+
+```
+"회전 가능 / 방향 선택 가능한 경우"
+→ 항상 큰 쪽을 가로, 작은 쪽을 세로로 통일
+
+상황 감지 키워드:
+  "회전 가능", "방향 선택 가능", "가로/세로 구분 없음"
+  "박스 안에 넣기", "직사각형 포함 여부"
+  → 즉시 "정렬 패턴" 떠올리기
+```
+
+```python
+# 방법 1 — if 로 바꾸기
+for a, b in sizes:
+    if a < b:
+        a, b = b, a      # a 가 더 작으면 바꿔서 a 가 항상 큰 쪽
+    w = max(w, a)
+    h = max(h, b)
+
+# 방법 2 — max/min 으로 한 줄에
+for a, b in sizes:
+    a, b = max(a, b), min(a, b)   # a = 항상 큰 값 / b = 항상 작은 값
+    w = max(w, a)
+    h = max(h, b)
+```
+
+```
+if a < b: a, b = b, a   vs   a, b = max(a,b), min(a,b):
+  결과 동일
+  if 방식   → 조건 분기 / 읽기 쉬움
+  max/min  → 한 줄 / 간결 (Pythonic)
+```
+
+## 명함 지갑 문제 — 전체 풀이 ⭐️
+
+```python
+# 문제: 모든 명함을 수납하는 가장 작은 지갑 크기
+# 명함은 회전 가능 → 긴 쪽을 가로로 통일
+
+def solution(sizes):
+    w, h = 0, 0
+    for a, b in sizes:
+        if a < b:
+            a, b = b, a    # a = 긴 쪽 / b = 짧은 쪽으로 통일
+        w = max(w, a)      # 모든 명함 중 가장 긴 가로
+        h = max(h, b)      # 모든 명함 중 가장 긴 세로
+    return w * h
+
+# Pythonic 한 줄 버전
+def solution(sizes):
+    return max(max(x) for x in sizes) * max(min(x) for x in sizes)
+```
+
+```
+핵심 아이디어:
+  각 명함을 (긴 변, 짧은 변) 으로 통일
+  → 모든 명함의 긴 변 중 최댓값 = 지갑 가로
+  → 모든 명함의 짧은 변 중 최댓값 = 지갑 세로
 ```
 
 ## max / min 주의 — 문자열 vs 숫자
