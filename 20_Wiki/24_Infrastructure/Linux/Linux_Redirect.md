@@ -11,6 +11,7 @@ related:
   - "[[Linux_System_Info]]"
   - "[[Linux_Text_Commands]]"
   - "[[Linux_Search_Filter]]"
+  - "[[Linux_Diff]]"
 ---
 
 # Linux_Redirect — 입출력 리다이렉션
