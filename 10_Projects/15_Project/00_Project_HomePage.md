@@ -164,7 +164,7 @@ docker-compose down --volumes --rmi all
     - Kafka에 들어온 데이터를 실시간으로 꺼내서 차트와 표로 시각화 (데이터 유입 확인용)
 4. [x] **Kafka 데이터를 DB(PostgreSQL)에 저장하기 (Sink)** [[03_kafka_to_Postgres]]
 5.  [x] **Spark로 대용량 배치 분석하기** [[04_Spark_Batch]] 적재된 데이터를 Spark로 읽어서 종합 리포트 생성 + Dashboard에 시각화
-6. [x] **Airflow로 워크플로우 자동화** [[05_Airflow_DAG]]
+6. [x] **Airflow로 워크플로우 자동화** [[10_Projects/15_Project/05_Airflow_DAG]]
 7. [x] [Flink] Kafka 데이터 실시간 집계하기 (Window Processing) [[06_Flink_job]]
 8. [x] "Flink 결과를 DB에 넣고 Streamlit에 붙이는 작업 
 9. [x] Data Lake (MinIO) 도입하기 [[07_minIO]]

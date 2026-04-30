@@ -1,5 +1,9 @@
 
 
+```
+목표: Airflow · Spark · API 파이프라인을 직접 짤 수 있는 Python 실력
+```
+
 ## 버전 확인 & 관리
 
 ```bash
@@ -61,16 +65,16 @@ python3 --version
 
 ### 내장함수 & 수학
 
-|노트|핵심 개념|
-|---|---|
-|[[Python_Builtin_Functions]]|max / min / sum / len / abs / ord / chr / pow / int(s,진수) / bin / hex|
-|[[Python_Number_Bases]]|2/3/8/16진수 변환 / bin() / oct() / hex() / int(s,base) / while 직접 구현|
-|[[Python_Sorting_Logic]]|sort / sorted / key / lambda / reverse / 다중 정렬|
-|[[Python_Math_Module]]|math.prod / ceil / floor / gcd / sqrt / pi|
-|[[Python_Fractions_Module]]|Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지|
-|[[Python_Statistics_Module]]|mean / median / stdev / variance|
-|[[Python_Collections_Counter]]|Counter / most_common / 딕셔너리 연산|
-|[[Python_Itertools]]|combinations / permutations / product / chain / groupby|
+| 노트                             | 핵심 개념                                                                 |
+| ------------------------------ | --------------------------------------------------------------------- |
+| [[Python_Builtin_Functions]]   | max / min / sum / len / abs / ord / chr / pow / int(s,진수) / bin / hex |
+| [[Python_Number_Bases]]        | 2/3/8/16진수 변환 / bin() / oct() / hex() / int(s,base) / while 직접 구현     |
+| [[Python_Sorting_Logic]]       | sort / sorted / key / lambda / reverse / 다중 정렬                        |
+| [[Python_Math_Module]]         | math.prod / ceil / floor / gcd / sqrt / pi                            |
+| [[Python_Fractions_Module]]    | Fraction / 분수 연산 / 자동 약분 / 부동소수점 오차 방지                                |
+| [[Python_Statistics_Module]]   | mean / median / stdev / variance                                      |
+| [[Python_Collections_Modules]] | Counter / most_common / 딕셔너리 연산                                       |
+| [[Python_Itertools]]           | combinations / permutations / product / chain / groupby               |
 
 ---
 
@@ -126,7 +130,7 @@ JSON 처리의 핵심
 |노트|핵심 개념|
 |---|---|
 |[[Python_Error_Handling]]|try / except / finally / raise / Exception 종류|
-|[[Python_Logging]]|logging / DEBUG·INFO·WARNING·ERROR / 핸들러|
+|[[Python_Logging]]|logging / basicConfig / getLogger(**name**) / stream=sys.stdout / Handler / Docker 로그|
 
 ### 파일 & 경로
 
@@ -135,6 +139,7 @@ JSON 처리의 핵심
 |[[Python_File_IO]]|open / with / r·w·a 모드 / context manager|
 |[[Python_OS_Module]]|os.path.exists / environ / remove / getcwd|
 |[[Python_Pathlib]]|Path / exists / mkdir / / 연산자|
+|[[Python_Subprocess]]|subprocess.run / capture_output / returncode / dbt·git 실행 / Airflow 활용|
 
 ### API 요청 & 응답
 

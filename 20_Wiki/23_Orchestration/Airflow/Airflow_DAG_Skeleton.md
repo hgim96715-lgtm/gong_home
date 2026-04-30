@@ -15,9 +15,8 @@ related:
   - "[[Airflow_UI_Usage]]"
   - "[[Airflow_TaskGroup]]"
   - "[[Catchup_and_Backfill]]"
-  - "[[Terminal_Editors]]"
-  - "[[Linux_Scheduling_Crontab_at]]"
   - "[[Airflow_Execution_Date]]"
+  - "[[00_Airflow_HomePage]]"
 ---
 # Airflow_DAG_Skeleton — DAG 기본 템플릿
 
@@ -313,7 +312,7 @@ schedule = '@hourly'       # 매시 정각
 schedule = None            # 수동 실행만
 ```
 
->[[Linux_Scheduling_Crontab_at]] & [[Airflow_Scheduling]] 참고 
+>[[Linux_Background_Jobs]] & [[Airflow_Scheduling]] 참고 
 
 ## tags — Web UI 필터링용
 

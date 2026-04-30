@@ -15,7 +15,7 @@ related:
   - "[[Airflow_TaskFlow_API]]"
   - "[[SQL_DML_CRUD]]"
 ---
-
+-
 
 # Airflow_Hooks — Hook 이란
 
@@ -191,7 +191,6 @@ def fetch_and_upsert(**context):
 
     # ③ updated_at 추가 (튜플 이어붙이기)
     # datetime.now() / pendulum.now() / SQL NOW() 중 선택 (아래 비교 참고)
-    # [[Python_Lists_Tuples#⑨ 튜플 이어붙이기 — 실전 패턴]] 참고 
     rows_with_ts = [r + (datetime.now(),) for r in rows]
 
     # ④ execute_values 로 한 방에 적재
@@ -202,39 +201,6 @@ def fetch_and_upsert(**context):
     conn.close()
     print(f"[적재] {len(rows)}개 병원 → er_hospitals UPSERT 완료")
 ```
-
-```
-VALUES %s 는 execute_values 전용 문법
-  일반 %s 와 다름 — execute_values 가 리스트를 알아서 펼쳐줌
-
-일반 psycopg2:
-  sql = "INSERT INTO table (a, b) VALUES (%s, %s)"
-  cur.execute(sql, ("값1", "값2"))     ← 한 건씩
-
-execute_values 전용:
-  sql = "INSERT INTO table (a, b) VALUES %s"
-                                         ↑ 괄호 없이 %s 하나만
-
-  rows = [("A", 1), ("B", 2), ("C", 3)]
-  execute_values(cur, sql, rows)
-  #              1    2    3
-  #              ↑    ↑    ↑
-  #            커서  SQL  데이터(리스트)
-  → 내부에서 VALUES ('A', 1), ('B', 2), ('C', 3) 으로 변환
-  → 쿼리 1번으로 3건 INSERT
-
-  인자 순서:
-    1. cur   → psycopg2 커서 (conn.cursor() 로 만든 것)
-    2. sql   → VALUES %s 가 포함된 INSERT 문
-    3. rows  → [(튜플1), (튜플2), ...] 데이터 리스트
-
-rows_with_ts = [r + (datetime.now(),) for r in rows]:
-  각 튜플 r 에 (updated_at,) 를 이어붙임
-  r = ("A1100001", ..., "서울")
-  r + (datetime.now(),) = ("A1100001", ..., "서울", 2026-03-23 ...)
-```
-
->[[Python_Lists_Tuples#⑨ 튜플 이어붙이기 — 실전 패턴]] 참고 
 
 ## updated_at 시각 — datetime.now() vs pendulum.now() vs NOW()
 
@@ -288,9 +254,38 @@ pendulum.now("UTC")
   UPSERT 갱신 시각만       → SQL NOW()  (가장 간결)
 ```
 
-## ON CONFLICT + EXCLUDED — UPSERT 핵심 ️
+```
+VALUES %s 는 execute_values 전용 문법
+  일반 %s 와 다름 — execute_values 가 리스트를 알아서 펼쳐줌
 
->[[SQL_DML_CRUD#⑤ ON CONFLICT — PostgreSQL UPSERT ⭐️]] 참고 
+일반 psycopg2:
+  sql = "INSERT INTO table (a, b) VALUES (%s, %s)"
+  cur.execute(sql, ("값1", "값2"))     ← 한 건씩
+
+execute_values 전용:
+  sql = "INSERT INTO table (a, b) VALUES %s"
+                                         ↑ 괄호 없이 %s 하나만
+
+  rows = [("A", 1), ("B", 2), ("C", 3)]
+  execute_values(cur, sql, rows)
+  #              1    2    3
+  #              ↑    ↑    ↑
+  #            커서  SQL  데이터(리스트)
+  → 내부에서 VALUES ('A', 1), ('B', 2), ('C', 3) 으로 변환
+  → 쿼리 1번으로 3건 INSERT
+
+  인자 순서:
+    1. cur   → psycopg2 커서 (conn.cursor() 로 만든 것)
+    2. sql   → VALUES %s 가 포함된 INSERT 문
+    3. rows  → [(튜플1), (튜플2), ...] 데이터 리스트
+
+rows_with_ts = [r + (datetime.now(),) for r in rows]:
+  각 튜플 r 에 (updated_at,) 를 이어붙임
+  r = ("A1100001", ..., "서울")
+  r + (datetime.now(),) = ("A1100001", ..., "서울", 2026-03-23 ...)
+```
+
+## ON CONFLICT + EXCLUDED — UPSERT 핵심 ⭐️
 
 ```
 ON CONFLICT (hpid) DO UPDATE SET:
@@ -474,7 +469,221 @@ with DAG(
 
 ---
 
-# ⑤ 주의사항
+# ⑤ PostgresLoader 클래스 패턴 — DAG 와 DB 로직 분리 ⭐️
+
+## 왜 클래스로 분리하나
+
+```
+@task 함수 안에 DB 로직을 직접 쓰면:
+  코드가 길어짐
+  재사용 불가
+  테스트 어려움
+
+PostgresLoader 클래스로 분리하면:
+  DAG 파일 = 흐름만 (깔끔)
+  load_to_postgres.py = DB 로직만
+  여러 DAG 에서 재사용 가능
+  단위 테스트 가능
+```
+
+## 기본 구조
+
+```python
+# load_to_postgres.py 파일 (DAG 와 분리)
+
+import logging
+from psycopg2.extras import execute_values
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+log = logging.getLogger(__name__)
+
+
+class PostgresLoader:
+    """PostgreSQL 적재 로직을 한 곳에 모은 클래스"""
+
+    def __init__(self, conn_id: str = "postgres_default"):
+        self.conn_id = conn_id
+
+    def test_connection(self) -> bool:
+        """DB 연결 가능한지 확인"""
+        try:
+            hook = PostgresHook(postgres_conn_id=self.conn_id)
+            conn = hook.get_conn()
+            conn.close()
+            log.info("PostgreSQL 연결 성공: %s", self.conn_id)
+            return True
+        except Exception as e:
+            log.error("PostgreSQL 연결 실패: %s", str(e))
+            return False
+
+    def upsert_exhibitions(self, exhibitions: list) -> int:
+        """전시 데이터 UPSERT"""
+        if not exhibitions:
+            return 0
+
+        hook = PostgresHook(postgres_conn_id=self.conn_id)
+        conn = hook.get_conn()
+        cur = conn.cursor()
+
+        sql = """
+            INSERT INTO exhibitions (exhibition_id, title, venue, start_date, end_date)
+            VALUES %s
+            ON CONFLICT (exhibition_id) DO UPDATE SET
+                title      = EXCLUDED.title,
+                venue      = EXCLUDED.venue,
+                start_date = EXCLUDED.start_date,
+                end_date   = EXCLUDED.end_date,
+                updated_at = NOW()
+        """
+        rows = [
+            (ex["exhibition_id"], ex["title"], ex["venue"],
+             ex["start_date"], ex["end_date"])
+            for ex in exhibitions
+        ]
+        execute_values(cur, sql, rows)
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        log.info("전시 UPSERT 완료: %d건", len(rows))
+        return len(rows)
+
+    def mark_inactive(self, active_ids: list) -> int:
+        """현재 활성 ID 목록 외 나머지를 비활성 처리"""
+        if not active_ids:
+            return 0
+
+        hook = PostgresHook(postgres_conn_id=self.conn_id)
+        conn = hook.get_conn()
+        cur = conn.cursor()
+
+        cur.execute("""
+            UPDATE exhibitions
+            SET is_active = FALSE, updated_at = NOW()
+            WHERE exhibition_id != ALL(%s) AND is_active = TRUE
+        """, (active_ids,))
+
+        count = cur.rowcount
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        log.info("비활성 처리 완료: %d건", count)
+        return count
+```
+
+## DAG 에서 사용하는 방법 ⭐️
+
+```python
+# my_dag.py
+
+import sys
+sys.path.insert(0, '/opt/airflow/loaders')  # PostgresLoader 경로
+
+from airflow.decorators import dag, task
+import pendulum
+import logging
+
+log = logging.getLogger(__name__)
+
+
+@dag(schedule="0 9 * * *", start_date=pendulum.datetime(2026, 1, 1), catchup=False)
+def exhibition_pipeline():
+
+    @task
+    def crawl() -> dict:
+        """크롤링 로직"""
+        # ...
+        return {"exhibitions": [...], "price_rows": [...], "stats": [...]}
+
+    @task
+    def load(crawl_result: dict):
+        """
+        크롤링 결과를 받아 PostgreSQL에 적재
+        crawl_result 인자는 자동으로 XCom Pull 됨
+        """
+        from load_to_postgres import PostgresLoader    # ← 함수 안에서 import
+
+        if not crawl_result:
+            raise ValueError("크롤링 결과를 가져오지 못했습니다.")
+
+        exhibitions  = crawl_result["exhibitions"]
+        price_rows   = crawl_result["price_rows"]
+        stats        = crawl_result["stats"]
+
+        loader = PostgresLoader()                      # ← 클래스 인스턴스
+
+        if not loader.test_connection():               # ← 연결 확인
+            raise ConnectionError("PostgreSQL 연결 실패")
+
+        n_ex      = loader.upsert_exhibitions(exhibitions)
+        n_price   = loader.upsert_exhibition_prices(price_rows) if price_rows else 0
+        n_stats   = loader.upsert_stats(stats) if stats else 0
+        n_hist    = loader.insert_history(exhibitions)
+
+        active_ids = [ex["exhibition_id"] for ex in exhibitions]
+        n_inactive = loader.mark_inactive(active_ids)
+
+        log.info(
+            "적재 완료 | 전시: %d건 | 가격: %d건 | 통계: %d건 | 히스토리: %d건 | 비활성: %d건",
+            n_ex, n_price, n_stats, n_hist, n_inactive,
+        )
+
+        return {
+            "exhibitions": n_ex,
+            "prices":      n_price,
+            "stats":       n_stats,
+            "history":     n_hist,
+            "inactive":    n_inactive,
+        }
+
+    crawl_result = crawl()
+    load(crawl_result)       # ← crawl 의 return 이 자동으로 load 인자로 전달
+
+
+exhibition_pipeline()
+```
+
+## 핵심 포인트 정리
+
+```
+test_connection() 패턴:
+  try/except 로 연결 시도
+  성공 → True 반환
+  실패 → False 반환 + 에러 로그
+  → @task 에서 False 면 raise ConnectionError 로 DAG 실패 처리
+
+from load_to_postgres import PostgresLoader 위치:
+  ❌ DAG 파일 최상단  → Scheduler 파싱 시마다 import (Top-level 금지)
+  ✅ @task 함수 안    → 실행 시점에만 import
+
+crawl_result 인자 = 자동 XCom Pull:
+  TaskFlow API (@task) 에서
+  함수 인자 이름이 이전 @task 의 return 변수와 연결됨
+  xcom_pull 코드 안 써도 자동 처리 ← XCom 의 핵심
+```
+
+## 클래스 분리 패턴 — 파일 구조
+
+```
+/opt/airflow/
+├── dags/
+│   └── exhibition_pipeline.py   ← DAG (흐름만)
+├── loaders/
+│   └── load_to_postgres.py      ← DB 로직 (PostgresLoader 클래스)
+└── crawlers/
+    └── exhibition_crawler.py    ← 크롤링 로직
+```
+
+```
+장점:
+  DAG 파일 = 파이프라인 흐름만 담당 → 짧고 읽기 쉬움
+  PostgresLoader = DB 로직만 담당 → 다른 DAG 에서 재사용
+  test_connection() 으로 사전 검증 → 적재 실패 원인 명확
+  각 메서드(upsert_exhibitions 등) 단위 테스트 가능
+```
+
+# ⑥ 주의사항
 
 ## Hook 은 반드시 함수 안에서 생성
 

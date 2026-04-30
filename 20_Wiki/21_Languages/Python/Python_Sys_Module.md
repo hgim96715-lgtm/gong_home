@@ -11,6 +11,7 @@ related:
   - "[[00_Python_HomePage]]"
   - "[[Python_Modules_Imports]]"
   - "[[Airflow_Operators]]"
+  - "[[Python_Logging]]"
 ---
 
 
@@ -180,10 +181,32 @@ import sys
 
 # 현재 경로 목록 확인
 print(sys.path)
-# ['/current/dir', '/usr/lib/python3.10', ...]
+# ['',                             ← 현재 작업 디렉토리
+#  '/usr/lib/python310.zip',
+#  '/usr/lib/python3.10',
+#  '/usr/lib/python3.10/lib-dynload',
+#  '/usr/local/lib/python3.10/dist-packages',  ← pip 설치 패키지들
+#  ...]
 ```
 
-## sys.path.append vs sys.path.insert
+## sys.path 기본 구성
+
+```
+sys.path 에 자동으로 들어오는 것들:
+  ''(빈 문자열)      현재 작업 디렉토리
+  PYTHONPATH        환경변수로 지정한 경로
+  표준 라이브러리     /usr/lib/python3.x/
+  site-packages     pip 로 설치한 패키지들
+
+import 탐색 순서:
+  1. 현재 디렉토리 ('')
+  2. PYTHONPATH 경로들
+  3. 표준 라이브러리
+  4. site-packages
+  → 앞에서 찾으면 즉시 반환 (뒤는 안 봄)
+```
+
+## sys.path.append vs sys.path.insert ⭐️
 
 ```python
 # append — 목록 맨 끝에 추가 (우선순위 낮음)
@@ -195,12 +218,40 @@ sys.path.insert(0, '/opt/airflow/producer')
 
 ```
 차이:
-  append  → 기존 경로 다 탐색 후 마지막에 확인
+  append        → 기존 경로 다 탐색 후 마지막에 확인
   insert(0, ...) → 가장 먼저 확인
 
   같은 이름의 모듈이 여러 경로에 있을 때:
   insert(0, ...) → 내가 추가한 경로의 모듈을 우선 사용
   → 충돌 방지 목적이면 insert(0, ...) 사용
+```
+
+## ModuleNotFoundError 디버깅 패턴 ⭐️
+
+```python
+# 에러 발생 시 확인 절차
+import sys
+
+# 1. 현재 sys.path 출력
+print('\n'.join(sys.path))
+
+# 2. 찾고 싶은 모듈이 어디 있는지 확인
+import os
+print(os.path.exists('/opt/airflow/producer/producer.py'))
+
+# 3. 경로 추가
+sys.path.insert(0, '/opt/airflow/producer')
+
+# 4. 다시 import
+from producer import TrainProducer
+```
+
+```
+자주 겪는 ModuleNotFoundError 원인:
+  가상환경 활성화 안 됨    → source venv/bin/activate
+  pip 설치 안 됨          → pip install 패키지명
+  경로 문제               → sys.path.insert(0, 경로)
+  __init__.py 없음        → 패키지 폴더에 빈 파일 생성
 ```
 
 ## 실전 사용 패턴
@@ -212,16 +263,28 @@ import sys
 sys.path.insert(0, '/opt/airflow/producer')
 
 from producer import TrainProducer   # 이제 import 가능
-
-# ↑ 이 프로젝트 06_Airflow_Pipeline DAG 에서 실제로 씀
 ```
 
 ```python
 # 로컬 개발 시 상위 폴더의 모듈 import
 import sys
 import os
+
+# 현재 파일 기준 상위 디렉토리를 경로에 추가
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-# __file__ 의 절대 경로에서 상위 폴더를 sys.path 에 추가
+
+# 또는 특정 상위 폴더
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+```
+
+```python
+# PYTHONPATH 환경변수 확인 (sys.path 에 자동 포함)
+import os
+print(os.environ.get('PYTHONPATH', '없음'))
+
+# .env 또는 docker-compose 에서 설정
+# PYTHONPATH=/opt/airflow/producer:/opt/airflow/common
 ```
 
 ```
