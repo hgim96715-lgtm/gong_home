@@ -20,6 +20,7 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 | [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로 |
 | [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo   |
 
+
 ---
 
 ---
