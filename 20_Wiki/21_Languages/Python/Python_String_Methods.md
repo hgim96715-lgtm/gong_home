@@ -278,7 +278,113 @@ chr(ord('A') + 32)   # 'a'
 chr((ord('z') - ord('a') + 1) % 26 + ord('a'))  # 'a'
 ```
 
-## translate vs chr — 언제 뭘 쓰나
+## 시저 암호 — 알파벳 순환 이동 ⭐️
+
+```
+시저 암호:
+  각 알파벳을 n칸씩 밀기
+  z 에서 n칸 밀면 a 부터 다시 시작 (순환)
+  대문자 / 소문자 기준이 다름
+```
+
+## 핵심 공식
+
+```python
+# 대문자 기준
+(ord(ch) - ord('A') + n) % 26 + ord('A')
+#          ↑ 0~25 범위로 정규화   ↑ 다시 'A' 기준으로 복원
+# +n 이동 후 % 26 = 26을 넘으면 처음으로 돌아옴
+
+# 소문자 기준
+(ord(ch) - ord('a') + n) % 26 + ord('a')
+```
+
+```
+왜 ord(ch) - ord('A') 하나:
+  'A' = 65, 'B' = 66, ..., 'Z' = 90
+  -ord('A') 하면 A=0, B=1, ..., Z=25 로 정규화
+  → 0~25 범위에서 계산 후 % 26 으로 순환
+  → +ord('A') 로 원래 아스키 범위로 복원
+
+예시: 'Y' 를 3칸 이동
+  ord('Y') = 89
+  89 - 65 = 24   (Y는 0부터 24번째)
+  24 + 3  = 27
+  27 % 26 = 1    (순환 → B)
+  1 + 65  = 66
+  chr(66) = 'B'  ✅
+```
+
+## 전체 풀이 — 단계별 방식
+
+```python
+def solution(s, n):
+    answer = ''
+    for s1 in s:
+        if s1 == ' ':
+            answer += ' '
+        elif 'A' <= s1 <= 'Z':
+            p     = ord(s1) - ord('A')   # 0~25 정규화
+            new_p = (p + n) % 26          # n 이동 + 순환
+            answer += chr(new_p + ord('A'))  # 복원
+        else:
+            p     = ord(s1) - ord('a')
+            new_p = (p + n) % 26
+            answer += chr(new_p + ord('a'))
+    return answer
+```
+
+## Pythonic 버전 — base 변수로 통합 ⭐️
+
+```python
+def solution(s, n):
+    answer = ''
+    for ch in s:
+        if ch == ' ':
+            answer += ' '
+        else:
+            base = ord('A') if ch.isupper() else ord('a')
+            answer += chr((ord(ch) - base + n) % 26 + base)
+    return answer
+```
+
+```
+base = ord('A') if ch.isupper() else ord('a')
+  대문자이면 base = 65 ('A')
+  소문자이면 base = 97 ('a')
+  → 대소문자 분기를 한 줄로 처리
+
+핵심 공식 통합:
+  (ord(ch) - base + n) % 26 + base
+  ↑ 정규화     ↑ 이동  ↑ 순환  ↑ 복원
+```
+
+## 단계별 vs Pythonic 비교
+
+```
+단계별 방식:
+  elif 'A' <= s1 <= 'Z':  대문자 분기
+  else:                    소문자 분기
+  → 코드 길지만 각 단계 이해하기 쉬움
+
+Pythonic 방식:
+  base = ord('A') if ch.isupper() else ord('a')
+  → 공통 공식 하나로 통합
+  → 코드 짧고 수식 구조 명확
+
+처음에 짤 때 → 단계별 방식으로 로직 확인
+리팩토링    → Pythonic 방식으로 통합
+```
+
+## 자주 하는 실수 translate vs chr/ord
+
+```python
+# ❌ chr 로 변환 안 하고 숫자 그대로 더함
+answer += ord(s1) - ord('A')   # int + str → TypeError
+
+# ✅ chr() 로 반드시 문자로 변환
+answer += chr((ord(s1) - ord('A') + n) % 26 + ord('A'))
+```
 
 ```
 translate: 변환 규칙이 고정적이고 루프 없이 처리하고 싶을 때
