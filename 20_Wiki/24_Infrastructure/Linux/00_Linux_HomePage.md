@@ -14,12 +14,12 @@ GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
 Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 ```
 
-| 노트                            | 핵심 개념                                                |
-| ----------------------------- | ---------------------------------------------------- |
-| [[Linux_Concept_Overview]]    | 커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가    |
-| [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로 |
-| [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo   |
-
+| 노트                            | 핵심 개념                                                               |
+| ----------------------------- | ------------------------------------------------------------------- |
+| [[Linux_Concept_Overview]]    | 커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가                   |
+| [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로                |
+| [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo                  |
+| [[Linux_User_Group]]          | useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel |
 
 ---
 
