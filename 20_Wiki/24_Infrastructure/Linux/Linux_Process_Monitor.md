@@ -10,9 +10,9 @@ tags:
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_System_Info]]"
-  - "[[Linux_Process]]"
   - "[[Linux_Background_Jobs]]"
 ---
+
 
 # Linux_Process_Monitor — 프로세스 모니터링
 
@@ -163,6 +163,81 @@ kill -9 1234
 # 이름으로 종료
 killall python3      # python3 프로세스 전부
 pkill -f "script.py" # 명령어 패턴으로 찾아서 종료
+```
+
+## pgrep — 이름으로 PID 찾기 ⭐️
+
+```bash
+# 프로세스 이름으로 PID 만 출력
+pgrep nginx
+# 1234
+# 1235
+
+# 전체 명령줄 포함 검색 (-f)
+pgrep -f critical_service.sh
+# 200
+
+# 프로세스 이름과 PID 함께 출력
+pgrep -l nginx
+# 1234 nginx
+```
+
+```
+pgrep vs ps aux | grep:
+  ps aux | grep nginx  → 출력이 길고 grep 자신도 포함됨
+  pgrep nginx          → PID 숫자만 깔끔하게 출력
+
+  종료하기 전 PID 확인용으로 자주 씀
+```
+
+## ps -p — 특정 PID 상세 조회 ⭐️
+
+```bash
+# 특정 PID 의 상세 정보 출력
+ps -p 200
+ps -p 200 -o pid,ppid,cmd
+#     ↑ 원하는 컬럼만 지정
+# PID  PPID  CMD
+# 200   100  bash critical_service.sh
+
+# 컬럼 옵션
+# pid   = 프로세스 ID
+# ppid  = 부모 프로세스 ID
+# cmd   = 실행 명령어
+# %cpu  = CPU 사용률
+# %mem  = 메모리 사용률
+```
+
+```
+종료 전 신원 확인 루틴:
+  1. pgrep -f 스크립트명     → PID 확인
+  2. ps -p PID -o pid,ppid,cmd → 정확한 대상인지 검증
+  3. kill PID               → 안전하게 종료
+```
+
+## pkill — 이름으로 종료 ⭐️
+
+```bash
+# 이름으로 종료 (PID 몰라도 됨)
+pkill nginx
+
+# 전체 명령줄 패턴으로 종료 (-f)
+pkill -f resource_hog.sh
+pkill -f "data_processor"
+
+# 종료 확인
+ps aux | grep resource_hog.sh
+# grep 자신만 남아있으면 종료 성공
+```
+
+```
+⚠️ pkill 주의사항:
+  pkill python  → 실행 중인 모든 python 프로세스 종료!
+  너무 광범위한 이름 사용 금지
+
+  안전한 순서:
+  pgrep -f 정확한패턴  → 대상 확인
+  pkill -f 정확한패턴  → 종료
 ```
 
 ## SIGTERM vs SIGKILL
