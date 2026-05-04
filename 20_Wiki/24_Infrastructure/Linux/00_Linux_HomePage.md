@@ -1,4 +1,5 @@
 
+
 ```
 데이터 엔지니어가 서버를 다루는 언어
 GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
@@ -14,12 +15,12 @@ GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
 Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 ```
 
-| 노트                            | 핵심 개념                                                               |
-| ----------------------------- | ------------------------------------------------------------------- |
-| [[Linux_Concept_Overview]]    | 커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가                   |
-| [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로                |
-| [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo                  |
-| [[Linux_User_Group]]          | useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel |
+|노트|핵심 개념|
+|---|---|
+|[[Linux_Concept_Overview]]|커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가|
+|[[Linux_Directory_Structure]]|/ (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로|
+|[[Linux_Permission_Model]]|rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo|
+|[[Linux_User_Group]]|useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel|
 
 ---
 
@@ -51,9 +52,10 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 |노트|핵심 개념|
 |---|---|
 |[[Linux_System_Info]] ⭐|whoami / uname -a / uptime / id / hostname / 시스템 점검 루틴|
-|[[Linux_Process_Monitor]] ⭐|top / htop / ps aux / kill / PID / Load Average / 좀비 프로세스|
+|[[Linux_Process_Monitor]] ⭐|top / htop / ps aux / pgrep / pkill / kill / PID / Load Average / 좀비 프로세스|
+|[[Linux_Background_Jobs]]|nohup / & / fg / bg / jobs / 2>&1 / 백그라운드 실행 / 로그아웃 후에도 유지|
 |[[Linux_Disk_Memory]]|df -h / du -sh / free -h / 디스크 100% 장애 대응 / 용량 확보|
-|[[Linux_Network_Check]]|ip addr / curl / wget / netstat / ss / 포트 확인 / ping|
+|[[Linux_Network_Check]]|ip addr / ifconfig / ping -c / ss -tlnp / curl / 포트 확인 / 트러블슈팅 흐름|
 |[[Linux_Log]] ⭐|dmesg / journalctl / syslog / logrotate / 에러 로그 추적|
 
 ---
@@ -66,13 +68,13 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 로그 파일에서 필요한 정보를 뽑아내자
 ```
 
-| 노트                        | 핵심 개념                                                   |
-| ------------------------- | ------------------------------------------------------- |
-| [[Linux_Text_Commands]]   | cat / less / head / tail -f / 실시간 로그 모니터링               |
-| [[Linux_Search_Filter]] ⭐ | grep / grep -r / grep -i / -E / 파이프(\|) / 로그에서 ERROR 추출 |
-| [[Linux_Text_Processing]] | awk / sed / cut / sort / uniq / wc / 데이터 전처리 기초         |
-| [[Linux_Redirect]] ⭐      | > (덮어쓰기) / >> (추가) / < / 2> stderr / 보고서 자동 생성          |
-| [[Linux_Diff]]            | diff / diff -r / 스테이징 vs 프로덕션 비교 / 누락 파일 찾기             |
+|노트|핵심 개념|
+|---|---|
+|[[Linux_Text_Commands]]|cat / less / head / tail -f / 실시간 로그 모니터링|
+|[[Linux_Search_Filter]] ⭐|grep / grep -r / grep -i / -E / 파이프(\|) / 로그에서 ERROR 추출|
+|[[Linux_Text_Processing]]|awk / sed / cut / sort / uniq / wc / 데이터 전처리 기초|
+|[[Linux_Redirect]] ⭐|> (덮어쓰기) / >> (추가) / < / 2> stderr / 보고서 자동 생성|
+|[[Linux_Diff]]|diff / diff -r / 스테이징 vs 프로덕션 비교 / 누락 파일 찾기|
 
 ---
 
@@ -100,6 +102,7 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 |---|---|
 |[[Linux_Permission_Handling]]|sudo 없이 작업하기 / docker group 추가 / 권한 에러 패턴|
 |[[Linux_SSH_Basics]]|ssh / scp / 키 기반 인증 / ~/.ssh/config / 원격 서버 접속|
+|[[Linux_Firewall]]|ufw / allow / deny / enable / SSH 먼저 허용 ⚠️ / Docker 주의사항|
 |[[Linux_Environment_Variables]]|export / .bashrc / .bash_profile / PATH 추가 / env 확인|
 
 ---
