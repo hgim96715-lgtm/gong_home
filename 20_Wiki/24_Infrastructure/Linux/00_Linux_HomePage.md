@@ -104,6 +104,7 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 |[[Linux_SSH_Basics]]|ssh / scp / 키 기반 인증 / ~/.ssh/config / 원격 서버 접속|
 |[[Linux_Firewall]]|ufw / allow / deny / enable / SSH 먼저 허용 ⚠️ / Docker 주의사항|
 |[[Linux_Environment_Variables]]|export / .bashrc / .bash_profile / PATH 추가 / env 확인|
+|[[Linux_Package_APT]]|apt update / apt install -y / apt show / apt remove / autoremove / 의존성 관리|
 
 ---
 
