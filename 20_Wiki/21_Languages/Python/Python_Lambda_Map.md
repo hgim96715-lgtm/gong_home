@@ -9,13 +9,11 @@ tags:
   - Python
 related:
   - "[[RDD_Concept]]"
-  - "[[Spark_Session_Deep_Dive]]"
   - "[[Spark_Session_Context]]"
   - "[[00_Python_HomePage]]"
   - "[[Python_List_Comprehension]]"
+  - "[[Python_Lists_Tuples]]"
 ---
-
-
 # Python_Lambda_Map — Lambda & Map/Filter/Reduce
 
 ## 한 줄 요약
@@ -201,15 +199,92 @@ Spark 연결고리:
   Spark collect() → 결과 강제 실행
 
   둘 다 Lazy Evaluation 원리 동일
+  → [[Spark_Core_Objects]] 참고
 ```
 
-> → [[Spark_Core_Objects]] 참고
-
 ---
 
 ---
 
-# ④ 최종 암기 요약
+# ④ map + lambda 실전 패턴 ⭐️
+
+## 2차원 배열 순회 — x[인덱스] 접근
+
+```
+map 의 lambda 인자 x 가 리스트(또는 튜플) 일 때
+x[0], x[1], x[2] 로 각 원소에 접근
+
+commands = [[2, 5, 3], [4, 4, 1], [1, 7, 3]]
+map(lambda x: ..., commands)
+       ↑
+  x = [2, 5, 3]  → x[0]=2, x[1]=5, x[2]=3
+  x = [4, 4, 1]  → x[0]=4, x[1]=4, x[2]=1
+  ...
+```
+
+## 배열 자르고 정렬 후 k번째 — 실전 문제 ⭐️
+
+```python
+# for 문 방식 (단계별로 명확)
+def solution(array, commands):
+    answer = []
+    for command in commands:
+        i, j, k = command            # 언패킹
+        sliced = array[i-1:j]        # i번째~j번째 자르기 (1-indexed)
+        sorted_arr = sorted(sliced)  # 정렬
+        answer.append(sorted_arr[k-1])  # k번째 (1-indexed)
+    return answer
+
+# map + lambda 방식 (한 줄)
+def solution(array, commands):
+    return list(map(lambda x: sorted(array[x[0]-1:x[1]])[x[2]-1], commands))
+```
+
+## map + lambda 한 줄 해석
+
+```python
+lambda x: sorted(array[x[0]-1:x[1]])[x[2]-1]
+#                        ↑              ↑
+#          슬라이싱 + 정렬         k번째 꺼내기
+
+# x = [2, 5, 3] 일 때:
+#   x[0]-1 = 1   (i=2 → 인덱스 1)
+#   x[1]   = 5   (j=5 → 인덱스 5 미포함)
+#   x[2]-1 = 2   (k=3 → 인덱스 2)
+#
+#   array[1:5] = [5, 2, 6, 3]
+#   sorted([5, 2, 6, 3]) = [2, 3, 5, 6]
+#   [2, 3, 5, 6][2] = 5   ✅
+```
+
+```
+for 문 vs map+lambda:
+  for 문     → 단계별 명확 / 디버깅 쉬움
+  map+lambda → 한 줄 / 간결 / 익숙해지면 빠르게 읽힘
+
+  for 문 먼저 짜서 로직 확인
+  → 익숙해지면 map+lambda 로 리팩토링
+```
+
+## lambda 에서 x[인덱스] 접근 패턴 정리
+
+```python
+# x 가 리스트/튜플일 때
+list(map(lambda x: x[0] + x[1], [[1,2], [3,4], [5,6]]))
+# [3, 7, 11]
+
+# x 가 딕셔너리일 때
+data = [{"name": "Kim", "age": 25}, {"name": "Lee", "age": 30}]
+list(map(lambda x: x["name"], data))
+# ['Kim', 'Lee']
+
+# 정렬 key 로 활용
+commands = [[2,5,3], [4,4,1], [1,7,3]]
+sorted(commands, key=lambda x: x[2])  # k 값 기준 정렬
+# [[4,4,1], [1,7,3], [2,5,3]]
+```
+
+# ⑤ 최종 암기 요약
 
 ```python
 # def 는 return 있음
