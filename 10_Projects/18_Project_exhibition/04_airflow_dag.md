@@ -10,6 +10,7 @@ related:
   - "[[Airflow_DAG_Concept]]"
   - "[[Airflow_Operators]]"
 ---
+# 05 Airflow DAG — Exhibition Pipeline
 
 ## 파이프라인 흐름
 
@@ -156,6 +157,80 @@ schedule_interval="0 6 * * *",
 # pendulum 으로 tz 지정하면 cron 도 그 타임존 기준으로 해석됨
 # → 매일 KST 06:00 실행
 ```
+
+---
+
+---
+
+## Scheduler / Webserver 분리 구조
+
+### 문제 — 단일 컨테이너 & 방식
+
+```bash
+# ❌ 기존: 하나의 컨테이너에서 & 로 백그라운드 실행
+airflow scheduler &   # 죽어도 모름, 재시작 없음
+airflow webserver     # 포그라운드만 살아있음
+# → DAG 상태가 None 으로 보임 (scheduler 가 실제로 안 돌고 있음)
+```
+
+### 해결 — 서비스 3개로 분리
+
+```yaml
+airflow-init:       # 최초 1회 DB 초기화 + 계정 생성 후 종료 (restart: no)
+airflow-scheduler:  # DAG 감지 + 실행 담당 (restart: always)
+airflow-webserver:  # UI 담당 (restart: always)
+```
+
+`restart: always` 로 scheduler 가 죽으면 자동 재시작.  
+scheduler / webserver 가 `airflow_logs` 볼륨을 공유해서 UI 에서 로그 확인 가능.
+
+### 컨테이너 이름 변경
+
+|기존|변경 후|
+|---|---|
+|`exhibition-airflow`|`exhibition-airflow-scheduler`|
+|(없음)|`exhibition-airflow-webserver`|
+|(없음)|`exhibition-airflow-init`|
+
+CLI 명령어도 컨테이너 이름 변경:
+
+```bash
+# DAG 트리거
+docker exec -it exhibition-airflow-scheduler \
+  airflow dags trigger exhibition_pipeline
+
+# 태스크 테스트
+docker exec -it exhibition-airflow-scheduler \
+  airflow tasks test exhibition_pipeline crawl 2026-04-30
+
+# 로그 확인
+docker exec -it exhibition-airflow-scheduler \
+  airflow tasks logs exhibition_pipeline load 2026-04-30
+
+# 스케줄러 상태 확인
+docker exec -it exhibition-airflow-scheduler \
+  airflow jobs check --job-type SchedulerJob
+```
+
+### 기동 순서
+
+```bash
+# 1. 전체 실행
+docker compose up -d
+
+# 2. init 완료 확인 (DB 초기화 + 계정 생성 후 자동 종료)
+docker compose logs airflow-init
+
+# 3. scheduler / webserver 정상 기동 확인
+docker compose logs -f airflow-scheduler
+docker compose logs -f airflow-webserver
+
+# 4. UI 접속
+# http://localhost:8085  (ID: admin / PW: admin)
+```
+
+> ⚠️ `airflow-init` 이 먼저 완료돼야 scheduler / webserver 가 정상 동작.  
+> init 이 아직 실행 중이면 잠시 기다렸다가 UI 접속할 것.
 
 ---
 
