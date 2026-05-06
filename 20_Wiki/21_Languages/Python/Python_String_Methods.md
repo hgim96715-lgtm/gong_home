@@ -182,6 +182,87 @@ s = s.replace("H", "J")
 print(s)  # 'Jello'
 ```
 
+## 반복 치환 패턴 — 딕셔너리 순회 ⭐️
+
+```
+여러 단어를 순서대로 치환할 때
+딕셔너리를 만들고 for 문으로 순회하며 replace 반복 적용
+
+핵심:
+  s = s.replace(k, v)   ← s 에 다시 담는 것 필수
+  매번 치환된 결과를 s 에 업데이트하면서 순차 진행
+```
+
+```python
+# 영단어 → 숫자 치환 문제
+def solution(s):
+    en_word = {
+        "zero": "0", "one": "1", "two": "2",
+        "three": "3", "four": "4", "five": "5",
+        "six": "6", "seven": "7", "eight": "8", "nine": "9"
+    }
+    for k, v in en_word.items():
+        s = s.replace(k, v)   # 치환 결과를 s 에 다시 저장
+    return int(s)
+
+# "one4seveneight" → "1" + "4" + "7" + "8" → "1478" → 1478
+```
+
+```
+처음에 하기 쉬운 실수:
+  if k in s: s = s.replace(k, v)
+  → 순서 보존 안 됨 / 불필요한 조건 체크
+
+  올바른 방법:
+  for k, v in en_word.items():
+      s = s.replace(k, v)    ← 조건 없이 바로 replace
+  replace 는 없는 단어면 그냥 원본 반환 → if 없어도 안전
+```
+
+## enumerate 로 더 간결하게 ⭐️
+
+
+```python
+# 딕셔너리 없이 enumerate 활용
+def solution(s):
+    numbers = ["zero", "one", "two", "three", "four",
+               "five", "six", "seven", "eight", "nine"]
+
+    for i, word in enumerate(numbers):
+        s = s.replace(word, str(i))
+        # i=0, word="zero"  → s.replace("zero", "0")
+        # i=1, word="one"   → s.replace("one", "1")
+        # ...
+
+    return int(s)
+```
+
+```
+enumerate 패턴이 왜 더 나은가:
+  딕셔너리 선언 불필요
+  인덱스(i) 가 곧 치환할 숫자
+  numbers[i] = word, i = 그 숫자 → 자연스러운 대응
+
+  for i, word in enumerate(numbers):
+      s = s.replace(word, str(i))
+               ↑           ↑
+           "zero"          "0"
+```
+
+## replace 반복 vs if k in s 비교
+
+```python
+# ❌ if 조건 넣으면 코드만 길어지고 안전하지도 않음
+for k, v in en_word.items():
+    if k in s:                 # 불필요
+        s = s.replace(k, v)
+
+# ✅ 조건 없이 바로 replace
+for k, v in en_word.items():
+    s = s.replace(k, v)        # 없는 단어는 그냥 원본 반환 → 안전
+```
+
+
 ---
 
 ---
