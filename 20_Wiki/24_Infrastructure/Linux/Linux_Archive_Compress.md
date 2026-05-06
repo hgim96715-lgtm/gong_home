@@ -11,8 +11,8 @@ related:
   - "[[Linux_File_Move_Copy]]"
   - "[[Linux_File_Delete]]"
   - "[[Linux_Background_Jobs]]"
+  - "[[Shell_Cron_Job]]"
 ---
-
 # Linux_Archive_Compress — 압축 & 아카이브
 
 ## 한 줄 요약
@@ -64,6 +64,59 @@ tar -czf backup_$(date +%Y%m%d).tar.gz /etc/nginx/
 # → backup_20260420.tar.gz
 ```
 
+## -czvf 각 옵션 상세 ⭐️
+
+```
+c  (Create)  = 새 아카이브 파일 생성
+z  (Zip)     = gzip 으로 압축 (.tar.gz 형식)
+v  (Verbose) = 처리 중인 파일명을 화면에 출력
+f  (File)    = 저장할 아카이브 파일명 지정 → 반드시 마지막!
+
+tar -czvf archive.tar.gz data/
+     ↑↑↑↑ ↑             ↑
+     옵션  아카이브이름   압축대상
+```
+
+```
+v 옵션:
+  있으면 → 압축 중인 파일들이 화면에 쭉 출력됨
+  없으면 → 조용히 압축만 진행
+
+  무거운 작업(수백 파일) 걸어둘 때:
+    v 있으면 진행 상황 눈으로 확인 가능
+    cron 자동화 시에는 v 빼고 로그 파일로 리다이렉션
+
+  nohup tar -czvf backup.tar.gz data/ > backup.log 2>&1 &
+  tail -f backup.log   ← 실시간 진행 확인
+```
+
+```
+f 옵션 위치가 왜 마지막인가:
+  f 는 "다음 인자가 파일명" 이라는 의미
+  f 뒤에 아카이브 이름이 바로 와야 함
+
+  ✅ tar -czvf archive.tar.gz data/
+               ↑ f 다음 = 파일명
+
+  ❌ tar -fczv archive.tar.gz data/
+         ↑ f 가 앞에 오면 의미 혼동
+
+  현장 실수 패턴:
+  tar -czvf 파일들 archive.tar.gz  ← 순서 바꾸면 에러
+  tar -czvf archive.tar.gz 파일들  ← 올바른 순서
+```
+
+## -czf vs -czvf 선택 기준
+
+```
+-czf  (v 없음)  조용히 압축 / cron 자동화 / 빠른 실행
+-czvf (v 있음)  진행 상황 확인 / 수동 실행 / 디버깅
+
+실무 패턴:
+  수동으로 큰 폴더 압축:    tar -czvf → 진행 상황 보기
+  cron 자동화 스크립트:     tar -czf  >> log.txt 2>&1
+```
+
 ```
 -czf 옵션 읽는 법:
   c = 생성 (create)
@@ -109,12 +162,102 @@ tar -tzvf archive.tar.gz
 # 현재 디렉토리에 해제
 tar -xzf archive.tar.gz
 
-# 특정 디렉토리에 해제
+# 특정 디렉토리에 해제 (-C)
 tar -xzf archive.tar.gz -C /tmp/
 
 # 과정 출력하며 해제
 tar -xzvf archive.tar.gz
 ```
+
+## 부분 복원 — 특정 파일만 ⭐️
+
+```bash
+# 아카이브 전체 해제 대신 파일 하나만 복원
+tar -xzvf backups/system-backup.tar.gz config/app.conf
+#                                       ↑ 복원할 파일 경로 명시
+
+# 복원 확인
+ls -l config/app.conf
+cat config/app.conf
+```
+
+```
+장애 상황에서 수십 GB 전체 백업을 풀면 시간 낭비
+→ 파일명 명시 → 해당 파일만 즉시 복원
+→ 서비스 다운타임 최소화
+```
+
+## -T 옵션 — 목록 파일로 백업 ⭐️
+
+```bash
+# backup-list.txt 예시
+# data/
+# config/
+# logs/
+
+# -T 로 목록 파일 읽어서 백업
+tar -czvf backups/system-backup.tar.gz -T backup-list.txt
+#                                       ↑ 경로 목록 파일
+
+# 백업 무결성 확인
+tar -tzvf backups/system-backup.tar.gz > backup-contents.txt
+cat backup-contents.txt
+```
+
+```
+왜 목록 파일을 쓰나:
+  명령줄에 경로 20개 나열 → 오타 유발
+  backup-list.txt 한 번 만들어두면 반복 사용
+  수정도 파일 하나만 편집 → 관리 편함
+```
+
+## -C 옵션 — 기준 디렉토리 지정
+
+```bash
+# -C 경로 = 해당 경로 기준으로 상대 경로 압축
+tar -czf backup.tar.gz -C /home/labex/project data config logs
+#                       ↑ 이 경로에서        ↑ 이 폴더들 압축
+
+# 해제 시 -C 로 위치 지정
+tar -xzf backup.tar.gz -C /restore/location/
+
+# vs 경로 통째로 (차이)
+tar -czf backup.tar.gz /home/labex/project/data
+# → 아카이브 안 경로: home/labex/project/data/...
+
+tar -czf backup.tar.gz -C /home/labex/project data
+# → 아카이브 안 경로: data/...  (깔끔)
+```
+
+## cron 자동 백업 — 날짜 타임스탬프 패턴 ⭐️
+
+```bash
+# 매 분마다 날짜/시간 포함 백업 파일 생성
+* * * * * tar -czf /home/labex/project/backups/backup-$(date +\%Y-\%m-\%d_\%H-\%M-\%S).tar.gz -C /home/labex/project data config logs
+
+# cron 에서 % 는 줄바꿈으로 인식 → \% 로 이스케이프 필수!
+# 터미널에서 직접 실행할 때는 % 그대로
+tar -czf backup_$(date +%Y-%m-%d_%H-%M-%S).tar.gz -C /home/labex/project data config logs
+```
+
+```
+cron % 이스케이프:
+  터미널:  date +%Y-%m-%d    (% 그대로)
+  cron:    date +\%Y-\%m-\%d (\% 이스케이프)
+
+날짜 포맷:
+  %Y = 연도 (2026)
+  %m = 월   (04)
+  %d = 일   (20)
+  %H = 시   (10)
+  %M = 분   (30)
+  %S = 초   (00)
+
+  결과: backup-2026-04-20_10-30-00.tar.gz
+  → 같은 이름으로 덮어쓰기 방지
+```
+
+>[[Shell_Cron_Job]] 참고 
 
 ---
 
@@ -224,9 +367,9 @@ echo "로그 정리 완료: $(date)"
 
 # 자주 하는 실수
 
-| 실수               | 원인                | 해결                           |
-| ---------------- | ----------------- | ---------------------------- |
-| 압축 후 원본 삭제 안 함   | 순서 잊음             | `tar` → `tar -tzf` 확인 → `rm` |
-| `rm *` 잘못 사용     | 와일드카드 범위 착각       | 삭제 전 `ls *_2023-*.log` 로 확인  |
-| `-f` 옵션 순서 틀림    | `-fczf` 처럼 f 앞에 씀 | `-czf` 순서 유지 (f 는 항상 마지막)    |
-| 압축 해제 후 파일 위치 모름 | 경로 지정 안 함         | `-C 경로` 로 명시적 지정             |
+|실수|원인|해결|
+|---|---|---|
+|압축 후 원본 삭제 안 함|순서 잊음|`tar` → `tar -tzf` 확인 → `rm`|
+|`rm *` 잘못 사용|와일드카드 범위 착각|삭제 전 `ls *_2023-*.log` 로 확인|
+|`-f` 옵션 순서 틀림|`-fczf` 처럼 f 앞에 씀|`-czf` 순서 유지 (f 는 항상 마지막)|
+|압축 해제 후 파일 위치 모름|경로 지정 안 함|`-C 경로` 로 명시적 지정|

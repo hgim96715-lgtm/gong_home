@@ -86,11 +86,11 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 반복 작업을 스크립트로 만들어서 자동화하자
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Shell_Script_Basics]]|#!/bin/bash / 변수 / if / for / while / 실행권한 chmod +x|
-|[[Shell_Cron_Job]] ⭐|crontab -e / 크론 표현식 / 로그 압축 자동화 / 백업 스케줄링|
-|[[Shell_Script_Patterns]]|로그 로테이션 스크립트 / 디렉토리 백업 / 오류 처리 (exit code)|
+| 노트                        | 핵심 개념                                               |
+| ------------------------- | --------------------------------------------------- |
+| [[Shell_Script_Basics]]   | #!/bin/bash / 변수 / if / for / while / 실행권한 chmod +x |
+| [[Shell_Cron_Job]] ⭐      | crontab -e / 크론 표현식 / 로그 압축 자동화 / 백업 스케줄링           |
+| [[Shell_Script_Patterns]] | 로그 로테이션 스크립트 / 디렉토리 백업 / 오류 처리 (exit code)          |
 
 ---
 
