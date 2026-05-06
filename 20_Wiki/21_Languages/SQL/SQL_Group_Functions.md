@@ -378,10 +378,3 @@ ORDER BY 총매출 DESC;
 > **`NULLS LAST` 활용 팁:** ROLLUP · CUBE 가 만드는 소계·총계 행은 그룹 컬럼이 NULL 이라서 기본 정렬 시 NULL 이 맨 위로 올라올 수 있다. `ORDER BY 컬럼 NULLS LAST` 를 쓰면 소계·총계 행을 맨 아래에 배치할 수 있다.
 
 ---
-
-## 관련 노트
-
-- [[SQL_GROUP_BY_HAVING]] — GROUP BY · HAVING 기본
-- [[SQL_Aggregate_Functions]] — COUNT · SUM · AVG · MAX · MIN
-- [[SQL_CASE_WHEN]] — GROUPING 함수와 CASE WHEN 조합
-- [[SQL_Window_Functions]] — ROW_NUMBER · RANK · DENSE_RANK

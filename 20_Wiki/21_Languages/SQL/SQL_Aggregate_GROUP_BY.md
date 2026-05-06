@@ -310,11 +310,11 @@ SELECT COUNT('X') FROM orders;  -- 결과: 5  (문자열도 동일)
 |`MAX(컬럼)`|100, 200 중 최대|**200**|NULL은 비교 대상 제외|
 
 > **AVG 함정:** NULL 을 0으로 포함해서 평균을 내고 싶다면?
-> 
-> ```sql
-> AVG(COALESCE(amount, 0))   -- NULL → 0 으로 바꾼 후 평균
-> ```
-> 
+
+```sql
+AVG(COALESCE(amount, 0))   -- NULL → 0 으로 바꾼 후 평균
+```
+
 > → [[SQL_NULL_Functions]] 참고
 
 ## ⭐️ 예외 — 결과 자체가 NULL 이 되는 경우
