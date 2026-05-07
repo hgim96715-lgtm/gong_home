@@ -14,6 +14,7 @@ related:
   - "[[SQL_NULL_Functions]]"
   - "[[SQL_Understanding_NULL]]"
   - "[[SQL_CASE_WHEN]]"
+  - "[[SQL_Window_Functions]]"
 ---
 # SQL 집계 함수 · GROUP BY
 
@@ -394,6 +395,84 @@ HAVING COUNT(DISTINCT                   -- CASE WHEN 조합 ⭐
 
 HAVING SUM(amount) >= AVG(amount) * 2   -- 집계함수끼리 계산도 가능
 ```
+
+## MIN / MAX HAVING — 그룹 전체 범위 검증 ⭐️
+
+```
+"특정 기간에만 판매된 제품"
+= 가장 빠른 판매일 >= 시작일
+  AND 가장 늦은 판매일 <= 종료일
+
+→ MIN(sale_date) / MAX(sale_date) 를 HAVING 에서 조건으로 사용
+```
+
+```sql
+-- 2019년 1분기에만 판매된 제품
+SELECT p.product_id, p.product_name
+FROM Product p
+JOIN Sales s ON p.product_id = s.product_id
+GROUP BY p.product_id, p.product_name
+HAVING MIN(sale_date) >= '2019-01-01'
+   AND MAX(sale_date) <= '2019-03-31';
+```
+
+```
+왜 WHERE 로 안 되는가:
+  WHERE sale_date BETWEEN '2019-01-01' AND '2019-03-31'
+  → 1분기에 한 번이라도 판매된 상품 조회 (조건 외 판매도 포함)
+  → "1분기에만" 을 보장 못함
+
+  HAVING MIN >= 시작 AND MAX <= 종료:
+  → 가장 이른 날도 시작일 이후
+  → 가장 늦은 날도 종료일 이전
+  → 그룹 전체 범위가 1분기 안에 있다는 보장 ✅
+
+핵심 발상:
+  MIN = 가장 이른 날 / MAX = 가장 늦은 날
+  두 값이 모두 범위 안에 있으면 → 모든 날이 범위 안에 있다
+```
+
+## 동일 조건 — NOT EXISTS 대안
+
+```sql
+-- NOT EXISTS 버전 (1분기 외 판매 기록이 없는 제품)
+SELECT DISTINCT p.product_id, p.product_name
+FROM Product p
+JOIN Sales s ON p.product_id = s.product_id
+WHERE s.sale_date BETWEEN '2019-01-01' AND '2019-03-31'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM Sales s2
+      WHERE s2.product_id = p.product_id
+        AND s2.sale_date NOT BETWEEN '2019-01-01' AND '2019-03-31'
+  );
+```
+
+```
+MIN/MAX HAVING vs NOT EXISTS:
+  MIN/MAX HAVING  → 간결 / 읽기 쉬움 / 대부분 상황에 적합
+  NOT EXISTS      → "범위 밖 데이터가 없는 것" 을 직접 표현
+                    서브쿼리 포함 → 더 복잡
+
+  → 두 가지 결과 동일
+  → MIN/MAX HAVING 이 실전에서 더 자주 씀
+```
+
+>[[SQL_SubQuery#EXISTS / NOT EXISTS — 존재 여부만 따진다]] 참고 
+
+## 날짜 범위 패턴 응용
+
+```sql
+-- 특정 연도에만 존재하는 데이터
+HAVING MIN(year) >= 2019 AND MAX(year) <= 2019
+
+-- 특정 카테고리 범위
+HAVING MIN(category_rank) >= 1 AND MAX(category_rank) <= 10
+
+-- "모든 거래가 특정 금액 범위 안에 있는 고객"
+HAVING MIN(amount) >= 1000 AND MAX(amount) <= 100000
+```
+
 
 ---
 

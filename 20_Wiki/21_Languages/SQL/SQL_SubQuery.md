@@ -339,6 +339,87 @@ WHERE NOT EXISTS (
 );
 ```
 
+## NOT EXISTS 실전 — 범위 밖 데이터가 없는 것 찾기 ⭐️
+
+```
+"특정 기간에만 판매된 제품"을 NOT EXISTS 로 구현
+
+발상:
+  1분기(범위 안)에 판매된 기록이 있고
+  AND 1분기 범위 밖에 판매된 기록이 없는 제품
+
+→ WHERE sale_date IN 범위  +  NOT EXISTS (범위 밖 판매 기록)
+```
+
+```sql
+-- NOT EXISTS 버전 — "범위 밖 판매가 없는 제품"
+SELECT DISTINCT p.product_id, p.product_name
+FROM Product p
+JOIN Sales s ON p.product_id = s.product_id
+WHERE s.sale_date BETWEEN '2019-01-01' AND '2019-03-31'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM Sales s2
+      WHERE s2.product_id = p.product_id
+        AND s2.sale_date NOT BETWEEN '2019-01-01' AND '2019-03-31'
+  );
+```
+
+```
+읽는 법:
+  WHERE s.sale_date BETWEEN ...   ← 1분기에 판매된 기록이 있는 제품
+  AND NOT EXISTS (                ← 그리고 아래 조건에 맞는 행이 없어야 함
+      WHERE s2.product_id = p.product_id    ← 같은 제품인데
+        AND s2.sale_date NOT BETWEEN ...    ← 1분기 외 판매 기록이 있는 것
+  )
+  → "같은 제품의 1분기 외 판매가 없으면 통과"
+
+단계별 동작:
+  1. p (Product) 의 각 제품마다
+  2. 1분기에 판매된 기록이 있는지 확인 (JOIN + WHERE BETWEEN)
+  3. NOT EXISTS: 1분기 밖 판매 기록이 있는지 서브쿼리 실행
+  4. 없으면 (NOT EXISTS = TRUE) → 통과
+  5. 있으면 (NOT EXISTS = FALSE) → 탈락
+```
+
+## NOT EXISTS vs MIN/MAX HAVING 비교 ⭐️
+
+```sql
+-- 방법 1: HAVING + MIN/MAX (간결)
+SELECT p.product_id, p.product_name
+FROM Product p JOIN Sales s ON p.product_id = s.product_id
+GROUP BY p.product_id, p.product_name
+HAVING MIN(sale_date) >= '2019-01-01'
+   AND MAX(sale_date) <= '2019-03-31';
+
+-- 방법 2: NOT EXISTS (의도 명확)
+SELECT DISTINCT p.product_id, p.product_name
+FROM Product p JOIN Sales s ON p.product_id = s.product_id
+WHERE s.sale_date BETWEEN '2019-01-01' AND '2019-03-31'
+  AND NOT EXISTS (
+      SELECT 1 FROM Sales s2
+      WHERE s2.product_id = p.product_id
+        AND s2.sale_date NOT BETWEEN '2019-01-01' AND '2019-03-31'
+  );
+```
+
+```
+두 방법 결과 동일
+
+MIN/MAX HAVING:
+  코드 짧고 간결
+  실전에서 더 자주 사용
+
+NOT EXISTS:
+  "범위 밖 데이터가 없다" 는 의도를 직접 표현
+  서브쿼리 포함 → 코드 길어짐
+  연관 서브쿼리라 데이터 많으면 느릴 수 있음
+
+선택 기준:
+  대부분 → HAVING MIN/MAX 사용
+  "제외 조건이 복잡할 때" → NOT EXISTS 가 더 명확
+```
+
 ---
 
 ### SELECT 1 이 뭐야? — 가짜 값의 정체
