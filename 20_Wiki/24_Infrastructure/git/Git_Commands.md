@@ -9,6 +9,8 @@ tags:
   - Git
 related:
   - "[[00_Git_HomePage]]"
+  - "[[Shell_Script_Basics]]"
+  - "[[Git_Concept]]"
 ---
 # Git_Commands — 자주 쓰는 Git 명령어
 
@@ -26,11 +28,67 @@ related:
 # ① 기본 흐름
 
 ```bash
-git status                    # 변경 파일 확인
-git add .                     # 전체 스테이징
-git add 파일명                 # 특정 파일만
-git commit -m "메시지"         # 커밋
-git push origin main           # 원격 푸시
+git init                       # 저장소 초기화 (처음 한 번)
+git status                     # 변경 파일 확인
+git add .                      # 전체 스테이징
+git add 파일명                  # 특정 파일만
+git commit -m "메시지"          # 커밋
+git push origin main            # 원격 푸시
+```
+
+## git status 출력 해석 ⭐️
+
+```bash
+git status
+
+# 1. 아무 파일도 없을 때
+# On branch master
+# No commits yet
+# nothing to commit
+
+# 2. 새 파일 만들었을 때
+# Untracked files:
+#   message.txt
+# → Git 이 파일을 발견했지만 아직 추적 안 함
+
+# 3. git add 후
+# Changes to be committed:
+#   new file: message.txt
+# → Staging Area 에 올라감 (커밋 준비 완료)
+
+# 4. git commit 후
+# nothing to commit, working tree clean
+# → 모든 변경사항이 저장됨
+```
+
+```
+상태 3단계:
+  Untracked     → git add → Staged → git commit → Committed
+  (Git 모름)              (준비 완료)             (저장 완료)
+```
+
+## git log — 커밋 이력 확인 ⭐️
+
+```bash
+git log                        # 전체 이력 (q 로 종료)
+git log --oneline              # 한 줄로 간결하게 ← 자주 씀
+git log --oneline -5           # 최근 5개만
+git log --oneline --graph      # 브랜치 그래프 포함
+```
+
+```
+git log 출력:
+  commit a1b2c3d4e5... (HEAD -> master)
+  Author: Your Name <email>
+  Date:   Mon Apr 20 10:00:00 2026
+
+  Send a message to the future
+
+  ↑ 커밋 해시 (고유 ID)
+  ↑ HEAD → 현재 내가 있는 위치
+  ↑ 브랜치 이름
+
+q 를 눌러 로그 화면 종료
 ```
 
 ---
