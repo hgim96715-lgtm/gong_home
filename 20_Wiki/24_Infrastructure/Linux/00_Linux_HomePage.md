@@ -17,6 +17,7 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 
 |노트|핵심 개념|
 |---|---|
+|[[Linux_Terminal_Basics]]|echo / date / cal / expr / clear / Ctrl+L / 터미널 첫 만남|
 |[[Linux_Concept_Overview]]|커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가|
 |[[Linux_Directory_Structure]]|/ (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로|
 |[[Linux_Permission_Model]]|rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo|

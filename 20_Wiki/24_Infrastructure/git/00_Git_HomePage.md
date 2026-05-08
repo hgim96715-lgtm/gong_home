@@ -11,10 +11,10 @@
 
 ## Level 0. 개념 잡기
 
-|노트|핵심 개념|
-|---|---|
-|[[Git_Concept]]|버전 관리란 / 로컬 vs 원격 / Staging Area / HEAD|
-|[[Git_Install_Setup]]|설치 / git config / SSH 키 설정|
+| 노트                    | 핵심 개념                                   |     |
+| --------------------- | --------------------------------------- | --- |
+| [[Git_Concept]]       | 버전 관리란 / 로컬 vs 원격 / Staging Area / HEAD |     |
+| [[Git_Install_Setup]] | 설치 / git config / SSH 키 설정              |     |
 
 ---
 
