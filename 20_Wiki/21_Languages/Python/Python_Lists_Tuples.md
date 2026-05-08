@@ -180,6 +180,67 @@ Stack 예: 실행 취소(Undo), 괄호 짝 검사
 Queue 예: 프린터 대기열, 메시지 큐
 ```
 
+
+## 상위 k개 유지 패턴 ⭐️
+
+```
+"지금까지 나온 점수 중 상위 k개를 유지하면서
+ 매일 최하위 점수를 구하라"
+
+핵심 발상:
+  score[i:i+k] 처럼 앞으로 나올 것을 자르면 안 됨
+  → 지금까지 나온 점수 중 상위 k개를 누적 관리해야 함
+
+패턴:
+  1. 새 점수 추가 (append)
+  2. 내림차순 정렬
+  3. k 초과 시 마지막(최솟값) 제거 (pop)
+  4. 현재 최솟값 기록 ([-1])
+```
+
+```python
+# 방법 1 — sort + pop (직관적)
+def solution(k, score):
+    answer = []
+    hall = []
+    for s in score:
+        hall.append(s)           # 추가
+        hall.sort(reverse=True)  # 내림차순 정렬
+        if len(hall) > k:
+            hall.pop()           # 맨 뒤(최솟값) 제거
+        answer.append(hall[-1])  # 현재 최하위 점수 기록
+    return answer
+
+# 방법 2 — min + remove (더 간결)
+def solution(k, score):
+    q = []
+    answer = []
+    for s in score:
+        q.append(s)
+        if len(q) > k:
+            q.remove(min(q))     # 최솟값 찾아서 제거
+        answer.append(min(q))    # 현재 최솟값 기록
+    return answer
+```
+
+```
+sort + pop vs min + remove:
+
+  sort + pop:
+    정렬 후 맨 뒤 = 최솟값
+    hall[-1] 로 최솟값 바로 접근
+    매번 정렬 → O(n log n)
+
+  min + remove:
+    min() 으로 최솟값 찾기
+    remove(min()) 으로 값으로 삭제
+    min() 두 번 호출 → O(n) × 2
+    코드는 더 짧고 직관적
+
+  데이터 적으면 두 방법 차이 없음
+  → 가독성 좋은 것 선택
+```
+
 ---
 
 ---
