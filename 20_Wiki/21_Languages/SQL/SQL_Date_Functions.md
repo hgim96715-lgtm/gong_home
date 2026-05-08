@@ -83,12 +83,12 @@ SELECT CURRENT_TIMESTAMP;   -- GETDATE()와 동일
 
 # ② 날짜 연산 (더하기 / 빼기)
 
-|DB|월 더하기|일 더하기|
-|---|---|---|
-|PostgreSQL|`+ INTERVAL '1 month'`|`+ INTERVAL '3 days'` 또는 `+ 3`|
-|MySQL|`+ INTERVAL 1 DAY`|`DATE_ADD(날짜, INTERVAL 1 DAY)`|
-|Oracle|`ADD_MONTHS(날짜, 1)`|`날짜 + 3`|
-|MSSQL|`DATEADD(month, 1, 날짜)`|`DATEADD(day, 3, 날짜)`|
+| DB         | 월 더하기                            | 일 더하기                          | 월 빼기                             | 일 빼기                           |
+| ---------- | -------------------------------- | ------------------------------ | -------------------------------- | ------------------------------ |
+| PostgreSQL | `+ INTERVAL '1 month'`           | `+ INTERVAL '3 days'` 또는 `+ 3` | `- INTERVAL '1 month'`           | `- INTERVAL '3 days'` 또는 `- 3` |
+| MySQL      | `DATE_ADD(날짜, INTERVAL 1 MONTH)` | `DATE_ADD(날짜, INTERVAL 3 DAY)` | `DATE_SUB(날짜, INTERVAL 1 MONTH)` | `DATE_SUB(날짜, INTERVAL 3 DAY)` |
+| Oracle     | `ADD_MONTHS(날짜, 1)`              | `날짜 + 3`                       | `ADD_MONTHS(날짜, -1)`             | `날짜 - 3`                       |
+| MSSQL      | `DATEADD(month, 1, 날짜)`          | `DATEADD(day, 3, 날짜)`          | `DATEADD(month, -1, 날짜)`         | `DATEADD(day, -3, 날짜)`         |
 
 ```sql
 -- 🐘 PostgreSQL
