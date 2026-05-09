@@ -59,6 +59,37 @@ safe = sorted([3, 1, 2])
 print(safe)     # [1, 2, 3]
 ```
 
+
+## sorted() 결과를 저장 안 하는 실수 ⭐️
+
+```python
+strings = ["sun", "bed", "car"]
+
+# ❌ sorted() 결과를 변수에 안 담으면 버려짐
+sorted(strings)      # 정렬됐지만 버려짐!
+print(strings)       # ["sun", "bed", "car"] (원본 그대로)
+
+# ✅ 변수에 담거나 바로 return
+answer = sorted(strings, key=lambda s: s[1])
+return sorted(strings, key=lambda s: s[1])  # 바로 return 도 가능
+```
+
+## lambda 에서 s 가 뭔지 헷갈릴 때
+
+```python
+strings = ["sun", "bed", "car"]
+n = 1
+
+sorted(strings, key=lambda s: s[n])
+#                        ↑
+#  s = 리스트에서 꺼낸 문자열 하나 ("sun", "bed", "car" 각각)
+#  s[1] = 'u', 'e', 'a'   ← n번째 글자
+
+# 헷갈리면 변수명을 word 로 바꾸면 명확
+sorted(strings, key=lambda word: word[n])
+#                        ↑ 문자열 전체를 받는 변수
+```
+
 ---
 
 ---
@@ -90,8 +121,64 @@ key=lambda item: item[1]
   → lambda 는 [[Python_Lambda_Map]] 참고
 ```
 
----
+## key 에 튜플 넣기 — 다중 기준 정렬 ⭐️
 
+```
+key 에 튜플을 반환하면 다중 기준 정렬
+(1순위 기준, 2순위 기준)
+
+1순위 기준이 같으면 → 2순위 기준으로 결정
+```
+
+```python
+# n번째 글자 기준으로 정렬 + 같으면 전체 문자열 기준
+strings = ["sun", "bed", "car"]
+n = 1
+
+sorted(strings, key=lambda s: (s[n], s))
+#                               ↑     ↑
+#                           1순위    2순위 (동점이면 전체 문자열)
+# s[1] = 'u', 'e', 'a'
+# → 'a'(car), 'e'(bed), 'u'(sun) 순으로 정렬
+# → ["car", "bed", "sun"]
+```
+
+```
+lambda s: (s[n], s) 읽는 법:
+  s          = 리스트에서 꺼낸 문자열 하나 (예: "sun")
+  s[n]       = n번째 글자 (예: n=1 → "u")
+  s          = 전체 문자열 (동점 처리용)
+  (s[n], s)  = 튜플로 묶어서 반환
+              → 파이썬이 튜플 사전식 정렬 적용
+
+처음에 하기 쉬운 실수:
+  lambda s: s[n]  ← 1순위만 있음
+  → n번째 글자가 같은 경우 정렬 순서 보장 안 됨
+  → 문제에서 "같은 경우 전체 사전순" 이라는 조건 놓침
+```
+
+## key 튜플 동작 원리
+
+```python
+strings = ["sun", "bed", "car"]
+n = 1
+
+# key 함수가 반환하는 튜플:
+# "sun" → ('u', 'sun')
+# "bed" → ('e', 'bed')
+# "car" → ('a', 'car')
+
+# 튜플 정렬:
+# ('a', 'car') < ('e', 'bed') < ('u', 'sun')
+# → ["car", "bed", "sun"]
+
+# 만약 n번째 글자가 같다면:
+# "abc" → ('b', 'abc')
+# "xbc" → ('b', 'xbc')   ← n=1 이면 둘 다 'b'
+# ('b', 'abc') < ('b', 'xbc')  → 'abc' 가 먼저 (전체 문자열 비교)
+```
+
+---
 ---
 
 # ③ reverse 옵션
