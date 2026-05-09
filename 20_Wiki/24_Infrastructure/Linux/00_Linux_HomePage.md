@@ -15,13 +15,13 @@ GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
 Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_Terminal_Basics]]|echo / date / cal / expr / clear / Ctrl+L / 터미널 첫 만남|
-|[[Linux_Concept_Overview]]|커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가|
-|[[Linux_Directory_Structure]]|/ (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로|
-|[[Linux_Permission_Model]]|rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo|
-|[[Linux_User_Group]]|useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel|
+| 노트                            | 핵심 개념                                                                |
+| ----------------------------- | -------------------------------------------------------------------- |
+| [[Linux_Terminal_Basics]]     | echo / date / cal / expr / clear / Ctrl+L / 터미널 첫 만남/Tab/man/history |
+| [[Linux_Concept_Overview]]    | 커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가                    |
+| [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로                 |
+| [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo                   |
+| [[Linux_User_Group]]          | useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel  |
 
 ---
 
@@ -33,12 +33,12 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 서버에서 파일과 폴더를 자유자재로 다루자
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[Linux_Directory_Commands]] ⭐|mkdir / cd / ls -F / pwd / tree / 프로젝트 구조 설계|
-|[[Linux_File_Move_Copy]] ⭐|mv (이동·이름변경) / cp / cp .bak 백업 패턴 / 롤백|
-|[[Linux_File_Delete]]|rm / rm -rf / rmdir / 와일드카드(*) 패턴 삭제 / 주의사항|
-|[[Linux_Archive_Compress]] ⭐|tar -czf / tar -tzf / tar -xzf / gzip / 로그 로테이션 패턴|
+| 노트                             | 핵심 개념                                              |
+| ------------------------------ | -------------------------------------------------- |
+| [[Linux_Directory_Commands]] ⭐ | mkdir/touch / cd / ls -F / pwd / tree / 프로젝트 구조 설계 |
+| [[Linux_File_Move_Copy]] ⭐     | mv (이동·이름변경) / cp / cp .bak 백업 패턴 / 롤백             |
+| [[Linux_File_Delete]]          | rm / rm -rf / rmdir / 와일드카드(*) 패턴 삭제 / 주의사항        |
+| [[Linux_Archive_Compress]] ⭐   | tar -czf / tar -tzf / tar -xzf / gzip / 로그 로테이션 패턴 |
 
 ---
 

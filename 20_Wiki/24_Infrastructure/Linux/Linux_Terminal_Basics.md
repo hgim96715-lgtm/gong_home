@@ -248,6 +248,90 @@ ls /usr/share/figlet/
 
 ---
 
+# ⑦ 터미널 단축키 & 생산성 도구 ⭐️
+
+## Tab — 자동 완성
+
+```bash
+# 일부만 입력 후 Tab
+cat h[Tab]       # → cat hello.txt  자동 완성
+cd lin[Tab]      # → cd linux_practice/
+
+# 후보 여러 개면 Tab 두 번 → 목록 출력
+ls /etc/n[Tab][Tab]
+# network  nginx  ...
+```
+
+```
+Tab 은 가장 중요한 단축키
+오타 방지 + 긴 경로 빠르게 입력
+습관처럼 쓸 것
+```
+
+## ↑↓ — 이전 명령어 탐색
+
+```bash
+↑   이전 명령어
+↓   다음 명령어
+```
+
+## history — 명령어 이력 ⭐️
+
+```bash
+history           # 전체 이력
+history 20        # 최근 20개
+
+# 특정 명령어 검색
+history | grep git
+history | grep apt
+
+# !번호 로 재실행
+!125              # 125번 명령어 재실행
+sudo !!           # 마지막 명령어에 sudo 붙여 재실행
+```
+
+---
+
+---
+
+# ⑧ 도움말 — --help / man ⭐️
+
+## --help — 빠른 옵션 확인
+
+```bash
+ls --help
+cp --help
+tar --help
+
+# 길면 less 로 페이지 단위
+ls --help | less
+```
+
+## man — 공식 매뉴얼
+
+
+```bash
+man ls
+man cp
+man git
+
+# man 안에서
+# ↑↓   스크롤
+# /검색어  검색
+# q      종료 ← 반드시!
+```
+
+```
+--help  빠른 옵션 목록
+man     상세 공식 설명서
+
+명령어 기억 안 날 때:
+  --help / man 먼저 → 그 다음 검색
+```
+---
+---
+
+
 # 명령어 한눈에
 
 |명령어|역할|예시|

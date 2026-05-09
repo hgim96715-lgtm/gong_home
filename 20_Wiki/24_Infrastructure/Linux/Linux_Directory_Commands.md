@@ -3,13 +3,15 @@ aliases:
   - 디렉토리 명령어
   - mkdir
   - ls -F
+  - touch
+  - tree
+  - cd
 tags:
   - Linux
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_File_Move_Copy]]"
 ---
-
 # Linux_Directory_Commands — 디렉토리 관리
 
 ## 한 줄 요약
@@ -57,7 +59,57 @@ ls -F myproject/
 
 ---
 
-# ② ls — 목록 확인 ⭐️
+# ② touch — 빈 파일 생성 ⭐️
+
+```bash
+# 빈 파일 생성
+touch hello.txt
+touch file1.txt file2.txt file3.txt   # 여러 개 동시
+
+# 파일 있으면 수정 시간만 업데이트
+touch existing_file.txt
+
+# 생성 확인
+ls -l hello.txt
+```
+
+```
+touch 두 가지 역할:
+  파일 없음 → 빈 파일 새로 생성
+  파일 있음 → 수정 시간 업데이트
+
+빈 설정 파일 / 테스트 파일 만들 때 자주 씀
+```
+
+## 중괄호 확장 — 한 번에 여러 파일 ⭐️
+
+```bash
+# {1..5} = 1부터 5까지 숫자 자동 생성
+touch note_{1..5}.txt
+ls note*
+# note_1.txt  note_2.txt  note_3.txt  note_4.txt  note_5.txt
+
+# 응용 패턴
+touch file_{1..10}.log          # file_1.log ~ file_10.log
+mkdir dir_{a..e}                # dir_a ~ dir_e
+touch report_{2020..2026}.txt   # 연도별 파일
+```
+
+```
+{1..5}             숫자 범위 (1, 2, 3, 4, 5)
+{a..e}             알파벳 범위 (a, b, c, d, e)
+{src,config,docs}  직접 나열
+
+touch note_{1..5}.txt 내부 동작:
+  → touch note_1.txt note_2.txt note_3.txt note_4.txt note_5.txt
+  쉘이 자동으로 펼쳐서 실행
+```
+
+---
+
+---
+
+# ③ ls — 목록 확인 ⭐️
 
 ```bash
 ls              # 기본 목록

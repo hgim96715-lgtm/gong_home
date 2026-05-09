@@ -174,6 +174,55 @@ tail -f 는 Ctrl + C 로 종료
 Airflow DAG 실행 로그 추적 시 매우 유용
 ```
 
+## tail -f /dev/null — 프로세스 유지 패턴 ⭐️
+
+```bash
+tail -f /dev/null
+```
+
+```
+/dev/null:
+  리눅스의 블랙홀 장치
+  어떤 내용을 써도 사라짐
+  읽으면 아무것도 없음 (EOF 없이 영원히 대기)
+
+tail -f /dev/null 의 동작:
+  /dev/null 을 follow → 내용이 절대 추가되지 않음
+  → 아무것도 출력 안 하면서 프로세스만 살아있음
+  → 터미널 세션 무한 유지
+```
+
+## 언제 쓰나
+
+
+```bash
+# 1. Docker 컨테이너 종료 방지 — 가장 많이 쓰는 용도 ⭐️
+# Dockerfile 또는 docker-compose.yml 에서
+CMD ["tail", "-f", "/dev/null"]
+# → 컨테이너가 아무 작업 없어도 종료되지 않음
+# → 내부 진입 후 디버깅 가능
+
+# 2. 터미널 세션 유지 테스트
+tail -f /dev/null &   # 백그라운드로 실행
+# → SSH 연결 유지 / 세션 킵얼라이브 테스트
+
+# 3. 스크립트에서 무한 대기
+#!/bin/bash
+echo "서버 준비 완료"
+tail -f /dev/null     # 스크립트가 종료되지 않고 대기
+```
+
+```
+Docker 에서 자주 보이는 이유:
+  컨테이너는 CMD(메인 프로세스) 가 종료되면 즉시 종료됨
+  데몬이 없는 컨테이너를 띄워두고 싶을 때
+  → tail -f /dev/null 로 메인 프로세스를 영원히 살려둠
+
+  예시:
+    docker run -d ubuntu tail -f /dev/null
+    docker exec -it 컨테이너명 bash   ← 내부 진입
+```
+
 ---
 
 ---
