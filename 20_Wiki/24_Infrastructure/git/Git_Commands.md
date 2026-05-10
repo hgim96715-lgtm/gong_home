@@ -91,6 +91,45 @@ git log 출력:
 q 를 눌러 로그 화면 종료
 ```
 
+## git diff — 변경 사항 확인 ⭐️
+
+```bash
+# 워킹 디렉토리 vs 마지막 커밋 비교 (스테이징 전)
+git diff
+
+# 스테이징 영역 vs 마지막 커밋 비교 (커밋 전 최종 확인)
+git diff --staged
+git diff --cached   # --staged 와 동일
+
+# 특정 파일만
+git diff hello.py
+git diff --staged hello.py
+```
+
+## git diff 출력 읽는 법
+
+```bash
+git diff
+# diff --git a/hello.py b/hello.py
+# --- a/hello.py          ← 변경 전
+# +++ b/hello.py          ← 변경 후
+# @@ -1 +1 @@
+# -print('Hello, Git!')                     ← 삭제된 줄 (빨간색)
+# +print('Hello, Git! Welcome to staging') ← 추가된 줄 (초록색)
+```
+
+```
+- (빨간색) = 삭제된 내용
++ (초록색) = 추가된 내용
+
+git diff 언제 쓰나:
+  git add 전   → git diff           워킹 디렉토리 변경 확인
+  git add 후   → git diff --staged  커밋 전 최종 확인
+  커밋 후      → git diff HEAD~1    직전 커밋과 비교
+
+q 로 종료
+```
+
 ---
 
 ---
