@@ -318,6 +318,45 @@ GROUP BY product_name;
 |`GROUP BY year`|세로로 2줄 (2023행, 2024행)|❌ 불가능|
 |`CASE WHEN` (피벗)|가로로 1줄 (2023컬럼, 2024컬럼)|✅ 바로 가능|
 
+
+---
+## 3가지 조건부 집계 방법 비교 ⭐️
+
+```
+LEFT JOIN + WHERE 로 연도 필터 → 주문 없는 사용자가 사라짐 ⚠️
+→ 조건을 집계 함수 안에 넣어야 함
+
+방법 1: FILTER (PostgreSQL 전용, 가장 직관적)
+방법 2: SUM(조건) (MySQL 단축형)
+방법 3: SUM(CASE WHEN ... THEN 1 ELSE 0 END) (표준, 모든 DB)
+```
+
+```sql
+-- 방법 1: FILTER — PostgreSQL ⭐️
+COUNT(o.order_id) FILTER (WHERE EXTRACT(YEAR FROM o.order_date) = 2019)
+
+-- 방법 2: SUM(조건) — MySQL 단축
+SUM(YEAR(o.order_date) = 2019)
+-- YEAR() = 2019 → True(1) or False(0) → SUM = 개수
+
+-- 방법 3: SUM(CASE WHEN) — 모든 DB 호환 (명시적)
+SUM(CASE WHEN YEAR(o.order_date) = 2019 THEN 1 ELSE 0 END)
+```
+
+```
+SUM(조건 = 값) 원리:
+  MySQL 에서 비교 결과는 True(1) 또는 False(0)
+  NULL = 2019 → NULL (SUM 에서 자동 제외)
+  → LEFT JOIN 에서 주문 없는 사용자: SUM(NULL) = 0 ✅
+
+SUM vs COUNT 선택:
+  SUM(CASE WHEN ... THEN 1 ELSE 0)  → 0 반환 (주문 없으면 0)
+  COUNT(CASE WHEN ... THEN 1 END)   → 0 반환 (동일)
+  COUNT(DISTINCT CASE WHEN ...)     → 중복 제거 시
+```
+
+---
+
 ---
 
 ## B. 조건부 평균 — ELSE NULL 주의 ⚠️
@@ -654,36 +693,4 @@ ORDER BY
 
 ---
 
-# 핵심 요약 카드
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│  SEARCHED CASE : CASE WHEN 조건식 THEN → 범위 비교 가능       │
-│  SIMPLE CASE   : CASE 컬럼 WHEN 값 THEN → = 비교만 가능       │
-│                                                              │
-│  ELSE 생략 → NULL / ELSE '' → 빈 문자열 (NULL 아님!)          │
-│  END 는 반드시 닫아야 한다                                    │
-│                                                              │
-│  DECODE(컬럼, 조건1, 결과1, ..., DEFAULT)                    │
-│  · 홀수 인수 → 마지막이 DEFAULT                              │
-│  · 짝수 인수 → DEFAULT 없음 (매칭 실패 시 NULL)               │
-│  · 마지막에 '' 추가 → NULL 아닌 빈 문자열 출력                │
-│  · = 비교만 가능, 범위 비교 불가                              │
-│                                                              │
-│  SUM(CASE WHEN 조건 THEN 1 ELSE 0 END) → 조건부 카운트        │
-│  AVG 에서는 ELSE 0 금지! → ELSE NULL 사용                     │
-│                                                              │
-│  비율 계산 → WHERE 금지! CASE WHEN 으로 분모 살려야 함         │
-│  정수 / 정수 = 0 → * 1.0 또는 ::float 로 해결                │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 관련 노트
-
-- [[SQL_Window_Functions]] — ROW_NUMBER · RANK · DENSE_RANK (순위 함수)
-- [[SQL_GROUP_BY_HAVING]] — GROUP BY · HAVING (집계 필터)
-- [[SQL_Aggregate_Functions]] — COUNT · SUM · AVG · MAX · MIN
-- [[SQL_NULL_Functions]] — NVL · COALESCE · NULLIF (NULL 처리)
-- [[SQL_Type_Casting]] — 형변환 (`::float`, `CAST`)

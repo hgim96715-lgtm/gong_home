@@ -18,9 +18,18 @@ related:
 ---
 # SQL Date Functions — 시간 · 날짜 함수
 
-## 개념 한 줄 요약
+---
 
-> **"시간을 쪼개고, 더하고, 빼고, 포장하는 데이터 분석의 타임스톤."** 현재 시간 조회, 날짜에서 월만 추출, "오늘부터 3일 뒤" 계산 등 코호트 분석과 시계열 처리의 핵심이다.
+## DB별 함수 한눈에 비교
+
+|기능|PostgreSQL 🐘|MySQL 🐬|Oracle 🔴|MSSQL 🟩|
+|---|---|---|---|---|
+|현재 시간|`NOW()`|`NOW()` / `CURDATE()`|`SYSDATE`|`GETDATE()`|
+|날짜 더하기|`+ INTERVAL '1 day'`|`DATE_ADD(날짜, INTERVAL 1 DAY)`|`ADD_MONTHS()`|`DATEADD(month, 1, ...)`|
+|날짜 차이|`날짜 - 날짜` / `AGE()`|`DATEDIFF(최근, 과거)`|`MONTHS_BETWEEN()`|`DATEDIFF(단위, 과거, 최근)`|
+|날짜 추출|`EXTRACT(YEAR FROM 날짜)`|`YEAR()` / `MONTH()` / `DAY()`|`EXTRACT()`|`DATEPART()`|
+|포맷 변환|`TO_CHAR()`|`DATE_FORMAT()`|`TO_CHAR()`|`FORMAT()`|
+|날짜 자르기|`DATE_TRUNC()`|`DATE_FORMAT()` 활용|`TRUNC()`|`DATETRUNC()`|
 
 ---
 
@@ -31,25 +40,6 @@ related:
 |`2024-01-27 14:30:21` 에서 월 단위로만 묶고 싶다|`DATE_TRUNC` / `TRUNC`|
 |생년월일로 나이를 계산해야 한다|`AGE` / `MONTHS_BETWEEN`|
 |DB 날짜를 `2024-01` 형태로 출력해야 한다|`TO_CHAR`|
-
-**실무 적용 사례:**
-
-- 월별 매출 추이: 일별 데이터를 월별로 묶어 `GROUP BY`
-- 코호트 분석: "가입 후 7일 이내 재구매한 유저" 찾기
-- 요일별 분석: "무슨 요일에 접속이 가장 많지?" (`EXTRACT(DOW)`)
-
----
-
-## DB별 함수 한눈에 비교
-
-|기능|PostgreSQL 🐘|MySQL 🐬|Oracle 🔴|MSSQL 🟩|
-|---|---|---|---|---|
-|현재 시간|`NOW()`|`NOW()` / `CURDATE()`|`SYSDATE`|`GETDATE()`|
-|날짜 더하기|`+ INTERVAL '1 day'` (따옴표)|`DATE_ADD(날짜, INTERVAL 1 DAY)` (따옴표 없음)|`ADD_MONTHS()`|`DATEADD(month, 1, ...)`|
-|날짜 차이|`날짜 - 날짜` / `- INTERVAL '1 day'` / `AGE()`|`DATEDIFF(최근, 과거)`|`MONTHS_BETWEEN()` / `-`|`DATEDIFF(단위, 과거, 최근)`|
-|날짜 추출|`EXTRACT()`|`YEAR()` / `MONTH()` / `DAY()`|`EXTRACT()`|`DATEPART()`|
-|포맷 변환|`TO_CHAR()`|`DATE_FORMAT()`|`TO_CHAR()`|`FORMAT()` / `CONVERT()`|
-|날짜 자르기|`DATE_TRUNC()`|`DATE_FORMAT()` 활용|`TRUNC()`|`DATETRUNC()`|
 
 ---
 
@@ -83,12 +73,89 @@ SELECT CURRENT_TIMESTAMP;   -- GETDATE()와 동일
 
 # ② 날짜 연산 (더하기 / 빼기)
 
-| DB         | 월 더하기                            | 일 더하기                          | 월 빼기                             | 일 빼기                           |
-| ---------- | -------------------------------- | ------------------------------ | -------------------------------- | ------------------------------ |
-| PostgreSQL | `+ INTERVAL '1 month'`           | `+ INTERVAL '3 days'` 또는 `+ 3` | `- INTERVAL '1 month'`           | `- INTERVAL '3 days'` 또는 `- 3` |
-| MySQL      | `DATE_ADD(날짜, INTERVAL 1 MONTH)` | `DATE_ADD(날짜, INTERVAL 3 DAY)` | `DATE_SUB(날짜, INTERVAL 1 MONTH)` | `DATE_SUB(날짜, INTERVAL 3 DAY)` |
-| Oracle     | `ADD_MONTHS(날짜, 1)`              | `날짜 + 3`                       | `ADD_MONTHS(날짜, -1)`             | `날짜 - 3`                       |
-| MSSQL      | `DATEADD(month, 1, 날짜)`          | `DATEADD(day, 3, 날짜)`          | `DATEADD(month, -1, 날짜)`         | `DATEADD(day, -3, 날짜)`         |
+|DB|월 더하기|일 더하기|월 빼기|일 빼기|
+|---|---|---|---|---|
+|PostgreSQL|`+ INTERVAL '1 month'`|`+ INTERVAL '3 days'` 또는 `+ 3`|`- INTERVAL '1 month'`|`- INTERVAL '3 days'` 또는 `- 3`|
+|MySQL|`DATE_ADD(날짜, INTERVAL 1 MONTH)`|`DATE_ADD(날짜, INTERVAL 3 DAY)`|`DATE_SUB(날짜, INTERVAL 1 MONTH)`|`DATE_SUB(날짜, INTERVAL 3 DAY)`|
+|Oracle|`ADD_MONTHS(날짜, 1)`|`날짜 + 3`|`ADD_MONTHS(날짜, -1)`|`날짜 - 3`|
+|MSSQL|`DATEADD(month, 1, 날짜)`|`DATEADD(day, 3, 날짜)`|`DATEADD(month, -1, 날짜)`|`DATEADD(day, -3, 날짜)`|
+
+## DATE_SUB — MySQL 날짜 빼기 ⭐️
+
+```
+DATE_ADD = 날짜에 더하기
+DATE_SUB = 날짜에서 빼기
+
+구조:
+  DATE_ADD(날짜, INTERVAL N 단위)
+  DATE_SUB(날짜, INTERVAL N 단위)
+  N = 양수만 입력 / 빼는 건 SUB 함수로 구분
+```
+
+```sql
+-- DATE_SUB 기본 패턴
+SELECT DATE_SUB('2026-02-24', INTERVAL 1 DAY);    -- 2026-02-23 (1일 전)
+SELECT DATE_SUB('2026-02-24', INTERVAL 1 MONTH);  -- 2026-01-24 (1달 전)
+SELECT DATE_SUB('2026-02-24', INTERVAL 1 YEAR);   -- 2025-02-24 (1년 전)
+SELECT DATE_SUB(NOW(), INTERVAL 7 DAY);           -- 7일 전
+SELECT DATE_SUB(NOW(), INTERVAL 30 DAY);          -- 30일 전
+
+-- DATE_ADD 기본 패턴 (비교)
+SELECT DATE_ADD('2026-02-24', INTERVAL 1 DAY);    -- 2026-02-25 (1일 후)
+SELECT DATE_ADD('2026-02-24', INTERVAL 3 MONTH);  -- 2026-05-24 (3달 후)
+```
+
+## DATE_SUB 실전 패턴
+
+```sql
+-- 최근 30일 데이터 조회
+SELECT *
+FROM orders
+WHERE order_date >= DATE_SUB(NOW(), INTERVAL 30 DAY);
+
+-- 1주일 전 ~ 오늘 범위
+SELECT *
+FROM logs
+WHERE created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW();
+
+-- 3개월 전 이후 데이터
+SELECT *
+FROM sales
+WHERE sale_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH);
+```
+
+## 단위 목록
+
+```
+INTERVAL 단위:
+  SECOND    초
+  MINUTE    분
+  HOUR      시
+  DAY       일
+  WEEK      주
+  MONTH     월
+  QUARTER   분기 (3개월)
+  YEAR      연
+
+예시:
+  INTERVAL 1 HOUR    → 1시간
+  INTERVAL 30 MINUTE → 30분
+  INTERVAL 1 QUARTER → 3개월
+```
+
+## MySQL vs PostgreSQL 날짜 빼기 비교
+
+```sql
+-- "7일 전 이후 데이터" 조회
+
+-- MySQL
+WHERE date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+WHERE date >= NOW() - INTERVAL 7 DAY        -- 이 형태도 가능
+
+-- PostgreSQL
+WHERE date >= NOW() - INTERVAL '7 days'
+WHERE date >= NOW() - INTERVAL '7 day'      -- 복수형 / 단수형 둘 다 허용
+```
 
 ```sql
 -- 🐘 PostgreSQL
@@ -308,26 +375,24 @@ SELECT (NOW() - INTERVAL '1 year')::DATE AS one_year_ago;
 -- 결과: 2025-02-24  (시간 없이 깔끔)
 ```
 
->**💡 재직 기간 조건 해석법** "기준일 기준 N년 이상 재직" 조건은 항상 아래 공식으로 바꿔 생각한다.
+> **💡 재직 기간 조건 해석법** "기준일 기준 N년 이상 재직" 조건은 항상 아래 공식으로 바꿔 생각한다.
 
 ```sql
-재직 기간 조건   →  입사일 ≤ 기준일 − 기간
-
+ 재직 기간 조건   →  입사일 ≤ 기준일 − 기간
 "2년 이상 재직"   →  hire_date ≤ 2021-12-31 − 2년   →  hire_date ≤ 2019-12-31
-"3개월 이내 입사" →  hire_date > 2021-12-31 − 3개월  →  hire_date > 2021-09-30
+"3개월 이내 입사" →  hire_date > 2021-12-31 − 3개월  →  hire_date > 2021-09-30 
 ```
 
->왜 `<=` 인가: 입사일이 **오래될수록(작을수록)** 재직 기간이 길다. "2년 이상"이 되려면 입사일이 기준일에서 2년을 뺀 날짜보다 **같거나 더 과거** 여야 한다.
+> 왜 `<=` 인가: 입사일이 **오래될수록(작을수록)** 재직 기간이 길다. "2년 이상"이 되려면 입사일이 기준일에서 2년을 뺀 날짜보다 **같거나 더 과거** 여야 한다.
 
->**💡 핵심 암기법** `DATE ± INTERVAL` → 결과가 TIMESTAMP 로 튀어나온다 → 뒤에 `::DATE` 로 다시 잡아준다
+> **💡 핵심 암기법** `DATE ± INTERVAL` → 결과가 TIMESTAMP 로 튀어나온다 → 뒤에 `::DATE` 로 다시 잡아준다
 
 ```sql
-('기준날짜'::DATE  ±  INTERVAL 'N unit')::DATE
+ ('기준날짜'::DATE  ±  INTERVAL 'N unit')::DATE
  ─────────────────────────────────────────────
         연산 전체를 괄호로 감싸고
-        맨 끝에 ::DATE 를 한 번 더!
+         맨 끝에 ::DATE 를 한 번 더!
 ```
-
 
 ---
 

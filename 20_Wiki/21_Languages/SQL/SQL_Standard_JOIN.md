@@ -157,6 +157,67 @@ WHERE b.id IS NULL     -- 책이 없는 작가만
   WHERE COUNT = 0 해봤자 이미 날아간 데이터 못 살림
 ```
 
+## LEFT JOIN + 조건부 집계 ⭐️
+
+```
+"주문이 없는 사용자도 포함해서, 2019년 주문 수를 세어라"
+→ LEFT JOIN + 특정 연도만 세는 조건부 집계
+
+핵심 발상:
+  LEFT JOIN → 주문 없는 사용자도 NULL 로 포함
+  WHERE 로 연도 필터 → 주문 없는 사용자가 사라짐 ⚠️
+  → 연도 조건을 WHERE 가 아닌 집계 함수 안에 넣어야 함
+```
+
+```sql
+-- PostgreSQL — FILTER ⭐️
+SELECT
+    u.user_id,
+    u.join_date,
+    COUNT(o.order_id) FILTER (
+        WHERE EXTRACT(YEAR FROM o.order_date) = 2019
+    ) AS orders_in_2019
+FROM Users u
+LEFT JOIN Orders o ON u.user_id = o.buyer_id
+GROUP BY u.user_id, u.join_date;
+
+-- MySQL — SUM(조건) 단축 ⭐️
+SELECT
+    u.user_id,
+    u.join_date,
+    SUM(YEAR(o.order_date) = 2019) AS orders_in_2019
+FROM Users u
+LEFT JOIN Orders o ON u.user_id = o.buyer_id
+GROUP BY u.user_id, u.join_date;
+
+-- MySQL — SUM(CASE WHEN) 명시적
+SELECT
+    u.user_id,
+    u.join_date,
+    SUM(CASE WHEN YEAR(o.order_date) = 2019 THEN 1 ELSE 0 END) AS orders_in_2019
+FROM Users u
+LEFT JOIN Orders o ON u.user_id = o.buyer_id
+GROUP BY u.user_id, u.join_date;
+```
+
+```
+왜 WHERE 로 연도 필터 하면 안 되나:
+  WHERE YEAR(order_date) = 2019 추가 시
+  → 주문이 없는 사용자 (NULL) 도 탈락
+  → LEFT JOIN 의 의미가 없어짐
+
+  해결: 조건을 집계 함수 안으로
+    FILTER (WHERE 조건)      PostgreSQL 전용
+    SUM(조건 = 값)            MySQL 단축 (True=1, False=0)
+    SUM(CASE WHEN ... END)   MySQL 명시적
+
+SUM(YEAR(o.order_date) = 2019) 작동 원리:
+  YEAR(o.order_date) = 2019 → True(1) 또는 False(0)
+  SUM(1 또는 0) → 조건 만족 행 개수
+  NULL 행 → NULL = 2019 → NULL (SUM 에서 제외)
+  → 주문 없는 사용자는 0 반환 ✅
+```
+
 ## RIGHT JOIN — 오른쪽 기준
 
 ```
