@@ -5,6 +5,8 @@ aliases:
   - date
   - expr
   - clear
+  - --help
+  - man
 tags:
   - Linux
 related:
@@ -294,7 +296,34 @@ sudo !!           # 마지막 명령어에 sudo 붙여 재실행
 
 ---
 
-# ⑧ 도움말 — --help / man ⭐️
+# ⑧ 도움말 & 명령어 탐색 ⭐️
+
+## type — 명령어 종류 확인 ⭐️
+
+```bash
+type cd       # cd is a shell builtin   ← 내장 명령어
+type ls       # ls is aliased to 'ls --color=tty'  ← 별칭
+type cp       # cp is /usr/bin/cp       ← 외부 명령어 (경로 출력)
+type grep     # grep is /usr/bin/grep
+```
+
+```
+명령어 3가지 종류:
+  내장 명령어 (built-in): 쉘 프로그램 안에 내장
+    cd / echo / exit / pwd 등
+    쉘이 직접 처리 → 외부 파일 없음
+
+  외부 명령어 (external): 별도 실행 파일로 존재
+    /usr/bin / /bin 디렉토리에 위치
+    cp / grep / ls / tar 등
+
+  별칭 (alias): 다른 명령어의 단축키
+    ls → ls --color=tty 처럼 실제 실행 명령어가 따로 있음
+
+type 이 유용한 때:
+  명령어가 이상하게 동작할 때 실제로 뭐가 실행되는지 확인
+  alias 로 덮어씌워져 있는지 확인
+```
 
 ## --help — 빠른 옵션 확인
 
@@ -307,27 +336,76 @@ tar --help
 ls --help | less
 ```
 
-## man — 공식 매뉴얼
+## --help 출력 읽는 법
 
+```
+ls [OPTION]... [FILE]...
+    ↑             ↑
+  선택 사항     선택 사항
+
+[] = 선택 사항 (없어도 됨)
+... = 여러 개 가능
+→ ls -la /home /tmp  처럼 여러 옵션 + 여러 경로 가능
+```
+
+## man — 공식 매뉴얼
 
 ```bash
 man ls
 man cp
-man git
+man grep
+```
 
-# man 안에서
-# ↑↓   스크롤
-# /검색어  검색
-# q      종료 ← 반드시!
+## man 내부 단축키 ⭐️
+
+|키|동작|
+|---|---|
+|`↑` / `↓`|한 줄씩 스크롤|
+|`Space`|한 페이지 앞으로|
+|`b`|한 페이지 뒤로|
+|`/검색어`|문서 안에서 검색|
+|`n`|다음 검색 결과|
+|`N`|이전 검색 결과|
+|`q`|종료 ← 반드시!|
+
+```
+--help vs man:
+  --help  간단한 옵션 목록 → 빠르게 확인
+  man     상세 공식 설명서 → 깊게 이해
+  둘 다 q 로 종료
+```
+
+## apropos — 키워드로 명령어 검색 ⭐️
+
+```bash
+# "무엇을 하고 싶은지" 알지만 명령어를 모를 때
+apropos password        # 패스워드 관련 명령어 전체
+apropos file            # 파일 관련 명령어 전체
+
+# grep 조합으로 결과 필터링
+apropos file | grep create   # 파일 + create 관련만
+apropos copy | grep -i dir   # 복사 + 디렉토리 관련만
 ```
 
 ```
---help  빠른 옵션 목록
-man     상세 공식 설명서
+apropos 동작 원리:
+  man 페이지의 이름 + 설명에서 키워드 검색
+  관련 명령어 목록 출력
 
-명령어 기억 안 날 때:
-  --help / man 먼저 → 그 다음 검색
+언제 쓰나:
+  "파일 압축하는 명령어 뭐였지?" → apropos compress
+  "프로세스 보는 명령어?" → apropos process
+  결과가 너무 많으면 | grep 으로 좁히기
 ```
+
+```
+정리:
+  type 명령어     → 이 명령어가 뭔지 확인
+  --help         → 이 명령어 어떻게 쓰나 (빠른 참고)
+  man 명령어      → 이 명령어 자세히 알고 싶다
+  apropos 키워드  → 이 작업에 필요한 명령어가 뭔지 모르겠다
+```
+
 ---
 ---
 
