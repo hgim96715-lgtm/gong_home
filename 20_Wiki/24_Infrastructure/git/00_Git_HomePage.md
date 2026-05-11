@@ -22,11 +22,11 @@
 
 ## Level 1. 기본 명령어
 
-|노트|핵심 개념|
-|---|---|
-|[[Git_Commands]]|add / commit / push / reset --soft / commit --amend / force push|
-|[[Git_Branch]]|branch / checkout / merge / rebase|
-|[[Git_Remote]]|remote / fetch / pull / clone|
+| 노트               | 핵심 개념                                                                         |
+| ---------------- | ----------------------------------------------------------------------------- |
+| [[Git_Commands]] | add / commit / push / reset --soft / commit --amend / force push              |
+| [[Git_Branch]]   | branch / switch -c / checkout -b / merge / branch -d / branch --merged/rebase |
+| [[Git_Remote]]   | remote / fetch / pull / clone                                                 |
 
 ---
 
