@@ -98,6 +98,77 @@ FROM customers a
 LEFT JOIN orders b ON a.id = b.customer_id;
 ```
 
+## COALESCE + LEFT JOIN 기본값 패턴 ⭐️
+
+```
+"전체 목록을 유지하면서 조건에 맞는 데이터를 붙이고
+ 없으면 기본값으로 채워라"
+
+이 패턴을 못 떠올리면:
+  WHERE 조건 → 조건 불일치 상품 사라짐
+  → 전체 목록 CTE 먼저 만들고 LEFT JOIN 해야 함
+```
+
+```sql
+-- 기준일 이전 최신 가격, 없으면 기본값 10 (PostgreSQL)
+WITH latest_price AS (
+    SELECT DISTINCT ON (product_id)
+           product_id, new_price AS price
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+    ORDER BY product_id, change_date DESC
+),
+all_products AS (
+    SELECT DISTINCT product_id FROM Products   -- 전체 상품 목록
+)
+SELECT
+    a.product_id,
+    COALESCE(l.price, 10) AS price    -- 매칭 없으면 10 (기본값)
+FROM all_products a
+LEFT JOIN latest_price l ON a.product_id = l.product_id;
+```
+
+```
+흐름:
+  all_products → 전체 상품 목록 (조건 없이 전부)
+  latest_price → 기준일 이전 가격이 있는 상품만
+  LEFT JOIN    → 전체 상품 유지, 없으면 NULL
+  COALESCE     → NULL → 기본값 10
+
+  COALESCE(l.price, 10):
+    l.price 가 NULL (가격 변경 기록 없음) → 10
+    l.price 가 있음                       → 그 값
+```
+
+---
+## IFNULL — MySQL 전용 (COALESCE 2인자 버전)
+
+```sql
+-- MySQL
+IFNULL(값, NULL일때대체값)
+
+SELECT IFNULL(new_price, 10) AS price FROM Products;
+-- new_price 가 NULL 이면 10
+
+-- LEFT JOIN + IFNULL 패턴 (MySQL)
+SELECT
+    a.product_id,
+    IFNULL(r.new_price, 10) AS price
+FROM all_products a
+LEFT JOIN ranked r
+    ON a.product_id = r.product_id
+   AND r.rn = 1;
+```
+
+```
+COALESCE vs IFNULL:
+  COALESCE(a, b, c, ...)  표준 SQL / 인자 여러 개 가능
+  IFNULL(a, b)            MySQL 전용 / 인자 2개만
+
+  PostgreSQL  → COALESCE
+  MySQL       → IFNULL 또는 COALESCE 둘 다 가능
+```
+
 ---
 
 ---

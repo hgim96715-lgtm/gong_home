@@ -493,6 +493,113 @@ WHERE B.status = 'DONE'      -- WHERE 절 → INNER JOIN 이 됨
 ```
 
 ---
+---
+# ⑧ 전체 목록 + LEFT JOIN 패턴 ⭐️
+
+## 언제 필요한가
+
+```
+"기준일 이전 가격이 없는 상품도 결과에 나와야 한다"
+→ WHERE 조건만 쓰면 조건 불일치 상품이 사라짐
+→ 전체 목록을 먼저 만들고 LEFT JOIN 해야 함
+
+핵심 발상:
+  모든 상품 목록 → 기준일 이전 최신 가격 LEFT JOIN → COALESCE 기본값
+
+패턴:
+  ① 전체 목록 CTE (DISTINCT product_id)
+  ② 조건 필터 + 최신 행 CTE (DISTINCT ON 또는 ROW_NUMBER)
+  ③ LEFT JOIN
+  ④ COALESCE / IFNULL 로 NULL → 기본값
+```
+
+## 실전 — 기준일 기준 최신 가격 (초기가 10)
+
+
+```sql
+-- PostgreSQL — DISTINCT ON ⭐️
+WITH latest_price AS (
+    SELECT DISTINCT ON (product_id)
+           product_id,
+           new_price AS price
+    FROM Products
+    WHERE change_date <= '2019-08-16'      -- 기준일 이전만
+    ORDER BY product_id, change_date DESC  -- 최신 순 → DISTINCT ON 이 첫 행 선택
+),
+all_products AS (
+    SELECT DISTINCT product_id FROM Products  -- 전체 상품 목록
+)
+SELECT
+    a.product_id,
+    COALESCE(l.price, 10) AS price     -- 매칭 없으면 기본값 10
+FROM all_products a
+LEFT JOIN latest_price l ON a.product_id = l.product_id;
+
+-- MySQL — ROW_NUMBER() ⭐️
+WITH ranked AS (
+    SELECT product_id,
+           new_price,
+           ROW_NUMBER() OVER (
+               PARTITION BY product_id
+               ORDER BY change_date DESC   -- 최신 순
+           ) AS rn
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+),
+all_products AS (
+    SELECT DISTINCT product_id FROM Products
+)
+SELECT
+    a.product_id,
+    IFNULL(r.new_price, 10) AS price
+FROM all_products a
+LEFT JOIN ranked r
+    ON a.product_id = r.product_id
+   AND r.rn = 1;                           -- 최신 1건만
+```
+
+## 왜 WHERE 만 쓰면 안 되나
+
+```
+상품 A: 2019-08-10 가격 변경 → WHERE 통과 → 결과에 있음
+상품 B: 변경 기록 없음        → WHERE 통과하는 행 없음 → 사라짐 ⚠️
+
+→ 상품 B 는 초기가 10 이어야 하는데 결과에 없음
+
+해결:
+  all_products CTE 로 전체 목록 먼저 확보
+  → LEFT JOIN 으로 매칭 시도
+  → 없으면 NULL → COALESCE(NULL, 10) = 10
+```
+
+## DISTINCT ON vs ROW_NUMBER 비교
+
+```sql
+-- PostgreSQL DISTINCT ON (더 간결)
+SELECT DISTINCT ON (product_id)
+       product_id, new_price
+FROM Products
+WHERE change_date <= '2019-08-16'
+ORDER BY product_id, change_date DESC;
+-- product_id 별로 첫 번째 행만 (change_date DESC → 최신)
+
+-- ROW_NUMBER (모든 DB 호환)
+ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY change_date DESC)
+-- rn = 1 인 행만 필터링 → 동일 결과
+```
+
+```
+DISTINCT ON 구조:
+  SELECT DISTINCT ON (그룹기준컬럼)
+         원하는컬럼
+  FROM 테이블
+  ORDER BY 그룹기준컬럼, 정렬기준 DESC
+
+  PostgreSQL 전용 / ROW_NUMBER 보다 훨씬 간결
+  ORDER BY 에 그룹기준컬럼이 반드시 먼저 와야 함
+```
+
+---
 
 ---
 
