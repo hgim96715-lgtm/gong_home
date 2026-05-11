@@ -141,19 +141,40 @@ revert 는 되돌리는 내용을 새 커밋으로 만듦
 → 공유 브랜치(main) 에서 안전하게 사용 가능
 ```
 
+
 ```bash
-# 특정 커밋 되돌리기 (새 커밋 생성)
-git revert HEAD          # 마지막 커밋 되돌리기
-git revert abc1234       # 특정 커밋 되돌리기
+# 마지막 커밋 되돌리기
+git revert HEAD
+
+# 특정 커밋 되돌리기
+git revert abc1234
+git log --oneline   # revert 커밋이 새로 추가됨
 
 # 커밋 없이 변경만 (직접 커밋할 때)
 git revert --no-commit HEAD
 ```
 
 ```
-reset vs revert:
-  reset   커밋 이력 지움 → 혼자 쓰는 브랜치에서만
-  revert  새 커밋으로 되돌림 → 공유 브랜치에서 안전
+git revert 실행 시 에디터가 열림:
+  메시지 수정 없이 그대로 저장하고 닫기
+  Vim:  Esc → :wq → Enter
+  nano: Ctrl+X → Y → Enter
+```
+
+## reset vs revert ⭐️
+
+| |reset|revert|
+|---|---|---|
+|방식|커밋 이력 삭제|새 커밋 추가|
+|히스토리|재작성됨|보존됨|
+|push|force push 필요|일반 push 가능|
+|사용 상황|혼자 쓰는 브랜치|공유 브랜치 ✅|
+
+```
+공유 브랜치(main)에서 실수 → revert 사용
+  이유 ①: 히스토리 보존 (팀원이 변경 이력 볼 수 있음)
+  이유 ②: force push 불필요 (일반 push 로 공유)
+  이유 ③: 감사 추적 (언제 왜 취소됐는지 기록 남음)
 ```
 
 ---

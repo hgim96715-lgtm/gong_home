@@ -181,6 +181,104 @@ release/버전      배포 준비
 ```
 
 ---
+---
+# ⑥ cherry-pick — 특정 커밋만 가져오기 ⭐️
+
+```
+다른 브랜치에서 특정 커밋 하나만 현재 브랜치에 적용
+전체 merge 없이 원하는 것만 쏙 뽑아옴
+```
+
+```bash
+# 다른 브랜치의 최신 커밋 가져오기
+git cherry-pick feature-branch
+
+# 특정 커밋 해시로 가져오기
+git log feature-branch --oneline   # 해시 확인
+git cherry-pick abc1234             # 해당 커밋만 적용
+
+# 결과 확인
+git log --oneline
+```
+
+```
+cherry-pick 의 특징:
+  원본 커밋을 이동/복사가 아닌 새 커밋 생성
+  커밋 내용은 같지만 해시값은 달라짐
+
+언제 쓰나:
+  특정 버그 수정만 다른 브랜치에 적용
+  release 브랜치에 긴급 패치 적용
+
+⚠️ 주의:
+  두 브랜치 코드 차이가 크면 충돌 발생 가능
+  많이 쓰면 히스토리 파악 어려워짐
+  전체 merge 가 맞으면 cherry-pick 대신 merge 사용
+```
+
+---
+---
+# ⑦ rebase -i — 커밋 히스토리 정리 ⭐️
+
+```
+커밋 히스토리를 재작성하는 강력한 도구
+push 전 로컬 커밋 정리에 사용
+⚠️ 이미 push 한 커밋 / 공유 브랜치에서 절대 금지
+```
+
+## 기본 사용
+
+```bash
+# 최근 3개 커밋 대화형 편집
+git rebase -i HEAD~3
+
+# 처음부터 전체 (루트 리베이스 — 실험용만)
+git rebase -i --root
+```
+
+## 에디터에서 쓸 수 있는 명령어
+
+|명령어|축약|동작|
+|---|---|---|
+|`pick`|`p`|그대로 사용 (기본)|
+|`reword`|`r`|커밋 메시지만 수정|
+|`squash`|`s`|이전 커밋과 합치기 (메시지 합침)|
+|`fixup`|`f`|이전 커밋과 합치기 (메시지 버림)|
+|`edit`|`e`|커밋 내용 수정|
+|`drop`|`d`|커밋 삭제|
+
+
+```bash
+# 에디터 예시 (오래된 것이 위)
+pick abc111 First change
+squash def222 Second change   ← First 와 합치기
+reword ghi333 Third change    ← 메시지만 수정
+```
+
+```
+저장 후 닫으면 순서대로 처리됨
+에디터 종료:
+  Vim:  Esc → :wq → Enter
+  nano: Ctrl+X → Y → Enter
+
+문제 생기면 언제든 취소:
+  git rebase --abort
+```
+
+## 언제 쓰나
+
+```
+push 전 정리:
+  "wip", "fix typo" 같은 작은 커밋 squash 로 합치기
+  커밋 메시지 전체 정리 (reword)
+
+⚠️ 절대 금지:
+  이미 push 한 커밋
+  팀원과 공유 중인 브랜치
+  → 히스토리 재작성 → 다른 사람 커밋과 충돌
+```
+
+---
 
 ---
 

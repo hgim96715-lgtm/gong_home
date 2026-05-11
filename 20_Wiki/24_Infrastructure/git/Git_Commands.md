@@ -12,6 +12,8 @@ related:
   - "[[Shell_Script_Basics]]"
   - "[[Git_Concept]]"
 ---
+
+
 # Git_Commands — 자주 쓰는 Git 명령어
 
 ## 한 줄 요약
@@ -36,6 +38,45 @@ git commit -m "메시지"          # 커밋
 git push origin main            # 원격 푸시
 ```
 
+## git commit -am — add + commit 한 번에 ⭐️
+
+
+```bash
+# -a + -m 옵션 합친 단축 명령어
+git commit -am "변경 내용 커밋"
+
+# 풀어서 쓰면 이것과 동일
+git add .
+git commit -m "변경 내용 커밋"
+```
+
+```
+-a (--all):  수정/삭제된 파일을 자동으로 스테이징
+-m:          커밋 메시지 지정
+
+⚠️ 중요한 제한:
+  이미 추적 중인(tracked) 파일만 자동 스테이징
+  새로 만든 파일(untracked)은 포함 안 됨
+  → 새 파일은 반드시 git add 먼저
+
+예시:
+  hello.txt (이미 커밋된 파일) 수정 → commit -am 가능
+  newfile.txt (처음 만든 파일)      → git add 먼저 필요
+```
+
+
+```bash
+# 실전 패턴
+echo "변경" >> hello.txt
+git commit -am "Second change"   # 이미 추적 중인 파일 → -am 가능
+
+touch newfile.txt
+git commit -am "Add new file"    # ❌ newfile.txt 는 포함 안 됨
+git add newfile.txt
+git commit -m "Add new file"     # ✅ 새 파일은 add 필요
+```
+
+---
 ## git status 출력 해석 ⭐️
 
 ```bash
@@ -67,6 +108,7 @@ git status
   (Git 모름)              (준비 완료)             (저장 완료)
 ```
 
+---
 ## git log — 커밋 이력 확인 ⭐️
 
 ```bash
@@ -91,6 +133,7 @@ git log 출력:
 q 를 눌러 로그 화면 종료
 ```
 
+----
 ## git diff — 변경 사항 확인 ⭐️
 
 ```bash
@@ -186,31 +229,46 @@ git remote remove origin                          # 원격 연결 제거
 
 ---
 
-# ② commit --amend — 마지막 커밋 수정
+# ② commit --amend — 마지막 커밋 수정 ⭐️
 
 ```
 방금 한 커밋을 수정하고 싶을 때
 메시지 수정 / 파일 추가 / 코드 수정
+→ 새 커밋을 만들지 않고 마지막 커밋을 덮어씀
 ```
 
 ```bash
 # 커밋 메시지만 수정
 git commit --amend -m "새 메시지"
 
-# 파일 추가 후 커밋에 포함
+# 파일 빠트렸을 때 — 추가 후 이전 커밋에 포함
+echo "중요한 내용" >> hello.txt
+git add hello.txt
+git commit --amend -m "Initial commit with important note"
+# → 이전 커밋이 새 내용 포함된 커밋으로 교체됨
+
+# 파일 추가 후 메시지는 유지
 git add 빠트린_파일.py
-git commit --amend --no-edit    # 메시지 유지
-
-# 원격에 반영 (강제 푸시 필요)
-git push --force
-git push --force-with-lease     # 더 안전한 방법 ← 권장
+git commit --amend --no-edit
 ```
 
 ```
-⚠️ push --force 주의:
-  혼자 작업하는 브랜치에서만 사용
-  팀 공유 브랜치에서 force push 하면 다른 사람 커밋 날아갈 수 있음
-  --force-with-lease: 원격에 내가 모르는 커밋 있으면 거부 → 더 안전
+-m "메시지"     새 메시지로 교체
+--no-edit       기존 메시지 유지
+
+언제 쓰나:
+  오타 있는 커밋 메시지 수정
+  파일 빠트리고 커밋했을 때
+  코드 작은 수정 후 이전 커밋에 포함
+
+⚠️ push 한 커밋은 amend 하면 force push 필요
+  혼자 쓰는 브랜치에서만 / 팀 공유 브랜치에서 금지
+```
+
+```bash
+# 원격에 반영 (강제 푸시)
+git push --force-with-lease   # 권장 — 원격 변경 있으면 거부
+git push --force              # 위험 — 무조건 덮어씀
 ```
 
 ---
