@@ -10,6 +10,7 @@ related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_Process_Monitor]]"
   - "[[Linux_Directory_Commands]]"
+  - "[[Linux_User_Group]]"
 ---
 
 # Linux_System_Info — 시스템 기본 정보 확인
@@ -116,11 +117,10 @@ CPU 코어 수 기준으로 해석:
 # ④ id — 사용자 & 그룹 정보 ⭐️
 
 ```bash
-id
-# uid=5000(labex) gid=5000(labex) groups=5000(labex),27(sudo),121(ssl-cert)
-
-id labex        # 특정 사용자 정보
-id root         # root 정보
+id                  # 현재 사용자 정보
+id labex            # 특정 사용자 정보
+id jack             # 다른 사용자 정보 확인
+id root             # root 정보
 ```
 
 ## 출력 해석
@@ -130,13 +130,21 @@ uid=5000(labex)   → 사용자 고유 번호 (UID)
                      일반 사용자: 1000번대 이상
                      root: 0
 
-gid=5000(labex)   → 기본 그룹 번호 (GID)
+gid=5000(labex)   → 기본 그룹(Primary Group) 번호
 
 groups=5000(labex),27(sudo),121(ssl-cert)
                   → 소속된 모든 그룹 목록
                   27(sudo) 포함 = 관리자 권한 있음 ✅
-```
 
+새로 생성한 사용자:
+  id jack
+  uid=1001(jack) gid=1001(jack) groups=1001(jack)
+  → UPG: 사용자 이름과 같은 기본 그룹 자동 생성
+
+sudo 그룹 추가 후:
+  id jack
+  uid=1001(jack) gid=1001(jack) groups=1001(jack),27(sudo),1002(developers)
+```
 ---
 
 ---

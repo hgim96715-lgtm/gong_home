@@ -11,8 +11,8 @@ related:
   - "[[Linux_Permission_Model]]"
   - "[[Linux_Directory_Structure]]"
   - "[[Linux_Concept_Overview]]"
+  - "[[Linux_System_Info]]"
 ---
-
 # Linux_User_Group — 사용자 & 그룹 관리
 
 ## 한 줄 요약
@@ -221,14 +221,19 @@ grep research /etc/group
 ## usermod -aG — 보조 그룹에 사용자 추가 ⭐️
 
 ```bash
-sudo usermod -aG research labex
+# 그룹에 사용자 추가
+sudo usermod -aG developers jack
+
+# sudo 권한 부여 — sudo 그룹에 추가
+sudo usermod -aG sudo jack
 
 # 추가 확인
-grep research /etc/group
-# research:x:5003:labex  ← 멤버에 labex 추가됨
+groups jack
+# jack : jack sudo developers  ← 전체 그룹 목록
 
-groups labex
-# labex : labex sudo ssl-cert public research  ← 전체 그룹 목록
+grep jack /etc/group
+# sudo:x:27:jack
+# developers:x:1001:jack
 ```
 
 ```
@@ -236,11 +241,53 @@ groups labex
 -G = 보조 그룹 지정
 
 -a 없이 -G 만 쓰면:
-  sudo usermod -G research labex
-  → labex 가 기존에 속한 sudo / docker 등 전부 제거됨!
-  → research 만 남음 → 매우 위험!
+  sudo usermod -G developers jack
+  → jack 이 기존에 속한 sudo 등 전부 제거됨!
+  → developers 만 남음 → 매우 위험!
 
 반드시 -aG 세트로 사용
+```
+
+## sudo 그룹 추가 — 관리자 권한 부여 ⭐️
+
+```bash
+sudo usermod -aG sudo jack
+
+# 확인
+groups jack
+# jack : jack sudo developers  ← sudo 포함
+
+# 변경사항 적용 (재로그인 필요)
+su - jack   # jack 으로 로그인 전환
+sudo whoami # root
+```
+
+```
+sudo 그룹에 추가하면:
+  해당 사용자가 sudo 명령어 사용 가능
+  root 로 직접 로그인 없이 관리 작업 수행
+  작업 기록 남음 (감사 추적)
+
+주의:
+  sudo 권한은 신중하게 부여
+  필요한 사용자에게만 추가
+```
+
+## UPG — 사용자 개인 그룹 ⭐️
+
+```
+adduser 로 사용자 생성 시 자동으로:
+  사용자 이름과 같은 이름의 그룹 생성
+  그 그룹을 기본 그룹(Primary Group)으로 설정
+
+예시: adduser jack
+  → jack 사용자 생성
+  → jack 그룹 자동 생성
+  → jack 의 기본 그룹 = jack
+
+id jack
+# uid=1001(jack) gid=1001(jack) groups=1001(jack)
+#               ↑ uid           ↑ 기본 그룹 gid
 ```
 
 ## 멤버십 확인 — grep / groups
