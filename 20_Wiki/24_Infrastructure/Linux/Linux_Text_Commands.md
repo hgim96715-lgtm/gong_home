@@ -13,7 +13,6 @@ related:
   - "[[Linux_Redirect]]"
   - "[[Linux_Log]]"
 ---
-
 # Linux_Text_Commands — 파일 내용 보기
 
 ## 한 줄 요약
@@ -51,6 +50,21 @@ cat file.txt > copy.txt
 
 # 파일 내용 이어붙이기 (>>)
 cat extra.txt >> main.txt
+```
+
+## nl — 줄 번호 포함 출력
+
+```bash
+nl file.txt
+# 줄 번호와 함께 내용 출력
+#      1  Line 1: Hello
+#      2  Line 2: World
+
+# cat -n 과 동일한 결과 (빈 줄 포함 번호)
+cat -n file.txt
+
+# nl 은 기본적으로 빈 줄 번호 생략
+# cat -n 은 빈 줄도 번호 매김
 ```
 
 ## cat 실전 패턴
@@ -193,7 +207,6 @@ tail -f /dev/null 의 동작:
 ```
 
 ## 언제 쓰나
-
 
 ```bash
 # 1. Docker 컨테이너 종료 방지 — 가장 많이 쓰는 용도 ⭐️

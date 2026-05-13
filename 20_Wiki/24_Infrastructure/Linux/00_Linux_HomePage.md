@@ -1,7 +1,5 @@
 
-
 ```
-데이터 엔지니어가 서버를 다루는 언어
 GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
 ```
 
@@ -15,13 +13,13 @@ GUI 없이 명령어 하나로 시스템 전체를 제어하는 기술
 Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 ```
 
-| 노트                            | 핵심 개념                                                                   |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| [[Linux_Terminal_Basics]]     | echo / date / cal / expr / clear / Tab / history / type / man / apropos |
-| [[Linux_Concept_Overview]]    | 커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가                       |
-| [[Linux_Directory_Structure]] | / (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로                    |
-| [[Linux_Permission_Model]]    | rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo                      |
-| [[Linux_User_Group]]          | useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel     |
+|노트|핵심 개념|
+|---|---|
+|[[Linux_Terminal_Basics]]|echo / date / cal / expr / clear / Tab / history / type / man / apropos|
+|[[Linux_Concept_Overview]]|커널 / 쉘 / 배포판(Ubuntu) / CLI vs GUI / 왜 서버는 Linux인가|
+|[[Linux_Directory_Structure]]|/ (루트) / home / etc / var / tmp / opt / 절대경로 vs 상대경로|
+|[[Linux_Permission_Model]]|rwx / 소유자·그룹·기타 / chmod / chown / uid / gid / sudo|
+|[[Linux_User_Group]]|useradd / userdel / usermod / passwd / groupadd / 계정 잠금 / /etc/skel|
 
 ---
 
@@ -33,12 +31,12 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 서버에서 파일과 폴더를 자유자재로 다루자
 ```
 
-| 노트                             | 핵심 개념                                              |
-| ------------------------------ | -------------------------------------------------- |
-| [[Linux_Directory_Commands]] ⭐ | mkdir/touch / cd / ls -F / pwd / tree / 프로젝트 구조 설계 |
-| [[Linux_File_Move_Copy]] ⭐     | mv (이동·이름변경) / cp / cp .bak 백업 패턴 / 롤백             |
-| [[Linux_File_Delete]]          | rm / rm -rf / rmdir / 와일드카드(*) 패턴 삭제 / 주의사항        |
-| [[Linux_Archive_Compress]] ⭐   | tar -czf / tar -tzf / tar -xzf / gzip / 로그 로테이션 패턴 |
+|노트|핵심 개념|
+|---|---|
+|[[Linux_Directory_Commands]] ⭐|mkdir / touch / {1..5} 확장 / cd / ls -F / pwd / tree / 프로젝트 구조 설계|
+|[[Linux_File_Move_Copy]] ⭐|mv (이동·이름변경) / cp / cp .bak 백업 패턴 / 롤백|
+|[[Linux_File_Delete]]|rm / rm -rf / rmdir / 와일드카드(*) 패턴 삭제 / 주의사항|
+|[[Linux_Archive_Compress]] ⭐|tar -czf / tar -tzf / tar -xzf / gzip / 로그 로테이션 패턴|
 
 ---
 
@@ -71,10 +69,10 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 
 |노트|핵심 개념|
 |---|---|
-|[[Linux_Text_Commands]]|cat / less / head / tail -f / 실시간 로그 모니터링|
-|[[Linux_Search_Filter]] ⭐|grep / grep -r / grep -i / -E / 파이프(\|) / 로그에서 ERROR 추출|
+|[[Linux_Text_Commands]]|cat / nl / less / head / tail -f / nano / 실시간 로그 모니터링|
+|[[Linux_Search_Filter]] ⭐|grep / grep -r / grep -i / -E / find / which / 파이프(\|) / 로그에서 ERROR 추출|
 |[[Linux_Text_Processing]]|awk / sed / cut / sort / uniq / wc / 데이터 전처리 기초|
-|[[Linux_Redirect]] ⭐|> (덮어쓰기) / >> (추가) / < / 2> stderr / 보고서 자동 생성|
+|[[Linux_Redirect]] ⭐|> (덮어쓰기) / >> (추가) / << EOF (히어독) / 2> stderr / 보고서 자동 생성|
 |[[Linux_Diff]]|diff / diff -r / 스테이징 vs 프로덕션 비교 / 누락 파일 찾기|
 
 ---
@@ -87,11 +85,11 @@ Linux가 뭔지, 왜 데이터 엔지니어에게 필수인지
 반복 작업을 스크립트로 만들어서 자동화하자
 ```
 
-| 노트                        | 핵심 개념                                               |
-| ------------------------- | --------------------------------------------------- |
-| [[Shell_Script_Basics]]   | #!/bin/bash / 변수 / if / for / while / 실행권한 chmod +x |
-| [[Shell_Cron_Job]] ⭐      | crontab -e / 크론 표현식 / 로그 압축 자동화 / 백업 스케줄링           |
-| [[Shell_Script_Patterns]] | 로그 로테이션 스크립트 / 디렉토리 백업 / 오류 처리 (exit code)          |
+|노트|핵심 개념|
+|---|---|
+|[[Shell_Script_Basics]]|#!/bin/bash / 변수 / if / for / while / 실행권한 chmod +x|
+|[[Shell_Cron_Job]] ⭐|crontab -e / 크론 표현식 / 로그 압축 자동화 / 백업 스케줄링|
+|[[Shell_Script_Patterns]]|로그 로테이션 스크립트 / 디렉토리 백업 / 오류 처리 (exit code)|
 
 ---
 

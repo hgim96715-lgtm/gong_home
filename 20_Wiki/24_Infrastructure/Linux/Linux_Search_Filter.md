@@ -4,6 +4,8 @@ aliases:
   - 검색
   - 필터
   - 로그 분석
+  - find
+  - which
 tags:
   - Linux
 related:
@@ -14,7 +16,6 @@ related:
   - "[[Linux_Log]]"
   - "[[00_Linux_HomePage]]"
 ---
-
 # Linux_Search_Filter — grep & 로그 검색
 
 ## 한 줄 요약
@@ -297,10 +298,103 @@ grep -v "^#" /etc/nginx/nginx.conf | grep -v "^$"
 
 # 자주 하는 실수
 
-| 실수                  | 원인          | 해결                   |
-| ------------------- | ----------- | -------------------- |
-| 대소문자 안 잡힘           | 기본은 대소문자 구분 | `-i` 옵션 추가           |
-| grep 결과에 grep 자체 포함 | grep 도 프로세스 | `\| grep -v grep` 추가 |
-| `\|` 로 여러 패턴이 안 됨   | 기본 grep     | `-E` 옵션 필요           |
-| dmesg 권한 에러         | root 필요     | `sudo dmesg`         |
-| `>` 로 기존 보고서 날림     | 덮어쓰기        | `>>` 로 이어쓰기          |
+|실수|원인|해결|
+|---|---|---|
+|대소문자 안 잡힘|기본은 대소문자 구분|`-i` 옵션 추가|
+|grep 결과에 grep 자체 포함|grep 도 프로세스|`\| grep -v grep` 추가|
+|`\|` 로 여러 패턴이 안 됨|기본 grep|`-E` 옵션 필요|
+|dmesg 권한 에러|root 필요|`sudo dmesg`|
+|`>` 로 기존 보고서 날림|덮어쓰기|`>>` 로 이어쓰기|
+
+---
+
+---
+
+# find — 파일 & 디렉토리 찾기 ⭐️
+
+```
+grep = 파일 안의 내용 검색
+find = 파일 자체의 위치 검색
+```
+
+## 기본 사용
+
+```bash
+# 현재 디렉토리(.) 에서 .txt 파일 전부
+find . -name "*.txt"
+
+# 홈 디렉토리에서 특정 파일
+find ~ -name "config.json"
+
+# 루트 전체 검색 (sudo 필요)
+sudo find / -name "passwd"
+```
+
+## 자주 쓰는 옵션
+
+```bash
+# 이름으로 검색
+find . -name "*.log"          # 확장자 패턴
+find . -name "app*"           # 이름 앞부분 패턴
+find . -iname "*.TXT"         # 대소문자 무시
+
+# 크기로 검색
+find ~ -size +1M              # 1MB 초과
+find ~ -size -100k            # 100KB 미만
+find . -size +10M -size -1G   # 10MB~1GB 사이
+
+# 수정 시간으로 검색
+find ~ -mtime -1              # 최근 24시간 내 수정
+find ~ -mtime +7              # 7일 이상 된 파일
+find ~ -mmin -30              # 최근 30분 내 수정
+
+# 파일 타입
+find . -type f                # 파일만
+find . -type d                # 디렉토리만
+```
+
+```
+크기 단위:
+  c = 바이트
+  k = 킬로바이트
+  M = 메가바이트
+  G = 기가바이트
+
++N = N 보다 큰 것
+-N = N 보다 작은 것
+```
+
+## find + 실행 ⭐️
+
+```bash
+# 찾은 파일에 명령어 실행
+find . -name "*.log" -delete          # 찾은 것 삭제
+find . -name "*.txt" -exec cat {} \;  # 찾은 파일 cat 으로 출력
+```
+
+---
+
+---
+
+# which — 명령어 실행 파일 위치 찾기
+
+```bash
+which python
+# /usr/bin/python
+
+which python3
+# /usr/bin/python3
+
+which git
+# /usr/bin/git
+```
+
+```
+which = 명령어가 실제로 어디 있는지 찾기
+type 과 비슷하지만 외부 명령어 경로만 출력
+
+which vs type:
+  which  실행 파일 경로만 출력
+  type   내장/외부/별칭 전부 구분해서 보여줌
+  → 경로만 필요하면 which / 종류 확인하려면 type
+```

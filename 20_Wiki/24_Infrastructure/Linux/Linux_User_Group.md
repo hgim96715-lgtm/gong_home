@@ -82,22 +82,78 @@ sudo useradd newuser
 
 # 홈 디렉토리 포함 생성 (-m 필수)
 sudo useradd -m newuser
-sudo useradd --create-home newuser   # 동일
 
-# 옵션과 함께 생성
-sudo useradd -m -s /bin/bash -c "설명" newuser
+# 기본 그룹 + 보조 그룹 + 홈 한번에 생성 ⭐️
+sudo useradd -m -d /home/jack -g dev -G labex jack
+#                  ↑ 홈 경로  ↑ 기본그룹 ↑ 보조그룹
+```
+
+|옵션|의미|
+|---|---|
+|`-m`|홈 디렉토리 생성 (필수!)|
+|`-d /home/이름`|홈 디렉토리 경로 지정|
+|`-g 그룹명`|기본 그룹(Primary) 지정|
+|`-G 그룹1,그룹2`|보조 그룹(Secondary) 지정|
+|`-s /bin/bash`|기본 셸 지정|
+|`-c "설명"`|코멘트 추가|
+|`-u 1500`|UID 직접 지정|
+
+```bash
+# 실전 예시
+sudo useradd -m -s /bin/bash -c "데이터 엔지니어" -G docker,sudo gong
 ```
 
 ```
 useradd vs adduser:
-  useradd = 스크립트/자동화 적합 (묵묵히 옵션대로 실행)
-  adduser = 대화형 (이름/방번호 등 입력 요구)
+  useradd = 스크립트/자동화 (묵묵히 옵션대로 실행 / 비밀번호 프롬프트 없음)
+  adduser = 대화형 (비밀번호/이름 등 입력 요구)
   → 일괄 계정 생성 스크립트 = useradd 사용
 
 -m 옵션이 왜 필요한가:
   기본적으로 홈 디렉토리를 안 만듦
   홈 없으면 로그인 시 프롬프트 깨짐 / .bashrc 없음
-  → 반드시 -m 옵션 붙이기
+  → 반드시 -m 붙이기
+```
+
+## 사용자 생성 2가지 방법 ⭐️
+
+```
+방법 1 — useradd (스크립트/자동화 적합)
+  모든 속성을 한 번에 옵션으로 지정
+  비밀번호 입력 프롬프트 없음
+
+방법 2 — adduser → usermod (대화형 적합)
+  adduser 로 생성 (비밀번호 입력 필요 / UPG 자동 생성)
+  이후 usermod -g 로 기본 그룹 변경
+  이후 usermod -aG 로 보조 그룹 추가
+```
+
+```bash
+# ─── 방법 1 — useradd 한 번에 ────────────────────
+sudo groupadd dev
+sudo useradd -m -d /home/jack -g dev -G labex jack
+
+# 또는 두 단계로 분리:
+sudo useradd -m -d /home/jack -g dev jack  # 기본 그룹과 함께 생성
+sudo usermod -aG labex jack                # 보조 그룹 추가
+
+# ─── 방법 2 — adduser → usermod ──────────────────
+sudo groupadd dev
+sudo adduser jack              # 대화형 생성 (비밀번호 입력 요구)
+                               # → UPG: jack 그룹 자동 생성 / 기본그룹 = jack
+sudo usermod -g dev jack       # 기본 그룹 jack → dev 로 변경
+sudo usermod -aG labex jack    # 보조 그룹 labex 추가
+```
+
+```
+usermod -g vs usermod -aG ⭐️:
+  usermod -g  그룹명  → 기본 그룹(Primary) 변경 (1개만 존재하므로 -a 불필요)
+  usermod -aG 그룹명  → 보조 그룹(Secondary) 추가 (-a 없으면 기존 그룹 전부 날아감!)
+
+두 방법 모두 유효:
+  useradd   → 빠르고 자동화에 적합
+  adduser   → 대화형 / 실습 환경에 적합
+  결과 동일 → 두 방법 모두 이해해두기
 ```
 
 ## /etc/skel — 홈 디렉토리 기본 파일 ⭐️
@@ -108,7 +164,7 @@ ls -la /etc/skel/
 # .bash_logout  .bashrc  .profile
 
 # 신규 사용자 홈에 자동 복사됨
-sudo ls -la /home/b.smith/
+sudo ls -la /home/jack/
 # .bash_logout  .bashrc  .profile  (동일한 파일들)
 ```
 
@@ -116,20 +172,6 @@ sudo ls -la /home/b.smith/
 /etc/skel = Skeleton (뼈대)
   모든 신규 사용자의 홈 디렉토리 초기 세팅 거푸집
   여기 파일 추가/수정 → 이후 생성 계정에 자동 반영
-```
-
-|옵션|의미|
-|---|---|
-|`-m`|홈 디렉토리 생성|
-|`-s /bin/bash`|기본 셸 지정|
-|`-c "이름"`|설명 추가|
-|`-g groupname`|기본 그룹 지정|
-|`-G g1,g2`|추가 그룹 지정|
-|`-u 1500`|UID 직접 지정|
-
-```bash
-# 실전 예시
-sudo useradd -m -s /bin/bash -c "데이터 엔지니어" -G docker,sudo gong
 ```
 
 ## passwd — 비밀번호 설정

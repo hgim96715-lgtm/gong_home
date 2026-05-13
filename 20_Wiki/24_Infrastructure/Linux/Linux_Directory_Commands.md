@@ -11,6 +11,7 @@ tags:
 related:
   - "[[00_Linux_HomePage]]"
   - "[[Linux_File_Move_Copy]]"
+  - "[[Linux_Directory_Structure]]"
 ---
 # Linux_Directory_Commands — 디렉토리 관리
 

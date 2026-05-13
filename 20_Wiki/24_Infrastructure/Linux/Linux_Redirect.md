@@ -4,6 +4,9 @@ aliases:
   - 표준 입출력
   - stderr
   - 파이프
+  - << EOF — 히어독
+  - ">"
+  - ">>"
 tags:
   - Linux
 related:
@@ -13,7 +16,6 @@ related:
   - "[[Linux_Search_Filter]]"
   - "[[Linux_Diff]]"
 ---
-
 # Linux_Redirect — 입출력 리다이렉션
 
 ## 한 줄 요약
@@ -252,14 +254,73 @@ grep ERROR /var/log/app.log | wc -l
 |`/dev/null`|출력 버리기|`cmd > /dev/null 2>&1`|
 
 ---
+---
+
+# << EOF — 히어독 (여러 줄 입력) ⭐️
+
+```
+Heredoc = Here Document
+여러 줄의 내용을 한 번에 파일에 입력할 때 사용
+cat << EOF > 파일명 형태로 많이 씀
+```
+
+```bash
+# 기본 구조
+cat << EOF > multiline.txt
+Line 1: Hello, Linux
+Line 2: This is a multiline file.
+Line 3: Created using a here-document.
+EOF
+
+cat multiline.txt
+# Line 1: Hello, Linux
+# Line 2: This is a multiline file.
+# Line 3: Created using a here-document.
+```
+
+```
+구조 설명:
+  cat << EOF  → EOF 가 나올 때까지 입력 받아서 cat 으로 출력
+  > 파일명    → cat 출력을 파일로 저장
+  EOF         → 입력 끝을 알리는 마커 (대문자 관례 / 다른 단어도 가능)
+
+echo 여러 번 vs heredoc:
+  ❌ echo "line1" > file.txt
+     echo "line2" >> file.txt
+     echo "line3" >> file.txt
+
+  ✅ cat << EOF > file.txt
+     line1
+     line2
+     line3
+     EOF
+```
+
+```bash
+# >> 로 기존 파일에 이어붙이기
+cat << EOF >> existing.txt
+추가할 내용 1
+추가할 내용 2
+EOF
+
+# 변수 사용 가능
+NAME="Linux"
+cat << EOF > greeting.txt
+Hello, $NAME!
+Today is $(date)
+EOF
+```
+
+---
 
 ---
 
 # 자주 하는 실수
 
-| 실수                  | 원인      | 해결                  |
-| ------------------- | ------- | ------------------- |
-| `>` 로 기존 파일 날림      | 덮어쓰기    | 로그는 항상 `>>`         |
-| `2>&1 >> log` 순서 틀림 | 순서가 중요함 | `>> log 2>&1` 순서    |
-| 파이프 없이 긴 출력         | 화면 넘침   | `\| less` 로 페이지 보기  |
-| sudo 결과 파일 저장 안 됨   | 권한 문제   | `\| sudo tee -a 파일` |
+|실수|원인|해결|
+|---|---|---|
+|`>` 로 기존 파일 날림|덮어쓰기|로그는 항상 `>>`|
+|`2>&1 >> log` 순서 틀림|순서가 중요함|`>> log 2>&1` 순서|
+|파이프 없이 긴 출력|화면 넘침|`\| less` 로 페이지 보기|
+|sudo 결과 파일 저장 안 됨|권한 문제|`\| sudo tee -a 파일`|
+|EOF 앞에 공백 있음|인식 못 함|EOF 는 줄 맨 앞에|

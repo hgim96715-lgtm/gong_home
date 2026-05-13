@@ -30,14 +30,26 @@ cp  → 파일 복사 (원본 유지)
 
 # ① mv — 파일 이동 / 이름 변경 ⭐️
 
+```
+기본: mv [원본] [대상]
+
+패턴 1 — 이동:        mv 파일명   디렉토리/
+패턴 2 — 이름 변경:   mv 기존이름 새이름
+패턴 3 — 이동+이름:   mv 파일명   디렉토리/새이름
+```
+
 ```bash
-# 기본: mv [원본] [대상]
+# 패턴 1 — 이동
 mv main_app.py src/         # src 폴더로 이동
 mv config.json config/      # config 폴더로 이동
 mv README.md docs/          # docs 폴더로 이동
 
-# 이름 변경 (같은 디렉토리 안에서)
+# 패턴 2 — 이름 변경 (같은 디렉토리 안에서)
 mv old_name.py new_name.py
+mv app.py main.py           # 이름만 바꿀 때
+
+# 패턴 3 — 이동 + 이름 변경 동시에
+mv old.py src/new.py        # src 로 이동하면서 이름도 변경
 
 # 여러 파일을 한 폴더로 이동
 mv file1.py file2.py file3.py src/
@@ -50,8 +62,7 @@ mv ~/project/shared_docs ~/project/phoenix_project/docs/
 mv 특징:
   이동 후 원본 파일/폴더 사라짐
   디렉토리도 내부 파일 전부 함께 이동
-  이름 변경과 이동을 동시에
-    mv old.py src/new.py   ← 이동 + 이름 변경
+  cp 와 달리 -r 옵션 불필요 (디렉토리 자동 처리)
 ```
 
 ## mv 주의사항
