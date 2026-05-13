@@ -11,12 +11,12 @@
 
 ## Level 0. 기초 문법
 
-|노트|핵심 개념|
-|---|---|
-|[[JS_Variables]]|var / let / const / 스코프 / 호이스팅 / TDZ|
-|[[JS_DataTypes]]|string / number / boolean / null / undefined / symbol / bigint|
-|[[JS_Operators]]|산술 / 비교 / 논리 / 삼항 / nullish 병합(??) / 옵셔널 체이닝(?.)|
-|[[JS_Control_Flow]]|if / switch / for / while / break / continue|
+| 노트                  | 핵심 개념                                                          |
+| ------------------- | -------------------------------------------------------------- |
+| [[JS_Variables]]    | var / let / const / 스코프 / 호이스팅 / TDZ                           |
+| [[JS_DataTypes]]    | string / number / boolean / null / undefined / symbol / bigint |
+| [[JS_Operators]]    | 산술 / 비교 / 논리 / 삼항 / nullish 병합(??) / 옵셔널 체이닝(?.)               |
+| [[JS_Control_Flow]] | if / switch / for / while / break / continue                   |
 
 ---
 
