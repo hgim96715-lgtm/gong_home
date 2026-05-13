@@ -10,10 +10,10 @@ JavaScript 에 타입을 추가한 언어
 
 ## Level 0. 개념 & 설정
 
-|노트|핵심 개념|
-|---|---|
-|[[TS_Concept]]|TypeScript 란 / JS 와 차이 / 왜 쓰나 / 컴파일 vs 런타임|
-|[[TS_Install_Setup]]|tsc 설치 / tsconfig.json / strict 옵션 / ts-node / tsx|
+| 노트                   | 핵심 개념                                              |
+| -------------------- | -------------------------------------------------- |
+| [[TS_Concept]]       | TypeScript 란 / JS 와 차이 / 왜 쓰나 / 컴파일 vs 런타임         |
+| [[TS_Install_Setup]] | tsc 설치 / tsconfig.json / strict 옵션 / ts-node / tsx |
 
 ---
 
@@ -34,12 +34,12 @@ JavaScript 에 타입을 추가한 언어
 
 ## Level 2. 인터페이스 & 타입
 
-|노트|핵심 개념|
-|---|---|
-|[[TS_Interface]] ⭐|interface / 선택적 속성 ? / readonly / extends / 병합 선언|
-|[[TS_Type_vs_Interface]]|type vs interface 차이 / 언제 뭘 쓰나|
-|[[TS_Literal_Types]]|리터럴 타입 / const assertion / as const|
-|[[TS_Type_Guards]] ⭐|typeof / instanceof / in / 사용자 정의 타입 가드|
+| 노트                       | 핵심 개념                                             |
+| ------------------------ | ------------------------------------------------- |
+| [[TS_Interface]] ⭐       | interface / 선택적 속성 ? / readonly / extends / 병합 선언 |
+| [[TS_Type_vs_Interface]] | type vs interface 차이 / 언제 뭘 쓰나                    |
+| [[TS_Literal_Types]]     | 리터럴 타입 / const assertion / as const               |
+| [[TS_Type_Guards]] ⭐     | typeof / instanceof / in / 사용자 정의 타입 가드           |
 
 ---
 
