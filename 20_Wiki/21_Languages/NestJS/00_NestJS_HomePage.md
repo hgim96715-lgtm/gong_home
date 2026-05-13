@@ -20,7 +20,8 @@ NestJS 가 뭔지, HTTP 와 REST API 기초
 |노트|핵심 개념|
 |---|---|
 |[[NestJS_Concept]]|NestJS vs Next.js / HTTP / Method / Header / Body / REST API / 상태코드|
-|[[NestJS_Install_Setup]]|설치 / CLI / 폴더 구조 / main.ts / AppModule|
+|[[NestJS_Install_Setup]]|설치 / CLI / 폴더 구조 / 각 파일 역할 / package.json / node_modules|
+|[[NestJS_LifeCycle]] ⭐|REQUEST 흐름 / Middleware / Guard / Interceptor / Pipe / Controller / Service / Repository / Exception Filter|
 
 ---
 
@@ -32,12 +33,12 @@ NestJS 가 뭔지, HTTP 와 REST API 기초
 NestJS 의 빌딩 블록
 ```
 
-|노트|핵심 개념|
-|---|---|
-|[[NestJS_Module]] ⭐|@Module / imports / controllers / providers / exports / 모듈화|
-|[[NestJS_Controller]] ⭐|@Controller / @Get·Post·Put·Patch·Delete / @Param / @Body / @Query|
-|[[NestJS_Service_Provider]] ⭐|@Injectable / @InjectRepository / 비즈니스 로직 분리|
-|[[NestJS_DI]]|의존성 주입 / constructor 주입 / 제어의 역전(IoC)|
+| 노트                            | 핵심 개념                                                              |
+| ----------------------------- | ------------------------------------------------------------------ |
+| [[NestJS_Module]] ⭐           | @Module / imports / controllers / providers / exports / 모듈화        |
+| [[NestJS_Controller]] ⭐       | @Controller / @Get·Post·Put·Patch·Delete / @Param / @Body / @Query |
+| [[NestJS_Service_Provider]] ⭐ | @Injectable / @InjectRepository / 비즈니스 로직 분리                       |
+| [[NestJS_DI]]                 | 의존성 주입 / constructor 주입 / 제어의 역전(IoC)                              |
 
 ---
 
