@@ -208,6 +208,8 @@ git stash drop stash@{0}
 git stash clear    # 전체 삭제
 ```
 
+상세 내용 → [[Git_Stash]] 참고 
+
 ---
 
 ---

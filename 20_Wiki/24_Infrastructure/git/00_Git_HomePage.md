@@ -11,10 +11,10 @@
 
 ## Level 0. 개념 잡기
 
-| 노트                    | 핵심 개념                                   |
-| --------------------- | --------------------------------------- |
-| [[Git_Concept]]       | 버전 관리란 / 로컬 vs 원격 / Staging Area / HEAD |
-| [[Git_Install_Setup]] | 설치 / git config / SSH 키 설정              |
+|노트|핵심 개념|
+|---|---|
+|[[Git_Concept]]|버전 관리란 / 로컬 vs 원격 / Staging Area / HEAD|
+|[[Git_Install_Setup]]|git init / git config / --global vs 로컬 / user.name / alias / autocrlf / color.ui|
 
 ---
 
@@ -22,11 +22,11 @@
 
 ## Level 1. 기본 명령어
 
-| 노트               | 핵심 개념                                                                         |
-| ---------------- | ----------------------------------------------------------------------------- |
-| [[Git_Commands]] | add / commit / push / reset --soft / commit --amend / force push              |
-| [[Git_Branch]]   | branch / switch -c / checkout -b / merge / branch -d / branch --merged/rebase |
-| [[Git_Remote]]   | remote / fetch / pull / clone                                                 |
+|노트|핵심 개념|
+|---|---|
+|[[Git_Commands]]|add / commit / git diff / git diff --staged / push / reset --soft / commit --amend|
+|[[Git_Branch]]|branch / switch -c / merge / cherry-pick / rebase -i / branch -d|
+|[[Git_Remote]]|remote / fetch / pull / clone|
 
 ---
 
@@ -36,7 +36,8 @@
 
 |노트|핵심 개념|
 |---|---|
-|[[Git_Undo]]|reset / revert / restore / stash / 실수 복구|
+|[[Git_Undo]]|restore --staged / restore / reset --soft·hard / revert / stash|
+|[[Git_Stash]] ⭐|stash / stash -u / push -m / apply / pop / drop / clear / stash branch|
 |[[Git_Conflict]]|충돌 해결 / merge vs rebase / 전략|
 |[[Git_Gitignore]]|.gitignore 작성법 / 이미 올라간 파일 제거|
 
@@ -55,3 +56,9 @@
 ---
 
 ---
+
+## 현재 완성된 노트
+
+```
+Level 1: [[Git_Commands]] ✅
+```

@@ -181,24 +181,78 @@ chmod -R 755 /opt/myapp/
 
 # ④ chown — 소유자 변경 ⭐️
 
+```
+기본: chown [소유자]:[그룹] 파일
+
+패턴 1 — 소유자만 변경:      chown 사용자명 파일
+패턴 2 — 소유자 + 그룹:      chown 사용자:그룹 파일
+패턴 3 — 그룹만 변경:        chown :그룹명 파일  (또는 chgrp)
+```
+
 ```bash
-# 소유자 변경
+# 패턴 1 — 소유자만 변경 (그룹은 그대로)
+sudo chown labex /etc/apt/sources.list
 sudo chown ubuntu file.txt
 
-# 소유자 + 그룹 변경
+# 패턴 2 — 소유자 + 그룹 동시 변경
 sudo chown ubuntu:ubuntu file.txt
+sudo chown labex:root file.txt     # 소유자=labex, 그룹=root 유지
 
-# 디렉토리 하위 전체
-sudo chown -R ubuntu:ubuntu /opt/myapp/
-
-# 현재 사용자로 변경 (sudo 로 만든 파일 권한 가져올 때)
+# 패턴 3 — 현재 사용자로 (sudo 로 만든 파일 권한 가져올 때)
 sudo chown $USER:$USER file.txt
+
+# 디렉토리 하위 전체 (-R 재귀)
+sudo chown -R ubuntu:ubuntu /opt/myapp/
+```
+
+## ls -l 출력으로 소유자 확인 ⭐️
+
+```bash
+ls -l /etc/apt/sources.list
+# -rw------- 1 labex root 2557 Jul 18  2024 /etc/apt/sources.list
+#              ↑     ↑
+#           소유자  소유그룹
 ```
 
 ```
-sudo 로 만든 파일은 root 소유
+ls -l 출력 읽는 법:
+  -rw------- 1 labex root 2557 ...
+              ↑소유자 ↑소유그룹
+
+  소유자 = labex  → labex 가 읽기/쓰기 가능
+  소유그룹 = root → root 그룹 멤버는 권한 없음 (--- 이므로)
+  기타 = ---      → 그 외 사람도 권한 없음
+
+chown 전:
+  -rw------- 1 root root  → root 만 읽기/쓰기
+  → 일반 사용자 수정 불가
+
+chown labex 후:
+  -rw------- 1 labex root → labex 가 읽기/쓰기
+  → labex 로 수정 가능
+```
+
+## 소유자만 vs 소유자+그룹 구분 ⭐️
+
+```bash
+# 소유자만 변경 (그룹은 현재 상태 유지)
+sudo chown labex file.txt
+# 결과: labex:root (그룹 root 그대로)
+
+# 소유자 + 그룹 둘 다 변경
+sudo chown labex:labex file.txt
+# 결과: labex:labex (그룹도 labex 로)
+
+# 왜 구분이 중요한가:
+#   파일이 특정 그룹 권한으로 공유될 때
+#   그룹을 바꾸면 다른 멤버의 접근 권한도 바뀜
+```
+
+```
+sudo 로 만든 파일 → root 소유
 → 일반 사용자가 수정 못 함
 → chown $USER:$USER 로 소유권 가져오기
+→ 또는 소유자만 chown $USER 으로 변경
 ```
 
 ---
