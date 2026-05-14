@@ -26,6 +26,7 @@
 |---|---|
 |[[Git_Commands]]|add / commit / git diff / git diff --staged / push / reset --soft / commit --amend|
 |[[Git_Branch]]|branch / switch -c / merge / cherry-pick / rebase -i / branch -d|
+|[[Git_Tags]]|경량 태그 / 주석 태그 -a -m / tag 목록 / detached HEAD / push --tags|
 |[[Git_Remote]]|remote / fetch / pull / clone|
 
 ---
@@ -56,9 +57,3 @@
 ---
 
 ---
-
-## 현재 완성된 노트
-
-```
-Level 1: [[Git_Commands]] ✅
-```

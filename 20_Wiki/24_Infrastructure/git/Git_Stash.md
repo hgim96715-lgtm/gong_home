@@ -139,10 +139,44 @@ git stash branch feature-branch
 # 4. stash 에서 제거 (pop 처럼)
 ```
 
+## 브랜치 생성 후 master 병합 ⭐️
+
+
+```bash
+# 1. stash → 새 브랜치 생성 (자동으로 stash 내용 적용됨)
+git stash branch feature-branch
+
+# 2. 작업 마무리 후 커밋
+git add README.md notes.txt
+git commit -m "Start new feature"
+
+# 3. master 의 최신 변경사항을 feature-branch 에 반영
+git merge master
+
+# 4. 필요하면 main 으로 돌아가서 최종 병합
+git switch master
+git merge feature-branch
+```
+
+```
+왜 git merge master 가 필요한가:
+  stash 는 작업 중에 임시로 저장한 것
+  그 사이 master 에 다른 변경사항이 생겼을 수 있음
+  → feature-branch 에 master 최신 내용을 반영해야
+    충돌 없이 나중에 master 로 병합 가능
+
+흐름 정리:
+  master  ──────●────────────●
+                              ↑ merge master
+  feature       └────●───────●
+                  stash 작업  커밋 후 master 반영
+```
+
 ```
 언제 쓰나:
   stash 했는데 생각보다 작업이 커질 때
   → 새 브랜치로 분리해서 계속 작업
+  → merge master 로 최신 상태 동기화
   → 별도 PR 로 올릴 때
 ```
 
